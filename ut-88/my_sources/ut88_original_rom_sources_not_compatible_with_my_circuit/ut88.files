@@ -1,0 +1,8 @@
+./Makefile
+./ut88.cmm
+./bin/sjasmplus
+./bin/cmm
+./ut88.asm
+./ut88.creator
+./ut88.files
+./ut88.bin.check

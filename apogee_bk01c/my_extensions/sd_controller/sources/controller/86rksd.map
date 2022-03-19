@@ -1,0 +1,29 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+rom                                                               0x0100     128
+buf                                                               0x0180     512
+fs_tmp                                                            0x0380       4
+lastError                                                         0x0384       1
+fs_wtotal                                                         0x0385       2
+fs_fatbase                                                        0x0387       4
+fs_fatbase2                                                       0x038B       4
+fs_n_fatent                                                       0x038F       4
+fs_dirbase                                                        0x0393       4
+fs_database                                                       0x0397       4
+fs_fatoptim                                                       0x039B       4
+fs_file                                                           0x039F      33
+fs_secondFile                                                     0x03C0      33
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+fs_type                                                           R5           1
+fs_csize                                                          R4           1
+fs_n_rootdir                                                      R6,R7        2
+sd_sdhc                                                           R9           1
+readLength                                                        R10,R11      2

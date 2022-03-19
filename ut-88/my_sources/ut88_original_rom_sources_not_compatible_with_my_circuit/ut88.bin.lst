@@ -1,0 +1,3148 @@
+0001   0000              device zxspectrum48
+0002   0000             
+0001   0000                 ; ut88.cmm:2 // Восстановил Алексей Морозов, версия от 13-06-2020
+0002   0000                 ; ut88.cmm:3 
+0003   0000                 ; ut88.cmm:4 extern uint8_t outputFileBegin = 0xF800;
+0004   0000             outputFileBegin=63488
+0005   0000                 ; ut88.cmm:5 extern uint8_t outputFileEnd = 0x10000;
+0006   0000             outputFileEnd=65536
+0007   0000                 ; ut88.cmm:6 
+0008   0000                 ; ut88.cmm:7 // Константы
+0009   0000                 ; ut88.cmm:8 
+0010   0000                 ; ut88.cmm:9 const int screenWidth        = 64;
+0011   0000                 ; ut88.cmm:10 const int screenHeight       = 28;
+0012   0000                 ; ut88.cmm:11 const int screenAddr         = 0xE800;
+0013   0000                 ; ut88.cmm:12 const int screenAddrEnd2     = 0xF000;
+0014   0000                 ; ut88.cmm:13 const int lastRamAddr        = 0xDFFF;
+0015   0000                 ; ut88.cmm:14 const int initalStackAddr    = 0xF7AF;
+0016   0000                 ; ut88.cmm:15 const int ioSysConfigValue   = 0x8B;
+0017   0000                 ; ut88.cmm:16 const int ioUserConfigValue  = 0x82;
+0018   0000                 ; ut88.cmm:17 const int tapeSpeedInitValue = 0x1D2A;
+0019   0000                 ; ut88.cmm:18 
+0020   0000                 ; ut88.cmm:19 // Системные переменные
+0021   0000                 ; ut88.cmm:20 
+0022   0000                 ; ut88.cmm:21 const int systemVariablesBegin = 0xF7B0;
+0023   0000                 ; ut88.cmm:22 const int systemVariablesEnd   = 0xF7FF;
+0024   0000                 ; ut88.cmm:23 
+0025   0000                 ; ut88.cmm:24 extern uint16_t vCursorPos          = 0xF7B0;
+0026   0000             vCursorPos=63408
+0027   0000                 ; ut88.cmm:25 extern uint16_t vCursor             = 0xF7B2;
+0028   0000             vCursor=63410
+0029   0000                 ; ut88.cmm:26 extern uint16_t vBreakSavedPc       = 0xF7B4;
+0030   0000             vBreakSavedPc=63412
+0031   0000                 ; ut88.cmm:27 extern uint8_t  vBreakSavedHl       = 0xF7B6;
+0032   0000             vBreakSavedHl=63414
+0033   0000                 ; ut88.cmm:28 extern uint8_t  vBreakRegs          = 0xF7B8;
+0034   0000             vBreakRegs=63416
+0035   0000                 ; ut88.cmm:29 extern uint8_t  vInitalStackAddr    = 0xF7BC;
+0036   0000             vInitalStackAddr=63420
+0037   0000                 ; ut88.cmm:30 extern uint16_t vBreakSavedPsw      = 0xF7BE;
+0038   0000             vBreakSavedPsw=63422
+0039   0000                 ; ut88.cmm:31 extern uint16_t vSp                 = 0xF7C0;
+0040   0000             vSp=63424
+0041   0000                 ; ut88.cmm:32 extern uint8_t  vBreakAddr          = 0xF7C3;
+0042   0000             vBreakAddr=63427
+0043   0000                 ; ut88.cmm:33 extern uint8_t  vBreakPrevCmd       = 0xF7C5;
+0044   0000             vBreakPrevCmd=63429
+0045   0000                 ; ut88.cmm:34 extern uint8_t  vJmp                = 0xF7C6;
+0046   0000             vJmp=63430
+0047   0000                 ; ut88.cmm:35 extern uint16_t vCmdArg1            = 0xF7C7;
+0048   0000             vCmdArg1=63431
+0049   0000                 ; ut88.cmm:36 extern uint16_t vCmdArg2            = 0xF7C9;
+0050   0000             vCmdArg2=63433
+0051   0000                 ; ut88.cmm:37 extern uint16_t vCmdArg3            = 0xF7CB;
+0052   0000             vCmdArg3=63435
+0053   0000                 ; ut88.cmm:38 extern uint8_t  vCmdArg2Able        = 0xF7CD;
+0054   0000             vCmdArg2Able=63437
+0055   0000                 ; ut88.cmm:39 extern uint8_t  vTapeInverted       = 0xF7CE;
+0056   0000             vTapeInverted=63438
+0057   0000                 ; ut88.cmm:40 extern uint8_t  vTapeSpeedRd        = 0xF7CF;
+0058   0000             vTapeSpeedRd=63439
+0059   0000                 ; ut88.cmm:41 extern uint8_t  vTapeSpeedWr        = 0xF7D0;
+0060   0000             vTapeSpeedWr=63440
+0061   0000                 ; ut88.cmm:42 extern uint16_t vLastRamAddr        = 0xF7D1;
+0062   0000             vLastRamAddr=63441
+0063   0000                 ; ut88.cmm:43 extern uint8_t  vLineBuffer         = 0xF7D3; // Максимальная длина строки 31 байт без учета завершающего символа.
+0064   0000             vLineBuffer=63443
+0065   0000                 ; ut88.cmm:44 extern uint8_t  vLineBufferLastByte = 0xF7F2;
+0066   0000             vLineBufferLastByte=63474
+0067   0000                 ; ut88.cmm:45 extern uint8_t  vFirstPressCounter  = 0xF7F3;
+0068   0000             vFirstPressCounter=63475
+0069   0000                 ; ut88.cmm:46 extern uint8_t  vFirstPress         = 0xF7F4;
+0070   0000             vFirstPress=63476
+0071   0000                 ; ut88.cmm:47 extern uint8_t  vPutchEscMode       = 0xF7F8;
+0072   0000             vPutchEscMode=63480
+0073   0000                 ; ut88.cmm:48 
+0074   0000                 ; ut88.cmm:49 // Вызов этих команд запускает подпрограммы по этим адресам
+0075   0000                 ; ut88.cmm:50 
+0076   0000                 ; ut88.cmm:51 extern uint8_t  cmdW = 0xC000;
+0077   0000             cmdW=49152
+0078   0000                 ; ut88.cmm:52 extern uint8_t  cmdU = 0xF000;
+0079   0000             cmdU=61440
+0080   0000                 ; ut88.cmm:53 
+0081   0000                 ; ut88.cmm:54 // Порты ввода вывода
+0082   0000                 ; ut88.cmm:55 
+0083   0000                 ; ut88.cmm:56 const int ioSysConfig  = 0x04; // КР580ВВ55А. Системный порт и порт клавиатуры.
+0084   0000                 ; ut88.cmm:57 const int ioSysC       = 0x05;
+0085   0000                 ; ut88.cmm:58 const int ioSysB       = 0x06;
+0086   0000                 ; ut88.cmm:59 const int ioSysA       = 0x07;
+0087   0000                 ; ut88.cmm:60 const int ioTape       = 0xA1; // Порт накопителя на магнитной ленте.
+0088   0000                 ; ut88.cmm:61 const int ioUserA      = 0xF8; // КР580ВВ55А. Пользовательский порт. Сюда подключается внешее ПЗУ.
+0089   0000                 ; ut88.cmm:62 const int ioUserB      = 0xF9;
+0090   0000                 ; ut88.cmm:63 const int ioUserC      = 0xFA;
+0091   0000                 ; ut88.cmm:64 const int ioUserConfig = 0xFB;
+0092   0000                 ; ut88.cmm:65 
+0093   0000                 ; ut88.cmm:66 // Коды команд КР580ВМ80А
+0094   0000                 ; ut88.cmm:67 
+0095   0000                 ; ut88.cmm:68 const int opcodeJmp = 0xC3;
+0096   0000                 ; ut88.cmm:69 const int opcodeRst6 = 0xF7;
+0097   0000                 ; ut88.cmm:70 
+0098   0000                 ; ut88.cmm:71 // Коды символов для putch, getch и inkey
+0099   0000                 ; ut88.cmm:72 
+0100   0000                 ; ut88.cmm:73 const int charCodeLeft        = 0x08;
+0101   0000                 ; ut88.cmm:74 const int charCodeNextLine    = 0x0A;
+0102   0000                 ; ut88.cmm:75 const int charCodeHome        = 0x0C;
+0103   0000                 ; ut88.cmm:76 const int charCodeEnter       = 0x0D;
+0104   0000                 ; ut88.cmm:77 const int charCodeRight       = 0x18;
+0105   0000                 ; ut88.cmm:78 const int charCodeUp          = 0x19;
+0106   0000                 ; ut88.cmm:79 const int charCodeDown        = 0x1A;
+0107   0000                 ; ut88.cmm:80 const int charCodeEsc         = 0x1B;
+0108   0000                 ; ut88.cmm:81 const int charCodeClearScreen = 0x1F;
+0109   0000                 ; ut88.cmm:82 const int charCodeSpace       = 0x20;
+0110   0000                 ; ut88.cmm:83 const int charCodeBackspace   = 0x7F;
+0111   0000                 ; ut88.cmm:84 
+0112   0000                 ; ut88.cmm:85 // Точки входа
+0113   0000                 ; ut88.cmm:86 
+0114   0000                 ; ut88.cmm:87 #org 0xF800
+0115   0000                 ; ut88.cmm:88 
+0116   0000                 org 63488
+0117   F800                 ; ut88.cmm:89 void entryPoints()
+0118   F800             entryPoints: 
+0119   F800                 ; ut88.cmm:90 {
+0120   F800                 ; ut88.cmm:91 // Точки входа соответствуют Радио 86РК
+0121   F800                 ; ut88.cmm:92 return reboot();
+0122   F800 C3 36 F8        jp   reboot
+0123   F803                 ; ut88.cmm:93 return getch();
+0124   F803 C3 57 FD        jp   getch
+0125   F806                 ; ut88.cmm:94 return tapeInput();
+0126   F806 C3 71 FB        jp   tapeInput
+0127   F809                 ; ut88.cmm:95 return putch(c);
+0128   F809 C3 43 FC        jp   putch
+0129   F80C                 ; ut88.cmm:96 return tapeOutput(c);
+0130   F80C C3 EE FB        jp   tapeOutput
+0131   F80F                 ; ut88.cmm:97 return putch(c);
+0132   F80F C3 43 FC        jp   putch
+0133   F812                 ; ut88.cmm:98 return isAnyKeyPressed();
+0134   F812 C3 6B FE        jp   isAnyKeyPressed
+0135   F815                 ; ut88.cmm:99 return put8(a);
+0136   F815 C3 2E FC        jp   put8
+0137   F818                 ; ut88.cmm:100 return puts(hl);
+0138   F818 C3 1F F9        jp   puts
+0139   F81B                 ; ut88.cmm:101 return inkey();
+0140   F81B C3 9A FD        jp   inkey
+0141   F81E                 ; ut88.cmm:102 return getCursor();
+0142   F81E C3 72 FA        jp   getCursor
+0143   F821                 ; ut88.cmm:103 return getCursorChar();
+0144   F821 C3 76 FA        jp   getCursorChar
+0145   F824                 ; ut88.cmm:104 return tapeInputFile(hl);
+0146   F824 C3 AD FA        jp   tapeInputFile
+0147   F827                 ; ut88.cmm:105 return tapeOutputFile(hl, de, bc);
+0148   F827 C3 24 FB        jp   tapeOutputFile
+0149   F82A                 ; ut88.cmm:106 return calcSum(hl, de);
+0150   F82A C3 F6 FA        jp   calcSum
+0151   F82D                 ; ut88.cmm:107 return; rst(0x38); rst(0x38); // Инициализация видеоконтроллера. Не требуется.
+0152   F82D C9              ret
+0153   F82E FF              rst 56
+0154   F82F FF              rst 56
+0155   F830                 ; ut88.cmm:108 return getLastRamAddr();
+0156   F830 C3 77 FE        jp   getLastRamAddr
+0157   F833                 ; ut88.cmm:109 return setLastRamAddr(hl);
+0158   F833 C3 7B FE        jp   setLastRamAddr
+0159   F836                 ; ut88.cmm:110 noreturn;
+0160   F836                 ; ut88.cmm:111 }
+0161   F836                 ; ut88.cmm:112 
+0162   F836                 ; ut88.cmm:113 // Инициализация. Выполняется после перезагрузки или пользовательской программой.
+0163   F836                 ; ut88.cmm:114 // Параметры: нет. Функция никогда не завершается.
+0164   F836                 ; ut88.cmm:115 
+0165   F836                 ; ut88.cmm:116 void reboot()
+0166   F836             reboot: 
+0167   F836                 ; ut88.cmm:117 {
+0168   F836                 ; ut88.cmm:118 out(ioSysConfig, a = ioSysConfigValue);
+0169   F836 3E 8B           ld   a, 139
+0170   F838 D3 04           out  (4), a
+0171   F83A                 ; ut88.cmm:119 out(ioUserConfig, a = ioUserConfigValue);
+0172   F83A 3E 82           ld   a, 130
+0173   F83C D3 FB           out  (251), a
+0174   F83E                 ; ut88.cmm:120 sp = initalStackAddr;
+0175   F83E 31 AF F7        ld   sp, 63407
+0176   F841                 ; ut88.cmm:121 cmdF(hl = systemVariablesBegin, de = systemVariablesEnd, c = 0);
+0177   F841 21 B0 F7        ld   hl, 63408
+0178   F844 11 FF F7        ld   de, 63487
+0179   F847 0E 00           ld   c, 0
+0180   F849 CD E7 F9        call cmdF
+0181   F84C                 ; ut88.cmm:122 vInitalStackAddr = hl = initalStackAddr;
+0182   F84C 21 AF F7        ld   hl, 63407
+0183   F84F 22 BC F7        ld   (vInitalStackAddr), hl
+0184   F852                 ; ut88.cmm:123 puts(hl = &aClearUt88); // Очистка экрана и вывод *ЮТ/88*
+0185   F852 21 D3 FA        ld   hl, aClearUt88
+0186   F855 CD 1F F9        call puts
+0187   F858                 ; ut88.cmm:124 nop(3);
+0188   F858 00              nop
+0189   F859 00              nop
+0190   F85A 00              nop
+0191   F85B                 ; ut88.cmm:125 vLastRamAddr = hl = lastRamAddr;
+0192   F85B 21 FF DF        ld   hl, 57343
+0193   F85E 22 D1 F7        ld   (vLastRamAddr), hl
+0194   F861                 ; ut88.cmm:126 vTapeSpeedRd = hl = tapeSpeedInitValue;
+0195   F861 21 2A 1D        ld   hl, 7466
+0196   F864 22 CF F7        ld   (vTapeSpeedRd), hl
+0197   F867                 ; ut88.cmm:127 vJmp = a = opcodeJmp;
+0198   F867 3E C3           ld   a, 195
+0199   F869 32 C6 F7        ld   (vJmp), a
+0200   F86C                 ; ut88.cmm:128 noreturn; // Продолжение в monitor
+0201   F86C                 ; ut88.cmm:129 }
+0202   F86C                 ; ut88.cmm:130 
+0203   F86C                 ; ut88.cmm:131 // Ввод команды пользователем и её выполнение. Выполнение любой команды возвращается к этой точке.
+0204   F86C                 ; ut88.cmm:132 // Параметры: нет. Функция никогда не завершается.
+0205   F86C                 ; ut88.cmm:133 
+0206   F86C                 ; ut88.cmm:134 void monitor()
+0207   F86C             monitor: 
+0208   F86C                 ; ut88.cmm:135 {
+0209   F86C                 ; ut88.cmm:136 // Возвращаем стек на место
+0210   F86C                 ; ut88.cmm:137 sp = initalStackAddr;
+0211   F86C 31 AF F7        ld   sp, 63407
+0212   F86F                 ; ut88.cmm:138 
+0213   F86F                 ; ut88.cmm:139 // Перевод строки и вывод на экран =>
+0214   F86F                 ; ut88.cmm:140 puts(hl = &aCrLfPrompt);
+0215   F86F 21 7F FE        ld   hl, aCrLfPrompt
+0216   F872 CD 1F F9        call puts
+0217   F875                 ; ut88.cmm:141 
+0218   F875                 ; ut88.cmm:142 // Ввод строки в vLineBuffer
+0219   F875                 ; ut88.cmm:143 nop(4);
+0220   F875 00              nop
+0221   F876 00              nop
+0222   F877 00              nop
+0223   F878 00              nop
+0224   F879                 ; ut88.cmm:144 getLine();
+0225   F879 CD EB F8        call getLine
+0226   F87C                 ; ut88.cmm:145 
+0227   F87C                 ; ut88.cmm:146 // После этого любая команда может вернуться в монитор выполнив ret
+0228   F87C                 ; ut88.cmm:147 hl = &monitor;
+0229   F87C 21 6C F8        ld   hl, monitor
+0230   F87F                 ; ut88.cmm:148 push(hl);
+0231   F87F E5              push hl
+0232   F880                 ; ut88.cmm:149 
+0233   F880                 ; ut88.cmm:150 // Код введеной команды
+0234   F880                 ; ut88.cmm:151 hl = &vLineBuffer;
+0235   F880 21 D3 F7        ld   hl, vLineBuffer
+0236   F883                 ; ut88.cmm:152 a = *hl;
+0237   F883 7E              ld   a, (hl)
+0238   F884                 ; ut88.cmm:153 
+0239   F884                 ; ut88.cmm:154 // Разбор команд
+0240   F884                 ; ut88.cmm:155 if (a == 'X') return cmdX();
+0241   F884 FE 58           cp   88
+0242   F886 CA EC FE        jp   z, cmdX
+0243   F889                 ; ut88.cmm:156 if (a == 'U') return cmdU();
+0244   F889 FE 55           cp   85
+0245   F88B CA 00 F0        jp   z, cmdU
+0246   F88E                 ; ut88.cmm:157 
+0247   F88E                 ; ut88.cmm:158 // У команды может быть от 0 до 3-х параметров, 16-ричных чисел разделенных запятой
+0248   F88E                 ; ut88.cmm:159 push(a)
+0249   F88E                 ; ut88.cmm:160 {
+0250   F88E F5              push af
+0251   F88F                 ; ut88.cmm:161 parseCommandArgs();
+0252   F88F CD 29 F9        call parseCommandArgs
+0253   F892                 ; ut88.cmm:162 hl = vCmdArg3; c = l; b = h;
+0254   F892 2A CB F7        ld   hl, (vCmdArg3)
+0255   F895 4D              ld   c, l
+0256   F896 44              ld   b, h
+0257   F897                 ; ut88.cmm:163 hl = vCmdArg2; swap(hl, de);
+0258   F897 2A C9 F7        ld   hl, (vCmdArg2)
+0259   F89A EB              ex de, hl
+0260   F89B                 ; ut88.cmm:164 hl = vCmdArg1;
+0261   F89B 2A C7 F7        ld   hl, (vCmdArg1)
+0262   F89E                 ; ut88.cmm:165 }
+0263   F89E F1              pop  af
+0264   F89F                 ; ut88.cmm:166 
+0265   F89F                 ; ut88.cmm:167 // Разбор команд
+0266   F89F                 ; ut88.cmm:168 if (a == 'D') return cmdD(hl, de);
+0267   F89F FE 44           cp   68
+0268   F8A1 CA BF F9        jp   z, cmdD
+0269   F8A4                 ; ut88.cmm:169 if (a == 'C') return cmdC(hl, de, bc);
+0270   F8A4 FE 43           cp   67
+0271   F8A6 CA D1 F9        jp   z, cmdC
+0272   F8A9                 ; ut88.cmm:170 if (a == 'F') return cmdF(hl, de, c);
+0273   F8A9 FE 46           cp   70
+0274   F8AB CA E7 F9        jp   z, cmdF
+0275   F8AE                 ; ut88.cmm:171 if (a == 'S') return cmdS(hl, de, c);
+0276   F8AE FE 53           cp   83
+0277   F8B0 CA EE F9        jp   z, cmdS
+0278   F8B3                 ; ut88.cmm:172 if (a == 'T') return cmdT(hl, de, bc);
+0279   F8B3 FE 54           cp   84
+0280   F8B5 CA F9 F9        jp   z, cmdT
+0281   F8B8                 ; ut88.cmm:173 if (a == 'M') return cmdM(hl);
+0282   F8B8 FE 4D           cp   77
+0283   F8BA CA 20 FA        jp   z, cmdM
+0284   F8BD                 ; ut88.cmm:174 if (a == 'G') return cmdG(hl, de);
+0285   F8BD FE 47           cp   71
+0286   F8BF CA 39 FA        jp   z, cmdG
+0287   F8C2                 ; ut88.cmm:175 if (a == 'I') return cmdI(hl);
+0288   F8C2 FE 49           cp   73
+0289   F8C4 CA 7D FA        jp   z, cmdI
+0290   F8C7                 ; ut88.cmm:176 if (a == 'O') return cmdO(hl, de);
+0291   F8C7 FE 4F           cp   79
+0292   F8C9 CA 08 FB        jp   z, cmdO
+0293   F8CC                 ; ut88.cmm:177 if (a == 'L') return cmdL(hl, de);
+0294   F8CC FE 4C           cp   76
+0295   F8CE CA 02 FA        jp   z, cmdL
+0296   F8D1                 ; ut88.cmm:178 if (a == 'R') return cmdR(hl, de, bc);
+0297   F8D1 FE 52           cp   82
+0298   F8D3 CA 62 FA        jp   z, cmdR
+0299   F8D6                 ; ut88.cmm:179 
+0300   F8D6                 ; ut88.cmm:180 // Продолжение разбора команд в следующей функции
+0301   F8D6                 ; ut88.cmm:181 return monitor2(a, hl, de);
+0302   F8D6 C3 17 FF        jp   monitor2
+0303   F8D9                 ; ut88.cmm:182 noreturn;
+0304   F8D9                 ; ut88.cmm:183 }
+0305   F8D9                 ; ut88.cmm:184 
+0306   F8D9                 ; ut88.cmm:185 // Вспомогательная функция ввода строки с клавиатуры.
+0307   F8D9                 ; ut88.cmm:186 
+0308   F8D9                 ; ut88.cmm:187 void getLineBackspace()
+0309   F8D9             getLineBackspace: 
+0310   F8D9                 ; ut88.cmm:188 {
+0311   F8D9                 ; ut88.cmm:189 if ((a = 0x63) == l) goto getLine0; //! Ошибка. Тут должен быть адрес начала строки, т.е. &vLineBuffer.
+0312   F8D9 3E 63           ld   a, 99
+0313   F8DB BD              cp   l
+0314   F8DC CA EE F8        jp   z, getLine0
+0315   F8DF                 ; ut88.cmm:190 push(hl)
+0316   F8DF                 ; ut88.cmm:191 {
+0317   F8DF E5              push hl
+0318   F8E0                 ; ut88.cmm:192 puts(hl = &aBsSpBs);
+0319   F8E0 21 B7 FE        ld   hl, aBsSpBs
+0320   F8E3 CD 1F F9        call puts
+0321   F8E6                 ; ut88.cmm:193 }
+0322   F8E6 E1              pop  hl
+0323   F8E7                 ; ut88.cmm:194 hl--;
+0324   F8E7 2B              dec  hl
+0325   F8E8                 ; ut88.cmm:195 //! Ошибка. Если строка пустая, то нужно обнулить b.
+0326   F8E8                 ; ut88.cmm:196 goto getLineLoop;
+0327   F8E8 C3 F0 F8        jp   getLineLoop
+0328   F8EB                 ; ut88.cmm:197 noreturn;
+0329   F8EB                 ; ut88.cmm:198 }
+0330   F8EB                 ; ut88.cmm:199 
+0331   F8EB                 ; ut88.cmm:200 // Ввод строки с клавиатуры.
+0332   F8EB                 ; ut88.cmm:201 // Строка сохраняется по адресам vLineBuffer .. vLineBufferLastByte.
+0333   F8EB                 ; ut88.cmm:202 // Параметры: нет. Результат de = адрес vLineBuffer, b = 0, cf - если строка не пустая
+0334   F8EB                 ; ut88.cmm:203 
+0335   F8EB                 ; ut88.cmm:204 void getLine()
+0336   F8EB             getLine: 
+0337   F8EB                 ; ut88.cmm:205 {
+0338   F8EB                 ; ut88.cmm:206 hl = &vLineBuffer;
+0339   F8EB 21 D3 F7        ld   hl, vLineBuffer
+0340   F8EE                 ; ut88.cmm:207 getLine0:
+0341   F8EE             getLine0: 
+0342   F8EE                 ; ut88.cmm:208 b = 0; // Признак пустой строки.
+0343   F8EE 06 00           ld   b, 0
+0344   F8F0                 ; ut88.cmm:209 while ()
+0345   F8F0             l0: 
+0346   F8F0                 ; ut88.cmm:210 {
+0347   F8F0                 ; ut88.cmm:211 getLineLoop:
+0348   F8F0             getLineLoop: 
+0349   F8F0                 ; ut88.cmm:212 getch();
+0350   F8F0 CD 57 FD        call getch
+0351   F8F3                 ; ut88.cmm:213 if (a == charCodeLeft) goto getLineBackspace;
+0352   F8F3 FE 08           cp   8
+0353   F8F5 CA D9 F8        jp   z, getLineBackspace
+0354   F8F8                 ; ut88.cmm:214 if (a == charCodeBackspace) goto getLineBackspace;
+0355   F8F8 FE 7F           cp   127
+0356   F8FA CA D9 F8        jp   z, getLineBackspace
+0357   F8FD                 ; ut88.cmm:215 //! Плохо. Не надо выводить непечатные и управляющие символы.
+0358   F8FD                 ; ut88.cmm:216 if (flag_nz) putchA(a); //! Лишнее условие, которое всегда истинно.
+0359   F8FD C4 42 FC        call nz, putchA
+0360   F900                 ; ut88.cmm:217 *hl = a;
+0361   F900 77              ld   (hl), a
+0362   F901                 ; ut88.cmm:218 if (a == charCodeEnter) break;
+0363   F901 FE 0D           cp   13
+0364   F903 CA 17 F9        jp   z, l1
+0365   F906                 ; ut88.cmm:219 if (a == '.') return monitor();
+0366   F906 FE 2E           cp   46
+0367   F908 CA 6C F8        jp   z, monitor
+0368   F90B                 ; ut88.cmm:220 b = 0xFF;
+0369   F90B 06 FF           ld   b, 255
+0370   F90D                 ; ut88.cmm:221 if ((a = &vLineBufferLastByte) == l) return error();
+0371   F90D 3E F2           ld   a, vLineBufferLastByte
+0372   F90F BD              cp   l
+0373   F910 CA A5 FA        jp   z, error
+0374   F913                 ; ut88.cmm:222 hl++;
+0375   F913 23              inc  hl
+0376   F914                 ; ut88.cmm:223 }
+0377   F914 C3 F0 F8        jp   l0
+0378   F917             l1: 
+0379   F917                 ; ut88.cmm:224 (a = b) <<@= 1; // Признак пустой строки. 7-ой бит помещаем во флаг CF.
+0380   F917 78              ld   a, b
+0381   F918 17              rla
+0382   F919                 ; ut88.cmm:225 
+0383   F919                 ; ut88.cmm:226 // Результат
+0384   F919                 ; ut88.cmm:227 de = &vLineBuffer;
+0385   F919 11 D3 F7        ld   de, vLineBuffer
+0386   F91C                 ; ut88.cmm:228 b = 0; //! Лишняя команда
+0387   F91C 06 00           ld   b, 0
+0388   F91E                 ; ut88.cmm:229 }
+0389   F91E C9              ret
+0390   F91F                 ; ut88.cmm:230 
+0391   F91F                 ; ut88.cmm:231 // Функция для пользовательской программы. Вывод строки на экран.
+0392   F91F                 ; ut88.cmm:232 // Параметры: hl - адрес стороки. Результат: hl - следующий адрес за терминатором строки. Сохраняются: bc, de.
+0393   F91F                 ; ut88.cmm:233 
+0394   F91F                 ; ut88.cmm:234 void puts(hl)
+0395   F91F             puts: 
+0396   F91F                 ; ut88.cmm:235 {
+0397   F91F                 ; ut88.cmm:236 while ()
+0398   F91F             l2: 
+0399   F91F                 ; ut88.cmm:237 {
+0400   F91F                 ; ut88.cmm:238 a = *hl;
+0401   F91F 7E              ld   a, (hl)
+0402   F920                 ; ut88.cmm:239 if (flag_z a &= a) return;
+0403   F920 A7              and  a
+0404   F921 C8              ret  z
+0405   F922                 ; ut88.cmm:240 putchA(a);
+0406   F922 CD 42 FC        call putchA
+0407   F925                 ; ut88.cmm:241 hl++;
+0408   F925 23              inc  hl
+0409   F926                 ; ut88.cmm:242 }
+0410   F926 C3 1F F9        jp   l2
+0411   F929             l3: 
+0412   F929                 ; ut88.cmm:243 noreturn;
+0413   F929                 ; ut88.cmm:244 }
+0414   F929                 ; ut88.cmm:245 
+0415   F929                 ; ut88.cmm:246 // Выделить из введенной пользователем строки пераметры в переменные vCmdArg*
+0416   F929                 ; ut88.cmm:247 // Параметры: нет. В случае ошибки функция переходит на error, а затем на monitor.
+0417   F929                 ; ut88.cmm:248 
+0418   F929                 ; ut88.cmm:249 void parseCommandArgs()
+0419   F929             parseCommandArgs: 
+0420   F929                 ; ut88.cmm:250 {
+0421   F929                 ; ut88.cmm:251 // Зануление переменных vCmdArg*
+0422   F929                 ; ut88.cmm:252 cmdF(hl = &vCmdArg1, de = &vCmdArg2Able, c = 0);
+0423   F929 21 C7 F7        ld   hl, vCmdArg1
+0424   F92C 11 CD F7        ld   de, vCmdArg2Able
+0425   F92F 0E 00           ld   c, 0
+0426   F931 CD E7 F9        call cmdF
+0427   F934                 ; ut88.cmm:253 
+0428   F934                 ; ut88.cmm:254 // Указатель на введенную команду. Первый байт это код команды, мы его пропускаем.
+0429   F934                 ; ut88.cmm:255 de = [&vLineBuffer + 1];
+0430   F934 11 D4 F7        ld   de, (vLineBuffer) + (1)
+0431   F937                 ; ut88.cmm:256 
+0432   F937                 ; ut88.cmm:257 // Преобразование 1 параметра из строки в число. В случае ошибки функция переходит на error, а затем на monitor.
+0433   F937                 ; ut88.cmm:258 parseHexNumber16(de);
+0434   F937 CD 57 F9        call parseHexNumber16
+0435   F93A                 ; ut88.cmm:259 vCmdArg1 = hl;
+0436   F93A 22 C7 F7        ld   (vCmdArg1), hl
+0437   F93D                 ; ut88.cmm:260 vCmdArg2 = hl;
+0438   F93D 22 C9 F7        ld   (vCmdArg2), hl
+0439   F940                 ; ut88.cmm:261 
+0440   F940                 ; ut88.cmm:262 // В строке больше нет параметров
+0441   F940                 ; ut88.cmm:263 if (flag_c) return;
+0442   F940 D8              ret  c
+0443   F941                 ; ut88.cmm:264 
+0444   F941                 ; ut88.cmm:265 // Преобразование 2 параметра из строки в число. В случае ошибки функция переходит на error, а затем на monitor.
+0445   F941                 ; ut88.cmm:266 vCmdArg2Able = a = 0xFF;
+0446   F941 3E FF           ld   a, 255
+0447   F943 32 CD F7        ld   (vCmdArg2Able), a
+0448   F946                 ; ut88.cmm:267 parseHexNumber16(de);
+0449   F946 CD 57 F9        call parseHexNumber16
+0450   F949                 ; ut88.cmm:268 vCmdArg2 = hl;
+0451   F949 22 C9 F7        ld   (vCmdArg2), hl
+0452   F94C                 ; ut88.cmm:269 
+0453   F94C                 ; ut88.cmm:270 // В строке больше нет параметров
+0454   F94C                 ; ut88.cmm:271 if (flag_c) return;
+0455   F94C D8              ret  c
+0456   F94D                 ; ut88.cmm:272 
+0457   F94D                 ; ut88.cmm:273 // Преобразование 3 параметра из строки в число. В случае ошибки функция переходит на error, а затем на monitor.
+0458   F94D                 ; ut88.cmm:274 parseHexNumber16(de);
+0459   F94D CD 57 F9        call parseHexNumber16
+0460   F950                 ; ut88.cmm:275 vCmdArg3 = hl;
+0461   F950 22 CB F7        ld   (vCmdArg3), hl
+0462   F953                 ; ut88.cmm:276 
+0463   F953                 ; ut88.cmm:277 // В строке больше нет параметров
+0464   F953                 ; ut88.cmm:278 if (flag_c) return;
+0465   F953 D8              ret  c
+0466   F954                 ; ut88.cmm:279 
+0467   F954                 ; ut88.cmm:280 // Вывод ошибки, если в строке еще что то осталось. Эта функция переходит на monitor.
+0468   F954                 ; ut88.cmm:281 return error();
+0469   F954 C3 A5 FA        jp   error
+0470   F957                 ; ut88.cmm:282 noreturn;
+0471   F957                 ; ut88.cmm:283 }
+0472   F957                 ; ut88.cmm:284 
+0473   F957                 ; ut88.cmm:285 // Преобразовать строку содержащую 16 ричное 16 битное число в число.
+0474   F957                 ; ut88.cmm:286 // Параметры: de - адрес стороки. Результат: hl - число, cf - если в строке больше ничего нет.
+0475   F957                 ; ut88.cmm:287 
+0476   F957                 ; ut88.cmm:288 void parseHexNumber16(de)
+0477   F957             parseHexNumber16: 
+0478   F957                 ; ut88.cmm:289 {
+0479   F957                 ; ut88.cmm:290 hl = 0;
+0480   F957 21 00 00        ld   hl, 0
+0481   F95A                 ; ut88.cmm:291 while ()
+0482   F95A             l4: 
+0483   F95A                 ; ut88.cmm:292 {
+0484   F95A                 ; ut88.cmm:293 a = *de; de++;
+0485   F95A 1A              ld   a, (de)
+0486   F95B 13              inc  de
+0487   F95C                 ; ut88.cmm:294 if (a == 0x0D) break;
+0488   F95C FE 0D           cp   13
+0489   F95E CA 8B F9        jp   z, l5
+0490   F961                 ; ut88.cmm:295 if (a == ',') return; // выход с флагами z nc. //! Не проверяются лишние пробелы
+0491   F961 FE 2C           cp   44
+0492   F963 C8              ret  z
+0493   F964                 ; ut88.cmm:296 if (a == ' ') continue;
+0494   F964 FE 20           cp   32
+0495   F966 CA 5A F9        jp   z, l4
+0496   F969                 ; ut88.cmm:297 a -= '0';
+0497   F969 D6 30           sub  48
+0498   F96B                 ; ut88.cmm:298 if (flag_m) return error(); // Если получилось отрицательное число
+0499   F96B FA A5 FA        jp   m, error
+0500   F96E                 ; ut88.cmm:299 if (a >=$ 10)
+0501   F96E FE 0A           cp   10
+0502   F970                 ; ut88.cmm:300 {
+0503   F970 FA 7F F9        jp   m, l6
+0504   F973                 ; ut88.cmm:301 if (a <$ ['A' - '0']) return error();
+0505   F973 FE 11           cp   17
+0506   F975 FA A5 FA        jp   m, error
+0507   F978                 ; ut88.cmm:302 if (a >=$ ['F' - '0' + 1]) return error();
+0508   F978 FE 17           cp   23
+0509   F97A F2 A5 FA        jp   p, error
+0510   F97D                 ; ut88.cmm:303 a -= ['A' - '0' - 10];
+0511   F97D D6 07           sub  7
+0512   F97F                 ; ut88.cmm:304 }
+0513   F97F                 ; ut88.cmm:305 c = a;
+0514   F97F             l6: 
+0515   F97F 4F              ld   c, a
+0516   F980                 ; ut88.cmm:306 hl += hl += hl += hl += hl;
+0517   F980 29              add  hl, hl
+0518   F981 29              add  hl, hl
+0519   F982 29              add  hl, hl
+0520   F983 29              add  hl, hl
+0521   F984                 ; ut88.cmm:307 if (flag_c) return error(); //! Ошибка. Не все переполнения проверяются.
+0522   F984 DA A5 FA        jp   c, error
+0523   F987                 ; ut88.cmm:308 hl += bc;
+0524   F987 09              add  hl, bc
+0525   F988                 ; ut88.cmm:309 }
+0526   F988 C3 5A F9        jp   l4
+0527   F98B             l5: 
+0528   F98B                 ; ut88.cmm:310 setFlagC();  // выход с флагами z c
+0529   F98B 37              scf
+0530   F98C                 ; ut88.cmm:311 }
+0531   F98C C9              ret
+0532   F98D                 ; ut88.cmm:312 
+0533   F98D                 ; ut88.cmm:313 // Сравить hl и de.
+0534   F98D                 ; ut88.cmm:314 // Параметры: hl, de - числа. Результат: флаги. Сохраняет: bc, hl, de.
+0535   F98D                 ; ut88.cmm:315 
+0536   F98D                 ; ut88.cmm:316 void cmdHlDe(hl, de)
+0537   F98D             cmdHlDe: 
+0538   F98D                 ; ut88.cmm:317 {
+0539   F98D                 ; ut88.cmm:318 if ((a = h) != d) return;
+0540   F98D 7C              ld   a, h
+0541   F98E BA              cp   d
+0542   F98F C0              ret  nz
+0543   F990                 ; ut88.cmm:319 (a = l) ? e;
+0544   F990 7D              ld   a, l
+0545   F991 BB              cp   e
+0546   F992                 ; ut88.cmm:320 }
+0547   F992 C9              ret
+0548   F993                 ; ut88.cmm:321 
+0549   F993                 ; ut88.cmm:322 // Если hl = de или пользователь нажал СТОП, то выйти из вызывающей функции.
+0550   F993                 ; ut88.cmm:323 // Параметры: hl, de - числа. Результат: hl на 1 больше. Сохраняет: bc, de.
+0551   F993                 ; ut88.cmm:324 
+0552   F993                 ; ut88.cmm:325 void ifHlEqDeThenRetElseIncHlCanStop(hl, de)
+0553   F993             ifHlEqDeThenRetElseIncHlCanStop: 
+0554   F993                 ; ut88.cmm:326 {
+0555   F993                 ; ut88.cmm:327 stopByUser();
+0556   F993 CD A1 F9        call stopByUser
+0557   F996                 ; ut88.cmm:328 noreturn; // Продолжение в ifHlEqDeThenRetElseIncHl
+0558   F996                 ; ut88.cmm:329 }
+0559   F996                 ; ut88.cmm:330 
+0560   F996                 ; ut88.cmm:331 // Если hl = de, то выйти из вызывающей функции.
+0561   F996                 ; ut88.cmm:332 // Параметры: hl, de - числа. Результат: нет на 1 больше. Сохраняет: bc, de.
+0562   F996                 ; ut88.cmm:333 
+0563   F996                 ; ut88.cmm:334 void ifHlEqDeThenRetElseIncHl(hl, de)
+0564   F996             ifHlEqDeThenRetElseIncHl: 
+0565   F996                 ; ut88.cmm:335 {
+0566   F996                 ; ut88.cmm:336 cmdHlDe(hl, de);
+0567   F996 CD 8D F9        call cmdHlDe
+0568   F999                 ; ut88.cmm:337 if (flag_z)
+0569   F999                 ; ut88.cmm:338 {
+0570   F999 C2 9F F9        jp   nz, l7
+0571   F99C                 ; ut88.cmm:339 sp++;
+0572   F99C 33              inc  sp
+0573   F99D                 ; ut88.cmm:340 sp++;
+0574   F99D 33              inc  sp
+0575   F99E                 ; ut88.cmm:341 return;
+0576   F99E C9              ret
+0577   F99F                 ; ut88.cmm:342 }
+0578   F99F                 ; ut88.cmm:343 hl++;
+0579   F99F             l7: 
+0580   F99F 23              inc  hl
+0581   F9A0                 ; ut88.cmm:344 }
+0582   F9A0 C9              ret
+0583   F9A1                 ; ut88.cmm:345 
+0584   F9A1                 ; ut88.cmm:346 // Возможность прерывания длительной функции пользователем.
+0585   F9A1                 ; ut88.cmm:347 // Параметры: нет. Результат: нет. Сохраняет: bc, de, hl.
+0586   F9A1                 ; ut88.cmm:348 
+0587   F9A1                 ; ut88.cmm:349 void stopByUser()
+0588   F9A1             stopByUser: 
+0589   F9A1                 ; ut88.cmm:350 {
+0590   F9A1                 ; ut88.cmm:351 a = 0xFF; //! Ошибка. Тут должна быть проверка нажатия какой то клавиши на клавиатуре.
+0591   F9A1 3E FF           ld   a, 255
+0592   F9A3                 ; ut88.cmm:352 a &= a;
+0593   F9A3 A7              and  a
+0594   F9A4                 ; ut88.cmm:353 if (a != 3) return;
+0595   F9A4 FE 03           cp   3
+0596   F9A6 C0              ret  nz
+0597   F9A7                 ; ut88.cmm:354 return error();
+0598   F9A7 C3 A5 FA        jp   error
+0599   F9AA                 ; ut88.cmm:355 noreturn;
+0600   F9AA                 ; ut88.cmm:356 }
+0601   F9AA                 ; ut88.cmm:357 
+0602   F9AA                 ; ut88.cmm:358 // Вывод на экран: перевод строки, отступ на 4 символа
+0603   F9AA                 ; ut88.cmm:359 // Параметры: нет. Результат: нет. Сохраняет: a, bc, de, hl.
+0604   F9AA                 ; ut88.cmm:360 
+0605   F9AA                 ; ut88.cmm:361 void putCrLfTab()
+0606   F9AA             putCrLfTab: 
+0607   F9AA                 ; ut88.cmm:362 {
+0608   F9AA                 ; ut88.cmm:363 push(hl)
+0609   F9AA                 ; ut88.cmm:364 {
+0610   F9AA E5              push hl
+0611   F9AB                 ; ut88.cmm:365 puts(hl = &aCrLfTab);
+0612   F9AB 21 85 FE        ld   hl, aCrLfTab
+0613   F9AE CD 1F F9        call puts
+0614   F9B1                 ; ut88.cmm:366 }
+0615   F9B1 E1              pop  hl
+0616   F9B2                 ; ut88.cmm:367 }
+0617   F9B2 C9              ret
+0618   F9B3                 ; ut88.cmm:368 
+0619   F9B3                 ; ut88.cmm:369 // Вывод на экран: 8 битное число из памяти по адресу HL, пробел.
+0620   F9B3                 ; ut88.cmm:370 // Параметры: нет. Результат: нет. Сохраняет: bc, de, hl.
+0621   F9B3                 ; ut88.cmm:371 
+0622   F9B3                 ; ut88.cmm:372 void putMSp(hl)
+0623   F9B3             putMSp: 
+0624   F9B3                 ; ut88.cmm:373 {
+0625   F9B3                 ; ut88.cmm:374 a = *hl;
+0626   F9B3 7E              ld   a, (hl)
+0627   F9B4                 ; ut88.cmm:375 noreturn;
+0628   F9B4                 ; ut88.cmm:376 }
+0629   F9B4                 ; ut88.cmm:377 
+0630   F9B4                 ; ut88.cmm:378 // Вывод на экран: 8 битное число из регистра А, пробел.
+0631   F9B4                 ; ut88.cmm:379 // Параметры: нет. Результат: нет. Сохраняет: bc, de, hl.
+0632   F9B4                 ; ut88.cmm:380 
+0633   F9B4                 ; ut88.cmm:381 void put8Sp(a)
+0634   F9B4             put8Sp: 
+0635   F9B4                 ; ut88.cmm:382 {
+0636   F9B4                 ; ut88.cmm:383 push(bc)
+0637   F9B4                 ; ut88.cmm:384 {
+0638   F9B4 C5              push bc
+0639   F9B5                 ; ut88.cmm:385 put8(a);
+0640   F9B5 CD 2E FC        call put8
+0641   F9B8                 ; ut88.cmm:386 putchA(a = ' ');
+0642   F9B8 3E 20           ld   a, 32
+0643   F9BA CD 42 FC        call putchA
+0644   F9BD                 ; ut88.cmm:387 }
+0645   F9BD C1              pop  bc
+0646   F9BE                 ; ut88.cmm:388 }
+0647   F9BE C9              ret
+0648   F9BF                 ; ut88.cmm:389 
+0649   F9BF                 ; ut88.cmm:390 // Команда D <начальный адрес> <конечный адрес>
+0650   F9BF                 ; ut88.cmm:391 // Вывод блока данных из адресного пространства на экран в 16-ричном виде
+0651   F9BF                 ; ut88.cmm:392 
+0652   F9BF                 ; ut88.cmm:393 void cmdD(hl, de)
+0653   F9BF             cmdD: 
+0654   F9BF                 ; ut88.cmm:394 {
+0655   F9BF                 ; ut88.cmm:395 putCrLfTabHlSp(hl);
+0656   F9BF CD 51 FB        call putCrLfTabHlSp
+0657   F9C2                 ; ut88.cmm:396 while ()
+0658   F9C2             l8: 
+0659   F9C2                 ; ut88.cmm:397 {
+0660   F9C2                 ; ut88.cmm:398 putMSp(hl);
+0661   F9C2 CD B3 F9        call putMSp
+0662   F9C5                 ; ut88.cmm:399 ifHlEqDeThenRetElseIncHlCanStop(hl, de);
+0663   F9C5 CD 93 F9        call ifHlEqDeThenRetElseIncHlCanStop
+0664   F9C8                 ; ut88.cmm:400 if (flag_z (a = l) &= 0x0F) goto cmdD;
+0665   F9C8 7D              ld   a, l
+0666   F9C9 E6 0F           and  15
+0667   F9CB CA BF F9        jp   z, cmdD
+0668   F9CE                 ; ut88.cmm:401 }
+0669   F9CE C3 C2 F9        jp   l8
+0670   F9D1             l9: 
+0671   F9D1                 ; ut88.cmm:402 noreturn;
+0672   F9D1                 ; ut88.cmm:403 }
+0673   F9D1                 ; ut88.cmm:404 
+0674   F9D1                 ; ut88.cmm:405 // Команда С <начальный адрес 1> <конечный адрес 1> <начальный адрес 2>
+0675   F9D1                 ; ut88.cmm:406 // Сравнить два блока адресного пространство
+0676   F9D1                 ; ut88.cmm:407 
+0677   F9D1                 ; ut88.cmm:408 void cmdC(hl, de, bc)
+0678   F9D1             cmdC: 
+0679   F9D1                 ; ut88.cmm:409 {
+0680   F9D1                 ; ut88.cmm:410 while ()
+0681   F9D1             l10: 
+0682   F9D1                 ; ut88.cmm:411 {
+0683   F9D1                 ; ut88.cmm:412 a = *bc;
+0684   F9D1 0A              ld   a, (bc)
+0685   F9D2                 ; ut88.cmm:413 if (a != *hl)
+0686   F9D2 BE              cp   (hl)
+0687   F9D3                 ; ut88.cmm:414 {
+0688   F9D3 CA E0 F9        jp   z, l12
+0689   F9D6                 ; ut88.cmm:415 putCrLfTabHlSp(hl);
+0690   F9D6 CD 51 FB        call putCrLfTabHlSp
+0691   F9D9                 ; ut88.cmm:416 putMSp(hl);
+0692   F9D9 CD B3 F9        call putMSp
+0693   F9DC                 ; ut88.cmm:417 put8Sp(a = *bc);
+0694   F9DC 0A              ld   a, (bc)
+0695   F9DD CD B4 F9        call put8Sp
+0696   F9E0                 ; ut88.cmm:418 }
+0697   F9E0                 ; ut88.cmm:419 bc++;
+0698   F9E0             l12: 
+0699   F9E0 03              inc  bc
+0700   F9E1                 ; ut88.cmm:420 ifHlEqDeThenRetElseIncHlCanStop(hl, de);
+0701   F9E1 CD 93 F9        call ifHlEqDeThenRetElseIncHlCanStop
+0702   F9E4                 ; ut88.cmm:421 }
+0703   F9E4 C3 D1 F9        jp   l10
+0704   F9E7             l11: 
+0705   F9E7                 ; ut88.cmm:422 noreturn;
+0706   F9E7                 ; ut88.cmm:423 }
+0707   F9E7                 ; ut88.cmm:424 
+0708   F9E7                 ; ut88.cmm:425 // Команда S <начальный адрес> <конечный адрес> <байт>
+0709   F9E7                 ; ut88.cmm:426 // Заполнить блок в адресном пространстве одним байтом
+0710   F9E7                 ; ut88.cmm:427 
+0711   F9E7                 ; ut88.cmm:428 void cmdF(hl, de, c)
+0712   F9E7             cmdF: 
+0713   F9E7                 ; ut88.cmm:429 {
+0714   F9E7                 ; ut88.cmm:430 while ()
+0715   F9E7             l13: 
+0716   F9E7                 ; ut88.cmm:431 {
+0717   F9E7                 ; ut88.cmm:432 *hl = c;
+0718   F9E7 71              ld   (hl), c
+0719   F9E8                 ; ut88.cmm:433 ifHlEqDeThenRetElseIncHl(hl, de);
+0720   F9E8 CD 96 F9        call ifHlEqDeThenRetElseIncHl
+0721   F9EB                 ; ut88.cmm:434 }
+0722   F9EB C3 E7 F9        jp   l13
+0723   F9EE             l14: 
+0724   F9EE                 ; ut88.cmm:435 noreturn;
+0725   F9EE                 ; ut88.cmm:436 }
+0726   F9EE                 ; ut88.cmm:437 
+0727   F9EE                 ; ut88.cmm:438 // Команда S <начальный адрес> <конечный адрес> <байт>
+0728   F9EE                 ; ut88.cmm:439 // Найти байт (8 битное значение) в адресном пространстве
+0729   F9EE                 ; ut88.cmm:440 
+0730   F9EE                 ; ut88.cmm:441 void cmdS(hl, de, c)
+0731   F9EE             cmdS: 
+0732   F9EE                 ; ut88.cmm:442 {
+0733   F9EE                 ; ut88.cmm:443 while ()
+0734   F9EE             l15: 
+0735   F9EE                 ; ut88.cmm:444 {
+0736   F9EE                 ; ut88.cmm:445 if ((a = c) == *hl)
+0737   F9EE 79              ld   a, c
+0738   F9EF BE              cp   (hl)
+0739   F9F0                 ; ut88.cmm:446 putCrLfTabHlSp(hl);
+0740   F9F0 CC 51 FB        call z, putCrLfTabHlSp
+0741   F9F3                 ; ut88.cmm:447 ifHlEqDeThenRetElseIncHlCanStop(hl, de);
+0742   F9F3 CD 93 F9        call ifHlEqDeThenRetElseIncHlCanStop
+0743   F9F6                 ; ut88.cmm:448 }
+0744   F9F6 C3 EE F9        jp   l15
+0745   F9F9             l16: 
+0746   F9F9                 ; ut88.cmm:449 noreturn;
+0747   F9F9                 ; ut88.cmm:450 }
+0748   F9F9                 ; ut88.cmm:451 
+0749   F9F9                 ; ut88.cmm:452 // Команда S <начальный адрес источника> <конечный адрес источника> <начальный адрес назначения>
+0750   F9F9                 ; ut88.cmm:453 // Копировать блок в адресном пространстве
+0751   F9F9                 ; ut88.cmm:454 
+0752   F9F9                 ; ut88.cmm:455 void cmdT(hl, de, bc)
+0753   F9F9             cmdT: 
+0754   F9F9                 ; ut88.cmm:456 {
+0755   F9F9                 ; ut88.cmm:457 while ()
+0756   F9F9             l17: 
+0757   F9F9                 ; ut88.cmm:458 {
+0758   F9F9                 ; ut88.cmm:459 *bc = a = *hl;
+0759   F9F9 7E              ld   a, (hl)
+0760   F9FA 02              ld   (bc), a
+0761   F9FB                 ; ut88.cmm:460 bc++;
+0762   F9FB 03              inc  bc
+0763   F9FC                 ; ut88.cmm:461 ifHlEqDeThenRetElseIncHl(hl, de);
+0764   F9FC CD 96 F9        call ifHlEqDeThenRetElseIncHl
+0765   F9FF                 ; ut88.cmm:462 }
+0766   F9FF C3 F9 F9        jp   l17
+0767   FA02             l18: 
+0768   FA02                 ; ut88.cmm:463 noreturn;
+0769   FA02                 ; ut88.cmm:464 }
+0770   FA02                 ; ut88.cmm:465 
+0771   FA02                 ; ut88.cmm:466 // Команда L <начальный адрес> <конечный адрес>
+0772   FA02                 ; ut88.cmm:467 // Вывести на экран адресное пространство в виде текста
+0773   FA02                 ; ut88.cmm:468 
+0774   FA02                 ; ut88.cmm:469 void cmdL(hl, de)
+0775   FA02             cmdL: 
+0776   FA02                 ; ut88.cmm:470 {
+0777   FA02                 ; ut88.cmm:471 // Вывод адреса
+0778   FA02                 ; ut88.cmm:472 putCrLfTabHlSp(hl);
+0779   FA02 CD 51 FB        call putCrLfTabHlSp
+0780   FA05                 ; ut88.cmm:473 
+0781   FA05                 ; ut88.cmm:474 while ()
+0782   FA05             l19: 
+0783   FA05                 ; ut88.cmm:475 {
+0784   FA05                 ; ut88.cmm:476 a = *hl;
+0785   FA05 7E              ld   a, (hl)
+0786   FA06                 ; ut88.cmm:477 if (flag_m a |= a) goto cmdL1;
+0787   FA06 B7              or   a
+0788   FA07 FA 0F FA        jp   m, cmdL1
+0789   FA0A                 ; ut88.cmm:478 if (a < ' ')
+0790   FA0A FE 20           cp   32
+0791   FA0C                 ; ut88.cmm:479 {
+0792   FA0C D2 11 FA        jp   nc, l21
+0793   FA0F                 ; ut88.cmm:480 cmdL1:      a = '.';
+0794   FA0F             cmdL1: 
+0795   FA0F 3E 2E           ld   a, 46
+0796   FA11                 ; ut88.cmm:481 }
+0797   FA11                 ; ut88.cmm:482 putchA(a);
+0798   FA11             l21: 
+0799   FA11 CD 42 FC        call putchA
+0800   FA14                 ; ut88.cmm:483 ifHlEqDeThenRetElseIncHlCanStop(hl, de);
+0801   FA14 CD 93 F9        call ifHlEqDeThenRetElseIncHlCanStop
+0802   FA17                 ; ut88.cmm:484 if (flag_z (a = l) &= 0xF) goto cmdL;
+0803   FA17 7D              ld   a, l
+0804   FA18 E6 0F           and  15
+0805   FA1A CA 02 FA        jp   z, cmdL
+0806   FA1D                 ; ut88.cmm:485 }
+0807   FA1D C3 05 FA        jp   l19
+0808   FA20             l20: 
+0809   FA20                 ; ut88.cmm:486 noreturn;
+0810   FA20                 ; ut88.cmm:487 }
+0811   FA20                 ; ut88.cmm:488 
+0812   FA20                 ; ut88.cmm:489 // Команда M <начальный адрес>
+0813   FA20                 ; ut88.cmm:490 // Вывести на экран адресное пространство побайтно с возможностью изменения
+0814   FA20                 ; ut88.cmm:491 
+0815   FA20                 ; ut88.cmm:492 void cmdM(hl)
+0816   FA20             cmdM: 
+0817   FA20                 ; ut88.cmm:493 {
+0818   FA20                 ; ut88.cmm:494 while ()
+0819   FA20             l22: 
+0820   FA20                 ; ut88.cmm:495 {
+0821   FA20                 ; ut88.cmm:496 // Вывод адреса
+0822   FA20                 ; ut88.cmm:497 putCrLfTabHlSp(hl);
+0823   FA20 CD 51 FB        call putCrLfTabHlSp
+0824   FA23                 ; ut88.cmm:498 
+0825   FA23                 ; ut88.cmm:499 // Вывод значения по этому адресу
+0826   FA23                 ; ut88.cmm:500 putMSp(hl);
+0827   FA23 CD B3 F9        call putMSp
+0828   FA26                 ; ut88.cmm:501 
+0829   FA26                 ; ut88.cmm:502 // Ввод строки пользователем
+0830   FA26                 ; ut88.cmm:503 push(hl)
+0831   FA26                 ; ut88.cmm:504 {
+0832   FA26 E5              push hl
+0833   FA27                 ; ut88.cmm:505 getLine();
+0834   FA27 CD EB F8        call getLine
+0835   FA2A                 ; ut88.cmm:506 }
+0836   FA2A E1              pop  hl
+0837   FA2B                 ; ut88.cmm:507 
+0838   FA2B                 ; ut88.cmm:508 // Если пользователь ввел строку, то преобразуем её в число и записываем его в память
+0839   FA2B                 ; ut88.cmm:509 if (flag_c)
+0840   FA2B                 ; ut88.cmm:510 {
+0841   FA2B D2 35 FA        jp   nc, l24
+0842   FA2E                 ; ut88.cmm:511 push(hl)
+0843   FA2E                 ; ut88.cmm:512 {
+0844   FA2E E5              push hl
+0845   FA2F                 ; ut88.cmm:513 parseHexNumber16();
+0846   FA2F CD 57 F9        call parseHexNumber16
+0847   FA32                 ; ut88.cmm:514 a = l;
+0848   FA32 7D              ld   a, l
+0849   FA33                 ; ut88.cmm:515 }
+0850   FA33 E1              pop  hl
+0851   FA34                 ; ut88.cmm:516 *hl = a;
+0852   FA34 77              ld   (hl), a
+0853   FA35                 ; ut88.cmm:517 }
+0854   FA35                 ; ut88.cmm:518 
+0855   FA35                 ; ut88.cmm:519 // Следующий цикл
+0856   FA35                 ; ut88.cmm:520 hl++;
+0857   FA35             l24: 
+0858   FA35 23              inc  hl
+0859   FA36                 ; ut88.cmm:521 }
+0860   FA36 C3 20 FA        jp   l22
+0861   FA39             l23: 
+0862   FA39                 ; ut88.cmm:522 noreturn;
+0863   FA39                 ; ut88.cmm:523 }
+0864   FA39                 ; ut88.cmm:524 
+0865   FA39                 ; ut88.cmm:525 // Команда G <начальный адрес> <конечный адрес>
+0866   FA39                 ; ut88.cmm:526 // Запуск программы и возможным указанием точки останова.
+0867   FA39                 ; ut88.cmm:527 
+0868   FA39                 ; ut88.cmm:528 void cmdG(hl, de)
+0869   FA39             cmdG: 
+0870   FA39                 ; ut88.cmm:529 {
+0871   FA39                 ; ut88.cmm:530 // Нужна точка останова?
+0872   FA39                 ; ut88.cmm:531 cmdHlDe();
+0873   FA39 CD 8D F9        call cmdHlDe
+0874   FA3C                 ; ut88.cmm:532 if (flag_nz)
+0875   FA3C                 ; ut88.cmm:533 {
+0876   FA3C CA 54 FA        jp   z, l25
+0877   FA3F                 ; ut88.cmm:534 swap(hl, de);
+0878   FA3F EB              ex de, hl
+0879   FA40                 ; ut88.cmm:535 vBreakAddr = hl;
+0880   FA40 22 C3 F7        ld   (vBreakAddr), hl
+0881   FA43                 ; ut88.cmm:536 vBreakPrevCmd = a = *hl;
+0882   FA43 7E              ld   a, (hl)
+0883   FA44 32 C5 F7        ld   (vBreakPrevCmd), a
+0884   FA47                 ; ut88.cmm:537 *hl = opcodeRst6;
+0885   FA47 36 F7           ld   (hl), 247
+0886   FA49                 ; ut88.cmm:538 *0x30 = a = opcodeJmp;
+0887   FA49 3E C3           ld   a, 195
+0888   FA4B 32 30 00        ld   (48), a
+0889   FA4E                 ; ut88.cmm:539 *0x31 = hl = &breakHandler;
+0890   FA4E 21 BB FE        ld   hl, breakHandler
+0891   FA51 22 31 00        ld   (49), hl
+0892   FA54                 ; ut88.cmm:540 }
+0893   FA54                 ; ut88.cmm:541 
+0894   FA54                 ; ut88.cmm:542 // Восстановление регистров
+0895   FA54                 ; ut88.cmm:543 sp = &vBreakRegs;
+0896   FA54             l25: 
+0897   FA54 31 B8 F7        ld   sp, vBreakRegs
+0898   FA57                 ; ut88.cmm:544 pop(a, hl, de, bc);
+0899   FA57 C1              pop  bc
+0900   FA58 D1              pop  de
+0901   FA59 E1              pop  hl
+0902   FA5A F1              pop  af
+0903   FA5B                 ; ut88.cmm:545 sp = hl;
+0904   FA5B F9              ld   sp, hl
+0905   FA5C                 ; ut88.cmm:546 hl = vBreakSavedHl;
+0906   FA5C 2A B6 F7        ld   hl, (vBreakSavedHl)
+0907   FA5F                 ; ut88.cmm:547 
+0908   FA5F                 ; ut88.cmm:548 // Запуск
+0909   FA5F                 ; ut88.cmm:549 return vJmp();
+0910   FA5F C3 C6 F7        jp   vJmp
+0911   FA62                 ; ut88.cmm:550 noreturn;
+0912   FA62                 ; ut88.cmm:551 }
+0913   FA62                 ; ut88.cmm:552 
+0914   FA62                 ; ut88.cmm:553 // Команда R <начальный адрес ПЗУ> <конечный адрес ПЗУ> <начальный адрес назаначения>
+0915   FA62                 ; ut88.cmm:554 // Скопировать блок из внешнего ПЗУ в адресное пространство процессора
+0916   FA62                 ; ut88.cmm:555 
+0917   FA62                 ; ut88.cmm:556 void cmdR(hl, de, bc)
+0918   FA62             cmdR: 
+0919   FA62                 ; ut88.cmm:557 {
+0920   FA62                 ; ut88.cmm:558 out(ioUserC, a = h);
+0921   FA62 7C              ld   a, h
+0922   FA63 D3 FA           out  (250), a
+0923   FA65                 ; ut88.cmm:559 while ()
+0924   FA65             l26: 
+0925   FA65                 ; ut88.cmm:560 {
+0926   FA65                 ; ut88.cmm:561 out(ioUserB, a = l);
+0927   FA65 7D              ld   a, l
+0928   FA66 D3 F9           out  (249), a
+0929   FA68                 ; ut88.cmm:562 *bc = a = in(ioUserA);
+0930   FA68 DB F8           in   a, (248)
+0931   FA6A 02              ld   (bc), a
+0932   FA6B                 ; ut88.cmm:563 bc++;
+0933   FA6B 03              inc  bc
+0934   FA6C                 ; ut88.cmm:564 ifHlEqDeThenRetElseIncHl(hl, de);
+0935   FA6C CD 96 F9        call ifHlEqDeThenRetElseIncHl
+0936   FA6F                 ; ut88.cmm:565 }
+0937   FA6F C3 65 FA        jp   l26
+0938   FA72             l27: 
+0939   FA72                 ; ut88.cmm:566 noreturn;
+0940   FA72                 ; ut88.cmm:567 }
+0941   FA72                 ; ut88.cmm:568 
+0942   FA72                 ; ut88.cmm:569 // Функция для пользовательской программы. Получить координаты курсора.
+0943   FA72                 ; ut88.cmm:570 // Параметры: нет. Результат: hl - координаты курсора. Сохраняет регистры: bc, de, hl.
+0944   FA72                 ; ut88.cmm:571 
+0945   FA72                 ; ut88.cmm:572 void getCursor()
+0946   FA72             getCursor: 
+0947   FA72                 ; ut88.cmm:573 {
+0948   FA72                 ; ut88.cmm:574 hl = vCursorPos;
+0949   FA72 2A B0 F7        ld   hl, (vCursorPos)
+0950   FA75                 ; ut88.cmm:575 }
+0951   FA75 C9              ret
+0952   FA76                 ; ut88.cmm:576 
+0953   FA76                 ; ut88.cmm:577 // Функция для пользовательской программы. Получить символ под курсором
+0954   FA76                 ; ut88.cmm:578 // Параметры: нет. Результат: a - код символа. Сохраняет регистры: bc, de, hl.
+0955   FA76                 ; ut88.cmm:579 
+0956   FA76                 ; ut88.cmm:580 void getCursorChar()
+0957   FA76             getCursorChar: 
+0958   FA76                 ; ut88.cmm:581 {
+0959   FA76                 ; ut88.cmm:582 push(hl)
+0960   FA76                 ; ut88.cmm:583 {
+0961   FA76 E5              push hl
+0962   FA77                 ; ut88.cmm:584 hl = vCursorPos; //! Ошибка. Тут нужно выполнить vCursor.
+0963   FA77 2A B0 F7        ld   hl, (vCursorPos)
+0964   FA7A                 ; ut88.cmm:585 a = *hl;
+0965   FA7A 7E              ld   a, (hl)
+0966   FA7B                 ; ut88.cmm:586 }
+0967   FA7B E1              pop  hl
+0968   FA7C                 ; ut88.cmm:587 }
+0969   FA7C C9              ret
+0970   FA7D                 ; ut88.cmm:588 
+0971   FA7D                 ; ut88.cmm:589 // Команда I <смещение> <скорость>
+0972   FA7D                 ; ut88.cmm:590 // Загрузить файл с магнитной ленты
+0973   FA7D                 ; ut88.cmm:591 
+0974   FA7D                 ; ut88.cmm:592 void cmdI(hl, de)
+0975   FA7D             cmdI: 
+0976   FA7D                 ; ut88.cmm:593 {
+0977   FA7D                 ; ut88.cmm:594 // Если скорость указана, то сохраняем её в системную переменную.
+0978   FA7D                 ; ut88.cmm:595 if ((a = vCmdArg2Able) != 0)
+0979   FA7D 3A CD F7        ld   a, (vCmdArg2Able)
+0980   FA80 B7              or   a
+0981   FA81                 ; ut88.cmm:596 {
+0982   FA81 CA 88 FA        jp   z, l28
+0983   FA84                 ; ut88.cmm:597 vTapeSpeedRd = a = e;
+0984   FA84 7B              ld   a, e
+0985   FA85 32 CF F7        ld   (vTapeSpeedRd), a
+0986   FA88                 ; ut88.cmm:598 }
+0987   FA88                 ; ut88.cmm:599 
+0988   FA88                 ; ut88.cmm:600 // Загрузить файл с магнитной ленты
+0989   FA88                 ; ut88.cmm:601 tapeInputFile(hl);
+0990   FA88             l28: 
+0991   FA88 CD AD FA        call tapeInputFile
+0992   FA8B                 ; ut88.cmm:602 
+0993   FA8B                 ; ut88.cmm:603 // Вывод адреса первого и последнего байта
+0994   FA8B                 ; ut88.cmm:604 putCrLfTabHlSp(hl);
+0995   FA8B CD 51 FB        call putCrLfTabHlSp
+0996   FA8E                 ; ut88.cmm:605 swap(de, hl);
+0997   FA8E EB              ex de, hl
+0998   FA8F                 ; ut88.cmm:606 putCrLfTabHlSp(hl);
+0999   FA8F CD 51 FB        call putCrLfTabHlSp
+1000   FA92                 ; ut88.cmm:607 swap(de, hl);
+1001   FA92 EB              ex de, hl
+1002   FA93                 ; ut88.cmm:608 
+1003   FA93                 ; ut88.cmm:609 // Расчет и вывод контрольной суммы
+1004   FA93                 ; ut88.cmm:610 push(bc);
+1005   FA93 C5              push bc
+1006   FA94                 ; ut88.cmm:611 calcSum(hl, de);
+1007   FA94 CD F6 FA        call calcSum
+1008   FA97                 ; ut88.cmm:612 hl = bc;
+1009   FA97 60              ld   h, b
+1010   FA98 69              ld   l, c
+1011   FA99                 ; ut88.cmm:613 putCrLfTabHlSp(hl);
+1012   FA99 CD 51 FB        call putCrLfTabHlSp
+1013   FA9C                 ; ut88.cmm:614 pop(de);
+1014   FA9C D1              pop  de
+1015   FA9D                 ; ut88.cmm:615 
+1016   FA9D                 ; ut88.cmm:616 // Если прочитанная из файла и вычисленная контрольная суммы совпадают, то возвращаемся в монитор.
+1017   FA9D                 ; ut88.cmm:617 cmdHlDe();
+1018   FA9D CD 8D F9        call cmdHlDe
+1019   FAA0                 ; ut88.cmm:618 if (flag_z) return;
+1020   FAA0 C8              ret  z
+1021   FAA1                 ; ut88.cmm:619 
+1022   FAA1                 ; ut88.cmm:620 // В случае ошибки выводим 4-ое число - ожидаемую контрольную сумму и текст ошибки
+1023   FAA1                 ; ut88.cmm:621 swap(de, hl);
+1024   FAA1 EB              ex de, hl
+1025   FAA2                 ; ut88.cmm:622 putCrLfTabHlSp(hl);
+1026   FAA2 CD 51 FB        call putCrLfTabHlSp
+1027   FAA5                 ; ut88.cmm:623 
+1028   FAA5                 ; ut88.cmm:624 noreturn; // Продолжение на error
+1029   FAA5                 ; ut88.cmm:625 }
+1030   FAA5                 ; ut88.cmm:626 
+1031   FAA5                 ; ut88.cmm:627 // Вывести сообщение об ошибке на экран и перейти в Монитор
+1032   FAA5                 ; ut88.cmm:628 
+1033   FAA5                 ; ut88.cmm:629 void error()
+1034   FAA5             error: 
+1035   FAA5                 ; ut88.cmm:630 {
+1036   FAA5                 ; ut88.cmm:631 putchA(a = '?'); //! Лучше тут написать ОШИБКА
+1037   FAA5 3E 3F           ld   a, 63
+1038   FAA7 CD 42 FC        call putchA
+1039   FAAA                 ; ut88.cmm:632 return monitor();
+1040   FAAA C3 6C F8        jp   monitor
+1041   FAAD                 ; ut88.cmm:633 noreturn;
+1042   FAAD                 ; ut88.cmm:634 }
+1043   FAAD                 ; ut88.cmm:635 
+1044   FAAD                 ; ut88.cmm:636 // Функция для пользовательской программы. Загрузить файл с магнитной ленты.
+1045   FAAD                 ; ut88.cmm:637 // Параметры: hl - смещение загрузки. Результат: bc - прочитанная КС, hl - адрес загрузки
+1046   FAAD                 ; ut88.cmm:638 
+1047   FAAD                 ; ut88.cmm:639 void tapeInputFile(hl)
+1048   FAAD             tapeInputFile: 
+1049   FAAD                 ; ut88.cmm:640 {
+1050   FAAD                 ; ut88.cmm:641 // Ожидание начала блока данных на магнитной ленте и чтение 16 бит, это начальный адрес.
+1051   FAAD                 ; ut88.cmm:642 tapeInputBcEx(a = 0xFF);
+1052   FAAD 3E FF           ld   a, 255
+1053   FAAF CD DF FA        call tapeInputBcEx
+1054   FAB2                 ; ut88.cmm:643 push(hl)
+1055   FAB2                 ; ut88.cmm:644 {
+1056   FAB2 E5              push hl
+1057   FAB3                 ; ut88.cmm:645 // Прибавляем смещение загрузки, адрес загрузки временно в de
+1058   FAB3                 ; ut88.cmm:646 hl += bc;
+1059   FAB3 09              add  hl, bc
+1060   FAB4                 ; ut88.cmm:647 swap(hl, de);
+1061   FAB4 EB              ex de, hl
+1062   FAB5                 ; ut88.cmm:648 // Чтение 16 бит, это конечный адрес.
+1063   FAB5                 ; ut88.cmm:649 tapeInputBc();
+1064   FAB5 CD DD FA        call tapeInputBc
+1065   FAB8                 ; ut88.cmm:650 }
+1066   FAB8 E1              pop  hl
+1067   FAB9                 ; ut88.cmm:651 // Прибавляем смещение загрузки к конечному адресу, он теперь в de, а начальный адрес в HL
+1068   FAB9                 ; ut88.cmm:652 hl += bc;
+1069   FAB9 09              add  hl, bc
+1070   FABA                 ; ut88.cmm:653 swap(hl, de);
+1071   FABA EB              ex de, hl
+1072   FABB                 ; ut88.cmm:654 push(hl)
+1073   FABB                 ; ut88.cmm:655 {
+1074   FABB E5              push hl
+1075   FABC                 ; ut88.cmm:656 // Чтение данных
+1076   FABC                 ; ut88.cmm:657 tapeReadBlock(hl, de);
+1077   FABC CD EA FA        call tapeReadBlock
+1078   FABF                 ; ut88.cmm:658 
+1079   FABF                 ; ut88.cmm:659 // Ожидание начала блока данных на магнитной ленте и чтение 16 бит, это контрольная сумма.
+1080   FABF                 ; ut88.cmm:660 tapeInputBcEx(a = 0xFF);
+1081   FABF 3E FF           ld   a, 255
+1082   FAC1 CD DF FA        call tapeInputBcEx
+1083   FAC4                 ; ut88.cmm:661 }
+1084   FAC4 E1              pop  hl
+1085   FAC5                 ; ut88.cmm:662 }
+1086   FAC5 C9              ret
+1087   FAC6                 ; ut88.cmm:663 
+1088   FAC6                 ; ut88.cmm:664 // Неиспользуемая функция. Похоже на очистку экрана.
+1089   FAC6                 ; ut88.cmm:665 
+1090   FAC6                 ; ut88.cmm:666 void FAC6()
+1091   FAC6             FAC6: 
+1092   FAC6                 ; ut88.cmm:667 {
+1093   FAC6                 ; ut88.cmm:668 b = 0;
+1094   FAC6 06 00           ld   b, 0
+1095   FAC8                 ; ut88.cmm:669 do
+1096   FAC8             l29: 
+1097   FAC8                 ; ut88.cmm:670 {
+1098   FAC8                 ; ut88.cmm:671 *hl = b;
+1099   FAC8 70              ld   (hl), b
+1100   FAC9                 ; ut88.cmm:672 hl++;
+1101   FAC9 23              inc  hl
+1102   FACA                 ; ut88.cmm:673 } while ((a = h) != 0xF0);
+1103   FACA 7C              ld   a, h
+1104   FACB FE F0           cp   240
+1105   FACD C2 C8 FA        jp   nz, l29
+1106   FAD0             l30: 
+1107   FAD0                 ; ut88.cmm:674 pop(hl, de);
+1108   FAD0 D1              pop  de
+1109   FAD1 E1              pop  hl
+1110   FAD2                 ; ut88.cmm:675 }
+1111   FAD2 C9              ret
+1112   FAD3                 ; ut88.cmm:676 
+1113   FAD3                 ; ut88.cmm:677 // Используется при перезагрузке. Очистка экрана и вывод текста *ЮТ/88*.
+1114   FAD3                 ; ut88.cmm:678 
+1115   FAD3                 ; ut88.cmm:679 uint8_t aClearUt88[1] = { "\x1F\x1A*`t/88*" };
+1116   FAD3             aClearUt88: 
+1117   FAD3                 db 31, 26, "*`t/88*", 0
+1117   FAD3 1F1A2A60742F38382A00
+1118   FADD                 ; ut88.cmm:680 
+1119   FADD                 ; ut88.cmm:681 // Загрузка 16 битного числа с магнитной ленты без синхронизации
+1120   FADD                 ; ut88.cmm:682 // Параметры: нет. Результат: bc - значение. Сохраяет: de, hl
+1121   FADD                 ; ut88.cmm:683 
+1122   FADD                 ; ut88.cmm:684 void tapeInputBc()
+1123   FADD             tapeInputBc: 
+1124   FADD                 ; ut88.cmm:685 {
+1125   FADD                 ; ut88.cmm:686 a = 8;
+1126   FADD 3E 08           ld   a, 8
+1127   FADF                 ; ut88.cmm:687 noreturn;
+1128   FADF                 ; ut88.cmm:688 }
+1129   FADF                 ; ut88.cmm:689 
+1130   FADF                 ; ut88.cmm:690 // Загрузка 16 битного числа с магнитной ленты с синхронизацией
+1131   FADF                 ; ut88.cmm:691 // Параметры: a = 0xFF. Результат: bc - значение. Сохраяет: de, hl
+1132   FADF                 ; ut88.cmm:692 
+1133   FADF                 ; ut88.cmm:693 void tapeInputBcEx(a)
+1134   FADF             tapeInputBcEx: 
+1135   FADF                 ; ut88.cmm:694 {
+1136   FADF                 ; ut88.cmm:695 tapeInput(a);
+1137   FADF CD 71 FB        call tapeInput
+1138   FAE2                 ; ut88.cmm:696 b = a;
+1139   FAE2 47              ld   b, a
+1140   FAE3                 ; ut88.cmm:697 tapeInput(a = 8);
+1141   FAE3 3E 08           ld   a, 8
+1142   FAE5 CD 71 FB        call tapeInput
+1143   FAE8                 ; ut88.cmm:698 c = a;
+1144   FAE8 4F              ld   c, a
+1145   FAE9                 ; ut88.cmm:699 }
+1146   FAE9 C9              ret
+1147   FAEA                 ; ut88.cmm:700 
+1148   FAEA                 ; ut88.cmm:701 // Загрузка блока данных с магнитной ленты.
+1149   FAEA                 ; ut88.cmm:702 // Параметры: hl - начальный адрес, de - конечный адрес. Результат: нет. Сохраяет: de.
+1150   FAEA                 ; ut88.cmm:703 
+1151   FAEA                 ; ut88.cmm:704 void tapeReadBlock(hl, de)
+1152   FAEA             tapeReadBlock: 
+1153   FAEA                 ; ut88.cmm:705 {
+1154   FAEA                 ; ut88.cmm:706 while ()
+1155   FAEA             l31: 
+1156   FAEA                 ; ut88.cmm:707 {
+1157   FAEA                 ; ut88.cmm:708 tapeInput(a = 8);
+1158   FAEA 3E 08           ld   a, 8
+1159   FAEC CD 71 FB        call tapeInput
+1160   FAEF                 ; ut88.cmm:709 *hl = a;
+1161   FAEF 77              ld   (hl), a
+1162   FAF0                 ; ut88.cmm:710 ifHlEqDeThenRetElseIncHl(hl, de);
+1163   FAF0 CD 96 F9        call ifHlEqDeThenRetElseIncHl
+1164   FAF3                 ; ut88.cmm:711 }
+1165   FAF3 C3 EA FA        jp   l31
+1166   FAF6             l32: 
+1167   FAF6                 ; ut88.cmm:712 noreturn;
+1168   FAF6                 ; ut88.cmm:713 }
+1169   FAF6                 ; ut88.cmm:714 
+1170   FAF6                 ; ut88.cmm:715 // Функция для пользовательской программы. Вычистить 16-битную сумму всех байт по адресам hl..de.
+1171   FAF6                 ; ut88.cmm:716 // Параметры: hl - начальный адрес, de - конечный адрес. Результат: bc - сумма. Сохраяет: de.
+1172   FAF6                 ; ut88.cmm:717 
+1173   FAF6                 ; ut88.cmm:718 void calcSum(de, hl)
+1174   FAF6             calcSum: 
+1175   FAF6                 ; ut88.cmm:719 {
+1176   FAF6                 ; ut88.cmm:720 bc = 0;
+1177   FAF6 01 00 00        ld   bc, 0
+1178   FAF9                 ; ut88.cmm:721 while ()
+1179   FAF9             l33: 
+1180   FAF9                 ; ut88.cmm:722 {
+1181   FAF9                 ; ut88.cmm:723 c = ((a = *hl) += c);
+1182   FAF9 7E              ld   a, (hl)
+1183   FAFA 81              add  c
+1184   FAFB 4F              ld   c, a
+1185   FAFC                 ; ut88.cmm:724 if (flag_c) b++;
+1186   FAFC D2 00 FB        jp   nc, l35
+1187   FAFF 04              inc  b
+1188   FB00                 ; ut88.cmm:725 cmdHlDe();
+1189   FB00             l35: 
+1190   FB00 CD 8D F9        call cmdHlDe
+1191   FB03                 ; ut88.cmm:726 if (flag_z) return;
+1192   FB03 C8              ret  z
+1193   FB04                 ; ut88.cmm:727 hl++;
+1194   FB04 23              inc  hl
+1195   FB05                 ; ut88.cmm:728 }
+1196   FB05 C3 F9 FA        jp   l33
+1197   FB08             l34: 
+1198   FB08                 ; ut88.cmm:729 noreturn;
+1199   FB08                 ; ut88.cmm:730 }
+1200   FB08                 ; ut88.cmm:731 
+1201   FB08                 ; ut88.cmm:732 // Команда O <начальный адрес> <конечный адрес> <скорость>
+1202   FB08                 ; ut88.cmm:733 // Сохранить блок данных на магнитную ленту
+1203   FB08                 ; ut88.cmm:734 
+1204   FB08                 ; ut88.cmm:735 void cmdO(c)
+1205   FB08             cmdO: 
+1206   FB08                 ; ut88.cmm:736 {
+1207   FB08                 ; ut88.cmm:737 // Если скорость указана, то сохраняем её в системную переменную.
+1208   FB08                 ; ut88.cmm:738 if ((a = c) != 0)
+1209   FB08 79              ld   a, c
+1210   FB09 B7              or   a
+1211   FB0A                 ; ut88.cmm:739 {
+1212   FB0A CA 10 FB        jp   z, l36
+1213   FB0D                 ; ut88.cmm:740 vTapeSpeedWr = a;
+1214   FB0D 32 D0 F7        ld   (vTapeSpeedWr), a
+1215   FB10                 ; ut88.cmm:741 }
+1216   FB10                 ; ut88.cmm:742 
+1217   FB10                 ; ut88.cmm:743 // Расчет контрольной суммы в bc
+1218   FB10                 ; ut88.cmm:744 push(hl)
+1219   FB10             l36: 
+1220   FB10                 ; ut88.cmm:745 {
+1221   FB10 E5              push hl
+1222   FB11                 ; ut88.cmm:746 calcSum(hl, de);
+1223   FB11 CD F6 FA        call calcSum
+1224   FB14                 ; ut88.cmm:747 }
+1225   FB14 E1              pop  hl
+1226   FB15                 ; ut88.cmm:748 
+1227   FB15                 ; ut88.cmm:749 // Вывод на экран начального адреса, конечного адреса и контрольной суммы
+1228   FB15                 ; ut88.cmm:750 putCrLfTabHlSp(hl);
+1229   FB15 CD 51 FB        call putCrLfTabHlSp
+1230   FB18                 ; ut88.cmm:751 swap(de, hl);
+1231   FB18 EB              ex de, hl
+1232   FB19                 ; ut88.cmm:752 putCrLfTabHlSp(hl);
+1233   FB19 CD 51 FB        call putCrLfTabHlSp
+1234   FB1C                 ; ut88.cmm:753 swap(de, hl);
+1235   FB1C EB              ex de, hl
+1236   FB1D                 ; ut88.cmm:754 push(hl)
+1237   FB1D                 ; ut88.cmm:755 {
+1238   FB1D E5              push hl
+1239   FB1E                 ; ut88.cmm:756 putCrLfTabHlSp(hl = bc);
+1240   FB1E 60              ld   h, b
+1241   FB1F 69              ld   l, c
+1242   FB20 CD 51 FB        call putCrLfTabHlSp
+1243   FB23                 ; ut88.cmm:757 }
+1244   FB23 E1              pop  hl
+1245   FB24                 ; ut88.cmm:758 
+1246   FB24                 ; ut88.cmm:759 // Продолжение в tapeOutputFile
+1247   FB24                 ; ut88.cmm:760 noreturn;
+1248   FB24                 ; ut88.cmm:761 }
+1249   FB24                 ; ut88.cmm:762 
+1250   FB24                 ; ut88.cmm:763 // Функция для пользовательской программы. Запись файла на магнитную ленту.
+1251   FB24                 ; ut88.cmm:764 // Параметры: de - начальный адрес, hl - конечный адрес, bc - контрольная сумма. Результат: нет.
+1252   FB24                 ; ut88.cmm:765 
+1253   FB24                 ; ut88.cmm:766 void tapeOutputFile(de, hl, bc)
+1254   FB24             tapeOutputFile: 
+1255   FB24                 ; ut88.cmm:767 {
+1256   FB24                 ; ut88.cmm:768 // Сохраняем в стеке контрольную сумму
+1257   FB24                 ; ut88.cmm:769 push(bc);
+1258   FB24 C5              push bc
+1259   FB25                 ; ut88.cmm:770 
+1260   FB25                 ; ut88.cmm:771 // Запись пилот тона
+1261   FB25                 ; ut88.cmm:772 bc = 0;
+1262   FB25 01 00 00        ld   bc, 0
+1263   FB28                 ; ut88.cmm:773 do
+1264   FB28             l37: 
+1265   FB28                 ; ut88.cmm:774 {
+1266   FB28                 ; ut88.cmm:775 tapeOutput(c); // на входе c = 0
+1267   FB28 CD EE FB        call tapeOutput
+1268   FB2B                 ; ut88.cmm:776 b--;
+1269   FB2B 05              dec  b
+1270   FB2C                 ; ut88.cmm:777 swap(*sp, hl);
+1271   FB2C E3              ex   (sp), hl
+1272   FB2D                 ; ut88.cmm:778 swap(*sp, hl);
+1273   FB2D E3              ex   (sp), hl
+1274   FB2E                 ; ut88.cmm:779 } while (flag_nz);
+1275   FB2E C2 28 FB        jp   nz, l37
+1276   FB31             l38: 
+1277   FB31                 ; ut88.cmm:780 
+1278   FB31                 ; ut88.cmm:781 // Запись стартового байта
+1279   FB31                 ; ut88.cmm:782 tapeOutput(c = 0xE6);
+1280   FB31 0E E6           ld   c, 230
+1281   FB33 CD EE FB        call tapeOutput
+1282   FB36                 ; ut88.cmm:783 
+1283   FB36                 ; ut88.cmm:784 // Запись адреса первого байта
+1284   FB36                 ; ut88.cmm:785 tapeOutputHl(hl);
+1285   FB36 CD 69 FB        call tapeOutputHl
+1286   FB39                 ; ut88.cmm:786 
+1287   FB39                 ; ut88.cmm:787 // Запись адреса последнего байта
+1288   FB39                 ; ut88.cmm:788 swap(hl, de);
+1289   FB39 EB              ex de, hl
+1290   FB3A                 ; ut88.cmm:789 tapeOutputHl(hl);
+1291   FB3A CD 69 FB        call tapeOutputHl
+1292   FB3D                 ; ut88.cmm:790 swap(hl, de);
+1293   FB3D EB              ex de, hl
+1294   FB3E                 ; ut88.cmm:791 
+1295   FB3E                 ; ut88.cmm:792 // Запись данных
+1296   FB3E                 ; ut88.cmm:793 tapeOutputBlock(hl, de);
+1297   FB3E CD 5F FB        call tapeOutputBlock
+1298   FB41                 ; ut88.cmm:794 
+1299   FB41                 ; ut88.cmm:795 // Запись пилот тона
+1300   FB41                 ; ut88.cmm:796 tapeOutputHl(hl = 0);
+1301   FB41 21 00 00        ld   hl, 0
+1302   FB44 CD 69 FB        call tapeOutputHl
+1303   FB47                 ; ut88.cmm:797 
+1304   FB47                 ; ut88.cmm:798 // Запись стартового байта
+1305   FB47                 ; ut88.cmm:799 tapeOutput(c = 0xE6);
+1306   FB47 0E E6           ld   c, 230
+1307   FB49 CD EE FB        call tapeOutput
+1308   FB4C                 ; ut88.cmm:800 
+1309   FB4C                 ; ut88.cmm:801 // Запись контрольной суммы
+1310   FB4C                 ; ut88.cmm:802 pop(hl);
+1311   FB4C E1              pop  hl
+1312   FB4D                 ; ut88.cmm:803 tapeOutputHl(hl);
+1313   FB4D CD 69 FB        call tapeOutputHl
+1314   FB50                 ; ut88.cmm:804 }
+1315   FB50 C9              ret
+1316   FB51                 ; ut88.cmm:805 
+1317   FB51                 ; ut88.cmm:806 // Вывод на экран: перевод строки, отступ на 4 символа, 16 битное число, пробел.
+1318   FB51                 ; ut88.cmm:807 // Параметры: hl - число. Результат: нет. Сохраняет: bc
+1319   FB51                 ; ut88.cmm:808 
+1320   FB51                 ; ut88.cmm:809 void putCrLfTabHlSp(hl)
+1321   FB51             putCrLfTabHlSp: 
+1322   FB51                 ; ut88.cmm:810 {
+1323   FB51                 ; ut88.cmm:811 push(bc)
+1324   FB51                 ; ut88.cmm:812 {
+1325   FB51 C5              push bc
+1326   FB52                 ; ut88.cmm:813 putCrLfTab();
+1327   FB52 CD AA F9        call putCrLfTab
+1328   FB55                 ; ut88.cmm:814 put8(a = h);
+1329   FB55 7C              ld   a, h
+1330   FB56 CD 2E FC        call put8
+1331   FB59                 ; ut88.cmm:815 put8Sp(a = l);
+1332   FB59 7D              ld   a, l
+1333   FB5A CD B4 F9        call put8Sp
+1334   FB5D                 ; ut88.cmm:816 }
+1335   FB5D C1              pop  bc
+1336   FB5E                 ; ut88.cmm:817 }
+1337   FB5E C9              ret
+1338   FB5F                 ; ut88.cmm:818 
+1339   FB5F                 ; ut88.cmm:819 // Запись блока на магнитную ленту.
+1340   FB5F                 ; ut88.cmm:820 // Параметры: de - начальный адрес, hl - конечный адрес.
+1341   FB5F                 ; ut88.cmm:821 
+1342   FB5F                 ; ut88.cmm:822 void tapeOutputBlock(hl, de)
+1343   FB5F             tapeOutputBlock: 
+1344   FB5F                 ; ut88.cmm:823 {
+1345   FB5F                 ; ut88.cmm:824 while ()
+1346   FB5F             l39: 
+1347   FB5F                 ; ut88.cmm:825 {
+1348   FB5F                 ; ut88.cmm:826 tapeOutput(c = *hl);
+1349   FB5F 4E              ld   c, (hl)
+1350   FB60 CD EE FB        call tapeOutput
+1351   FB63                 ; ut88.cmm:827 ifHlEqDeThenRetElseIncHl(hl, de);
+1352   FB63 CD 96 F9        call ifHlEqDeThenRetElseIncHl
+1353   FB66                 ; ut88.cmm:828 }
+1354   FB66 C3 5F FB        jp   l39
+1355   FB69             l40: 
+1356   FB69                 ; ut88.cmm:829 noreturn;
+1357   FB69                 ; ut88.cmm:830 }
+1358   FB69                 ; ut88.cmm:831 
+1359   FB69                 ; ut88.cmm:832 // Запись 16 битного числа на магнитную ленту.
+1360   FB69                 ; ut88.cmm:833 // Параметры: hl - число.
+1361   FB69                 ; ut88.cmm:834 
+1362   FB69                 ; ut88.cmm:835 void tapeOutputHl(hl)
+1363   FB69             tapeOutputHl: 
+1364   FB69                 ; ut88.cmm:836 {
+1365   FB69                 ; ut88.cmm:837 tapeOutput(c = h);
+1366   FB69 4C              ld   c, h
+1367   FB6A CD EE FB        call tapeOutput
+1368   FB6D                 ; ut88.cmm:838 return tapeOutput(c = l);
+1369   FB6D 4D              ld   c, l
+1370   FB6E C3 EE FB        jp   tapeOutput
+1371   FB71                 ; ut88.cmm:839 noreturn;
+1372   FB71                 ; ut88.cmm:840 }
+1373   FB71                 ; ut88.cmm:841 
+1374   FB71                 ; ut88.cmm:842 // Функция для пользовательской программы. Загрузка байта с магнитной ленты.
+1375   FB71                 ; ut88.cmm:843 // Параметры: a = 0xFF с синхронизацией, = 8 без синхронизации. Результат: a = прочитанный байт. Сохрнаяет: bc, de, hl.
+1376   FB71                 ; ut88.cmm:844 
+1377   FB71                 ; ut88.cmm:845 void tapeInput(a)
+1378   FB71             tapeInput: 
+1379   FB71                 ; ut88.cmm:846 {
+1380   FB71                 ; ut88.cmm:847 return tapeInput2(a);
+1381   FB71 C3 69 FF        jp   tapeInput2
+1382   FB74                 ; ut88.cmm:848 noreturn;
+1383   FB74                 ; ut88.cmm:849 }
+1384   FB74                 ; ut88.cmm:850 
+1385   FB74                 ; ut88.cmm:851 // Загрузка байта с магнитной ленты.
+1386   FB74                 ; ut88.cmm:852 // Параметры: a = 0xFF с синхронизацией, = 8 без синхронизации. Результат: a = прочитанный байт.
+1387   FB74                 ; ut88.cmm:853 
+1388   FB74                 ; ut88.cmm:854 void tapeInput3(a)
+1389   FB74             tapeInput3: 
+1390   FB74                 ; ut88.cmm:855 {
+1391   FB74                 ; ut88.cmm:856 d = a;
+1392   FB74 57              ld   d, a
+1393   FB75                 ; ut88.cmm:857 while ()
+1394   FB75             l41: 
+1395   FB75                 ; ut88.cmm:858 {
+1396   FB75                 ; ut88.cmm:859 (hl = 0) += sp;
+1397   FB75 21 00 00        ld   hl, 0
+1398   FB78 39              add  hl, sp
+1399   FB79                 ; ut88.cmm:860 sp = 0;
+1400   FB79 31 00 00        ld   sp, 0
+1401   FB7C                 ; ut88.cmm:861 vSp = hl;
+1402   FB7C 22 C0 F7        ld   (vSp), hl
+1403   FB7F                 ; ut88.cmm:862 c = 0;
+1404   FB7F 0E 00           ld   c, 0
+1405   FB81                 ; ut88.cmm:863 a = in(ioTape);
+1406   FB81 DB A1           in   a, (161)
+1407   FB83                 ; ut88.cmm:864 e = (a &= 1);
+1408   FB83 E6 01           and  1
+1409   FB85 5F              ld   e, a
+1410   FB86                 ; ut88.cmm:865 
+1411   FB86                 ; ut88.cmm:866 do
+1412   FB86             l43: 
+1413   FB86                 ; ut88.cmm:867 {
+1414   FB86                 ; ut88.cmm:868 pop(a);
+1415   FB86 F1              pop  af
+1416   FB87                 ; ut88.cmm:869 
+1417   FB87                 ; ut88.cmm:870 c = (((a = c) &= 0x7F) <<r= 1);
+1418   FB87 79              ld   a, c
+1419   FB88 E6 7F           and  127
+1420   FB8A 07              rlca
+1421   FB8B 4F              ld   c, a
+1422   FB8C                 ; ut88.cmm:871 h = 0;
+1423   FB8C 26 00           ld   h, 0
+1424   FB8E                 ; ut88.cmm:872 
+1425   FB8E                 ; ut88.cmm:873 do
+1426   FB8E             l45: 
+1427   FB8E                 ; ut88.cmm:874 {
+1428   FB8E                 ; ut88.cmm:875 h--;
+1429   FB8E 25              dec  h
+1430   FB8F                 ; ut88.cmm:876 if (flag_z) goto tapeInput3a;
+1431   FB8F CA DF FB        jp   z, tapeInput3a
+1432   FB92                 ; ut88.cmm:877 pop(a);
+1433   FB92 F1              pop  af
+1434   FB93                 ; ut88.cmm:878 a = in(ioTape);
+1435   FB93 DB A1           in   a, (161)
+1436   FB95                 ; ut88.cmm:879 a &= 1;
+1437   FB95 E6 01           and  1
+1438   FB97                 ; ut88.cmm:880 } while (a == e);
+1439   FB97 BB              cp   e
+1440   FB98 CA 8E FB        jp   z, l45
+1441   FB9B             l46: 
+1442   FB9B                 ; ut88.cmm:881 
+1443   FB9B                 ; ut88.cmm:882 c = (a |= c);
+1444   FB9B B1              or   c
+1445   FB9C 4F              ld   c, a
+1446   FB9D                 ; ut88.cmm:883 d--;
+1447   FB9D 15              dec  d
+1448   FB9E                 ; ut88.cmm:884 a = vTapeSpeedRd;
+1449   FB9E 3A CF F7        ld   a, (vTapeSpeedRd)
+1450   FBA1                 ; ut88.cmm:885 if (flag_z) a -= 18;
+1451   FBA1 C2 A6 FB        jp   nz, l47
+1452   FBA4 D6 12           sub  18
+1453   FBA6                 ; ut88.cmm:886 b = a;
+1454   FBA6             l47: 
+1455   FBA6 47              ld   b, a
+1456   FBA7                 ; ut88.cmm:887 do
+1457   FBA7             l48: 
+1458   FBA7                 ; ut88.cmm:888 {
+1459   FBA7                 ; ut88.cmm:889 pop (a);
+1460   FBA7 F1              pop  af
+1461   FBA8                 ; ut88.cmm:890 } while (flag_nz b--);
+1462   FBA8 05              dec  b
+1463   FBA9 C2 A7 FB        jp   nz, l48
+1464   FBAC             l49: 
+1465   FBAC                 ; ut88.cmm:891 d++;
+1466   FBAC 14              inc  d
+1467   FBAD                 ; ut88.cmm:892 a = in(ioTape);
+1468   FBAD DB A1           in   a, (161)
+1469   FBAF                 ; ut88.cmm:893 e = (a &= 1);
+1470   FBAF E6 01           and  1
+1471   FBB1 5F              ld   e, a
+1472   FBB2                 ; ut88.cmm:894 a = d;
+1473   FBB2 7A              ld   a, d
+1474   FBB3                 ; ut88.cmm:895 if (flag_m a |= a)
+1475   FBB3 B7              or   a
+1476   FBB4                 ; ut88.cmm:896 {
+1477   FBB4 F2 D0 FB        jp   p, l50
+1478   FBB7                 ; ut88.cmm:897 if ((a = c) == 0xE6)
+1479   FBB7 79              ld   a, c
+1480   FBB8 FE E6           cp   230
+1481   FBBA                 ; ut88.cmm:898 {
+1482   FBBA C2 C4 FB        jp   nz, l51
+1483   FBBD                 ; ut88.cmm:899 vTapeInverted = (a ^= a);
+1484   FBBD AF              xor  a
+1485   FBBE 32 CE F7        ld   (vTapeInverted), a
+1486   FBC1                 ; ut88.cmm:900 }
+1487   FBC1                 ; ut88.cmm:901 else
+1488   FBC1 C3 CE FB        jp   l52
+1489   FBC4             l51: 
+1490   FBC4                 ; ut88.cmm:902 {
+1491   FBC4                 ; ut88.cmm:903 if (a != [0xFF ^ 0xE6]) continue;
+1492   FBC4 FE 19           cp   25
+1493   FBC6 C2 86 FB        jp   nz, l43
+1494   FBC9                 ; ut88.cmm:904 vTapeInverted = a = 0xFF;
+1495   FBC9 3E FF           ld   a, 255
+1496   FBCB 32 CE F7        ld   (vTapeInverted), a
+1497   FBCE                 ; ut88.cmm:905 }
+1498   FBCE             l52: 
+1499   FBCE                 ; ut88.cmm:906 d = 9;
+1500   FBCE 16 09           ld   d, 9
+1501   FBD0                 ; ut88.cmm:907 }
+1502   FBD0                 ; ut88.cmm:908 } while (flag_nz d--);
+1503   FBD0             l50: 
+1504   FBD0 15              dec  d
+1505   FBD1 C2 86 FB        jp   nz, l43
+1506   FBD4             l44: 
+1507   FBD4                 ; ut88.cmm:909 
+1508   FBD4                 ; ut88.cmm:910 hl = vSp;
+1509   FBD4 2A C0 F7        ld   hl, (vSp)
+1510   FBD7                 ; ut88.cmm:911 sp = hl;
+1511   FBD7 F9              ld   sp, hl
+1512   FBD8                 ; ut88.cmm:912 a = vTapeInverted;
+1513   FBD8 3A CE F7        ld   a, (vTapeInverted)
+1514   FBDB                 ; ut88.cmm:913 a ^= c;
+1515   FBDB A9              xor  c
+1516   FBDC                 ; ut88.cmm:914 return tapeInputOutputEnd();
+1517   FBDC C3 70 FF        jp   tapeInputOutputEnd
+1518   FBDF                 ; ut88.cmm:915 
+1519   FBDF                 ; ut88.cmm:916 tapeInput3a:
+1520   FBDF             tapeInput3a: 
+1521   FBDF                 ; ut88.cmm:917 hl = vSp;
+1522   FBDF 2A C0 F7        ld   hl, (vSp)
+1523   FBE2                 ; ut88.cmm:918 sp = hl;
+1524   FBE2 F9              ld   sp, hl
+1525   FBE3                 ; ut88.cmm:919 if (flag_p (a = d) |= a) return error();
+1526   FBE3 7A              ld   a, d
+1527   FBE4 B7              or   a
+1528   FBE5 F2 A5 FA        jp   p, error
+1529   FBE8                 ; ut88.cmm:920 stopByUser();
+1530   FBE8 CD A1 F9        call stopByUser
+1531   FBEB                 ; ut88.cmm:921 }
+1532   FBEB C3 75 FB        jp   l41
+1533   FBEE             l42: 
+1534   FBEE                 ; ut88.cmm:922 noreturn;
+1535   FBEE                 ; ut88.cmm:923 }
+1536   FBEE                 ; ut88.cmm:924 
+1537   FBEE                 ; ut88.cmm:925 // Функция для пользовательской программы. Запись байта на магнитную ленту.
+1538   FBEE                 ; ut88.cmm:926 // Параметры: c = байт. Результат: нет. Сохрнаяет: a, bc, de, hl.
+1539   FBEE                 ; ut88.cmm:927 
+1540   FBEE                 ; ut88.cmm:928 void tapeOutput(c)
+1541   FBEE             tapeOutput: 
+1542   FBEE                 ; ut88.cmm:929 {
+1543   FBEE                 ; ut88.cmm:930 return tapeOutput2(c);
+1544   FBEE C3 77 FF        jp   tapeOutput2
+1545   FBF1                 ; ut88.cmm:931 noreturn;
+1546   FBF1                 ; ut88.cmm:932 }
+1547   FBF1                 ; ut88.cmm:933 
+1548   FBF1                 ; ut88.cmm:934 // Запись байта на магнитную ленту.
+1549   FBF1                 ; ut88.cmm:935 // Параметры: c = байт. Результат: нет. Сохраняет: a.
+1550   FBF1                 ; ut88.cmm:936 
+1551   FBF1                 ; ut88.cmm:937 void tapeOutput3(c)
+1552   FBF1             tapeOutput3: 
+1553   FBF1                 ; ut88.cmm:938 {
+1554   FBF1                 ; ut88.cmm:939 push(a)
+1555   FBF1                 ; ut88.cmm:940 {
+1556   FBF1 F5              push af
+1557   FBF2                 ; ut88.cmm:941 (hl = 0) += sp;
+1558   FBF2 21 00 00        ld   hl, 0
+1559   FBF5 39              add  hl, sp
+1560   FBF6                 ; ut88.cmm:942 sp = 0;
+1561   FBF6 31 00 00        ld   sp, 0
+1562   FBF9                 ; ut88.cmm:943 
+1563   FBF9                 ; ut88.cmm:944 d = 8;
+1564   FBF9 16 08           ld   d, 8
+1565   FBFB                 ; ut88.cmm:945 do
+1566   FBFB             l53: 
+1567   FBFB                 ; ut88.cmm:946 {
+1568   FBFB                 ; ut88.cmm:947 // Задержка
+1569   FBFB                 ; ut88.cmm:948 pop (a);
+1570   FBFB F1              pop  af
+1571   FBFC                 ; ut88.cmm:949 
+1572   FBFC                 ; ut88.cmm:950 // Следующий бит
+1573   FBFC                 ; ut88.cmm:951 c = ((a = c) <<r= 1);
+1574   FBFC 79              ld   a, c
+1575   FBFD 07              rlca
+1576   FBFE 4F              ld   c, a
+1577   FBFF                 ; ut88.cmm:952 
+1578   FBFF                 ; ut88.cmm:953 // Передача бита
+1579   FBFF                 ; ut88.cmm:954 a = 1;
+1580   FBFF 3E 01           ld   a, 1
+1581   FC01                 ; ut88.cmm:955 a ^= c;
+1582   FC01 A9              xor  c
+1583   FC02                 ; ut88.cmm:956 out(ioTape, a);
+1584   FC02 D3 A1           out  (161), a
+1585   FC04                 ; ut88.cmm:957 
+1586   FC04                 ; ut88.cmm:958 // Задержка
+1587   FC04                 ; ut88.cmm:959 nop();
+1588   FC04 00              nop
+1589   FC05                 ; ut88.cmm:960 b = a = vTapeSpeedWr;
+1590   FC05 3A D0 F7        ld   a, (vTapeSpeedWr)
+1591   FC08 47              ld   b, a
+1592   FC09                 ; ut88.cmm:961 do
+1593   FC09             l55: 
+1594   FC09                 ; ut88.cmm:962 {
+1595   FC09                 ; ut88.cmm:963 pop (a);
+1596   FC09 F1              pop  af
+1597   FC0A                 ; ut88.cmm:964 } while (flag_nz b--);
+1598   FC0A 05              dec  b
+1599   FC0B C2 09 FC        jp   nz, l55
+1600   FC0E             l56: 
+1601   FC0E                 ; ut88.cmm:965 
+1602   FC0E                 ; ut88.cmm:966 // Передача бита
+1603   FC0E                 ; ut88.cmm:967 a = 0;
+1604   FC0E 3E 00           ld   a, 0
+1605   FC10                 ; ut88.cmm:968 a ^= c;
+1606   FC10 A9              xor  c
+1607   FC11                 ; ut88.cmm:969 out(ioTape, a);
+1608   FC11 D3 A1           out  (161), a
+1609   FC13                 ; ut88.cmm:970 nop();
+1610   FC13 00              nop
+1611   FC14                 ; ut88.cmm:971 
+1612   FC14                 ; ut88.cmm:972 // Задержка
+1613   FC14                 ; ut88.cmm:973 d--;
+1614   FC14 15              dec  d
+1615   FC15                 ; ut88.cmm:974 a = vTapeSpeedWr;
+1616   FC15 3A D0 F7        ld   a, (vTapeSpeedWr)
+1617   FC18                 ; ut88.cmm:975 if (flag_z) a -= 14;
+1618   FC18 C2 1D FC        jp   nz, l57
+1619   FC1B D6 0E           sub  14
+1620   FC1D                 ; ut88.cmm:976 b = a;
+1621   FC1D             l57: 
+1622   FC1D 47              ld   b, a
+1623   FC1E                 ; ut88.cmm:977 do
+1624   FC1E             l58: 
+1625   FC1E                 ; ut88.cmm:978 {
+1626   FC1E                 ; ut88.cmm:979 pop (a);
+1627   FC1E F1              pop  af
+1628   FC1F                 ; ut88.cmm:980 } while (flag_nz b--);
+1629   FC1F 05              dec  b
+1630   FC20 C2 1E FC        jp   nz, l58
+1631   FC23             l59: 
+1632   FC23                 ; ut88.cmm:981 
+1633   FC23                 ; ut88.cmm:982 d++;
+1634   FC23 14              inc  d
+1635   FC24                 ; ut88.cmm:983 } while (flag_nz d--);
+1636   FC24 15              dec  d
+1637   FC25 C2 FB FB        jp   nz, l53
+1638   FC28             l54: 
+1639   FC28                 ; ut88.cmm:984 
+1640   FC28                 ; ut88.cmm:985 sp = hl;
+1641   FC28 F9              ld   sp, hl
+1642   FC29                 ; ut88.cmm:986 }
+1643   FC29 F1              pop  af
+1644   FC2A                 ; ut88.cmm:987 return tapeInputOutputEnd();
+1645   FC2A C3 70 FF        jp   tapeInputOutputEnd
+1646   FC2D                 ; ut88.cmm:988 noreturn;
+1647   FC2D                 ; ut88.cmm:989 }
+1648   FC2D                 ; ut88.cmm:990 
+1649   FC2D                 ; ut88.cmm:991 // Выход из функции tapeInputOutputEnd
+1650   FC2D                 ; ut88.cmm:992 
+1651   FC2D                 ; ut88.cmm:993 void tapeInputOutputEnd2()
+1652   FC2D             tapeInputOutputEnd2: 
+1653   FC2D                 ; ut88.cmm:994 {
+1654   FC2D                 ; ut88.cmm:995 }
+1655   FC2D C9              ret
+1656   FC2E                 ; ut88.cmm:996 
+1657   FC2E                 ; ut88.cmm:997 // Функция для пользовательской программы. Вывод 8 битного числа на экран.
+1658   FC2E                 ; ut88.cmm:998 // Параметры: а - число. Результат: нет. Сохраняет: bc, de, hl.
+1659   FC2E                 ; ut88.cmm:999 
+1660   FC2E                 ; ut88.cmm:1000 void put8(a)
+1661   FC2E             put8: 
+1662   FC2E                 ; ut88.cmm:1001 {
+1663   FC2E                 ; ut88.cmm:1002 push(a)
+1664   FC2E                 ; ut88.cmm:1003 {
+1665   FC2E F5              push af
+1666   FC2F                 ; ut88.cmm:1004 a >>r= 4;
+1667   FC2F 0F              rrca
+1668   FC30 0F              rrca
+1669   FC31 0F              rrca
+1670   FC32 0F              rrca
+1671   FC33                 ; ut88.cmm:1005 put4();
+1672   FC33 CD 37 FC        call put4
+1673   FC36                 ; ut88.cmm:1006 }
+1674   FC36 F1              pop  af
+1675   FC37                 ; ut88.cmm:1007 noreturn;
+1676   FC37                 ; ut88.cmm:1008 }
+1677   FC37                 ; ut88.cmm:1009 
+1678   FC37                 ; ut88.cmm:1010 // Вывод 4 битного числа на экран.
+1679   FC37                 ; ut88.cmm:1011 // Параметры: а - число. Результат: нет. Сохраняет: bc, de, hl.
+1680   FC37                 ; ut88.cmm:1012 
+1681   FC37                 ; ut88.cmm:1013 void put4(a)
+1682   FC37             put4: 
+1683   FC37                 ; ut88.cmm:1014 {
+1684   FC37                 ; ut88.cmm:1015 a &= 0x0F;
+1685   FC37 E6 0F           and  15
+1686   FC39                 ; ut88.cmm:1016 if (a >=$ 10) a += 7;
+1687   FC39 FE 0A           cp   10
+1688   FC3B FA 40 FC        jp   m, l60
+1689   FC3E C6 07           add  7
+1690   FC40                 ; ut88.cmm:1017 a += '0';
+1691   FC40             l60: 
+1692   FC40 C6 30           add  48
+1693   FC42                 ; ut88.cmm:1018 noreturn;
+1694   FC42                 ; ut88.cmm:1019 }
+1695   FC42                 ; ut88.cmm:1020 
+1696   FC42                 ; ut88.cmm:1021 // Вывод символа на экран.
+1697   FC42                 ; ut88.cmm:1022 // Параметры: а - символ. Результат: a и c - символ. Сохраняет: a, b, de, hl.
+1698   FC42                 ; ut88.cmm:1023 
+1699   FC42                 ; ut88.cmm:1024 void putchA(a)
+1700   FC42             putchA: 
+1701   FC42                 ; ut88.cmm:1025 {
+1702   FC42                 ; ut88.cmm:1026 c = a;
+1703   FC42 4F              ld   c, a
+1704   FC43                 ; ut88.cmm:1027 noreturn;
+1705   FC43                 ; ut88.cmm:1028 }
+1706   FC43                 ; ut88.cmm:1029 
+1707   FC43                 ; ut88.cmm:1030 // Функция для пользовательской программы. Вывод символа на экран.
+1708   FC43                 ; ut88.cmm:1031 // Параметры: c - символ. Результат: нет. Сохраняет: a, b, de, hl.
+1709   FC43                 ; ut88.cmm:1032 
+1710   FC43                 ; ut88.cmm:1033 void putch(c)
+1711   FC43             putch: 
+1712   FC43                 ; ut88.cmm:1034 {
+1713   FC43                 ; ut88.cmm:1035 push(hl, bc, de, a);
+1714   FC43 E5              push hl
+1715   FC44 C5              push bc
+1716   FC45 D5              push de
+1717   FC46 F5              push af
+1718   FC47                 ; ut88.cmm:1036 
+1719   FC47                 ; ut88.cmm:1037 hl = vCursor;
+1720   FC47 2A B2 F7        ld   hl, (vCursor)
+1721   FC4A                 ; ut88.cmm:1038 
+1722   FC4A                 ; ut88.cmm:1039 // Стираем курсор
+1723   FC4A                 ; ut88.cmm:1040 hl++;
+1724   FC4A 23              inc  hl
+1725   FC4B                 ; ut88.cmm:1041 *hl = ((a = *hl) &= 0x7F);
+1726   FC4B 7E              ld   a, (hl)
+1727   FC4C E6 7F           and  127
+1728   FC4E 77              ld   (hl), a
+1729   FC4F                 ; ut88.cmm:1042 hl--;
+1730   FC4F 2B              dec  hl
+1731   FC50                 ; ut88.cmm:1043 
+1732   FC50                 ; ut88.cmm:1044 // После этого функции putchEscMode ворнутся в putchRet
+1733   FC50                 ; ut88.cmm:1045 de = &putchRet;
+1734   FC50 11 BA FC        ld   de, putchRet
+1735   FC53                 ; ut88.cmm:1046 push(de);
+1736   FC53 D5              push de
+1737   FC54                 ; ut88.cmm:1047 
+1738   FC54                 ; ut88.cmm:1048 a = vPutchEscMode;
+1739   FC54 3A F8 F7        ld   a, (vPutchEscMode)
+1740   FC57                 ; ut88.cmm:1049 a--;
+1741   FC57 3D              dec  a
+1742   FC58                 ; ut88.cmm:1050 if (flag_m) return putchEscMode0(c, hl);
+1743   FC58 FA 74 FC        jp   m, putchEscMode0
+1744   FC5B                 ; ut88.cmm:1051 if (flag_z) return putchEscMode1(c, hl);
+1745   FC5B CA 34 FD        jp   z, putchEscMode1
+1746   FC5E                 ; ut88.cmm:1052 if (flag_po) return putchEscMode2(c, hl);
+1747   FC5E E2 42 FD        jp   po, putchEscMode2
+1748   FC61                 ; ut88.cmm:1053 noreturn; // Продолжение на putchEscMode4(c, hl)
+1749   FC61                 ; ut88.cmm:1054 }
+1750   FC61                 ; ut88.cmm:1055 
+1751   FC61                 ; ut88.cmm:1056 void putchEscMode4(c, hl)
+1752   FC61             putchEscMode4: 
+1753   FC61                 ; ut88.cmm:1057 {
+1754   FC61                 ; ut88.cmm:1058 c = ((a = c) -@= 0x20); //! Ошибка. Тут не нужно вычитать CF. Не кортроллируется выход за пределы экрана.
+1755   FC61 79              ld   a, c
+1756   FC62 DE 20           sbc  32
+1757   FC64 4F              ld   c, a
+1758   FC65                 ; ut88.cmm:1059 while ()
+1759   FC65             l61: 
+1760   FC65                 ; ut88.cmm:1060 {
+1761   FC65                 ; ut88.cmm:1061 c--;
+1762   FC65 0D              dec  c
+1763   FC66                 ; ut88.cmm:1062 if (flag_m) break;
+1764   FC66 FA 6F FC        jp   m, l62
+1765   FC69                 ; ut88.cmm:1063 putchRight();
+1766   FC69 CD E2 FC        call putchRight
+1767   FC6C                 ; ut88.cmm:1064 }
+1768   FC6C C3 65 FC        jp   l61
+1769   FC6F             l62: 
+1770   FC6F                 ; ut88.cmm:1065 noreturn; // Продолжение на putchSetEsc0
+1771   FC6F                 ; ut88.cmm:1066 }
+1772   FC6F                 ; ut88.cmm:1067 
+1773   FC6F                 ; ut88.cmm:1068 void putchSetEsc0()
+1774   FC6F             putchSetEsc0: 
+1775   FC6F                 ; ut88.cmm:1069 {
+1776   FC6F                 ; ut88.cmm:1070 a ^= a;
+1777   FC6F AF              xor  a
+1778   FC70                 ; ut88.cmm:1071 noreturn; // Продолжение на putchSetEsc
+1779   FC70                 ; ut88.cmm:1072 }
+1780   FC70                 ; ut88.cmm:1073 
+1781   FC70                 ; ut88.cmm:1074 void putchSetEsc(a)
+1782   FC70             putchSetEsc: 
+1783   FC70                 ; ut88.cmm:1075 {
+1784   FC70                 ; ut88.cmm:1076 vPutchEscMode = a;
+1785   FC70 32 F8 F7        ld   (vPutchEscMode), a
+1786   FC73                 ; ut88.cmm:1077 }
+1787   FC73 C9              ret
+1788   FC74                 ; ut88.cmm:1078 
+1789   FC74                 ; ut88.cmm:1079 void putchEscMode0(c, hl)
+1790   FC74             putchEscMode0: 
+1791   FC74                 ; ut88.cmm:1080 {
+1792   FC74                 ; ut88.cmm:1081 a = c;
+1793   FC74 79              ld   a, c
+1794   FC75                 ; ut88.cmm:1082 if (a == charCodeEsc        ) return putchEsc(hl);
+1795   FC75 FE 1B           cp   27
+1796   FC77 CA 52 FD        jp   z, putchEsc
+1797   FC7A                 ; ut88.cmm:1083 if (a == charCodeClearScreen) return putchClearScreen(hl);
+1798   FC7A FE 1F           cp   31
+1799   FC7C CA CE FC        jp   z, putchClearScreen
+1800   FC7F                 ; ut88.cmm:1084 if (a == charCodeLeft       ) return putchLeft(hl);
+1801   FC7F FE 08           cp   8
+1802   FC81 CA EA FC        jp   z, putchLeft
+1803   FC84                 ; ut88.cmm:1085 if (a == charCodeRight      ) return putchRight(hl);
+1804   FC84 FE 18           cp   24
+1805   FC86 CA E2 FC        jp   z, putchRight
+1806   FC89                 ; ut88.cmm:1086 if (a == charCodeUp         ) return putchUp(hl);
+1807   FC89 FE 19           cp   25
+1808   FC8B CA FE FC        jp   z, putchUp
+1809   FC8E                 ; ut88.cmm:1087 if (a == charCodeDown       ) return putchDown(hl);
+1810   FC8E FE 1A           cp   26
+1811   FC90 CA F3 FC        jp   z, putchDown
+1812   FC93                 ; ut88.cmm:1088 if (a == charCodeNextLine   ) return putchNextLine(hl);
+1813   FC93 FE 0A           cp   10
+1814   FC95 CA 0B FD        jp   z, putchNextLine
+1815   FC98                 ; ut88.cmm:1089 if (a == charCodeHome       ) return putchHome(hl);
+1816   FC98 FE 0C           cp   12
+1817   FC9A CA D1 FC        jp   z, putchHome
+1818   FC9D                 ; ut88.cmm:1090 //! Ошибка, не проверяется код 0x0D. В конце каждой выводимой строки на экране будет невидимый символ 0x0D
+1819   FC9D                 ; ut88.cmm:1091 
+1820   FC9D                 ; ut88.cmm:1092 // Если курсор находится за экраном, то прокуручиваем экран
+1821   FC9D                 ; ut88.cmm:1093 if ((a = h) == [screenAddr + screenWidth * screenHeight >> 8])
+1822   FC9D 7C              ld   a, h
+1823   FC9E FE EF           cp   239
+1824   FCA0                 ; ut88.cmm:1094 {
+1825   FCA0 C2 B3 FC        jp   nz, l63
+1826   FCA3                 ; ut88.cmm:1095 putchScrollUp:
+1827   FCA3             putchScrollUp: 
+1828   FCA3                 ; ut88.cmm:1096 // Нажатие любой клавиши приостанавливает прокрутку экрана
+1829   FCA3                 ; ut88.cmm:1097 isAnyKeyPressed();
+1830   FCA3 CD 6B FE        call isAnyKeyPressed
+1831   FCA6                 ; ut88.cmm:1098 if (a != 0)
+1832   FCA6 B7              or   a
+1833   FCA7                 ; ut88.cmm:1099 {
+1834   FCA7 CA AD FC        jp   z, l64
+1835   FCAA                 ; ut88.cmm:1100 getch();
+1836   FCAA CD 57 FD        call getch
+1837   FCAD                 ; ut88.cmm:1101 }
+1838   FCAD                 ; ut88.cmm:1102 scrollUp();
+1839   FCAD             l64: 
+1840   FCAD CD 19 FD        call scrollUp
+1841   FCB0                 ; ut88.cmm:1103 
+1842   FCB0                 ; ut88.cmm:1104 // Новые координаты символа
+1843   FCB0                 ; ut88.cmm:1105 hl = [screenAddr + screenWidth * (screenHeight - 1) - 1];  //! Ошибка
+1844   FCB0 21 BF EE        ld   hl, 61119
+1845   FCB3                 ; ut88.cmm:1106 }
+1846   FCB3                 ; ut88.cmm:1107 
+1847   FCB3                 ; ut88.cmm:1108 // Записываем символ в видеопамять
+1848   FCB3                 ; ut88.cmm:1109 *hl = (((a = *hl) &= 0x80) |= c);
+1849   FCB3             l63: 
+1850   FCB3 7E              ld   a, (hl)
+1851   FCB4 E6 80           and  128
+1852   FCB6 B1              or   c
+1853   FCB7 77              ld   (hl), a
+1854   FCB8                 ; ut88.cmm:1110 
+1855   FCB8                 ; ut88.cmm:1111 // Следующий символ
+1856   FCB8                 ; ut88.cmm:1112 hl++;
+1857   FCB8 23              inc  hl
+1858   FCB9                 ; ut88.cmm:1113 
+1859   FCB9                 ; ut88.cmm:1114 // Удаляем адрес возврата (собственно putchRet) из стека
+1860   FCB9                 ; ut88.cmm:1115 pop(de);
+1861   FCB9 D1              pop  de
+1862   FCBA                 ; ut88.cmm:1116 noreturn; // Продолжение на putchRet
+1863   FCBA                 ; ut88.cmm:1117 }
+1864   FCBA                 ; ut88.cmm:1118 
+1865   FCBA                 ; ut88.cmm:1119 void putchRet(hl)
+1866   FCBA             putchRet: 
+1867   FCBA                 ; ut88.cmm:1120 {
+1868   FCBA                 ; ut88.cmm:1121 // Сохраняем новое положение курсора
+1869   FCBA                 ; ut88.cmm:1122 vCursor = hl;
+1870   FCBA 22 B2 F7        ld   (vCursor), hl
+1871   FCBD                 ; ut88.cmm:1123 
+1872   FCBD                 ; ut88.cmm:1124 // Рисуем курсор на экране
+1873   FCBD                 ; ut88.cmm:1125 hl++;
+1874   FCBD 23              inc  hl
+1875   FCBE                 ; ut88.cmm:1126 *hl = ((a = *hl) |= 0x80);
+1876   FCBE 7E              ld   a, (hl)
+1877   FCBF F6 80           or   128
+1878   FCC1 77              ld   (hl), a
+1879   FCC2                 ; ut88.cmm:1127 
+1880   FCC2                 ; ut88.cmm:1128 // Вычисляем координаты курсора.
+1881   FCC2                 ; ut88.cmm:1129 vCursorPos = (hl += (de = [0x10000 - screenAddr])); //! Ошибка. Координаты расчитываются не правильно.
+1882   FCC2 11 00 18        ld   de, 6144
+1883   FCC5 19              add  hl, de
+1884   FCC6 22 B0 F7        ld   (vCursorPos), hl
+1885   FCC9                 ; ut88.cmm:1130 
+1886   FCC9                 ; ut88.cmm:1131 pop(hl, bc, de, a);
+1887   FCC9 F1              pop  af
+1888   FCCA D1              pop  de
+1889   FCCB C1              pop  bc
+1890   FCCC E1              pop  hl
+1891   FCCD                 ; ut88.cmm:1132 }
+1892   FCCD C9              ret
+1893   FCCE                 ; ut88.cmm:1133 
+1894   FCCE                 ; ut88.cmm:1134 void putchClearScreen()
+1895   FCCE             putchClearScreen: 
+1896   FCCE                 ; ut88.cmm:1135 {
+1897   FCCE                 ; ut88.cmm:1136 clearScreen();
+1898   FCCE CD D5 FC        call clearScreen
+1899   FCD1                 ; ut88.cmm:1137 noreturn; // Продолжение на putchHome
+1900   FCD1                 ; ut88.cmm:1138 }
+1901   FCD1                 ; ut88.cmm:1139 
+1902   FCD1                 ; ut88.cmm:1140 void putchHome()
+1903   FCD1             putchHome: 
+1904   FCD1                 ; ut88.cmm:1141 {
+1905   FCD1                 ; ut88.cmm:1142 hl = screenAddr;
+1906   FCD1 21 00 E8        ld   hl, 59392
+1907   FCD4                 ; ut88.cmm:1143 }
+1908   FCD4 C9              ret
+1909   FCD5                 ; ut88.cmm:1144 
+1910   FCD5                 ; ut88.cmm:1145 // Очисть экран.
+1911   FCD5                 ; ut88.cmm:1146 // Параметры: нет. Результат: нет. Сохраняет: bc, de
+1912   FCD5                 ; ut88.cmm:1147 
+1913   FCD5                 ; ut88.cmm:1148 void clearScreen()
+1914   FCD5             clearScreen: 
+1915   FCD5                 ; ut88.cmm:1149 {
+1916   FCD5                 ; ut88.cmm:1150 hl = screenAddr;
+1917   FCD5 21 00 E8        ld   hl, 59392
+1918   FCD8                 ; ut88.cmm:1151 while ()
+1919   FCD8             l65: 
+1920   FCD8                 ; ut88.cmm:1152 {
+1921   FCD8                 ; ut88.cmm:1153 *hl = ' ';
+1922   FCD8 36 20           ld   (hl), 32
+1923   FCDA                 ; ut88.cmm:1154 hl++;
+1924   FCDA 23              inc  hl
+1925   FCDB                 ; ut88.cmm:1155 if ((a = h) == [screenAddrEnd2 >> 8]) return;
+1926   FCDB 7C              ld   a, h
+1927   FCDC FE F0           cp   240
+1928   FCDE C8              ret  z
+1929   FCDF                 ; ut88.cmm:1156 }
+1930   FCDF C3 D8 FC        jp   l65
+1931   FCE2             l66: 
+1932   FCE2                 ; ut88.cmm:1157 noreturn;
+1933   FCE2                 ; ut88.cmm:1158 }
+1934   FCE2                 ; ut88.cmm:1159 
+1935   FCE2                 ; ut88.cmm:1160 void putchRight(hl)
+1936   FCE2             putchRight: 
+1937   FCE2                 ; ut88.cmm:1161 {
+1938   FCE2                 ; ut88.cmm:1162 hl++;
+1939   FCE2 23              inc  hl
+1940   FCE3                 ; ut88.cmm:1163 if ((a = h) != [screenAddr + screenWidth * screenHeight >> 8]) return;
+1941   FCE3 7C              ld   a, h
+1942   FCE4 FE EF           cp   239
+1943   FCE6 C0              ret  nz
+1944   FCE7                 ; ut88.cmm:1164 if (flag_z) return putchHome(); //! Лишнее условие, которое всегда истинно.
+1945   FCE7 CA D1 FC        jp   z, putchHome
+1946   FCEA                 ; ut88.cmm:1165 noreturn;
+1947   FCEA                 ; ut88.cmm:1166 }
+1948   FCEA                 ; ut88.cmm:1167 
+1949   FCEA                 ; ut88.cmm:1168 void putchLeft(hl)
+1950   FCEA             putchLeft: 
+1951   FCEA                 ; ut88.cmm:1169 {
+1952   FCEA                 ; ut88.cmm:1170 hl--;
+1953   FCEA 2B              dec  hl
+1954   FCEB                 ; ut88.cmm:1171 if ((a = h) != [screenAddr - 1 >> 8]) return;
+1955   FCEB 7C              ld   a, h
+1956   FCEC FE E7           cp   231
+1957   FCEE C0              ret  nz
+1958   FCEF                 ; ut88.cmm:1172 hl = [screenAddr + screenWidth * screenHeight - 1];
+1959   FCEF 21 FF EE        ld   hl, 61183
+1960   FCF2                 ; ut88.cmm:1173 }
+1961   FCF2 C9              ret
+1962   FCF3                 ; ut88.cmm:1174 
+1963   FCF3                 ; ut88.cmm:1175 void putchDown(hl)
+1964   FCF3             putchDown: 
+1965   FCF3                 ; ut88.cmm:1176 {
+1966   FCF3                 ; ut88.cmm:1177 hl += (de = screenWidth);
+1967   FCF3 11 40 00        ld   de, 64
+1968   FCF6 19              add  hl, de
+1969   FCF7                 ; ut88.cmm:1178 if ((a = h) != [screenAddr + screenWidth * screenHeight >> 8]) return;
+1970   FCF7 7C              ld   a, h
+1971   FCF8 FE EF           cp   239
+1972   FCFA C0              ret  nz
+1973   FCFB                 ; ut88.cmm:1179 h = [screenAddr >> 8];
+1974   FCFB 26 E8           ld   h, 232
+1975   FCFD                 ; ut88.cmm:1180 }
+1976   FCFD C9              ret
+1977   FCFE                 ; ut88.cmm:1181 
+1978   FCFE                 ; ut88.cmm:1182 void putchUp(hl)
+1979   FCFE             putchUp: 
+1980   FCFE                 ; ut88.cmm:1183 {
+1981   FCFE                 ; ut88.cmm:1184 hl += (de = [-screenWidth]);
+1982   FCFE 11 C0 FF        ld   de, -64
+1983   FD01 19              add  hl, de
+1984   FD02                 ; ut88.cmm:1185 if ((a = h) != [screenAddr - 1 >> 8]) return;
+1985   FD02 7C              ld   a, h
+1986   FD03 FE E7           cp   231
+1987   FD05 C0              ret  nz
+1988   FD06                 ; ut88.cmm:1186 hl += (de = 0x800); //! Ошибка. Курсор переместится в 31-ую строку.
+1989   FD06 11 00 08        ld   de, 2048
+1990   FD09 19              add  hl, de
+1991   FD0A                 ; ut88.cmm:1187 }
+1992   FD0A C9              ret
+1993   FD0B                 ; ut88.cmm:1188 
+1994   FD0B                 ; ut88.cmm:1189 void putchNextLine()
+1995   FD0B             putchNextLine: 
+1996   FD0B                 ; ut88.cmm:1190 {
+1997   FD0B                 ; ut88.cmm:1191 do //! Некрасиво. Мы крутим цикл, что бы вычистить l &= 0x3F, hl += 0x40
+1998   FD0B             l67: 
+1999   FD0B                 ; ut88.cmm:1192 {
+2000   FD0B                 ; ut88.cmm:1193 hl++;
+2001   FD0B 23              inc  hl
+2002   FD0C                 ; ut88.cmm:1194 } while (flag_nz (a = l) &= 0x3F);
+2003   FD0C 7D              ld   a, l
+2004   FD0D E6 3F           and  63
+2005   FD0F C2 0B FD        jp   nz, l67
+2006   FD12             l68: 
+2007   FD12                 ; ut88.cmm:1195 
+2008   FD12                 ; ut88.cmm:1196 if ((a = h) == [screenAddr + screenWidth * screenHeight >> 8])
+2009   FD12 7C              ld   a, h
+2010   FD13 FE EF           cp   239
+2011   FD15                 ; ut88.cmm:1197 return putchScrollUp();
+2012   FD15 CA A3 FC        jp   z, putchScrollUp
+2013   FD18                 ; ut88.cmm:1198 }
+2014   FD18 C9              ret
+2015   FD19                 ; ut88.cmm:1199 
+2016   FD19                 ; ut88.cmm:1200 // Сместить экран на одну строку вверх.
+2017   FD19                 ; ut88.cmm:1201 // Параметры: нет. Результат: нет. Сохраняет: bc
+2018   FD19                 ; ut88.cmm:1202 
+2019   FD19                 ; ut88.cmm:1203 void scrollUp()
+2020   FD19             scrollUp: 
+2021   FD19                 ; ut88.cmm:1204 {
+2022   FD19                 ; ut88.cmm:1205 hl = [screenAddr + screenWidth];
+2023   FD19 21 40 E8        ld   hl, 59456
+2024   FD1C                 ; ut88.cmm:1206 de = screenAddr;
+2025   FD1C 11 00 E8        ld   de, 59392
+2026   FD1F                 ; ut88.cmm:1207 
+2027   FD1F                 ; ut88.cmm:1208 // Сдвиг экрана вверх
+2028   FD1F                 ; ut88.cmm:1209 do
+2029   FD1F             l69: 
+2030   FD1F                 ; ut88.cmm:1210 {
+2031   FD1F                 ; ut88.cmm:1211 *de = a = *hl;
+2032   FD1F 7E              ld   a, (hl)
+2033   FD20 12              ld   (de), a
+2034   FD21                 ; ut88.cmm:1212 de++;
+2035   FD21 13              inc  de
+2036   FD22                 ; ut88.cmm:1213 hl++;
+2037   FD22 23              inc  hl
+2038   FD23                 ; ut88.cmm:1214 } while ((a = h) != [screenAddr + screenWidth * screenHeight >> 8]);
+2039   FD23 7C              ld   a, h
+2040   FD24 FE EF           cp   239
+2041   FD26 C2 1F FD        jp   nz, l69
+2042   FD29             l70: 
+2043   FD29                 ; ut88.cmm:1215 
+2044   FD29                 ; ut88.cmm:1216 // Очистка нижней строки
+2045   FD29                 ; ut88.cmm:1217 hl = [screenAddr + screenWidth * (screenHeight - 1)];
+2046   FD29 21 C0 EE        ld   hl, 61120
+2047   FD2C                 ; ut88.cmm:1218 a = ' ';
+2048   FD2C 3E 20           ld   a, 32
+2049   FD2E                 ; ut88.cmm:1219 do
+2050   FD2E             l71: 
+2051   FD2E                 ; ut88.cmm:1220 {
+2052   FD2E                 ; ut88.cmm:1221 *hl = a;
+2053   FD2E 77              ld   (hl), a
+2054   FD2F                 ; ut88.cmm:1222 l++;
+2055   FD2F 2C              inc  l
+2056   FD30                 ; ut88.cmm:1223 } while (flag_nz);
+2057   FD30 C2 2E FD        jp   nz, l71
+2058   FD33             l72: 
+2059   FD33                 ; ut88.cmm:1224 }
+2060   FD33 C9              ret
+2061   FD34                 ; ut88.cmm:1225 
+2062   FD34                 ; ut88.cmm:1226 void putchEscMode1(c, hl)
+2063   FD34             putchEscMode1: 
+2064   FD34                 ; ut88.cmm:1227 {
+2065   FD34                 ; ut88.cmm:1228 // Поддерживается только ESC-код Y
+2066   FD34                 ; ut88.cmm:1229 if ((a = c) != 'Y') return putchSetEsc0();
+2067   FD34 79              ld   a, c
+2068   FD35 FE 59           cp   89
+2069   FD37 C2 6F FC        jp   nz, putchSetEsc0
+2070   FD3A                 ; ut88.cmm:1230 
+2071   FD3A                 ; ut88.cmm:1231 putchHome();
+2072   FD3A CD D1 FC        call putchHome
+2073   FD3D                 ; ut88.cmm:1232 return putchSetEsc(a = 2);
+2074   FD3D 3E 02           ld   a, 2
+2075   FD3F C3 70 FC        jp   putchSetEsc
+2076   FD42                 ; ut88.cmm:1233 noreturn;
+2077   FD42                 ; ut88.cmm:1234 }
+2078   FD42                 ; ut88.cmm:1235 
+2079   FD42                 ; ut88.cmm:1236 void putchEscMode2(c, hl)
+2080   FD42             putchEscMode2: 
+2081   FD42                 ; ut88.cmm:1237 {
+2082   FD42                 ; ut88.cmm:1238 c = ((a = c) -@= 0x20); //! Ошибка. Тут не нужно вычитать CF.
+2083   FD42 79              ld   a, c
+2084   FD43 DE 20           sbc  32
+2085   FD45 4F              ld   c, a
+2086   FD46                 ; ut88.cmm:1239 while ()
+2087   FD46             l73: 
+2088   FD46                 ; ut88.cmm:1240 {
+2089   FD46                 ; ut88.cmm:1241 c--;
+2090   FD46 0D              dec  c
+2091   FD47                 ; ut88.cmm:1242 a = 4;
+2092   FD47 3E 04           ld   a, 4
+2093   FD49                 ; ut88.cmm:1243 if (flag_m) return putchSetEsc(a);
+2094   FD49 FA 70 FC        jp   m, putchSetEsc
+2095   FD4C                 ; ut88.cmm:1244 putchDown();
+2096   FD4C CD F3 FC        call putchDown
+2097   FD4F                 ; ut88.cmm:1245 }
+2098   FD4F C3 46 FD        jp   l73
+2099   FD52             l74: 
+2100   FD52                 ; ut88.cmm:1246 noreturn;
+2101   FD52                 ; ut88.cmm:1247 }
+2102   FD52                 ; ut88.cmm:1248 
+2103   FD52                 ; ut88.cmm:1249 void putchEsc()
+2104   FD52             putchEsc: 
+2105   FD52                 ; ut88.cmm:1250 {
+2106   FD52                 ; ut88.cmm:1251 return putchSetEsc(a = 1);
+2107   FD52 3E 01           ld   a, 1
+2108   FD54 C3 70 FC        jp   putchSetEsc
+2109   FD57                 ; ut88.cmm:1252 noreturn;
+2110   FD57                 ; ut88.cmm:1253 }
+2111   FD57                 ; ut88.cmm:1254 
+2112   FD57                 ; ut88.cmm:1255 // Функция для пользовательской программы. Получить код нажатой клавиши на клавиатуре.
+2113   FD57                 ; ut88.cmm:1256 // В отличии от функции inkey, в этой функции есть задержка повтора и звук при нажатии.
+2114   FD57                 ; ut88.cmm:1257 // Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
+2115   FD57                 ; ut88.cmm:1258 
+2116   FD57                 ; ut88.cmm:1259 void getch()
+2117   FD57             getch: 
+2118   FD57                 ; ut88.cmm:1260 {
+2119   FD57                 ; ut88.cmm:1261 push(hl, de, bc)
+2120   FD57                 ; ut88.cmm:1262 {
+2121   FD57 E5              push hl
+2122   FD58 D5              push de
+2123   FD59 C5              push bc
+2124   FD5A                 ; ut88.cmm:1263 vFirstPressCounter = a = 127;
+2125   FD5A 3E 7F           ld   a, 127
+2126   FD5C 32 F3 F7        ld   (vFirstPressCounter), a
+2127   FD5F                 ; ut88.cmm:1264 
+2128   FD5F                 ; ut88.cmm:1265 getch1:
+2129   FD5F             getch1: 
+2130   FD5F                 ; ut88.cmm:1266 while ()
+2131   FD5F             l75: 
+2132   FD5F                 ; ut88.cmm:1267 {
+2133   FD5F                 ; ut88.cmm:1268 inkey();
+2134   FD5F CD 9A FD        call inkey
+2135   FD62                 ; ut88.cmm:1269 if (a != 0xFF) break;
+2136   FD62 FE FF           cp   255
+2137   FD64 C2 74 FD        jp   nz, l76
+2138   FD67                 ; ut88.cmm:1270 vFirstPressCounter = a = 0;
+2139   FD67 3E 00           ld   a, 0
+2140   FD69 32 F3 F7        ld   (vFirstPressCounter), a
+2141   FD6C                 ; ut88.cmm:1271 vFirstPress = a = 0;
+2142   FD6C 3E 00           ld   a, 0
+2143   FD6E 32 F4 F7        ld   (vFirstPress), a
+2144   FD71                 ; ut88.cmm:1272 }
+2145   FD71 C3 5F FD        jp   l75
+2146   FD74             l76: 
+2147   FD74                 ; ut88.cmm:1273 d = a;
+2148   FD74 57              ld   d, a
+2149   FD75                 ; ut88.cmm:1274 
+2150   FD75                 ; ut88.cmm:1275 // Задержка перед первым повтором
+2151   FD75                 ; ut88.cmm:1276 if (flag_z (a = vFirstPress) &= a)
+2152   FD75 3A F4 F7        ld   a, (vFirstPress)
+2153   FD78 A7              and  a
+2154   FD79                 ; ut88.cmm:1277 {
+2155   FD79 C2 92 FD        jp   nz, l77
+2156   FD7C                 ; ut88.cmm:1278 if (flag_nz (a = vFirstPressCounter) &= a)
+2157   FD7C 3A F3 F7        ld   a, (vFirstPressCounter)
+2158   FD7F A7              and  a
+2159   FD80                 ; ut88.cmm:1279 {
+2160   FD80 CA 92 FD        jp   z, l78
+2161   FD83                 ; ut88.cmm:1280 vFirstPressCounter = --(a = vFirstPressCounter);
+2162   FD83 3A F3 F7        ld   a, (vFirstPressCounter)
+2163   FD86 3D              dec  a
+2164   FD87 32 F3 F7        ld   (vFirstPressCounter), a
+2165   FD8A                 ; ut88.cmm:1281 if (flag_nz) goto getch1;
+2166   FD8A C2 5F FD        jp   nz, getch1
+2167   FD8D                 ; ut88.cmm:1282 vFirstPress = a = 1;
+2168   FD8D 3E 01           ld   a, 1
+2169   FD8F 32 F4 F7        ld   (vFirstPress), a
+2170   FD92                 ; ut88.cmm:1283 }
+2171   FD92                 ; ut88.cmm:1284 }
+2172   FD92             l78: 
+2173   FD92                 ; ut88.cmm:1285 
+2174   FD92                 ; ut88.cmm:1286 // Звук при нажатии
+2175   FD92                 ; ut88.cmm:1287 beep(); //! Создаёт очень сильнукю задержку
+2176   FD92             l77: 
+2177   FD92 CD 4B FE        call beep
+2178   FD95                 ; ut88.cmm:1288 a = d;
+2179   FD95 7A              ld   a, d
+2180   FD96                 ; ut88.cmm:1289 }
+2181   FD96 C1              pop  bc
+2182   FD97 D1              pop  de
+2183   FD98 E1              pop  hl
+2184   FD99                 ; ut88.cmm:1290 }
+2185   FD99 C9              ret
+2186   FD9A                 ; ut88.cmm:1291 
+2187   FD9A                 ; ut88.cmm:1292 // Функция для пользовательской программы. Получить код нажатой клавиши на клавиатуре.
+2188   FD9A                 ; ut88.cmm:1293 // Эта функция с устранением дребезга контактов.
+2189   FD9A                 ; ut88.cmm:1294 // Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
+2190   FD9A                 ; ut88.cmm:1295 
+2191   FD9A                 ; ut88.cmm:1296 void inkey()
+2192   FD9A             inkey: 
+2193   FD9A                 ; ut88.cmm:1297 {
+2194   FD9A                 ; ut88.cmm:1298 push(bc)
+2195   FD9A                 ; ut88.cmm:1299 {
+2196   FD9A C5              push bc
+2197   FD9B                 ; ut88.cmm:1300 do
+2198   FD9B             l79: 
+2199   FD9B                 ; ut88.cmm:1301 {
+2200   FD9B                 ; ut88.cmm:1302 // Получить код нажатой клавиши
+2201   FD9B                 ; ut88.cmm:1303 inkeyInt();
+2202   FD9B CD AE FD        call inkeyInt
+2203   FD9E                 ; ut88.cmm:1304 b = a;
+2204   FD9E 47              ld   b, a
+2205   FD9F                 ; ut88.cmm:1305 
+2206   FD9F                 ; ut88.cmm:1306 // Задержка
+2207   FD9F                 ; ut88.cmm:1307 c = 0xFF; //! Некрасиво. Задержка при первом нажатии не нужна.
+2208   FD9F 0E FF           ld   c, 255
+2209   FDA1                 ; ut88.cmm:1308 do
+2210   FDA1             l81: 
+2211   FDA1                 ; ut88.cmm:1309 {
+2212   FDA1                 ; ut88.cmm:1310 c--;
+2213   FDA1 0D              dec  c
+2214   FDA2                 ; ut88.cmm:1311 } while (flag_nz);
+2215   FDA2 C2 A1 FD        jp   nz, l81
+2216   FDA5             l82: 
+2217   FDA5                 ; ut88.cmm:1312 
+2218   FDA5                 ; ut88.cmm:1313 // Получить код нажатой клавиши. И если он отличается, то повторить всё заново.
+2219   FDA5                 ; ut88.cmm:1314 inkeyInt(); //! Некрасиво. Надо отдельно считать таймауты для нажатия и отжатия, что бы правильно подавлять дребезг.
+2220   FDA5 CD AE FD        call inkeyInt
+2221   FDA8                 ; ut88.cmm:1315 } while (a != b);
+2222   FDA8 B8              cp   b
+2223   FDA9 C2 9B FD        jp   nz, l79
+2224   FDAC             l80: 
+2225   FDAC                 ; ut88.cmm:1316 }
+2226   FDAC C1              pop  bc
+2227   FDAD                 ; ut88.cmm:1317 }
+2228   FDAD C9              ret
+2229   FDAE                 ; ut88.cmm:1318 
+2230   FDAE                 ; ut88.cmm:1319 // Получить код нажатой клавиши на клавиатуре.
+2231   FDAE                 ; ut88.cmm:1320 // Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
+2232   FDAE                 ; ut88.cmm:1321 
+2233   FDAE                 ; ut88.cmm:1322 void inkeyInt()
+2234   FDAE             inkeyInt: 
+2235   FDAE                 ; ut88.cmm:1323 {
+2236   FDAE                 ; ut88.cmm:1324 push(bc, de, hl);
+2237   FDAE C5              push bc
+2238   FDAF D5              push de
+2239   FDB0 E5              push hl
+2240   FDB1                 ; ut88.cmm:1325 // Проверка каждого ряда
+2241   FDB1                 ; ut88.cmm:1326 b = 0;
+2242   FDB1 06 00           ld   b, 0
+2243   FDB3                 ; ut88.cmm:1327 c = 0xFE;
+2244   FDB3 0E FE           ld   c, 254
+2245   FDB5                 ; ut88.cmm:1328 d = 8;
+2246   FDB5 16 08           ld   d, 8
+2247   FDB7                 ; ut88.cmm:1329 do
+2248   FDB7             l83: 
+2249   FDB7                 ; ut88.cmm:1330 {
+2250   FDB7                 ; ut88.cmm:1331 // Запись ряда в микросхему и сразу вычисление следующего ряда
+2251   FDB7                 ; ut88.cmm:1332 out(ioSysA, a = c);
+2252   FDB7 79              ld   a, c
+2253   FDB8 D3 07           out  (7), a
+2254   FDBA                 ; ut88.cmm:1333 a <<r= 1;
+2255   FDBA 07              rlca
+2256   FDBB                 ; ut88.cmm:1334 c = a;
+2257   FDBB 4F              ld   c, a
+2258   FDBC                 ; ut88.cmm:1335 
+2259   FDBC                 ; ut88.cmm:1336 // Чтение строки. Строк всего 7, поэтому накладываем маску.
+2260   FDBC                 ; ut88.cmm:1337 a = in(ioSysB);
+2261   FDBC DB 06           in   a, (6)
+2262   FDBE                 ; ut88.cmm:1338 a &= 0x7F;
+2263   FDBE E6 7F           and  127
+2264   FDC0                 ; ut88.cmm:1339 if (a != 0x7F) return inkeyDecode(); // Если клавиша нажата, то преобразуем номер в код.
+2265   FDC0 FE 7F           cp   127
+2266   FDC2 C2 DF FD        jp   nz, inkeyDecode
+2267   FDC5                 ; ut88.cmm:1340 
+2268   FDC5                 ; ut88.cmm:1341 // Увеличиваем b на 7 для расчета номера нажатой кнпоки в inkeyDecode
+2269   FDC5                 ; ut88.cmm:1342 b = ((a = b) += 7);
+2270   FDC5 78              ld   a, b
+2271   FDC6 C6 07           add  7
+2272   FDC8 47              ld   b, a
+2273   FDC9                 ; ut88.cmm:1343 } while (flag_nz d--);
+2274   FDC9 15              dec  d
+2275   FDCA C2 B7 FD        jp   nz, l83
+2276   FDCD             l84: 
+2277   FDCD                 ; ut88.cmm:1344 
+2278   FDCD                 ; ut88.cmm:1345 // Если нажата клавиша РУС/ЛАТ
+2279   FDCD                 ; ut88.cmm:1346 a = in(ioSysB); //! Ошибка. Эта клавиша размещена в первом бите ioSysС
+2280   FDCD DB 06           in   a, (6)
+2281   FDCF                 ; ut88.cmm:1347 if (flag_nz a &= 0x80) a = 0xFE; else a = 0xFF;
+2282   FDCF E6 80           and  128
+2283   FDD1 CA D9 FD        jp   z, l85
+2284   FDD4 3E FE           ld   a, 254
+2285   FDD6 C3 DB FD        jp   l86
+2286   FDD9             l85: 
+2287   FDD9 3E FF           ld   a, 255
+2288   FDDB             l86: 
+2289   FDDB                 ; ut88.cmm:1348 popHlDeBcAndRet:
+2290   FDDB             popHlDeBcAndRet: 
+2291   FDDB                 ; ut88.cmm:1349 pop(bc, de, hl);
+2292   FDDB E1              pop  hl
+2293   FDDC D1              pop  de
+2294   FDDD C1              pop  bc
+2295   FDDE                 ; ut88.cmm:1350 }
+2296   FDDE C9              ret
+2297   FDDF                 ; ut88.cmm:1351 
+2298   FDDF                 ; ut88.cmm:1352 // Преобразовать номер нажатой клавиши на клавиатуре в код
+2299   FDDF                 ; ut88.cmm:1353 
+2300   FDDF                 ; ut88.cmm:1354 void inkeyDecode(a, b)
+2301   FDDF             inkeyDecode: 
+2302   FDDF                 ; ut88.cmm:1355 {
+2303   FDDF                 ; ut88.cmm:1356 // Прибавляем к B позицию первого нулевого бита в A.
+2304   FDDF                 ; ut88.cmm:1357 while ()
+2305   FDDF             l87: 
+2306   FDDF                 ; ut88.cmm:1358 {
+2307   FDDF                 ; ut88.cmm:1359 a >>@= 1;
+2308   FDDF 1F              rra
+2309   FDE0                 ; ut88.cmm:1360 if (flag_nc) break;
+2310   FDE0 D2 E7 FD        jp   nc, l88
+2311   FDE3                 ; ut88.cmm:1361 b++;
+2312   FDE3 04              inc  b
+2313   FDE4                 ; ut88.cmm:1362 }
+2314   FDE4 C3 DF FD        jp   l87
+2315   FDE7             l88: 
+2316   FDE7                 ; ut88.cmm:1363 
+2317   FDE7                 ; ut88.cmm:1364 // Преобразование номера клавиши в код
+2318   FDE7                 ; ut88.cmm:1365 a = b;
+2319   FDE7 78              ld   a, b
+2320   FDE8                 ; ut88.cmm:1366 if (a < 0x30)
+2321   FDE8 FE 30           cp   48
+2322   FDEA                 ; ut88.cmm:1367 {
+2323   FDEA D2 FF FD        jp   nc, l89
+2324   FDED                 ; ut88.cmm:1368 a += 0x30;
+2325   FDED C6 30           add  48
+2326   FDEF                 ; ut88.cmm:1369 if (a >= 0x3C)
+2327   FDEF FE 3C           cp   60
+2328   FDF1                 ; ut88.cmm:1370 if (a < 0x40)
+2329   FDF1 DA FB FD        jp   c, l90
+2330   FDF4 FE 40           cp   64
+2331   FDF6                 ; ut88.cmm:1371 a &= 0x2F;
+2332   FDF6 D2 FB FD        jp   nc, l91
+2333   FDF9 E6 2F           and  47
+2334   FDFB                 ; ut88.cmm:1372 c = a;
+2335   FDFB             l91: 
+2336   FDFB             l90: 
+2337   FDFB 4F              ld   c, a
+2338   FDFC                 ; ut88.cmm:1373 }
+2339   FDFC                 ; ut88.cmm:1374 else
+2340   FDFC C3 0C FE        jp   l92
+2341   FDFF             l89: 
+2342   FDFF                 ; ut88.cmm:1375 {
+2343   FDFF                 ; ut88.cmm:1376 hl = &inkeyDecodeTable;
+2344   FDFF 21 43 FE        ld   hl, inkeyDecodeTable
+2345   FE02                 ; ut88.cmm:1377 c = (a -= 0x30);
+2346   FE02 D6 30           sub  48
+2347   FE04 4F              ld   c, a
+2348   FE05                 ; ut88.cmm:1378 b = 0;
+2349   FE05 06 00           ld   b, 0
+2350   FE07                 ; ut88.cmm:1379 a = *(hl += bc);
+2351   FE07 09              add  hl, bc
+2352   FE08 7E              ld   a, (hl)
+2353   FE09                 ; ut88.cmm:1380 goto popHlDeBcAndRet;
+2354   FE09 C3 DB FD        jp   popHlDeBcAndRet
+2355   FE0C                 ; ut88.cmm:1381 }
+2356   FE0C             l92: 
+2357   FE0C                 ; ut88.cmm:1382 
+2358   FE0C                 ; ut88.cmm:1383 // Нажата ли клавиаша РУС, УС или СС ?
+2359   FE0C                 ; ut88.cmm:1384 a = in(ioSysC);
+2360   FE0C DB 05           in   a, (5)
+2361   FE0E                 ; ut88.cmm:1385 a &= 7;
+2362   FE0E E6 07           and  7
+2363   FE10                 ; ut88.cmm:1386 if (a == 7) return inkeyDecodeNoShift(c);
+2364   FE10 FE 07           cp   7
+2365   FE12 CA 3F FE        jp   z, inkeyDecodeNoShift
+2366   FE15                 ; ut88.cmm:1387 a >>@= 2;
+2367   FE15 1F              rra
+2368   FE16 1F              rra
+2369   FE17                 ; ut88.cmm:1388 if (flag_nc) return inkeyDecodeUs(c);
+2370   FE17 D2 24 FE        jp   nc, inkeyDecodeUs
+2371   FE1A                 ; ut88.cmm:1389 a >>@= 1;
+2372   FE1A 1F              rra
+2373   FE1B                 ; ut88.cmm:1390 if (flag_nc) return inkeyDecodeSs(c); //! Некрасиво, при нажатой РУС/ЛАТ, клавиша СС возвращает английский язык, но не наоборот.
+2374   FE1B D2 2A FE        jp   nc, inkeyDecodeSs
+2375   FE1E                 ; ut88.cmm:1391 noreturn; // Продолджение в inkeyDecodeRus(c)
+2376   FE1E                 ; ut88.cmm:1392 }
+2377   FE1E                 ; ut88.cmm:1393 
+2378   FE1E                 ; ut88.cmm:1394 void inkeyDecodeRus(c)
+2379   FE1E             inkeyDecodeRus: 
+2380   FE1E                 ; ut88.cmm:1395 {
+2381   FE1E                 ; ut88.cmm:1396 a = c;
+2382   FE1E 79              ld   a, c
+2383   FE1F                 ; ut88.cmm:1397 a |= 0x20;
+2384   FE1F F6 20           or   32
+2385   FE21                 ; ut88.cmm:1398 goto popHlDeBcAndRet;
+2386   FE21 C3 DB FD        jp   popHlDeBcAndRet
+2387   FE24                 ; ut88.cmm:1399 noreturn;
+2388   FE24                 ; ut88.cmm:1400 }
+2389   FE24                 ; ut88.cmm:1401 
+2390   FE24                 ; ut88.cmm:1402 void inkeyDecodeUs(c)
+2391   FE24             inkeyDecodeUs: 
+2392   FE24                 ; ut88.cmm:1403 {
+2393   FE24                 ; ut88.cmm:1404 a = c;
+2394   FE24 79              ld   a, c
+2395   FE25                 ; ut88.cmm:1405 a &= 0x1F;
+2396   FE25 E6 1F           and  31
+2397   FE27                 ; ut88.cmm:1406 goto popHlDeBcAndRet;
+2398   FE27 C3 DB FD        jp   popHlDeBcAndRet
+2399   FE2A                 ; ut88.cmm:1407 noreturn;
+2400   FE2A                 ; ut88.cmm:1408 }
+2401   FE2A                 ; ut88.cmm:1409 
+2402   FE2A                 ; ut88.cmm:1410 void inkeyDecodeSs(c)
+2403   FE2A             inkeyDecodeSs: 
+2404   FE2A                 ; ut88.cmm:1411 {
+2405   FE2A                 ; ut88.cmm:1412 a = c;
+2406   FE2A 79              ld   a, c
+2407   FE2B                 ; ut88.cmm:1413 if (a >= 0x40) goto popHlDeBcAndRet;
+2408   FE2B FE 40           cp   64
+2409   FE2D D2 DB FD        jp   nc, popHlDeBcAndRet
+2410   FE30                 ; ut88.cmm:1414 if (a < 0x30)
+2411   FE30 FE 30           cp   48
+2412   FE32                 ; ut88.cmm:1415 {
+2413   FE32 D2 3A FE        jp   nc, l93
+2414   FE35                 ; ut88.cmm:1416 a |= 0x10;
+2415   FE35 F6 10           or   16
+2416   FE37                 ; ut88.cmm:1417 goto popHlDeBcAndRet;
+2417   FE37 C3 DB FD        jp   popHlDeBcAndRet
+2418   FE3A                 ; ut88.cmm:1418 }
+2419   FE3A                 ; ut88.cmm:1419 a &= 0x2F;
+2420   FE3A             l93: 
+2421   FE3A E6 2F           and  47
+2422   FE3C                 ; ut88.cmm:1420 goto popHlDeBcAndRet;
+2423   FE3C C3 DB FD        jp   popHlDeBcAndRet
+2424   FE3F                 ; ut88.cmm:1421 noreturn;
+2425   FE3F                 ; ut88.cmm:1422 }
+2426   FE3F                 ; ut88.cmm:1423 
+2427   FE3F                 ; ut88.cmm:1424 void inkeyDecodeNoShift(c)
+2428   FE3F             inkeyDecodeNoShift: 
+2429   FE3F                 ; ut88.cmm:1425 {
+2430   FE3F                 ; ut88.cmm:1426 a = c;
+2431   FE3F 79              ld   a, c
+2432   FE40                 ; ut88.cmm:1427 goto popHlDeBcAndRet;
+2433   FE40 C3 DB FD        jp   popHlDeBcAndRet
+2434   FE43                 ; ut88.cmm:1428 noreturn;
+2435   FE43                 ; ut88.cmm:1429 }
+2436   FE43                 ; ut88.cmm:1430 
+2437   FE43                 ; ut88.cmm:1431 uint8_t inkeyDecodeTable[] =
+2438   FE43                 ; ut88.cmm:1432 {
+2439   FE43                 ; ut88.cmm:1433 charCodeSpace,
+2440   FE43                 ; ut88.cmm:1434 charCodeRight,
+2441   FE43                 ; ut88.cmm:1435 charCodeLeft,
+2442   FE43                 ; ut88.cmm:1436 charCodeUp,
+2443   FE43                 ; ut88.cmm:1437 charCodeDown,
+2444   FE43                 ; ut88.cmm:1438 charCodeEnter,
+2445   FE43                 ; ut88.cmm:1439 charCodeClearScreen,
+2446   FE43                 ; ut88.cmm:1440 charCodeHome
+2447   FE43                 ; ut88.cmm:1441 };
+2448   FE43             inkeyDecodeTable: 
+2449   FE43 20              db 32
+2450   FE44 18              db 24
+2451   FE45 08              db 8
+2452   FE46 19              db 25
+2453   FE47 1A              db 26
+2454   FE48 0D              db 13
+2455   FE49 1F              db 31
+2456   FE4A 0C              db 12
+2457   FE4B                 ; ut88.cmm:1442 
+2458   FE4B                 ; ut88.cmm:1443 // Звуковой сигнал
+2459   FE4B                 ; ut88.cmm:1444 // Параметры: нет. Результат: нет. Сохраняет: de, hl.
+2460   FE4B                 ; ut88.cmm:1445 
+2461   FE4B                 ; ut88.cmm:1446 void beep()
+2462   FE4B             beep: 
+2463   FE4B                 ; ut88.cmm:1447 {
+2464   FE4B                 ; ut88.cmm:1448 c = 191;
+2465   FE4B 0E BF           ld   c, 191
+2466   FE4D                 ; ut88.cmm:1449 do
+2467   FE4D             l94: 
+2468   FE4D                 ; ut88.cmm:1450 {
+2469   FE4D                 ; ut88.cmm:1451 // Задежка
+2470   FE4D                 ; ut88.cmm:1452 delay47();
+2471   FE4D CD 5C FE        call delay47
+2472   FE50                 ; ut88.cmm:1453 
+2473   FE50                 ; ut88.cmm:1454 // Изменение фазы выхода магнитофона. Регистр А не имеет значения.
+2474   FE50                 ; ut88.cmm:1455 out(ioTape, a);
+2475   FE50 D3 A1           out  (161), a
+2476   FE52                 ; ut88.cmm:1456 
+2477   FE52                 ; ut88.cmm:1457 // Задежка
+2478   FE52                 ; ut88.cmm:1458 invert(a); //! Смысла в этой команде нет
+2479   FE52 2F              cpl
+2480   FE53                 ; ut88.cmm:1459 delay47();
+2481   FE53 CD 5C FE        call delay47
+2482   FE56                 ; ut88.cmm:1460 
+2483   FE56                 ; ut88.cmm:1461 // Изменение фазы выхода магнитофона. Регистр А не имеет значения.
+2484   FE56                 ; ut88.cmm:1462 out(ioTape, a);
+2485   FE56 D3 A1           out  (161), a
+2486   FE58                 ; ut88.cmm:1463 
+2487   FE58                 ; ut88.cmm:1464 // Цикл
+2488   FE58                 ; ut88.cmm:1465 } while (flag_nz c--);
+2489   FE58 0D              dec  c
+2490   FE59 C2 4D FE        jp   nz, l94
+2491   FE5C             l95: 
+2492   FE5C                 ; ut88.cmm:1466 noreturn;
+2493   FE5C                 ; ut88.cmm:1467 }
+2494   FE5C                 ; ut88.cmm:1468 
+2495   FE5C                 ; ut88.cmm:1469 // Задержка. Используется для вывода звука.
+2496   FE5C                 ; ut88.cmm:1470 // Параметры: нет. Результат: нет. Сохраняет: a, c, de, hl.
+2497   FE5C                 ; ut88.cmm:1471 
+2498   FE5C                 ; ut88.cmm:1472 void delay47()
+2499   FE5C             delay47: 
+2500   FE5C                 ; ut88.cmm:1473 {
+2501   FE5C                 ; ut88.cmm:1474 b = 47;
+2502   FE5C 06 2F           ld   b, 47
+2503   FE5E                 ; ut88.cmm:1475 do
+2504   FE5E             l96: 
+2505   FE5E                 ; ut88.cmm:1476 {
+2506   FE5E                 ; ut88.cmm:1477 } while (flag_nz b--);
+2507   FE5E 05              dec  b
+2508   FE5F C2 5E FE        jp   nz, l96
+2509   FE62             l97: 
+2510   FE62                 ; ut88.cmm:1478 }
+2511   FE62 C9              ret
+2512   FE63                 ; ut88.cmm:1479 
+2513   FE63                 ; ut88.cmm:1480 // Эта функция не используется.
+2514   FE63                 ; ut88.cmm:1481 // Ожидать ноль на выводе B7 микросхемы системного порта КР580ВВ55А.
+2515   FE63                 ; ut88.cmm:1482 // Параметры: нет. Результат: нет. Сохраняет: bc, de, hl.
+2516   FE63                 ; ut88.cmm:1483 
+2517   FE63                 ; ut88.cmm:1484 void FE63()
+2518   FE63             FE63: 
+2519   FE63                 ; ut88.cmm:1485 {
+2520   FE63                 ; ut88.cmm:1486 do
+2521   FE63             l98: 
+2522   FE63                 ; ut88.cmm:1487 {
+2523   FE63                 ; ut88.cmm:1488 a = in(ioSysB);
+2524   FE63 DB 06           in   a, (6)
+2525   FE65                 ; ut88.cmm:1489 } while (flag_nz a &= 0x80);
+2526   FE65 E6 80           and  128
+2527   FE67 C2 63 FE        jp   nz, l98
+2528   FE6A             l99: 
+2529   FE6A                 ; ut88.cmm:1490 }
+2530   FE6A C9              ret
+2531   FE6B                 ; ut88.cmm:1491 
+2532   FE6B                 ; ut88.cmm:1492 // Функция для пользовательской программы.
+2533   FE6B                 ; ut88.cmm:1493 // Нажата ли хотя бы одна клавиша на клавиатуре?
+2534   FE6B                 ; ut88.cmm:1494 // Параметры: нет. Результат:  a - 0xFF если клавиша нажата, 0 если нет. Сохраняет: bc, de, hl.
+2535   FE6B                 ; ut88.cmm:1495 
+2536   FE6B                 ; ut88.cmm:1496 void isAnyKeyPressed()
+2537   FE6B             isAnyKeyPressed: 
+2538   FE6B                 ; ut88.cmm:1497 {
+2539   FE6B                 ; ut88.cmm:1498 out(ioSysA, a ^= a);
+2540   FE6B AF              xor  a
+2541   FE6C D3 07           out  (7), a
+2542   FE6E                 ; ut88.cmm:1499 a = in(ioSysB);
+2543   FE6E DB 06           in   a, (6)
+2544   FE70                 ; ut88.cmm:1500 invert(a);
+2545   FE70 2F              cpl
+2546   FE71                 ; ut88.cmm:1501 a &= 0x7F;
+2547   FE71 E6 7F           and  127
+2548   FE73                 ; ut88.cmm:1502 if (flag_z) return;
+2549   FE73 C8              ret  z
+2550   FE74                 ; ut88.cmm:1503 a |= 0xFF;
+2551   FE74 F6 FF           or   255
+2552   FE76                 ; ut88.cmm:1504 //! Несовместимость с Радио 86РК. Не обрабатывается клавиша РУС/ЛАТ.
+2553   FE76                 ; ut88.cmm:1505 }
+2554   FE76 C9              ret
+2555   FE77                 ; ut88.cmm:1506 
+2556   FE77                 ; ut88.cmm:1507 // Функция для пользовательской программы.
+2557   FE77                 ; ut88.cmm:1508 // Получить адрес последнего доступного байта оперативной памяти.
+2558   FE77                 ; ut88.cmm:1509 // Параметры: нет. Результат: hl - адрес. Сохраняет: a, bc, de.
+2559   FE77                 ; ut88.cmm:1510 
+2560   FE77                 ; ut88.cmm:1511 void getLastRamAddr()
+2561   FE77             getLastRamAddr: 
+2562   FE77                 ; ut88.cmm:1512 {
+2563   FE77                 ; ut88.cmm:1513 hl = vLastRamAddr;
+2564   FE77 2A D1 F7        ld   hl, (vLastRamAddr)
+2565   FE7A                 ; ut88.cmm:1514 }
+2566   FE7A C9              ret
+2567   FE7B                 ; ut88.cmm:1515 
+2568   FE7B                 ; ut88.cmm:1516 // Функция для пользовательской программы. Установить адрес последнего доступного байта оперативной памяти.
+2569   FE7B                 ; ut88.cmm:1517 // Параметры: hl - адрес. Результат: нет. Сохраняет: a, bc, de, hl.
+2570   FE7B                 ; ut88.cmm:1518 
+2571   FE7B                 ; ut88.cmm:1519 void setLastRamAddr(hl)
+2572   FE7B             setLastRamAddr: 
+2573   FE7B                 ; ut88.cmm:1520 {
+2574   FE7B                 ; ut88.cmm:1521 vLastRamAddr = hl;
+2575   FE7B 22 D1 F7        ld   (vLastRamAddr), hl
+2576   FE7E                 ; ut88.cmm:1522 }
+2577   FE7E C9              ret
+2578   FE7F                 ; ut88.cmm:1523 
+2579   FE7F                 ; ut88.cmm:1524 // Текстовые строки
+2580   FE7F                 ; ut88.cmm:1525 
+2581   FE7F                 ; ut88.cmm:1526 uint8_t aCrLfPrompt[] = { "\r\n\x18=>" };
+2582   FE7F             aCrLfPrompt: 
+2583   FE7F                 db 13, 10, 24, "=>", 0
+2583   FE7F 0D0A183D3E00
+2584   FE85                 ; ut88.cmm:1527 
+2585   FE85                 ; ut88.cmm:1528 uint8_t aCrLfTab[] = { "\r\n\x18\x18\x18\x18" };
+2586   FE85             aCrLfTab: 
+2587   FE85                 db 13, 10, 24, 24, 24, 24, 0
+2587   FE85 0D0A1818181800
+2588   FE8C                 ; ut88.cmm:1529 
+2589   FE8C                 ; ut88.cmm:1530 uint8_t aRegs[] = { "\r\n PC-"
+2590   FE8C                 ; ut88.cmm:1531 "\r\n HL-"
+2591   FE8C                 ; ut88.cmm:1532 "\r\n BC-"
+2592   FE8C                 ; ut88.cmm:1533 "\r\n DE-"
+2593   FE8C                 ; ut88.cmm:1534 "\r\n SP-"
+2594   FE8C                 ; ut88.cmm:1535 "\r\n AF-"
+2595   FE8C                 ; ut88.cmm:1536 "\x19\x19\x19\x19\x19\x19" };
+2596   FE8C             aRegs: 
+2597   FE8C                 db 13, 10, " PC-", 13, 10, " HL-", 13, 10, " BC-", 13, 10, " DE-", 13, 10, " SP-", 13, 10, " AF-", 25, 25, 25, 25, 25, 25, 0
+2597   FE8C 0D0A2050432D0D0A20484C2D0D0A2042432D0D0A2044452D0D0A2053502D0D0A
+2597   FEAC 2041462D19191919191900
+2598   FEB7                 ; ut88.cmm:1537 
+2599   FEB7                 ; ut88.cmm:1538 uint8_t aBsSpBs[] = { "\x08 \x08" };
+2600   FEB7             aBsSpBs: 
+2601   FEB7 08 20 08 00     db 8, " ", 8, 0
+2602   FEBB                 ; ut88.cmm:1539 
+2603   FEBB                 ; ut88.cmm:1540 // Точка остановки в программе пользователя
+2604   FEBB                 ; ut88.cmm:1541 
+2605   FEBB                 ; ut88.cmm:1542 void breakHandler()
+2606   FEBB             breakHandler: 
+2607   FEBB                 ; ut88.cmm:1543 {
+2608   FEBB                 ; ut88.cmm:1544 // Сохраняем HL
+2609   FEBB                 ; ut88.cmm:1545 vBreakSavedHl = hl;
+2610   FEBB 22 B6 F7        ld   (vBreakSavedHl), hl
+2611   FEBE                 ; ut88.cmm:1546 
+2612   FEBE                 ; ut88.cmm:1547 // Сохраняем PSW
+2613   FEBE                 ; ut88.cmm:1548 push(a);
+2614   FEBE F5              push af
+2615   FEBF                 ; ut88.cmm:1549 pop(hl);
+2616   FEBF E1              pop  hl
+2617   FEC0                 ; ut88.cmm:1550 vBreakSavedPsw = hl;
+2618   FEC0 22 BE F7        ld   (vBreakSavedPsw), hl
+2619   FEC3                 ; ut88.cmm:1551 
+2620   FEC3                 ; ut88.cmm:1552 // Сохраняем PC
+2621   FEC3                 ; ut88.cmm:1553 pop(hl);
+2622   FEC3 E1              pop  hl
+2623   FEC4                 ; ut88.cmm:1554 hl--;
+2624   FEC4 2B              dec  hl
+2625   FEC5                 ; ut88.cmm:1555 vBreakSavedPc = hl;
+2626   FEC5 22 B4 F7        ld   (vBreakSavedPc), hl
+2627   FEC8                 ; ut88.cmm:1556 
+2628   FEC8                 ; ut88.cmm:1557 // Сохраняем SP, BC, DE
+2629   FEC8                 ; ut88.cmm:1558 (hl = 0) += sp;
+2630   FEC8 21 00 00        ld   hl, 0
+2631   FECB 39              add  hl, sp
+2632   FECC                 ; ut88.cmm:1559 sp = &vBreakSavedPsw;
+2633   FECC 31 BE F7        ld   sp, vBreakSavedPsw
+2634   FECF                 ; ut88.cmm:1560 push(hl, de, bc);
+2635   FECF E5              push hl
+2636   FED0 D5              push de
+2637   FED1 C5              push bc
+2638   FED2                 ; ut88.cmm:1561 
+2639   FED2                 ; ut88.cmm:1562 // Вывод на экран адреса остановки
+2640   FED2                 ; ut88.cmm:1563 hl = vBreakSavedPc;
+2641   FED2 2A B4 F7        ld   hl, (vBreakSavedPc)
+2642   FED5                 ; ut88.cmm:1564 sp = initalStackAddr;
+2643   FED5 31 AF F7        ld   sp, 63407
+2644   FED8                 ; ut88.cmm:1565 putCrLfTabHlSp(hl);
+2645   FED8 CD 51 FB        call putCrLfTabHlSp
+2646   FEDB                 ; ut88.cmm:1566 
+2647   FEDB                 ; ut88.cmm:1567 // Если команда в программе пользователя была заменена на RST, то восстанавливаем команду.
+2648   FEDB                 ; ut88.cmm:1568 // И в любом случае возвращаемся в Монитор.
+2649   FEDB                 ; ut88.cmm:1569 swap(de, hl);
+2650   FEDB EB              ex de, hl
+2651   FEDC                 ; ut88.cmm:1570 hl = vBreakAddr;
+2652   FEDC 2A C3 F7        ld   hl, (vBreakAddr)
+2653   FEDF                 ; ut88.cmm:1571 cmdHlDe();
+2654   FEDF CD 8D F9        call cmdHlDe
+2655   FEE2                 ; ut88.cmm:1572 if (flag_nz) return monitor();
+2656   FEE2 C2 6C F8        jp   nz, monitor
+2657   FEE5                 ; ut88.cmm:1573 *hl = a = vBreakPrevCmd;
+2658   FEE5 3A C5 F7        ld   a, (vBreakPrevCmd)
+2659   FEE8 77              ld   (hl), a
+2660   FEE9                 ; ut88.cmm:1574 return monitor();
+2661   FEE9 C3 6C F8        jp   monitor
+2662   FEEC                 ; ut88.cmm:1575 noreturn;
+2663   FEEC                 ; ut88.cmm:1576 }
+2664   FEEC                 ; ut88.cmm:1577 
+2665   FEEC                 ; ut88.cmm:1578 // Команда X
+2666   FEEC                 ; ut88.cmm:1579 // Вывод на экран содержимого регистров микропроцессора с возможностью их изменения.
+2667   FEEC                 ; ut88.cmm:1580 
+2668   FEEC                 ; ut88.cmm:1581 void cmdX()
+2669   FEEC             cmdX: 
+2670   FEEC                 ; ut88.cmm:1582 {
+2671   FEEC                 ; ut88.cmm:1583 // Вывод названий регистров на экран
+2672   FEEC                 ; ut88.cmm:1584 puts(hl = &aRegs);
+2673   FEEC 21 8C FE        ld   hl, aRegs
+2674   FEEF CD 1F F9        call puts
+2675   FEF2                 ; ut88.cmm:1585 
+2676   FEF2                 ; ut88.cmm:1586 hl = &vBreakSavedPc; // Адрес первого регистры
+2677   FEF2 21 B4 F7        ld   hl, vBreakSavedPc
+2678   FEF5                 ; ut88.cmm:1587 b = 6; // Кол-во регистров
+2679   FEF5 06 06           ld   b, 6
+2680   FEF7                 ; ut88.cmm:1588 do
+2681   FEF7             l100: 
+2682   FEF7                 ; ut88.cmm:1589 {
+2683   FEF7                 ; ut88.cmm:1590 // Тенкущее значение регистра
+2684   FEF7                 ; ut88.cmm:1591 e = *hl;
+2685   FEF7 5E              ld   e, (hl)
+2686   FEF8                 ; ut88.cmm:1592 hl++;
+2687   FEF8 23              inc  hl
+2688   FEF9                 ; ut88.cmm:1593 d = *hl;
+2689   FEF9 56              ld   d, (hl)
+2690   FEFA                 ; ut88.cmm:1594 
+2691   FEFA                 ; ut88.cmm:1595 push(bc, hl)
+2692   FEFA                 ; ut88.cmm:1596 {
+2693   FEFA C5              push bc
+2694   FEFB E5              push hl
+2695   FEFC                 ; ut88.cmm:1597 swap(hl, de);
+2696   FEFC EB              ex de, hl
+2697   FEFD                 ; ut88.cmm:1598 
+2698   FEFD                 ; ut88.cmm:1599 // Вывод текущего значения на экран
+2699   FEFD                 ; ut88.cmm:1600 putCrLfTabHlSp(hl);
+2700   FEFD CD 51 FB        call putCrLfTabHlSp
+2701   FF00                 ; ut88.cmm:1601 
+2702   FF00                 ; ut88.cmm:1602 // Ввод строки пользователем
+2703   FF00                 ; ut88.cmm:1603 getLine();
+2704   FF00 CD EB F8        call getLine
+2705   FF03                 ; ut88.cmm:1604 
+2706   FF03                 ; ut88.cmm:1605 // Если пользователь ввел строку, то преобразуем её в число и сохраняем в памяти
+2707   FF03                 ; ut88.cmm:1606 if (flag_c)
+2708   FF03                 ; ut88.cmm:1607 {
+2709   FF03 D2 0F FF        jp   nc, l102
+2710   FF06                 ; ut88.cmm:1608 parseHexNumber16();
+2711   FF06 CD 57 F9        call parseHexNumber16
+2712   FF09                 ; ut88.cmm:1609 pop(de);
+2713   FF09 D1              pop  de
+2714   FF0A                 ; ut88.cmm:1610 push(de);
+2715   FF0A D5              push de
+2716   FF0B                 ; ut88.cmm:1611 swap(hl, de);
+2717   FF0B EB              ex de, hl
+2718   FF0C                 ; ut88.cmm:1612 *hl = d;
+2719   FF0C 72              ld   (hl), d
+2720   FF0D                 ; ut88.cmm:1613 hl--;
+2721   FF0D 2B              dec  hl
+2722   FF0E                 ; ut88.cmm:1614 *hl = e;
+2723   FF0E 73              ld   (hl), e
+2724   FF0F                 ; ut88.cmm:1615 }
+2725   FF0F                 ; ut88.cmm:1616 }
+2726   FF0F             l102: 
+2727   FF0F E1              pop  hl
+2728   FF10 C1              pop  bc
+2729   FF11                 ; ut88.cmm:1617 
+2730   FF11                 ; ut88.cmm:1618 // Следующий цикл
+2731   FF11                 ; ut88.cmm:1619 b--;
+2732   FF11 05              dec  b
+2733   FF12                 ; ut88.cmm:1620 hl++;
+2734   FF12 23              inc  hl
+2735   FF13                 ; ut88.cmm:1621 } while (flag_nz);
+2736   FF13 C2 F7 FE        jp   nz, l100
+2737   FF16             l101: 
+2738   FF16                 ; ut88.cmm:1622 }
+2739   FF16 C9              ret
+2740   FF17                 ; ut88.cmm:1623 
+2741   FF17                 ; ut88.cmm:1624 // Продложение разбора команды введенной пользователем.
+2742   FF17                 ; ut88.cmm:1625 // Аргументов нет. Функция никогда не завершается.
+2743   FF17                 ; ut88.cmm:1626 
+2744   FF17                 ; ut88.cmm:1627 void monitor2(a, hl, de)
+2745   FF17             monitor2: 
+2746   FF17                 ; ut88.cmm:1628 {
+2747   FF17                 ; ut88.cmm:1629 // Разбор команд
+2748   FF17                 ; ut88.cmm:1630 if (a == 'B') return cmdB();
+2749   FF17 FE 42           cp   66
+2750   FF19 CA F3 FF        jp   z, cmdB
+2751   FF1C                 ; ut88.cmm:1631 if (a == 'W') return cmdW();
+2752   FF1C FE 57           cp   87
+2753   FF1E CA 00 C0        jp   z, cmdW
+2754   FF21                 ; ut88.cmm:1632 if (a == 'V') return cmdV();
+2755   FF21 FE 56           cp   86
+2756   FF23 CA 29 FF        jp   z, cmdV
+2757   FF26                 ; ut88.cmm:1633 
+2758   FF26                 ; ut88.cmm:1634 // Продолжение разбора команд в следующей функции
+2759   FF26                 ; ut88.cmm:1635 return monitor3(a, hl, de);
+2760   FF26 C3 7E FF        jp   monitor3
+2761   FF29                 ; ut88.cmm:1636 noreturn;
+2762   FF29                 ; ut88.cmm:1637 }
+2763   FF29                 ; ut88.cmm:1638 
+2764   FF29                 ; ut88.cmm:1639 // Команда V
+2765   FF29                 ; ut88.cmm:1640 // Измерение константы скорости чтения данных с магнитной ленты
+2766   FF29                 ; ut88.cmm:1641 
+2767   FF29                 ; ut88.cmm:1642 void cmdV()
+2768   FF29             cmdV: 
+2769   FF29                 ; ut88.cmm:1643 {
+2770   FF29                 ; ut88.cmm:1644 // Выключение прерываний для более точного измерения
+2771   FF29                 ; ut88.cmm:1645 disableInterrupts();
+2772   FF29 F3              di
+2773   FF2A                 ; ut88.cmm:1646 
+2774   FF2A                 ; ut88.cmm:1647 // Тут будет общая длительность
+2775   FF2A                 ; ut88.cmm:1648 hl = 0;
+2776   FF2A 21 00 00        ld   hl, 0
+2777   FF2D                 ; ut88.cmm:1649 
+2778   FF2D                 ; ut88.cmm:1650 // Маска для чтения из порта ввода-вывода b = 1
+2779   FF2D                 ; ut88.cmm:1651 // Кол-во необходимыизмерений (перепадов) с = 122
+2780   FF2D                 ; ut88.cmm:1652 bc = [(1 << 8) | 122];
+2781   FF2D 01 7A 01        ld   bc, 378
+2782   FF30                 ; ut88.cmm:1653 
+2783   FF30                 ; ut88.cmm:1654 // Ожидание изменения уровня на входе магнитной ленты
+2784   FF30                 ; ut88.cmm:1655 a = in(ioTape);
+2785   FF30 DB A1           in   a, (161)
+2786   FF32                 ; ut88.cmm:1656 a &= b; // тут b = 1
+2787   FF32 A0              and  b
+2788   FF33                 ; ut88.cmm:1657 e = a;
+2789   FF33 5F              ld   e, a
+2790   FF34                 ; ut88.cmm:1658 do
+2791   FF34             l103: 
+2792   FF34                 ; ut88.cmm:1659 {
+2793   FF34                 ; ut88.cmm:1660 a = in(ioTape);
+2794   FF34 DB A1           in   a, (161)
+2795   FF36                 ; ut88.cmm:1661 a &= b; // тут b = 1
+2796   FF36 A0              and  b
+2797   FF37                 ; ut88.cmm:1662 } while (a == e);
+2798   FF37 BB              cp   e
+2799   FF38 CA 34 FF        jp   z, l103
+2800   FF3B             l104: 
+2801   FF3B                 ; ut88.cmm:1663 e = a;
+2802   FF3B 5F              ld   e, a
+2803   FF3C                 ; ut88.cmm:1664 
+2804   FF3C                 ; ut88.cmm:1665 // Изменение длительности 122 перепадов
+2805   FF3C                 ; ut88.cmm:1666 do
+2806   FF3C             l105: 
+2807   FF3C                 ; ut88.cmm:1667 {
+2808   FF3C                 ; ut88.cmm:1668 // Ожидание изменения уровня на входе магнитной ленты
+2809   FF3C                 ; ut88.cmm:1669 do
+2810   FF3C             l107: 
+2811   FF3C                 ; ut88.cmm:1670 {
+2812   FF3C                 ; ut88.cmm:1671 a = in(ioTape);
+2813   FF3C DB A1           in   a, (161)
+2814   FF3E                 ; ut88.cmm:1672 a &= b;
+2815   FF3E A0              and  b
+2816   FF3F                 ; ut88.cmm:1673 hl++;
+2817   FF3F 23              inc  hl
+2818   FF40                 ; ut88.cmm:1674 } while (a == e);
+2819   FF40 BB              cp   e
+2820   FF41 CA 3C FF        jp   z, l107
+2821   FF44             l108: 
+2822   FF44                 ; ut88.cmm:1675 e = a;
+2823   FF44 5F              ld   e, a
+2824   FF45                 ; ut88.cmm:1676 // Цикл
+2825   FF45                 ; ut88.cmm:1677 } while (flag_nz c--);
+2826   FF45 0D              dec  c
+2827   FF46 C2 3C FF        jp   nz, l105
+2828   FF49             l106: 
+2829   FF49                 ; ut88.cmm:1678 
+2830   FF49                 ; ut88.cmm:1679 // Вычисляем константу на основе полученной длительности
+2831   FF49                 ; ut88.cmm:1680 hl += hl += hl;
+2832   FF49 29              add  hl, hl
+2833   FF4A 29              add  hl, hl
+2834   FF4B                 ; ut88.cmm:1681 if (flag_p (a = h) |= a)
+2835   FF4B 7C              ld   a, h
+2836   FF4C B7              or   a
+2837   FF4D                 ; ut88.cmm:1682 {
+2838   FF4D FA 5E FF        jp   m, l109
+2839   FF50                 ; ut88.cmm:1683 invert(a);
+2840   FF50 2F              cpl
+2841   FF51                 ; ut88.cmm:1684 (a &= 0x20) >>r= 3;
+2842   FF51 E6 20           and  32
+2843   FF53 0F              rrca
+2844   FF54 0F              rrca
+2845   FF55 0F              rrca
+2846   FF56                 ; ut88.cmm:1685 b = a;
+2847   FF56 47              ld   b, a
+2848   FF57                 ; ut88.cmm:1686 a >>r= 1 >>@= 1;
+2849   FF57 0F              rrca
+2850   FF58 1F              rra
+2851   FF59                 ; ut88.cmm:1687 a += b;
+2852   FF59 80              add  b
+2853   FF5A                 ; ut88.cmm:1688 a++;
+2854   FF5A 3C              inc  a
+2855   FF5B                 ; ut88.cmm:1689 b = a;
+2856   FF5B 47              ld   b, a
+2857   FF5C                 ; ut88.cmm:1690 (a = h) -= b;
+2858   FF5C 7C              ld   a, h
+2859   FF5D 90              sub  b
+2860   FF5E                 ; ut88.cmm:1691 }
+2861   FF5E                 ; ut88.cmm:1692 
+2862   FF5E                 ; ut88.cmm:1693 // Сохранение константы
+2863   FF5E                 ; ut88.cmm:1694 vTapeSpeedRd = a;
+2864   FF5E             l109: 
+2865   FF5E 32 CF F7        ld   (vTapeSpeedRd), a
+2866   FF61                 ; ut88.cmm:1695 
+2867   FF61                 ; ut88.cmm:1696 // Включение прерываний
+2868   FF61                 ; ut88.cmm:1697 enableInterrupts();
+2869   FF61 FB              ei
+2870   FF62                 ; ut88.cmm:1698 
+2871   FF62                 ; ut88.cmm:1699 // Вывод константы на экран
+2872   FF62                 ; ut88.cmm:1700 put8Sp();
+2873   FF62 CD B4 F9        call put8Sp
+2874   FF65                 ; ut88.cmm:1701 
+2875   FF65                 ; ut88.cmm:1702 // Возврат в Монитор
+2876   FF65                 ; ut88.cmm:1703 return monitor();
+2877   FF65 C3 6C F8        jp   monitor
+2878   FF68                 ; ut88.cmm:1704 noreturn;
+2879   FF68                 ; ut88.cmm:1705 }
+2880   FF68                 ; ut88.cmm:1706 
+2881   FF68                 ; ut88.cmm:1707 // Выравнивание?
+2882   FF68                 ; ut88.cmm:1708 
+2883   FF68                 ; ut88.cmm:1709 uint8_t unknown[] = { 0xFF };
+2884   FF68             unknown: 
+2885   FF68 FF              db 255
+2886   FF69                 ; ut88.cmm:1710 
+2887   FF69                 ; ut88.cmm:1711 // Загрузка байта c магнитной ленты.
+2888   FF69                 ; ut88.cmm:1712 // Параметры: a = 8 с поиском синхробайта, a = без поиска. Результат: a - считанный байт. Сохраняет: bc, de, hl.
+2889   FF69                 ; ut88.cmm:1713 
+2890   FF69                 ; ut88.cmm:1714 void tapeInput2()
+2891   FF69             tapeInput2: 
+2892   FF69                 ; ut88.cmm:1715 {
+2893   FF69                 ; ut88.cmm:1716 disableInterrupts();
+2894   FF69 F3              di
+2895   FF6A                 ; ut88.cmm:1717 push(hl, bc, de);
+2896   FF6A E5              push hl
+2897   FF6B C5              push bc
+2898   FF6C D5              push de
+2899   FF6D                 ; ut88.cmm:1718 return tapeInput3();
+2900   FF6D C3 74 FB        jp   tapeInput3
+2901   FF70                 ; ut88.cmm:1719 noreturn;
+2902   FF70                 ; ut88.cmm:1720 }
+2903   FF70                 ; ut88.cmm:1721 
+2904   FF70                 ; ut88.cmm:1722 // Выход из функций tapeInput3, tapeOutput3.
+2905   FF70                 ; ut88.cmm:1723 
+2906   FF70                 ; ut88.cmm:1724 void tapeInputOutputEnd(a)
+2907   FF70             tapeInputOutputEnd: 
+2908   FF70                 ; ut88.cmm:1725 {
+2909   FF70                 ; ut88.cmm:1726 pop(hl, bc, de);
+2910   FF70 D1              pop  de
+2911   FF71 C1              pop  bc
+2912   FF72 E1              pop  hl
+2913   FF73                 ; ut88.cmm:1727 enableInterrupts();
+2914   FF73 FB              ei
+2915   FF74                 ; ut88.cmm:1728 return tapeInputOutputEnd2();
+2916   FF74 C3 2D FC        jp   tapeInputOutputEnd2
+2917   FF77                 ; ut88.cmm:1729 noreturn;
+2918   FF77                 ; ut88.cmm:1730 }
+2919   FF77                 ; ut88.cmm:1731 
+2920   FF77                 ; ut88.cmm:1732 // Запись байта на магнитную ленту.
+2921   FF77                 ; ut88.cmm:1733 // Параметры: с = байт. Результат: нет. Сохраняет: bc, de, hl.
+2922   FF77                 ; ut88.cmm:1734 
+2923   FF77                 ; ut88.cmm:1735 void tapeOutput2(c)
+2924   FF77             tapeOutput2: 
+2925   FF77                 ; ut88.cmm:1736 {
+2926   FF77                 ; ut88.cmm:1737 disableInterrupts();
+2927   FF77 F3              di
+2928   FF78                 ; ut88.cmm:1738 push(hl, bc, de);
+2929   FF78 E5              push hl
+2930   FF79 C5              push bc
+2931   FF7A D5              push de
+2932   FF7B                 ; ut88.cmm:1739 return tapeOutput3();
+2933   FF7B C3 F1 FB        jp   tapeOutput3
+2934   FF7E                 ; ut88.cmm:1740 noreturn;
+2935   FF7E                 ; ut88.cmm:1741 }
+2936   FF7E                 ; ut88.cmm:1742 
+2937   FF7E                 ; ut88.cmm:1743 // Продложение разбора команды введенной пользователем.
+2938   FF7E                 ; ut88.cmm:1744 // Параметры: нет. Функция никогда не завершается.
+2939   FF7E                 ; ut88.cmm:1745 
+2940   FF7E                 ; ut88.cmm:1746 void monitor3(a, hl, de)
+2941   FF7E             monitor3: 
+2942   FF7E                 ; ut88.cmm:1747 {
+2943   FF7E                 ; ut88.cmm:1748 // Разбор команд
+2944   FF7E                 ; ut88.cmm:1749 if (a == 'K') return cmdK(hl, de);
+2945   FF7E FE 4B           cp   75
+2946   FF80 CA 86 FF        jp   z, cmdK
+2947   FF83                 ; ut88.cmm:1750 
+2948   FF83                 ; ut88.cmm:1751 // Возврат в Монитор, если введена неизвестная команда.
+2949   FF83                 ; ut88.cmm:1752 return monitor(); //! Ошибка. Должен быть переход на error.
+2950   FF83 C3 6C F8        jp   monitor
+2951   FF86                 ; ut88.cmm:1753 noreturn;
+2952   FF86                 ; ut88.cmm:1754 }
+2953   FF86                 ; ut88.cmm:1755 
+2954   FF86                 ; ut88.cmm:1756 // Команда K <начальный адрес> <конечный адрес>
+2955   FF86                 ; ut88.cmm:1757 // Вычисление 16-битной суммы всех байт по адресам hl..de.
+2956   FF86                 ; ut88.cmm:1758 
+2957   FF86                 ; ut88.cmm:1759 void cmdK(hl, de)
+2958   FF86             cmdK: 
+2959   FF86                 ; ut88.cmm:1760 {
+2960   FF86                 ; ut88.cmm:1761 // Расчет контрольной суммы
+2961   FF86                 ; ut88.cmm:1762 push(hl)
+2962   FF86                 ; ut88.cmm:1763 {
+2963   FF86 E5              push hl
+2964   FF87                 ; ut88.cmm:1764 calcSum(hl, de); // Результат в bc
+2965   FF87 CD F6 FA        call calcSum
+2966   FF8A                 ; ut88.cmm:1765 }
+2967   FF8A E1              pop  hl
+2968   FF8B                 ; ut88.cmm:1766 
+2969   FF8B                 ; ut88.cmm:1767 // Вывод: начальный адрес, конечный адрес, контрольная сумма
+2970   FF8B                 ; ut88.cmm:1768 putCrLfTabHlSp(hl);
+2971   FF8B CD 51 FB        call putCrLfTabHlSp
+2972   FF8E                 ; ut88.cmm:1769 swap(de, hl);
+2973   FF8E EB              ex de, hl
+2974   FF8F                 ; ut88.cmm:1770 putCrLfTabHlSp(hl);
+2975   FF8F CD 51 FB        call putCrLfTabHlSp
+2976   FF92                 ; ut88.cmm:1771 swap(de, hl);
+2977   FF92 EB              ex de, hl
+2978   FF93                 ; ut88.cmm:1772 push(hl)
+2979   FF93                 ; ut88.cmm:1773 {
+2980   FF93 E5              push hl
+2981   FF94                 ; ut88.cmm:1774 putCrLfTabHlSp(hl = bc);
+2982   FF94 60              ld   h, b
+2983   FF95 69              ld   l, c
+2984   FF96 CD 51 FB        call putCrLfTabHlSp
+2985   FF99                 ; ut88.cmm:1775 }
+2986   FF99 E1              pop  hl
+2987   FF9A                 ; ut88.cmm:1776 
+2988   FF9A                 ; ut88.cmm:1777 // Возврат в Монитор
+2989   FF9A                 ; ut88.cmm:1778 return monitor();
+2990   FF9A C3 6C F8        jp   monitor
+2991   FF9D                 ; ut88.cmm:1779 noreturn;
+2992   FF9D                 ; ut88.cmm:1780 }
+2993   FF9D                 ; ut88.cmm:1781 
+2994   FF9D                 ; ut88.cmm:1782 // Выравнивание?
+2995   FF9D                 ; ut88.cmm:1783 
+2996   FF9D                 ; ut88.cmm:1784 uint8_t padding[] =
+2997   FF9D                 ; ut88.cmm:1785 {
+2998   FF9D                 ; ut88.cmm:1786 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+2999   FF9D                 ; ut88.cmm:1787 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+3000   FF9D                 ; ut88.cmm:1788 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+3001   FF9D                 ; ut88.cmm:1789 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+3002   FF9D                 ; ut88.cmm:1790 0xFF, 0xFF, 0xFF
+3003   FF9D                 ; ut88.cmm:1791 };
+3004   FF9D             padding: 
+3005   FF9D FF              db 255
+3006   FF9E FF              db 255
+3007   FF9F FF              db 255
+3008   FFA0 FF              db 255
+3009   FFA1 FF              db 255
+3010   FFA2 FF              db 255
+3011   FFA3 FF              db 255
+3012   FFA4 FF              db 255
+3013   FFA5 FF              db 255
+3014   FFA6 FF              db 255
+3015   FFA7 FF              db 255
+3016   FFA8 FF              db 255
+3017   FFA9 FF              db 255
+3018   FFAA FF              db 255
+3019   FFAB FF              db 255
+3020   FFAC FF              db 255
+3021   FFAD FF              db 255
+3022   FFAE FF              db 255
+3023   FFAF FF              db 255
+3024   FFB0 FF              db 255
+3025   FFB1 FF              db 255
+3026   FFB2 FF              db 255
+3027   FFB3 FF              db 255
+3028   FFB4 FF              db 255
+3029   FFB5 FF              db 255
+3030   FFB6 FF              db 255
+3031   FFB7 FF              db 255
+3032   FFB8 FF              db 255
+3033   FFB9 FF              db 255
+3034   FFBA FF              db 255
+3035   FFBB FF              db 255
+3036   FFBC FF              db 255
+3037   FFBD FF              db 255
+3038   FFBE FF              db 255
+3039   FFBF FF              db 255
+3040   FFC0                 ; ut88.cmm:1792 
+3041   FFC0                 ; ut88.cmm:1793 // Эта функция не используется. Это что то связанное с микроЭВМ минимальной конфигурации.
+3042   FFC0                 ; ut88.cmm:1794 
+3043   FFC0                 ; ut88.cmm:1795 extern uint8_t  FFC0_var_0 = 0xF6FD;
+3044   FFC0             FFC0_var_0=63229
+3045   FFC0                 ; ut88.cmm:1796 extern uint16_t FFC0_var_1 = 0xF6FE;
+3046   FFC0             FFC0_var_1=63230
+3047   FFC0                 ; ut88.cmm:1797 
+3048   FFC0                 ; ut88.cmm:1798 void FFC0()
+3049   FFC0             FFC0: 
+3050   FFC0                 ; ut88.cmm:1799 {
+3051   FFC0                 ; ut88.cmm:1800 nop();
+3052   FFC0 00              nop
+3053   FFC1                 ; ut88.cmm:1801 disableInterrupts();
+3054   FFC1 F3              di
+3055   FFC2                 ; ut88.cmm:1802 push(a, bc, de, hl)
+3056   FFC2                 ; ut88.cmm:1803 {
+3057   FFC2 F5              push af
+3058   FFC3 C5              push bc
+3059   FFC4 D5              push de
+3060   FFC5 E5              push hl
+3061   FFC6                 ; ut88.cmm:1804 hl = &FFC0Table;
+3062   FFC6 21 F0 FF        ld   hl, FFC0Table
+3063   FFC9                 ; ut88.cmm:1805 de = &FFC0_var_0;
+3064   FFC9 11 FD F6        ld   de, FFC0_var_0
+3065   FFCC                 ; ut88.cmm:1806 b = 3;
+3066   FFCC 06 03           ld   b, 3
+3067   FFCE                 ; ut88.cmm:1807 do
+3068   FFCE             l110: 
+3069   FFCE                 ; ut88.cmm:1808 {
+3070   FFCE                 ; ut88.cmm:1809 a = *de;
+3071   FFCE 1A              ld   a, (de)
+3072   FFCF                 ; ut88.cmm:1810 a++;
+3073   FFCF 3C              inc  a
+3074   FFD0                 ; ut88.cmm:1811 daa();
+3075   FFD0 27              daa
+3076   FFD1                 ; ut88.cmm:1812 *de = a;
+3077   FFD1 12              ld   (de), a
+3078   FFD2                 ; ut88.cmm:1813 if (a != *hl) break;
+3079   FFD2 BE              cp   (hl)
+3080   FFD3 C2 DE FF        jp   nz, l111
+3081   FFD6                 ; ut88.cmm:1814 *de = (a ^= a);
+3082   FFD6 AF              xor  a
+3083   FFD7 12              ld   (de), a
+3084   FFD8                 ; ut88.cmm:1815 hl++;
+3085   FFD8 23              inc  hl
+3086   FFD9                 ; ut88.cmm:1816 de++;
+3087   FFD9 13              inc  de
+3088   FFDA                 ; ut88.cmm:1817 } while (flag_nz b--);
+3089   FFDA 05              dec  b
+3090   FFDB C2 CE FF        jp   nz, l110
+3091   FFDE             l111: 
+3092   FFDE                 ; ut88.cmm:1818 hl = FFC0_var_1;
+3093   FFDE 2A FE F6        ld   hl, (FFC0_var_1)
+3094   FFE1                 ; ut88.cmm:1819 a = FFC0_var_0;
+3095   FFE1 3A FD F6        ld   a, (FFC0_var_0)
+3096   FFE4                 ; ut88.cmm:1820 *0x9000 = a;
+3097   FFE4 32 00 90        ld   (36864), a
+3098   FFE7                 ; ut88.cmm:1821 *0x9001 = hl;
+3099   FFE7 22 01 90        ld   (36865), hl
+3100   FFEA                 ; ut88.cmm:1822 }
+3101   FFEA E1              pop  hl
+3102   FFEB D1              pop  de
+3103   FFEC C1              pop  bc
+3104   FFED F1              pop  af
+3105   FFEE                 ; ut88.cmm:1823 enableInterrupts();
+3106   FFEE FB              ei
+3107   FFEF                 ; ut88.cmm:1824 }
+3108   FFEF C9              ret
+3109   FFF0                 ; ut88.cmm:1825 
+3110   FFF0                 ; ut88.cmm:1826 uint8_t FFC0Table[] = { 0x60, 0x60, 0x24 };
+3111   FFF0             FFC0Table: 
+3112   FFF0 60              db 96
+3113   FFF1 60              db 96
+3114   FFF2 24              db 36
+3115   FFF3                 ; ut88.cmm:1827 
+3116   FFF3                 ; ut88.cmm:1828 // Команда B
+3117   FFF3                 ; ut88.cmm:1829 // Вывод информации о времени на светодиодные индикаторы
+3118   FFF3                 ; ut88.cmm:1830 // (при одновременной работе МОНИТОРа микроЭВМ минимальной конфигурации)
+3119   FFF3                 ; ut88.cmm:1831 
+3120   FFF3                 ; ut88.cmm:1832 void cmdB()
+3121   FFF3             cmdB: 
+3122   FFF3                 ; ut88.cmm:1833 {
+3123   FFF3                 ; ut88.cmm:1834 // Обращение к монитору минимальной конфигурации
+3124   FFF3                 ; ut88.cmm:1835 hl = *0xC3FE;
+3125   FFF3 2A FE C3        ld   hl, (50174)
+3126   FFF6                 ; ut88.cmm:1836 a = *0xC3FD;
+3127   FFF6 3A FD C3        ld   a, (50173)
+3128   FFF9                 ; ut88.cmm:1837 rst(0x28);
+3129   FFF9 EF              rst 40
+3130   FFFA                 ; ut88.cmm:1838 rst(0x18);
+3131   FFFA DF              rst 24
+3132   FFFB                 ; ut88.cmm:1839 
+3133   FFFB                 ; ut88.cmm:1840 // Возврат
+3134   FFFB                 ; ut88.cmm:1841 return monitor();
+3135   FFFB C3 6C F8        jp   monitor
+3136   FFFE                 ; ut88.cmm:1842 noreturn;
+3137   FFFE                 ; ut88.cmm:1843 }
+3138   FFFE                 ; ut88.cmm:1844 
+3139   FFFE             
+0001   FFFE              savebin "ut88.bin", outputFileBegin, outputFileEnd - 1
+0002   FFFE             

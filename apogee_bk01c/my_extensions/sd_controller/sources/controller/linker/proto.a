@@ -1,0 +1,129 @@
+;// SD Controller for Computer "Radio 86RK" / "Apogee BK01"
+;// (c) 10-05-2014 vinxru (aleksey.f.morozov@gmail.com)
+;
+;#include "proto.h"
+;PCODE: $00000000 VOL: 0
+	#ifndef __SLEEP_DEFINED__
+;PCODE: $00000001 VOL: 0
+	#define __SLEEP_DEFINED__
+;PCODE: $00000002 VOL: 0
+	.EQU __se_bit=0x80
+;PCODE: $00000003 VOL: 0
+	.EQU __sm_mask=0x70
+;PCODE: $00000004 VOL: 0
+	.EQU __sm_powerdown=0x20
+;PCODE: $00000005 VOL: 0
+	.EQU __sm_powersave=0x30
+;PCODE: $00000006 VOL: 0
+	.EQU __sm_standby=0x60
+;PCODE: $00000007 VOL: 0
+	.EQU __sm_ext_standby=0x70
+;PCODE: $00000008 VOL: 0
+	.EQU __sm_adc_noise_red=0x10
+;PCODE: $00000009 VOL: 0
+	.SET power_ctrl_reg=mcucr
+;PCODE: $0000000A VOL: 0
+	#endif
+;PCODE: $0000000B VOL: 0
+;PCODE: $0000000C VOL: 0
+;
+;void wait() {
+; 0000 0006 void wait() {
+
+	.CSEG
+;PCODE: $0000000D VOL: 0
+;PCODE: $0000000E VOL: 0
+; 0000 0007     // ∆дем перепад 0->1
+; 0000 0008     while(!PINC.5);
+;PCODE: $0000000F VOL: 0
+;PCODE: $00000010 VOL: 0
+;PCODE: $00000011 VOL: 0
+;PCODE: $00000012 VOL: 0
+;PCODE: $00000013 VOL: 0
+;PCODE: $00000014 VOL: 0
+; 0000 0009     while(PINC.5);
+;PCODE: $00000015 VOL: 0
+;PCODE: $00000016 VOL: 0
+;PCODE: $00000017 VOL: 0
+;PCODE: $00000018 VOL: 0
+;PCODE: $00000019 VOL: 0
+;PCODE: $0000001A VOL: 0
+; 0000 000A //    while((PINC&0x3F)==0);
+; 0000 000B //    while((PINC&0x3F)==0x20);
+; 0000 000C     if((PINC&0x3F)==0) return;
+;PCODE: $0000001B VOL: 0
+;PCODE: $0000001C VOL: 0
+;PCODE: $0000001D VOL: 0
+;PCODE: $0000001E VOL: 0
+; 0000 000D #asm
+;PCODE: $0000001F VOL: 0
+;PCODE: $00000020 VOL: 0
+; 0000 000E     RJMP 0
+    RJMP 0
+;PCODE: $00000021 VOL: 0
+;PCODE: $00000022 VOL: 0
+; 0000 000F #endasm
+; 0000 0010 }
+;PCODE: $00000023 VOL: 0
+;PCODE: $00000024 VOL: 0
+;
+;void sendStart(BYTE c) {
+; 0000 0012 void sendStart(BYTE c) {
+;PCODE: $00000025 VOL: 0
+;PCODE: $00000026 VOL: 0
+; 0000 0013     wait();
+;	c -> Y+0
+;PCODE: $00000027 VOL: 0
+; 0000 0014     DATA_OUT
+;PCODE: $00000028 VOL: 0
+;PCODE: $00000029 VOL: 0
+; 0000 0015     PORTD = c;
+;PCODE: $0000002A VOL: 0
+;PCODE: $0000002B VOL: 0
+; 0000 0016 }
+;PCODE: $0000002C VOL: 0
+;PCODE: $0000002D VOL: 0
+;PCODE: $0000002E VOL: 0
+;
+;void recvStart() {
+; 0000 0018 void recvStart() {
+;PCODE: $0000002F VOL: 0
+;PCODE: $00000030 VOL: 0
+; 0000 0019     wait();
+;PCODE: $00000031 VOL: 0
+; 0000 001A     DATA_IN
+;PCODE: $00000032 VOL: 0
+;PCODE: $00000033 VOL: 0
+; 0000 001B     PORTD = 0xFF;
+;PCODE: $00000034 VOL: 0
+;PCODE: $00000035 VOL: 0
+; 0000 001C }
+;PCODE: $00000036 VOL: 0
+;PCODE: $00000037 VOL: 0
+;
+;BYTE wrecv() {
+; 0000 001E BYTE wrecv() {
+;PCODE: $00000038 VOL: 0
+;PCODE: $00000039 VOL: 0
+; 0000 001F     wait();
+;PCODE: $0000003A VOL: 0
+; 0000 0020     return PIND;
+;PCODE: $0000003B VOL: 0
+;PCODE: $0000003C VOL: 0
+; 0000 0021 }
+;PCODE: $0000003D VOL: 0
+;
+;void send(BYTE c) {
+; 0000 0023 void send(BYTE c) {
+;PCODE: $0000003E VOL: 0
+;PCODE: $0000003F VOL: 0
+; 0000 0024     wait();
+;	c -> Y+0
+;PCODE: $00000040 VOL: 0
+; 0000 0025     PORTD = c;
+;PCODE: $00000041 VOL: 0
+;PCODE: $00000042 VOL: 0
+; 0000 0026 }
+;PCODE: $00000043 VOL: 0
+;PCODE: $00000044 VOL: 0
+;PCODE: $00000045 VOL: 0

@@ -1,0 +1,30 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# Conn_01x04-Connector_Generic-ex
+#
+DEF Conn_01x04-Connector_Generic-ex J 0 24 N Y 1 F N
+F0 "J" 100 300 50 H V C CNN
+F1 "Conn_01x04-Connector_Generic-ex" 100 -300 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_1x??_*
+$ENDFPLIST
+DRAW
+T 0 5 200 50 0 1 1 К. Normal 0 C C
+T 0 150 200 50 0 1 1 Цепь Normal 0 C C
+S -50 250 250 -250 1 1 10 f
+P 2 0 1 0 -50 50 250 50 N
+P 2 0 1 0 50 250 50 -250 N
+P 2 1 1 0 -50 -150 250 -150 N
+P 2 1 1 0 -50 -50 250 -50 N
+P 2 1 1 0 -50 150 250 150 N
+X 1 1 -200 100 150 R 50 50 1 1 P
+X 2 2 -200 0 150 R 50 50 1 1 P
+X 3 3 -200 -100 150 R 50 50 1 1 P
+X 4 4 -200 -200 150 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+#End Library

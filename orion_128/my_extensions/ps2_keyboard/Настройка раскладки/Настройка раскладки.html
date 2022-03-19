@@ -1,0 +1,168 @@
+<style>
+.btnPC,.btnRK {
+  font-size : 12px;
+  font-family : arial;
+  position : absolute;
+  border : 1px solid black;
+  text-align : center;
+  cursor : pointer;
+  background : #EEE;
+  overflow : hidden;
+}
+.btnPC {
+  color : silver;
+}
+.btnPC:hover,.btnRK:hover {
+  border-color : red;
+  border-color : red;
+}
+.map {
+  position : absolute;
+  top : 600px;
+  width : 600px;
+  height : 200px;
+  left : 10px;
+}
+.loadbutton {
+  position : absolute;
+  top : 810px;
+  left : 520px;
+  width : 90px;
+}
+</style>
+<title>Настройка раскладки 86РК -> PC</title>
+
+<script language='javascript'>
+
+function makeKeyb(y,a,fn,cls) {
+  x=8;
+  step=15;
+  padding=8;
+  paddingTop=12;
+  keyHeight=36;
+  for(i=0, n=0; i<a.length; i++, n++) {
+    t = a[i];
+    if(t=="666") {
+      n=0;
+      x=8;
+      y+=keyHeight+padding;  
+      continue;
+    } 
+    while(t[0]=='$') x += step*3/2, t = t.substr(1);
+    w = step*3-padding;
+    while(t[1]=='*') w += t[0]*step, t = t.substr(2);
+    pt = paddingTop;
+    h = keyHeight;
+    while(t[0]=='^') h += keyHeight+padding, pt+=(keyHeight+padding)/2, t = t.substr(1);
+    if(t!="") {
+      i++;
+      document.write("<div id='"+fn+a[i]+"' onClick='"+fn+"(this,"+a[i]+")' class='"+cls+"' style='padding-top:"+pt+"px;height:"+(h-pt)+"px;width:"+w+"px;left:"+x+"px;top:"+y+"px'>"+t+"</div>");
+    }
+    x+=w+padding;
+ } 
+}
+
+a = ['Esc',0,'','F1',1,'F2',2,'F3',3,'F4',4,'$F5',5,'F6',6,'F7',7,'F8',8,'$F9',9,'F10',10,'F11',11,'F12',12,'','PrScr',13,'SLock',14,'Pause',15,'666',
+     '` ~',16,'1 !',17,'2 @',18,'3 #',19,'4 $',20,'5 %',21,'6 ^',22,'7 &',23,'8 *',24,'9 (',25,'0 )',26,'- _',27,'+ =',28,'3*BkSpc',29,'','Ins',30,'Home',31,'PgUp',32,'','NLock',33,'/',34,'*',35,'-',36,'666',
+     '2*Tab',37,'Q Й',38,'W Ц',39,'E У',40,'R К',41,'T Е',42,'Y Н',43,'U Г',44,'I Ш',45,'O Щ',46,'P З',47,'[ Х',48,'] Ъ',49,'1*Enter',50,'','Del',51,'End',52,'PgDn',53,'','7',54,'8',55,'9',56,'^+',57,'666',
+     '3*Caps',58,'A Ф',59,'S Ы',60,'D В',61,'F А',62,'G П',63,'H Р',64,'J О',65,'K Л',66,'L Д',67,'; Ж',68,'\' Э',69,'\\ |',70,'','','','','','','4',71,'5',72,'6',73,'666',
+     '4*Shift',74,'Z Я',75,'X Ч',76,'C С',77,'V М',78,'B И',79,'N Т',80,'M Ь',81,', Б',82,'. Ю',83,'/ ?',84,'5*Shift',85,'','','Up',86,'','','1',87,'2',88,'3',89,'^Enter',90,'666',
+     'Ctrl',91,'Win',92,'Alt',93,'9*9*3*Space',94,'Alt',95,'Win',96,'Menu',97,'Ctrl',98,'','Left',99,'Down',100,'Right',101,'','3*0',102,'.',103];
+
+makeKeyb(8,a,'set','btnPC');
+
+function KEY(A, D) { return 0x40|A|(D<<3); }
+
+b = ['; +',KEY(3, 3),'1 !',KEY(2, 1),'2 "',KEY(2, 2),'3 #',KEY(2, 3),'4 $',KEY(2, 4),'5 %',KEY(2, 5),'6 &',KEY(2, 6),'7 \'',KEY(2, 7),'8 (',KEY(3, 0),'9 )',KEY(3, 1),'0',KEY(2, 0),'- =',KEY(3, 5),'ТАБ',KEY(1, 0),'ПС',KEY(1, 1),'','UpLeft',KEY(0, 0),'F1',KEY(0, 3),'СТР',KEY(0, 1),'666',
+     '$J Й',KEY(5, 2),'C Ц',KEY(4, 3),'U У',KEY(6, 5),'K K',KEY(5, 3),'E E',KEY(4, 5),'N Н',KEY(5, 6),'G Г',KEY(4, 7),'[ Ш',KEY(7, 3),'] Щ',KEY(7, 5),'Z З',KEY(7, 2),'H Х',KEY(5, 0),': *',KEY(3, 2),'ВК',KEY(1, 2),'$','Left',KEY(1, 4),'Up',KEY(1, 5),'Right',KEY(1, 6),'','F5',KEY(0, 7),'666',
+     '(УС)',0x100,'F Ф',KEY(4, 6),'Y Ы',KEY(7, 1),'W В',KEY(6, 7),'A А',KEY(4, 1),'P П',KEY(6, 0),'R Р',KEY(6, 2),'О O',KEY(5, 7),'L Л',KEY(5, 4),'D Д',KEY(4, 4),'V Ж',KEY(6, 6),'\\ Э',KEY(7, 4),'. >',KEY(3, 6),'ЗБ',KEY(1, 3),'','F2',KEY(0, 4),'F3',KEY(0, 5),'F4',KEY(0, 6),'','2*(Режим)',0x1000,'666',
+     '$(СС)',0x200,'Q Я',KEY(6, 1),' ^ Ч',KEY(7, 6),'S С',KEY(6, 3),'М M',KEY(5, 5),'I И',KEY(5, 1),'Т T',KEY(6, 4),'X Ь',KEY(7, 0),'B Б',KEY(4, 2),'@ Ю',KEY(4, 0),', <',KEY(3, 4),'/ ?',KEY(3, 7),'(РУС)',0x400,'$','3*Down',KEY(1, 7),'АР2',KEY(0, 2),'','2*(Сброс)',0x800,'666',
+     '9*1*','9*1*Space',KEY(7, 7)];
+
+makeKeyb(330,b,'get','btnRK');
+
+var sel_scan="", sel_text="", shifts=0;
+var old=0;
+var map = Array(104);
+var shiftsDescr = [];
+
+for(i=0; i<map.length; i++) map[i]=0, shiftsDescr[i]="";
+
+function get(o,scan) {
+  if(scan>=0x100) {
+    o.pressed = !o.pressed;
+    o.style.background = o.pressed ? 'orange' : '';
+    if(o.pressed) shifts |= scan; else shifts &= ~scan;
+    shiftsDescr[scan] = o.pressed ? o.innerHTML : "";
+    return;
+  } 
+  if(old) old.style.background = '', old=0;
+  old = o;
+  if(scan==0 || (sel_scan==scan && sel_text==o.innerHTML)) {
+    sel_scan = 0;
+    sel_text = "";
+  } else {
+    sel_scan = scan;
+    sel_text = o.innerHTML;
+    o.style.background = 'yellow';
+  }
+}
+
+function set(o,scan) {
+  if(!o.textSaved) o.textSaved=1, o.oldText = o.innerHTML;
+  del = (sel_scan | shifts)==0;
+  o.innerHTML = del ? o.oldText : (sel_text + shiftsDescr.join(''));
+  o.style.color = del ? '' : 'red';
+  map[scan] = sel_scan | shifts;
+  updateMap();  
+}
+
+document.write("<textarea class='map' id=map></textarea>");
+document.write("<button onClick='load()' class='loadbutton'>Загрузить</button>");
+
+function load() {
+  var m = document.getElementById('map').value.split(","); 
+  for(var i=0; i<m.length; i++) m[i] *= 1;
+
+  var fa=[], ta=[];
+  for(var i=0; i<m.length; i++) {
+    var c = m[i]&0xFF;
+    if(c!=0) if(!(fa[i] = document.getElementById('get'+c))) { alert("Клавиша 86РК с кодом "+c+" не найдена (№"+(i+1)+")"); return; }
+    if(!(ta[i] = document.getElementById('set'+i))) { alert("Клавиша PC с кодом "+i+" не найдена"); return; }
+  }
+
+  var sd=[];
+  for(var j=0x100; j!=0x10000; j<<=1) {
+    var o = document.getElementById('get'+j);
+    if(o) sd[j] = o.innerHTML;
+  }
+
+  for(i=0; i<m.length; i++) {
+    sel_scan = m[i]&0xFF;
+    sel_text = sel_scan ? fa[i].innerHTML : "";
+    shifts   = m[i]&0xFF00;
+    shiftsDescr = [];
+
+    if(shifts)
+      for(var j=0x100; j!=0x10000; j<<=1)
+        if(shifts&j)
+          shiftsDescr.push(sd[shifts&j]);
+
+    set(ta[i], i);
+  }
+}
+
+function updateMap() {
+  var s = "";
+  for(i=0; i<map.length; i++) {
+    if(i) { s+=","; if((i%13)==0) s += "\r\n" }
+    s += map[i];
+  }
+  document.getElementById('map').value = s;
+}
+
+// 26-03-2012 vinxru
+// Версия 2 от 27-03-2012
+</script>
+
+<img style='position:absolute;top:810px' border="0" src="http://www.warlog.ru/counter/?i=3003"/>

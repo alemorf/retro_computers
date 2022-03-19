@@ -1,0 +1,28 @@
+Vector Start (Вектор Старт)
+
+Year:	1987
+RAM:	64 kB
+ROM:	8 kB
+CPU:	i8080 2.5 MHz
+Graph:	512x256x4, 256x256x16
+Sound:	i8253 x3
+Group:	Vector 06C
+
+Krista 2 is a Soviet home computer. This computer is partially compatible with
+the Vector 06C computer. Unlike the Vector 06C computer, the Krista 2 computer
+does not have a palette, 16 colors are fixed, the processor speed is lower, the
+tape recording format is different. Krista has very few own programs.
+
+The main reason for incompatibility with the "Vector 06C" computer is that the 
+I/O port address for setting the palette in the "Vector 06C" computer is the
+same as the RAM/ROM selection address in the "Vector Start" computer. The
+program for the computer "Vector 06C" launched on the "Vector Start" disconnects
+itself from the address space instead of setting the palette.
+
+How to load BASIC programs? You need to load BASIC-1200. Type the MLOAD. Without
+quotes and the program name. While loading on the border must run colored
+stripes.
+
+To start the game "Udavchik" you need to make #5000 in the monitor before
+loading BASIC-1200. That sets the BASIC buffer boundary to 5000h, by default it
+is 4500h. Run the "Udavchik" from the ROM flashed BASIC-1200 is not succeed.

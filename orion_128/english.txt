@@ -1,0 +1,45 @@
+Orion 128 (Орион 128)
+
+Year:	1990
+RAM:	128 - 256 kB
+ROM:	2 kB
+CPU:	i8080 2.5 MHz
+Graph:	384x256x16
+
+"Orion 128" is a simple Soviet computer for self-assembly. Circuit of this 
+computer was published in 1990 in the magazine "Radio".
+
+The reader needed to make or find a PCB himself, find parts, find the keyboard,
+then solder everything together, flash the ROM, and after that find and fix 
+everything malfunctions. The main purpose of this computer is to explain how
+computers works. But some factories produced "Orion 128" assembled. For example,
+this one.
+
+The PCB of this computer is slightly different from the magazine version.
+Changed place to connect the keyboard. Among the photos: the green board from
+the magazine, the yellow board has been modified at the factory.
+
+From my personal point of view, "Orion 128" is an improved version of the
+computer "Specialist". Their schemes are very similar, only Orion 128 has 2-4
+times more RAM, 128 or 256 kilobytes. More color graphics, 16 colors.
+And the processor is a bit faster.
+
+Since it was a DIY computer, it was easy to upgrade. Users was installing the
+Z80 processor. Users was increasing the clock frequency processor from 2.5 MHz
+to 7 MHz. In this case, Orion 128 was the fastest 8 bit computer. Users
+was installing a sound synthesizer chip AY8910. Users was connecting the floppy
+drive controller.
+
+Below, I write about the standard magazine version of the computer. Let me
+clarify, because that a DIY computer can be remade in any way. Orion 128
+computer loading operating system from an external ROM (cartridge), which
+is connected to the socket on the back of the computer.
+
+In addition to the operating system, this external ROM can contain any files.
+Immediately after turning on, the monitor screen displays blue bars with
+a list of files, like Norton Commander. Files written to external ROM this
+device A:. Devices B:, C:, D: are files in RAM (RAM disk).
+
+When the power is turned off, all user-written files are lost. Whatever lose
+data, before turning off the power, the user must make a backup a copy of the
+files to a tape recorder.

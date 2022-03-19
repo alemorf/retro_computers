@@ -1,0 +1,16 @@
+00: F F F F F F F F F F F F F F F F
+10: F F F F F F F F F F F F F F F F
+20: 5 F 6 F 2 F 2 F 6 F 6 F 2 F 2 F
+30: F F F F F F F F F F F F F F F F
+40: F F F F F F F F F F F F F F F F
+50: F F F F F F F F F F F F F F F F
+60: F F E F F F E F F F E F F F E F
+70: F F F F F F F F F F F F F F F F
+80: F F F F F F F F F F F F F F F F
+90: F F F F F F F F F F F F F F F F
+a0: E F E F A F A F E F E F A F A F
+b0: F F F F F F F F F F F F F F F F
+c0: F F F F F F F F F F F F F F F F
+d0: F F F F F F F F F F F F F F F F
+e0: F F E F F F E F F F E F F F E F
+f0: F F F F F F F F F F F F F F F F

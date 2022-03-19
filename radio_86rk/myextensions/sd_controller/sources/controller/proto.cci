@@ -1,0 +1,7 @@
+VERSION:3 SOURCE_TIMESTAMP:44895CB0
+NODE:I LEVEL:0 LINE:4 "E:\COM\Museum\Апогей_БК-01\86RKSD\Исходники и прошивка контроллера\proto.h"
+NODE:F LEVEL:0 LINE:6 "wait(void)"
+NODE:F LEVEL:0 LINE:18 "sendStart(BYTE c)"
+NODE:F LEVEL:0 LINE:24 "recvStart(void)"
+NODE:F LEVEL:0 LINE:30 "wrecv(void)"
+NODE:F LEVEL:0 LINE:35 "send(BYTE c)"

@@ -1,0 +1,1 @@
+copy /b best1\romdisk.bin+best2\romdisk.bin+best3\romdisk.bin+best4\romdisk.bin romdisk256.bin

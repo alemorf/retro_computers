@@ -1,0 +1,33 @@
+// Деление A на D, результат в HL. BC портить нельзя
+
+uchar op_div_mod;
+
+void op_div() {
+  asm {
+    push b
+    mov e, a
+    LXI H,0008h
+    MVI C,00
+op_div_1:
+    MOV A,E
+    RAL
+    MOV E,A
+    MOV A,C
+    RAL
+    SUB D
+    JNC op_div_2
+    ADD D
+op_div_2:
+    MOV C,A ; Остаток в С
+    CMC
+    MOV A,H
+    RAL
+    MOV H,A ; Частное в Н
+    DCR L
+    JNZ op_div_1
+    MOV A, C
+    STA op_div_mod
+    MOV A, H
+    pop b
+  }
+}  

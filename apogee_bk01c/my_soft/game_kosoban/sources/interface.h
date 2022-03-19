@@ -1,0 +1,10 @@
+void nextLevelAnim();
+void drawLevelNumber();
+void redraw();
+void delay(uchar i);
+void scrollAnimation1(uchar x, uchar y, uchar dx, uchar dy, uchar px, uchar py, uchar pn);
+void scrollAnimation2(uchar x, uchar y, uchar dx, uchar dy, uchar px, uchar py, uchar pn);
+void showCursor();
+void hideCursor();
+void prepareScreen();
+void initInterface();

@@ -1,0 +1,3919 @@
+;/*
+;It is an open source software to implement FAT file system to
+;small embedded systems. This is a free software and is opened for education,
+;research and commercial developments under license policy of following trems.
+;
+;(C) 2013-2014 vinxru
+;(C) 2010, ChaN, all right reserved.
+;
+;It is a free software and there is NO WARRANTY.
+;No restriction on use. You can use, modify and redistribute it for
+;personal, non-profit or commercial use UNDER YOUR RESPONSIBILITY.
+;Redistributions of source code must retain the above copyright notice.
+;
+;Version 1.0 10-05-2014
+;
+;P.S. goto allows you to save memory! Like other horrors bellow.
+;
+;Program size: 3070 words (6140 bytes), 75% of FLASH at ATMega8 !!!
+;*/
+;
+;/*
+;Я не стал добавлять контроль на специальные имена
+;CON,PRN,AUX,CLOCK$,NUL,COM1,COM2,COM3,COM4,LPT1,LPT2,LPT3
+;что бы не занимать микроконтроллер. Файлы с такими именами
+;оставляю на совести программиста.
+;*/
+;
+;//#include <stdafx.h>
+;#include "fs.h"
+;PCODE: $00000000 VOL: 0
+	#ifndef __SLEEP_DEFINED__
+;PCODE: $00000001 VOL: 0
+	#define __SLEEP_DEFINED__
+;PCODE: $00000002 VOL: 0
+	.EQU __se_bit=0x80
+;PCODE: $00000003 VOL: 0
+	.EQU __sm_mask=0x70
+;PCODE: $00000004 VOL: 0
+	.EQU __sm_powerdown=0x20
+;PCODE: $00000005 VOL: 0
+	.EQU __sm_powersave=0x30
+;PCODE: $00000006 VOL: 0
+	.EQU __sm_standby=0x60
+;PCODE: $00000007 VOL: 0
+	.EQU __sm_ext_standby=0x70
+;PCODE: $00000008 VOL: 0
+	.EQU __sm_adc_noise_red=0x10
+;PCODE: $00000009 VOL: 0
+	.SET power_ctrl_reg=mcucr
+;PCODE: $0000000A VOL: 0
+	#endif
+;PCODE: $0000000B VOL: 0
+;PCODE: $0000000C VOL: 0
+;#include "sd.h"
+;#include <string.h>
+;
+;/* Для наглядности */
+;
+;#define	LD_WORD(ptr)    (*(WORD*)(ptr))
+;#define	LD_DWORD(ptr)   (*(DWORD*)(ptr))
+;
+;/* Значения fs_type */
+;
+;#define FS_FAT16	0
+;#define FS_FAT32	1
+;#define FS_ERROR	2
+;
+;/* Специальные значения кластеров */
+;
+;#define FREE_CLUSTER    0
+;#define LAST_CLUSTER    0x0FFFFFFF
+;
+;/* Системные переменные. Информация из boot-сектора */
+;
+;typedef struct {
+;#ifndef FS_DISABLE_CHECK
+;  BYTE  opened;              /* Что открыто: OPENED_NONE, OPENED_FILE, OPENED_DIR */
+;#endif
+;  BYTE  entry_able;          /* Результат выполнения функции fs_dirread */
+;  WORD  entry_index;         /* Номер записи в каталоге */
+;  DWORD entry_cluster;       /* Кластер записи в каталоге */
+;  DWORD entry_sector;        /* Сектор записи в каталоге */
+;  DWORD entry_start_cluster; /* Первый сектор файла или каталога (0 - корневой каталог FAT16) */
+;  DWORD ptr;                 /* Указатель чтения/записи файла*/
+;  DWORD size;                /* Размер файла / File size */
+;  DWORD cluster;             /* Текущий кластер файла */
+;  DWORD sector;              /* Текущий сектор файла */
+;  BYTE  changed;             /* Размер файла изменился, надо сохранить */
+;} File;
+;
+;BYTE  fs_type;         /* FS_FAT16, FS_FAT32, FS_ERROR */
+;DWORD fs_fatbase;      /* Адрес первой FAT */
+;DWORD fs_fatbase2;     /* Адрес второй FAT */
+;BYTE  fs_csize;        /* Размер кластера в секторах */
+;WORD  fs_n_rootdir;    /* Кол-во записей в корневом каталоге (только FAT16) */
+;DWORD fs_n_fatent;     /* Кол-во кластеров */
+;DWORD fs_dirbase;      /* Корневой каталог (сектор для FAT16, кластер для FAT32) */
+;DWORD fs_database;     /* Адрес второго кластера */
+;
+;/* Системные переменные. Остальное */
+;
+;BYTE  lastError;       /* Последняя ошибка */
+;DWORD fs_fatoptim;     /* Первый свободный кластер */
+;DWORD fs_tmp;          /* Используеются для разных целей */
+;WORD  fs_wtotal;       /* Используется функциями fs_write_start, fs_write_end*/
+;
+;/* Открытые файлы/папки */
+;
+;File fs_file;
+;
+;#ifndef FS_DISABLE_SWAP
+;File fs_secondFile;
+;#endif
+;
+;/* Структура boot-сектора */
+;
+;#define BPB_SecPerClus    13
+;#define BPB_RsvdSecCnt    14
+;#define BPB_NumFATs       16
+;#define BPB_RootEntCnt    17
+;#define BPB_TotSec16      19
+;#define BPB_FATSz16       22
+;#define BPB_TotSec32      32
+;#define BS_FilSysType     54
+;#define BPB_FATSz32       36
+;#define BPB_RootClus      44
+;#define BS_FilSysType32   82
+;#define MBR_Table         446
+;
+;/**************************************************************************
+;*  Чтение сектора в буфер                                                 *
+;**************************************************************************/
+;
+;static BYTE sd_readBuf(DWORD sector) {
+; 0001 006E static BYTE sd_readBuf(DWORD sector) {
+
+	.CSEG
+;PCODE: $0000000D VOL: 0
+;PCODE: $0000000E VOL: 0
+; 0001 006F   return sd_read(buf, sector, 0, 512);
+;	sector -> Y+0
+;PCODE: $0000000F VOL: 0
+;PCODE: $00000010 VOL: 0
+;PCODE: $00000011 VOL: 0
+;PCODE: $00000012 VOL: 0
+;PCODE: $00000013 VOL: 0
+;PCODE: $00000014 VOL: 0
+;PCODE: $00000015 VOL: 0
+;PCODE: $00000016 VOL: 0
+;PCODE: $00000017 VOL: 0
+;PCODE: $00000018 VOL: 0
+;PCODE: $00000019 VOL: 0
+; 0001 0070 }
+;PCODE: $0000001A VOL: 0
+;
+;/**************************************************************************
+;*  Запись буфера в сектор                                                 *
+;**************************************************************************/
+;
+;static BYTE sd_writeBuf(DWORD sector) {
+; 0001 0076 static BYTE sd_writeBuf(DWORD sector) {
+;PCODE: $0000001B VOL: 0
+;PCODE: $0000001C VOL: 0
+; 0001 0077   return sd_write512(buf, sector);
+;	sector -> Y+0
+;PCODE: $0000001D VOL: 0
+;PCODE: $0000001E VOL: 0
+;PCODE: $0000001F VOL: 0
+;PCODE: $00000020 VOL: 0
+;PCODE: $00000021 VOL: 0
+;PCODE: $00000022 VOL: 0
+;PCODE: $00000023 VOL: 0
+; 0001 0078 }
+;PCODE: $00000024 VOL: 0
+;
+;/**************************************************************************
+;*  Инициализация                                                          *
+;**************************************************************************/
+;
+;BYTE fs_init() {
+; 0001 007E BYTE fs_init() {
+;PCODE: $00000025 VOL: 0
+;PCODE: $00000026 VOL: 0
+; 0001 007F   DWORD bsect, fsize, tsect;
+; 0001 0080 
+; 0001 0081   /* Сбрасываем оптимизацию */
+; 0001 0082   fs_fatoptim = 2;
+;PCODE: $00000027 VOL: 0
+;	bsect -> Y+8
+;	fsize -> Y+4
+;	tsect -> Y+0
+;PCODE: $00000028 VOL: 0
+;PCODE: $00000029 VOL: 0
+; 0001 0083 
+; 0001 0084   /* Предотвращаем ошибки программиста */
+; 0001 0085 #ifndef FS_DISABLE_CHECK
+; 0001 0086   fs_file.opened = OPENED_NONE;
+;PCODE: $0000002A VOL: 0
+;PCODE: $0000002B VOL: 0
+; 0001 0087 #ifndef FS_DISABLE_SWAP
+; 0001 0088   fs_secondFile.opened = OPENED_NONE;
+;PCODE: $0000002C VOL: 0
+;PCODE: $0000002D VOL: 0
+; 0001 0089 #endif
+; 0001 008A   fs_type = FS_ERROR;
+;PCODE: $0000002E VOL: 0
+;PCODE: $0000002F VOL: 0
+; 0001 008B #endif
+; 0001 008C 
+; 0001 008D   /* Инициализация накопителя */
+; 0001 008E   if(sd_init()) return 1;
+;PCODE: $00000030 VOL: 0
+;PCODE: $00000031 VOL: 0
+;PCODE: $00000032 VOL: 0
+;PCODE: $00000033 VOL: 0
+;PCODE: $00000034 VOL: 0
+;PCODE: $00000035 VOL: 0
+; 0001 008F 
+; 0001 0090   /* Ищем файловую систему */
+; 0001 0091   bsect = 0;
+;PCODE: $00000036 VOL: 0
+;PCODE: $00000037 VOL: 0
+;PCODE: $00000038 VOL: 0
+; 0001 0092   while(1) {
+;PCODE: $00000039 VOL: 0
+; 0001 0093     if(sd_readBuf(bsect)) return 1;
+;PCODE: $0000003A VOL: 0
+;PCODE: $0000003B VOL: 0
+;PCODE: $0000003C VOL: 0
+;PCODE: $0000003D VOL: 0
+;PCODE: $0000003E VOL: 0
+;PCODE: $0000003F VOL: 0
+;PCODE: $00000040 VOL: 0
+;PCODE: $00000041 VOL: 0
+; 0001 0094     if(LD_WORD(buf + 510) == 0xAA55) {
+;PCODE: $00000042 VOL: 0
+;PCODE: $00000043 VOL: 0
+;PCODE: $00000044 VOL: 0
+;PCODE: $00000045 VOL: 0
+;PCODE: $00000046 VOL: 0
+; 0001 0095       if(LD_WORD(buf + BS_FilSysType  ) == 0x4146) break;
+;PCODE: $00000047 VOL: 0
+;PCODE: $00000048 VOL: 0
+;PCODE: $00000049 VOL: 0
+;PCODE: $0000004A VOL: 0
+;PCODE: $0000004B VOL: 0
+; 0001 0096       if(LD_WORD(buf + BS_FilSysType32) == 0x4146) break;
+;PCODE: $0000004C VOL: 0
+;PCODE: $0000004D VOL: 0
+;PCODE: $0000004E VOL: 0
+;PCODE: $0000004F VOL: 0
+;PCODE: $00000050 VOL: 0
+;PCODE: $00000051 VOL: 0
+; 0001 0097       /* Возможно это MBR */
+; 0001 0098       if(bsect == 0 && buf[MBR_Table+4]) {
+;PCODE: $00000052 VOL: 0
+;PCODE: $00000053 VOL: 0
+;PCODE: $00000054 VOL: 0
+;PCODE: $00000055 VOL: 0
+;PCODE: $00000056 VOL: 0
+;PCODE: $00000057 VOL: 0
+;PCODE: $00000058 VOL: 0
+;PCODE: $00000059 VOL: 0
+;PCODE: $0000005A VOL: 0
+;PCODE: $0000005B VOL: 0
+;PCODE: $0000005C VOL: 0
+;PCODE: $0000005D VOL: 0
+; 0001 0099         bsect = LD_DWORD(buf + (MBR_Table + 8));
+;PCODE: $0000005E VOL: 0
+;PCODE: $0000005F VOL: 0
+;PCODE: $00000060 VOL: 0
+; 0001 009A         if(bsect != 0) continue;
+;PCODE: $00000061 VOL: 0
+;PCODE: $00000062 VOL: 0
+;PCODE: $00000063 VOL: 0
+;PCODE: $00000064 VOL: 0
+; 0001 009B       }
+;PCODE: $00000065 VOL: 0
+; 0001 009C     }
+;PCODE: $00000066 VOL: 0
+; 0001 009D abort_noFS:
+;PCODE: $00000067 VOL: 0
+;PCODE: $00000068 VOL: 0
+; 0001 009E     lastError = ERR_NO_FILESYSTEM; return 1;
+;PCODE: $00000069 VOL: 0
+;PCODE: $0000006A VOL: 0
+;PCODE: $0000006B VOL: 0
+;PCODE: $0000006C VOL: 0
+;PCODE: $0000006D VOL: 0
+; 0001 009F   }
+;PCODE: $0000006E VOL: 0
+;PCODE: $0000006F VOL: 0
+; 0001 00A0 
+; 0001 00A1   /* Размер таблицы FAT в секторах */
+; 0001 00A2   fsize = LD_WORD(buf + BPB_FATSz16);
+;PCODE: $00000070 VOL: 0
+;PCODE: $00000071 VOL: 0
+;PCODE: $00000072 VOL: 0
+;PCODE: $00000073 VOL: 0
+; 0001 00A3   if(fsize == 0) fsize = LD_DWORD(buf + BPB_FATSz32);
+;PCODE: $00000074 VOL: 0
+;PCODE: $00000075 VOL: 0
+;PCODE: $00000076 VOL: 0
+;PCODE: $00000077 VOL: 0
+;PCODE: $00000078 VOL: 0
+;PCODE: $00000079 VOL: 0
+; 0001 00A4 
+; 0001 00A5   /* Размер файловой системы в секторах */
+; 0001 00A6   tsect = LD_WORD( buf + BPB_TotSec16);
+;PCODE: $0000007A VOL: 0
+;PCODE: $0000007B VOL: 0
+;PCODE: $0000007C VOL: 0
+;PCODE: $0000007D VOL: 0
+;PCODE: $0000007E VOL: 0
+; 0001 00A7   if(tsect == 0) tsect = LD_DWORD(buf + BPB_TotSec32);
+;PCODE: $0000007F VOL: 0
+;PCODE: $00000080 VOL: 0
+;PCODE: $00000081 VOL: 0
+;PCODE: $00000082 VOL: 0
+;PCODE: $00000083 VOL: 0
+;PCODE: $00000084 VOL: 0
+; 0001 00A8 
+; 0001 00A9   /* Размер корневого каталога (должно быть кратно 16 и для FAT32 должно быть рано нулю) */
+; 0001 00AA   fs_n_rootdir = LD_WORD(buf + BPB_RootEntCnt);
+;PCODE: $00000085 VOL: 0
+;PCODE: $00000086 VOL: 0
+;PCODE: $00000087 VOL: 0
+;PCODE: $00000088 VOL: 0
+; 0001 00AB 
+; 0001 00AC   /* Адреса таблиц FAT в секторах */
+; 0001 00AD   fs_fatbase  = bsect + LD_WORD(buf + BPB_RsvdSecCnt);
+;PCODE: $00000089 VOL: 0
+;PCODE: $0000008A VOL: 0
+;PCODE: $0000008B VOL: 0
+;PCODE: $0000008C VOL: 0
+;PCODE: $0000008D VOL: 0
+;PCODE: $0000008E VOL: 0
+; 0001 00AE   fs_fatbase2 = 0;
+;PCODE: $0000008F VOL: 0
+;PCODE: $00000090 VOL: 0
+; 0001 00AF   if(buf[BPB_NumFATs] >= 2) fs_fatbase2 = fs_fatbase + fsize;
+;PCODE: $00000091 VOL: 0
+;PCODE: $00000092 VOL: 0
+;PCODE: $00000093 VOL: 0
+;PCODE: $00000094 VOL: 0
+;PCODE: $00000095 VOL: 0
+;PCODE: $00000096 VOL: 0
+;PCODE: $00000097 VOL: 0
+;PCODE: $00000098 VOL: 0
+; 0001 00B0 
+; 0001 00B1   /* Кол-во секторов на кластер */
+; 0001 00B2   fs_csize = buf[BPB_SecPerClus];
+;PCODE: $00000099 VOL: 0
+;PCODE: $0000009A VOL: 0
+;PCODE: $0000009B VOL: 0
+;PCODE: $0000009C VOL: 0
+; 0001 00B3 
+; 0001 00B4   /* Кол-во кластеров */
+; 0001 00B5   fsize *= buf[BPB_NumFATs];
+;PCODE: $0000009D VOL: 0
+;PCODE: $0000009E VOL: 0
+;PCODE: $0000009F VOL: 0
+;PCODE: $000000A0 VOL: 0
+;PCODE: $000000A1 VOL: 0
+;PCODE: $000000A2 VOL: 0
+;PCODE: $000000A3 VOL: 0
+; 0001 00B6   fs_n_fatent = (tsect - LD_WORD(buf + BPB_RsvdSecCnt) - fsize - fs_n_rootdir / 16) / fs_csize + 2;
+;PCODE: $000000A4 VOL: 0
+;PCODE: $000000A5 VOL: 0
+;PCODE: $000000A6 VOL: 0
+;PCODE: $000000A7 VOL: 0
+;PCODE: $000000A8 VOL: 0
+;PCODE: $000000A9 VOL: 0
+;PCODE: $000000AA VOL: 0
+;PCODE: $000000AB VOL: 0
+;PCODE: $000000AC VOL: 0
+;PCODE: $000000AD VOL: 0
+;PCODE: $000000AE VOL: 0
+;PCODE: $000000AF VOL: 0
+;PCODE: $000000B0 VOL: 0
+;PCODE: $000000B1 VOL: 0
+;PCODE: $000000B2 VOL: 0
+;PCODE: $000000B3 VOL: 0
+;PCODE: $000000B4 VOL: 0
+;PCODE: $000000B5 VOL: 0
+;PCODE: $000000B6 VOL: 0
+; 0001 00B7 
+; 0001 00B8   /* Адрес 2-ого кластера */
+; 0001 00B9   fs_database = fs_fatbase + fsize + fs_n_rootdir / 16;
+;PCODE: $000000B7 VOL: 0
+;PCODE: $000000B8 VOL: 0
+;PCODE: $000000B9 VOL: 0
+;PCODE: $000000BA VOL: 0
+;PCODE: $000000BB VOL: 0
+;PCODE: $000000BC VOL: 0
+;PCODE: $000000BD VOL: 0
+;PCODE: $000000BE VOL: 0
+; 0001 00BA 
+; 0001 00BB   /* Определение файловой системы */
+; 0001 00BC 
+; 0001 00BD   /* FAT 12 */
+; 0001 00BE   if(fs_n_fatent < 0xFF7) goto abort_noFS;
+;PCODE: $000000BF VOL: 0
+;PCODE: $000000C0 VOL: 0
+;PCODE: $000000C1 VOL: 0
+;PCODE: $000000C2 VOL: 0
+; 0001 00BF 
+; 0001 00C0   /* FAT 16 */
+; 0001 00C1   if(fs_n_fatent < 0xFFF7) {
+;PCODE: $000000C3 VOL: 0
+;PCODE: $000000C4 VOL: 0
+;PCODE: $000000C5 VOL: 0
+;PCODE: $000000C6 VOL: 0
+; 0001 00C2     fs_dirbase = fs_fatbase + fsize;
+;PCODE: $000000C7 VOL: 0
+;PCODE: $000000C8 VOL: 0
+;PCODE: $000000C9 VOL: 0
+;PCODE: $000000CA VOL: 0
+; 0001 00C3     fs_type = FS_FAT16;
+;PCODE: $000000CB VOL: 0
+; 0001 00C4     return 0;
+;PCODE: $000000CC VOL: 0
+;PCODE: $000000CD VOL: 0
+;PCODE: $000000CE VOL: 0
+; 0001 00C5   }
+; 0001 00C6 
+; 0001 00C7   /* FAT 32 */
+; 0001 00C8   fs_dirbase = LD_DWORD(buf + BPB_RootClus);
+;PCODE: $000000CF VOL: 0
+;PCODE: $000000D0 VOL: 0
+;PCODE: $000000D1 VOL: 0
+;PCODE: $000000D2 VOL: 0
+; 0001 00C9 
+; 0001 00CA   /* Сбрасываем счетчик свободного места */
+; 0001 00CB   if(LD_WORD(buf + BPB_RsvdSecCnt)>0) {
+;PCODE: $000000D3 VOL: 0
+;PCODE: $000000D4 VOL: 0
+;PCODE: $000000D5 VOL: 0
+;PCODE: $000000D6 VOL: 0
+; 0001 00CC     bsect++;
+;PCODE: $000000D7 VOL: 0
+;PCODE: $000000D8 VOL: 0
+;PCODE: $000000D9 VOL: 0
+; 0001 00CD     if(sd_readBuf(bsect)) return 1;
+;PCODE: $000000DA VOL: 0
+;PCODE: $000000DB VOL: 0
+;PCODE: $000000DC VOL: 0
+;PCODE: $000000DD VOL: 0
+;PCODE: $000000DE VOL: 0
+;PCODE: $000000DF VOL: 0
+;PCODE: $000000E0 VOL: 0
+;PCODE: $000000E1 VOL: 0
+; 0001 00CE     if(LD_DWORD(buf) == 0x41615252 && LD_DWORD(buf + 0x1E4) == 0x61417272 && LD_DWORD(buf + 0x1FC) == 0xAA550000) {
+;PCODE: $000000E2 VOL: 0
+;PCODE: $000000E3 VOL: 0
+;PCODE: $000000E4 VOL: 0
+;PCODE: $000000E5 VOL: 0
+;PCODE: $000000E6 VOL: 0
+;PCODE: $000000E7 VOL: 0
+;PCODE: $000000E8 VOL: 0
+;PCODE: $000000E9 VOL: 0
+;PCODE: $000000EA VOL: 0
+;PCODE: $000000EB VOL: 0
+;PCODE: $000000EC VOL: 0
+;PCODE: $000000ED VOL: 0
+;PCODE: $000000EE VOL: 0
+;PCODE: $000000EF VOL: 0
+;PCODE: $000000F0 VOL: 0
+;PCODE: $000000F1 VOL: 0
+; 0001 00CF       LD_DWORD(buf + 0x1E8) = 0xFFFFFFFF;
+;PCODE: $000000F2 VOL: 0
+;PCODE: $000000F3 VOL: 0
+;PCODE: $000000F4 VOL: 0
+;PCODE: $000000F5 VOL: 0
+; 0001 00D0       LD_DWORD(buf + 0x1EC) = 0xFFFFFFFF;
+;PCODE: $000000F6 VOL: 0
+;PCODE: $000000F7 VOL: 0
+;PCODE: $000000F8 VOL: 0
+;PCODE: $000000F9 VOL: 0
+; 0001 00D1       if(sd_writeBuf(bsect)) return 1;
+;PCODE: $000000FA VOL: 0
+;PCODE: $000000FB VOL: 0
+;PCODE: $000000FC VOL: 0
+;PCODE: $000000FD VOL: 0
+;PCODE: $000000FE VOL: 0
+;PCODE: $000000FF VOL: 0
+;PCODE: $00000100 VOL: 0
+;PCODE: $00000101 VOL: 0
+; 0001 00D2     }
+;PCODE: $00000102 VOL: 0
+; 0001 00D3   }
+;PCODE: $00000103 VOL: 0
+; 0001 00D4   fs_type = FS_FAT32;
+;PCODE: $00000104 VOL: 0
+;PCODE: $00000105 VOL: 0
+;PCODE: $00000106 VOL: 0
+; 0001 00D5 
+; 0001 00D6   return 0;
+;PCODE: $00000107 VOL: 0
+;PCODE: $00000108 VOL: 0
+;PCODE: $00000109 VOL: 0
+; 0001 00D7 }
+;PCODE: $0000010A VOL: 0
+;
+;/**************************************************************************
+;*  Проверка наличия диска и если нужно, то его инициализация              *
+;**************************************************************************/
+;
+;BYTE fs_check() {
+; 0001 00DD BYTE fs_check() {
+;PCODE: $0000010B VOL: 0
+;PCODE: $0000010C VOL: 0
+; 0001 00DE   if(!sd_check()) return 0;
+;PCODE: $0000010D VOL: 0
+;PCODE: $0000010E VOL: 0
+;PCODE: $0000010F VOL: 0
+;PCODE: $00000110 VOL: 0
+;PCODE: $00000111 VOL: 0
+; 0001 00DF   return fs_init();
+;PCODE: $00000112 VOL: 0
+;PCODE: $00000113 VOL: 0
+;PCODE: $00000114 VOL: 0
+; 0001 00E0 }
+;PCODE: $00000115 VOL: 0
+;
+;/**************************************************************************
+;*  Получить кластер из FS_DIRENTRY                                        *
+;*  Функция не портит buf (функции, в которых этого не написано, портят)   *
+;**************************************************************************/
+;
+;static DWORD fs_getEntryCluster() {
+; 0001 00E7 static DWORD fs_getEntryCluster() {
+;PCODE: $00000116 VOL: 0
+;PCODE: $00000117 VOL: 0
+; 0001 00E8   DWORD c = LD_WORD(FS_DIRENTRY + DIR_FstClusLO);
+; 0001 00E9   if(fs_type != FS_FAT16) c |= ((DWORD)LD_WORD(FS_DIRENTRY + DIR_FstClusHI)) << 16;
+;PCODE: $00000118 VOL: 0
+;	c -> Y+0
+;PCODE: $00000119 VOL: 0
+;PCODE: $0000011A VOL: 0
+;PCODE: $0000011B VOL: 0
+;PCODE: $0000011C VOL: 0
+;PCODE: $0000011D VOL: 0
+;PCODE: $0000011E VOL: 0
+;PCODE: $0000011F VOL: 0
+;PCODE: $00000120 VOL: 0
+;PCODE: $00000121 VOL: 0
+;PCODE: $00000122 VOL: 0
+;PCODE: $00000123 VOL: 0
+;PCODE: $00000124 VOL: 0
+;PCODE: $00000125 VOL: 0
+; 0001 00EA   return c;
+;PCODE: $00000126 VOL: 0
+;PCODE: $00000127 VOL: 0
+;PCODE: $00000128 VOL: 0
+;PCODE: $00000129 VOL: 0
+; 0001 00EB }
+;PCODE: $0000012A VOL: 0
+;
+;/**************************************************************************
+;*  Получить следующий кластер.                                            *
+;*  Аргумент и результат находятся в fs_tmp.                               *
+;**************************************************************************/
+;
+;static BYTE fs_nextCluster() {
+; 0001 00F2 static BYTE fs_nextCluster() {
+;PCODE: $0000012B VOL: 0
+;PCODE: $0000012C VOL: 0
+; 0001 00F3   if(fs_type == FS_FAT16) {
+;PCODE: $0000012D VOL: 0
+;PCODE: $0000012E VOL: 0
+; 0001 00F4     if(sd_read((BYTE*)&fs_tmp, fs_fatbase + fs_tmp / 256, (WORD)(BYTE)fs_tmp * 2, 2)) goto abort;
+;PCODE: $0000012F VOL: 0
+;PCODE: $00000130 VOL: 0
+;PCODE: $00000131 VOL: 0
+;PCODE: $00000132 VOL: 0
+;PCODE: $00000133 VOL: 0
+;PCODE: $00000134 VOL: 0
+;PCODE: $00000135 VOL: 0
+;PCODE: $00000136 VOL: 0
+;PCODE: $00000137 VOL: 0
+;PCODE: $00000138 VOL: 0
+;PCODE: $00000139 VOL: 0
+;PCODE: $0000013A VOL: 0
+;PCODE: $0000013B VOL: 0
+;PCODE: $0000013C VOL: 0
+;PCODE: $0000013D VOL: 0
+;PCODE: $0000013E VOL: 0
+;PCODE: $0000013F VOL: 0
+;PCODE: $00000140 VOL: 0
+; 0001 00F5     fs_tmp &= 0xFFFF;
+;PCODE: $00000141 VOL: 0
+;PCODE: $00000142 VOL: 0
+;PCODE: $00000143 VOL: 0
+;PCODE: $00000144 VOL: 0
+; 0001 00F6   } else {
+;PCODE: $00000145 VOL: 0
+;PCODE: $00000146 VOL: 0
+; 0001 00F7     if(sd_read((BYTE*)&fs_tmp, fs_fatbase + fs_tmp / 128, (WORD)((BYTE)fs_tmp % 128) * 4, 4)) goto abort;
+;PCODE: $00000147 VOL: 0
+;PCODE: $00000148 VOL: 0
+;PCODE: $00000149 VOL: 0
+;PCODE: $0000014A VOL: 0
+;PCODE: $0000014B VOL: 0
+;PCODE: $0000014C VOL: 0
+;PCODE: $0000014D VOL: 0
+;PCODE: $0000014E VOL: 0
+;PCODE: $0000014F VOL: 0
+;PCODE: $00000150 VOL: 0
+;PCODE: $00000151 VOL: 0
+;PCODE: $00000152 VOL: 0
+;PCODE: $00000153 VOL: 0
+;PCODE: $00000154 VOL: 0
+;PCODE: $00000155 VOL: 0
+;PCODE: $00000156 VOL: 0
+;PCODE: $00000157 VOL: 0
+;PCODE: $00000158 VOL: 0
+;PCODE: $00000159 VOL: 0
+;PCODE: $0000015A VOL: 0
+; 0001 00F8     fs_tmp &= 0x0FFFFFFF;
+;PCODE: $0000015B VOL: 0
+;PCODE: $0000015C VOL: 0
+;PCODE: $0000015D VOL: 0
+;PCODE: $0000015E VOL: 0
+; 0001 00F9   }
+;PCODE: $0000015F VOL: 0
+; 0001 00FA   /* Для удобства разработки заменяем последний кластер на ноль. */
+; 0001 00FB   if(fs_tmp < 2 || fs_tmp >= fs_n_fatent)
+;PCODE: $00000160 VOL: 0
+;PCODE: $00000161 VOL: 0
+;PCODE: $00000162 VOL: 0
+;PCODE: $00000163 VOL: 0
+;PCODE: $00000164 VOL: 0
+;PCODE: $00000165 VOL: 0
+;PCODE: $00000166 VOL: 0
+;PCODE: $00000167 VOL: 0
+;PCODE: $00000168 VOL: 0
+; 0001 00FC     fs_tmp = 0;
+;PCODE: $00000169 VOL: 0
+;PCODE: $0000016A VOL: 0
+; 0001 00FD   return 0;
+;PCODE: $0000016B VOL: 0
+;PCODE: $0000016C VOL: 0
+;PCODE: $0000016D VOL: 0
+; 0001 00FE abort:
+;PCODE: $0000016E VOL: 0
+; 0001 00FF   return 1;
+;PCODE: $0000016F VOL: 0
+;PCODE: $00000170 VOL: 0
+; 0001 0100 }
+;PCODE: $00000171 VOL: 0
+;
+;/**************************************************************************
+;*  Преобразовать номер кластера в номер сектора                           *
+;*  Аргумент и результат находятся в fs_tmp.                               *
+;*  Функция не портит buf                                                  *
+;***************************************************************************/
+;
+;static void fs_clust2sect() {
+; 0001 0108 static void fs_clust2sect() {
+;PCODE: $00000172 VOL: 0
+;PCODE: $00000173 VOL: 0
+; 0001 0109   fs_tmp = (fs_tmp - 2) * fs_csize + fs_database;
+;PCODE: $00000174 VOL: 0
+;PCODE: $00000175 VOL: 0
+;PCODE: $00000176 VOL: 0
+;PCODE: $00000177 VOL: 0
+;PCODE: $00000178 VOL: 0
+;PCODE: $00000179 VOL: 0
+;PCODE: $0000017A VOL: 0
+;PCODE: $0000017B VOL: 0
+;PCODE: $0000017C VOL: 0
+;PCODE: $0000017D VOL: 0
+; 0001 010A }
+;PCODE: $0000017E VOL: 0
+;PCODE: $0000017F VOL: 0
+;
+;/**************************************************************************
+;*  Получить очередной файл или папку                                      *
+;*  Удаленные файлы, метки тома, последний элемент, LFN показываются       *
+;*                                                                         *
+;*  Описание работы полностью идентично функции ниже, поэтому здесь не     *
+;*  приведено                                                              *
+;*                                                                         *
+;*  Функция не портит buf[0..MAX_FILENAME-1]                               *
+;***************************************************************************/
+;
+;static BYTE fs_readdirInt() {
+; 0001 0116 static BYTE fs_readdirInt() {
+;PCODE: $00000180 VOL: 0
+;PCODE: $00000181 VOL: 0
+; 0001 0117   if(fs_file.entry_able) {
+;PCODE: $00000182 VOL: 0
+;PCODE: $00000183 VOL: 0
+;PCODE: $00000184 VOL: 0
+;PCODE: $00000185 VOL: 0
+; 0001 0118     fs_file.entry_index++;
+;PCODE: $00000186 VOL: 0
+;PCODE: $00000187 VOL: 0
+;PCODE: $00000188 VOL: 0
+;PCODE: $00000189 VOL: 0
+;PCODE: $0000018A VOL: 0
+; 0001 0119 
+; 0001 011A     /* В папке не может быть больше 65536 файлов, а в корне FAT16 не больше  fs_n_rootdir */
+; 0001 011B     if(fs_file.entry_index == 0 || (fs_file.entry_cluster == 0 && fs_file.entry_index == fs_n_rootdir)) {
+;PCODE: $0000018B VOL: 0
+;PCODE: $0000018C VOL: 0
+;PCODE: $0000018D VOL: 0
+;PCODE: $0000018E VOL: 0
+;PCODE: $0000018F VOL: 0
+;PCODE: $00000190 VOL: 0
+;PCODE: $00000191 VOL: 0
+;PCODE: $00000192 VOL: 0
+;PCODE: $00000193 VOL: 0
+;PCODE: $00000194 VOL: 0
+;PCODE: $00000195 VOL: 0
+;PCODE: $00000196 VOL: 0
+;PCODE: $00000197 VOL: 0
+;PCODE: $00000198 VOL: 0
+;PCODE: $00000199 VOL: 0
+;PCODE: $0000019A VOL: 0
+; 0001 011C       fs_file.entry_index = 0;
+;PCODE: $0000019B VOL: 0
+;PCODE: $0000019C VOL: 0
+;PCODE: $0000019D VOL: 0
+; 0001 011D retEnd:
+;PCODE: $0000019E VOL: 0
+; 0001 011E       FS_DIRENTRY[DIR_Name] = 0; /* Признак последнего файла для пользователя вызывающего fs_dirread */
+;PCODE: $0000019F VOL: 0
+;PCODE: $000001A0 VOL: 0
+;PCODE: $000001A1 VOL: 0
+; 0001 011F       fs_file.entry_able = 0;
+;PCODE: $000001A2 VOL: 0
+;PCODE: $000001A3 VOL: 0
+;PCODE: $000001A4 VOL: 0
+; 0001 0120       return 0;
+;PCODE: $000001A5 VOL: 0
+;PCODE: $000001A6 VOL: 0
+; 0001 0121     }
+; 0001 0122 
+; 0001 0123     /* Граница сектора */
+; 0001 0124     if(fs_file.entry_index % 16 == 0) {
+;PCODE: $000001A7 VOL: 0
+;PCODE: $000001A8 VOL: 0
+;PCODE: $000001A9 VOL: 0
+;PCODE: $000001AA VOL: 0
+;PCODE: $000001AB VOL: 0
+; 0001 0125       fs_file.entry_sector++;
+;PCODE: $000001AC VOL: 0
+;PCODE: $000001AD VOL: 0
+;PCODE: $000001AE VOL: 0
+;PCODE: $000001AF VOL: 0
+;PCODE: $000001B0 VOL: 0
+; 0001 0126 
+; 0001 0127       /* Граница кластера */
+; 0001 0128       if(fs_file.entry_cluster != 0 && ((fs_file.entry_index / 16) % fs_csize) == 0) {
+;PCODE: $000001B1 VOL: 0
+;PCODE: $000001B2 VOL: 0
+;PCODE: $000001B3 VOL: 0
+;PCODE: $000001B4 VOL: 0
+;PCODE: $000001B5 VOL: 0
+;PCODE: $000001B6 VOL: 0
+;PCODE: $000001B7 VOL: 0
+;PCODE: $000001B8 VOL: 0
+;PCODE: $000001B9 VOL: 0
+;PCODE: $000001BA VOL: 0
+;PCODE: $000001BB VOL: 0
+;PCODE: $000001BC VOL: 0
+;PCODE: $000001BD VOL: 0
+;PCODE: $000001BE VOL: 0
+;PCODE: $000001BF VOL: 0
+;PCODE: $000001C0 VOL: 0
+;PCODE: $000001C1 VOL: 0
+; 0001 0129 
+; 0001 012A         /* Следующий кластер */
+; 0001 012B         fs_tmp = fs_file.entry_cluster;
+;PCODE: $000001C2 VOL: 0
+;PCODE: $000001C3 VOL: 0
+;PCODE: $000001C4 VOL: 0
+; 0001 012C         if(fs_nextCluster()) return 1;
+;PCODE: $000001C5 VOL: 0
+;PCODE: $000001C6 VOL: 0
+;PCODE: $000001C7 VOL: 0
+;PCODE: $000001C8 VOL: 0
+;PCODE: $000001C9 VOL: 0
+; 0001 012D         if(fs_tmp == 0) goto retEnd; /* Последний кластер, устаналиваем fs_file.entry_able = 0 */
+;PCODE: $000001CA VOL: 0
+;PCODE: $000001CB VOL: 0
+;PCODE: $000001CC VOL: 0
+;PCODE: $000001CD VOL: 0
+;PCODE: $000001CE VOL: 0
+; 0001 012E 
+; 0001 012F         /* Сохраняем */
+; 0001 0130         fs_file.entry_cluster = fs_tmp;
+;PCODE: $000001CF VOL: 0
+;PCODE: $000001D0 VOL: 0
+;PCODE: $000001D1 VOL: 0
+;PCODE: $000001D2 VOL: 0
+; 0001 0131         fs_clust2sect();
+;PCODE: $000001D3 VOL: 0
+; 0001 0132         fs_file.entry_sector = fs_tmp;
+;PCODE: $000001D4 VOL: 0
+;PCODE: $000001D5 VOL: 0
+;PCODE: $000001D6 VOL: 0
+; 0001 0133       }
+; 0001 0134     }
+;PCODE: $000001D7 VOL: 0
+; 0001 0135   } else {
+;PCODE: $000001D8 VOL: 0
+;PCODE: $000001D9 VOL: 0
+;PCODE: $000001DA VOL: 0
+; 0001 0136     fs_file.entry_index = 0;
+;PCODE: $000001DB VOL: 0
+;PCODE: $000001DC VOL: 0
+;PCODE: $000001DD VOL: 0
+; 0001 0137     fs_file.entry_able  = 1;
+;PCODE: $000001DE VOL: 0
+;PCODE: $000001DF VOL: 0
+;PCODE: $000001E0 VOL: 0
+; 0001 0138     fs_tmp = fs_file.entry_start_cluster;
+;PCODE: $000001E1 VOL: 0
+;PCODE: $000001E2 VOL: 0
+;PCODE: $000001E3 VOL: 0
+; 0001 0139 
+; 0001 013A     /* Первый кластер и сектор папки. Этот код не имеет смысла выполнять
+; 0001 013B     для FAT16, но зато код хорошо сжимается. Т.к. этот кусок кода аналогичен
+; 0001 013C     куску выше. */
+; 0001 013D     fs_file.entry_cluster = fs_tmp;
+;PCODE: $000001E4 VOL: 0
+;PCODE: $000001E5 VOL: 0
+;PCODE: $000001E6 VOL: 0
+; 0001 013E     fs_clust2sect();
+;PCODE: $000001E7 VOL: 0
+; 0001 013F     fs_file.entry_sector = fs_tmp;
+;PCODE: $000001E8 VOL: 0
+;PCODE: $000001E9 VOL: 0
+;PCODE: $000001EA VOL: 0
+; 0001 0140 
+; 0001 0141     /* Корневая папка FS_FAT16 */
+; 0001 0142     if(fs_file.entry_cluster == 0) fs_file.entry_sector = fs_dirbase;
+;PCODE: $000001EB VOL: 0
+;PCODE: $000001EC VOL: 0
+;PCODE: $000001ED VOL: 0
+;PCODE: $000001EE VOL: 0
+;PCODE: $000001EF VOL: 0
+;PCODE: $000001F0 VOL: 0
+;PCODE: $000001F1 VOL: 0
+; 0001 0143   }
+;PCODE: $000001F2 VOL: 0
+;PCODE: $000001F3 VOL: 0
+; 0001 0144 
+; 0001 0145   return sd_read(FS_DIRENTRY, fs_file.entry_sector, (WORD)((fs_file.entry_index % 16) * 32), 32);
+;PCODE: $000001F4 VOL: 0
+;PCODE: $000001F5 VOL: 0
+;PCODE: $000001F6 VOL: 0
+;PCODE: $000001F7 VOL: 0
+;PCODE: $000001F8 VOL: 0
+;PCODE: $000001F9 VOL: 0
+;PCODE: $000001FA VOL: 0
+;PCODE: $000001FB VOL: 0
+;PCODE: $000001FC VOL: 0
+;PCODE: $000001FD VOL: 0
+;PCODE: $000001FE VOL: 0
+;PCODE: $000001FF VOL: 0
+;PCODE: $00000200 VOL: 0
+;PCODE: $00000201 VOL: 0
+;PCODE: $00000202 VOL: 0
+;PCODE: $00000203 VOL: 0
+; 0001 0146 }
+;PCODE: $00000204 VOL: 0
+;
+;/**************************************************************************
+;*  Получить очередной файл или папку (удаленные файлы пропускаются)       *
+;*                                                                         *
+;*  Эта функция вызывается после fs_opendir, которая настраивает все       *
+;*  нужные переменные, поэтому вам ничего трогать не надо. Информация      *
+;*  ниже приведена для лучшего понимания работы                            *
+;*                                                                         *
+;*  Если на входе entry_able=0,  то начинается новый поиск в папке         *
+;*  по адресу entry_start_cluster. При этом инициализируются переменные:   *
+;*  entry_able, entry_index, entry_sector, entry_cluster.                  *
+;*                                                                         *
+;*  Если на входе fs_file.entry_able=1, то используются эти 4 переменные.  *
+;*                                                                         *
+;*  На выходе                                                              *
+;*    entry_able     - если 0 значит достигнут конец каталога              *
+;*    entry_sector   - сектор описателя                                    *
+;*    entry_cluster  - кластер описателя                                   *
+;*    entry_index    - номер описателя                                     *
+;*    FS_DIRENTRY    - описатель                                           *
+;*                                                                         *
+;*  Функция не портит buf[0..MAX_FILENAME-1]                               *
+;**************************************************************************/
+;
+;BYTE fs_readdir_nocheck() {
+; 0001 015F BYTE fs_readdir_nocheck() {
+;PCODE: $00000205 VOL: 0
+;PCODE: $00000206 VOL: 0
+; 0001 0160   while(!fs_readdirInt()) {
+;PCODE: $00000207 VOL: 0
+;PCODE: $00000208 VOL: 0
+;PCODE: $00000209 VOL: 0
+;PCODE: $0000020A VOL: 0
+; 0001 0161     if(FS_DIRENTRY[DIR_Name] == 0) fs_file.entry_able = 0;
+;PCODE: $0000020B VOL: 0
+;PCODE: $0000020C VOL: 0
+;PCODE: $0000020D VOL: 0
+;PCODE: $0000020E VOL: 0
+;PCODE: $0000020F VOL: 0
+;PCODE: $00000210 VOL: 0
+;PCODE: $00000211 VOL: 0
+; 0001 0162     if(fs_file.entry_able == 0) return 0;
+;PCODE: $00000212 VOL: 0
+;PCODE: $00000213 VOL: 0
+;PCODE: $00000214 VOL: 0
+;PCODE: $00000215 VOL: 0
+;PCODE: $00000216 VOL: 0
+;PCODE: $00000217 VOL: 0
+;PCODE: $00000218 VOL: 0
+; 0001 0163     if(FS_DIRENTRY[DIR_Name] == 0xE5) continue; /*  Может быть еще 0x05 */
+;PCODE: $00000219 VOL: 0
+;PCODE: $0000021A VOL: 0
+;PCODE: $0000021B VOL: 0
+;PCODE: $0000021C VOL: 0
+;PCODE: $0000021D VOL: 0
+;PCODE: $0000021E VOL: 0
+; 0001 0164     if(FS_DIRENTRY[DIR_Name] == '.') continue;
+;PCODE: $0000021F VOL: 0
+;PCODE: $00000220 VOL: 0
+;PCODE: $00000221 VOL: 0
+;PCODE: $00000222 VOL: 0
+;PCODE: $00000223 VOL: 0
+;PCODE: $00000224 VOL: 0
+; 0001 0165     if((FS_DIRENTRY[DIR_Attr] & AM_VOL) == 0) return 0;
+;PCODE: $00000225 VOL: 0
+;PCODE: $00000226 VOL: 0
+;PCODE: $00000227 VOL: 0
+;PCODE: $00000228 VOL: 0
+;PCODE: $00000229 VOL: 0
+;PCODE: $0000022A VOL: 0
+;PCODE: $0000022B VOL: 0
+; 0001 0166   }
+;PCODE: $0000022C VOL: 0
+;PCODE: $0000022D VOL: 0
+;PCODE: $0000022E VOL: 0
+; 0001 0167   return 1;
+;PCODE: $0000022F VOL: 0
+;PCODE: $00000230 VOL: 0
+; 0001 0168 }
+;PCODE: $00000231 VOL: 0
+;
+;BYTE fs_readdir() {
+; 0001 016A BYTE fs_readdir() {
+;PCODE: $00000232 VOL: 0
+;PCODE: $00000233 VOL: 0
+; 0001 016B #ifndef FS_DISABLE_CHECK
+; 0001 016C   /* Папка должна быть открыта */
+; 0001 016D   if(fs_file.opened != OPENED_DIR) { lastError = ERR_NOT_OPENED; return 1; }
+;PCODE: $00000234 VOL: 0
+;PCODE: $00000235 VOL: 0
+;PCODE: $00000236 VOL: 0
+;PCODE: $00000237 VOL: 0
+;PCODE: $00000238 VOL: 0
+;PCODE: $00000239 VOL: 0
+;PCODE: $0000023A VOL: 0
+; 0001 016E #endif
+; 0001 016F   return fs_readdir_nocheck();
+;PCODE: $0000023B VOL: 0
+;PCODE: $0000023C VOL: 0
+;PCODE: $0000023D VOL: 0
+; 0001 0170 }
+;PCODE: $0000023E VOL: 0
+;
+;/**************************************************************************
+;*  Сохранить изменения в обе таблицы FAT                                  *
+;**************************************************************************/
+;
+;static BYTE fs_saveFatSector(DWORD sector) {
+; 0001 0176 static BYTE fs_saveFatSector(DWORD sector) {
+;PCODE: $0000023F VOL: 0
+;PCODE: $00000240 VOL: 0
+; 0001 0177   if(fs_fatbase2) if(sd_writeBuf(fs_fatbase2+sector)) return 1;
+;	sector -> Y+0
+;PCODE: $00000241 VOL: 0
+;PCODE: $00000242 VOL: 0
+;PCODE: $00000243 VOL: 0
+;PCODE: $00000244 VOL: 0
+;PCODE: $00000245 VOL: 0
+;PCODE: $00000246 VOL: 0
+;PCODE: $00000247 VOL: 0
+;PCODE: $00000248 VOL: 0
+;PCODE: $00000249 VOL: 0
+;PCODE: $0000024A VOL: 0
+;PCODE: $0000024B VOL: 0
+;PCODE: $0000024C VOL: 0
+;PCODE: $0000024D VOL: 0
+; 0001 0178   return sd_writeBuf(fs_fatbase+sector);
+;PCODE: $0000024E VOL: 0
+;PCODE: $0000024F VOL: 0
+;PCODE: $00000250 VOL: 0
+;PCODE: $00000251 VOL: 0
+;PCODE: $00000252 VOL: 0
+;PCODE: $00000253 VOL: 0
+;PCODE: $00000254 VOL: 0
+;PCODE: $00000255 VOL: 0
+;PCODE: $00000256 VOL: 0
+; 0001 0179 }
+;PCODE: $00000257 VOL: 0
+;
+;/**************************************************************************
+;*  Выделить кластер                                                       *
+;*                                                                         *
+;*  Найденный кластер сохраняется в fs_tmp                                 *
+;**************************************************************************/
+;
+;/* Ради функции fs_getfree пришлось усложнить функцию fs_allocCluster.
+;Если функция не используется, то можно с помощью макроса FS_DISABLE_GETFREESPACE
+;исключить лишний код */
+;
+;#ifdef FS_DISABLE_GETFREESPACE
+;#define DIS(X)
+;#define ALLOCCLUSTER
+;#else
+;#define DIS(X) X
+;#define ALLOCCLUSTER 0
+;#endif
+;
+;static BYTE fs_allocCluster(DIS(BYTE freeSpace)) {
+; 0001 018D static BYTE fs_allocCluster(BYTE freeSpace) {
+;PCODE: $00000258 VOL: 0
+;PCODE: $00000259 VOL: 0
+; 0001 018E   BYTE i;
+; 0001 018F   DWORD s;
+; 0001 0190   BYTE *a;
+; 0001 0191 
+; 0001 0192   /* Начинаем поиск с этого кластера */
+; 0001 0193   fs_tmp = fs_fatoptim;
+;PCODE: $0000025A VOL: 0
+;PCODE: $0000025B VOL: 0
+;	freeSpace -> Y+8
+;	i -> R17
+;	s -> Y+4
+;	*a -> R18,R19
+;PCODE: $0000025C VOL: 0
+;PCODE: $0000025D VOL: 0
+; 0001 0194 
+; 0001 0195   /* Последовательно перебираем сектора */
+; 0001 0196   while(1) {
+;PCODE: $0000025E VOL: 0
+; 0001 0197     /* Сектор и смещение */
+; 0001 0198     s = fs_tmp / 256, i = (BYTE)fs_tmp, a = (BYTE*)((WORD*)buf + i);
+;PCODE: $0000025F VOL: 0
+;PCODE: $00000260 VOL: 0
+;PCODE: $00000261 VOL: 0
+;PCODE: $00000262 VOL: 0
+;PCODE: $00000263 VOL: 0
+;PCODE: $00000264 VOL: 0
+;PCODE: $00000265 VOL: 0
+;PCODE: $00000266 VOL: 0
+;PCODE: $00000267 VOL: 0
+;PCODE: $00000268 VOL: 0
+;PCODE: $00000269 VOL: 0
+;PCODE: $0000026A VOL: 0
+; 0001 0199     if(fs_type != FS_FAT16) s = fs_tmp / 128, i |= 128, a = (BYTE*)((DWORD*)buf - 128 + i);
+;PCODE: $0000026B VOL: 0
+;PCODE: $0000026C VOL: 0
+;PCODE: $0000026D VOL: 0
+;PCODE: $0000026E VOL: 0
+;PCODE: $0000026F VOL: 0
+;PCODE: $00000270 VOL: 0
+;PCODE: $00000271 VOL: 0
+;PCODE: $00000272 VOL: 0
+;PCODE: $00000273 VOL: 0
+;PCODE: $00000274 VOL: 0
+;PCODE: $00000275 VOL: 0
+;PCODE: $00000276 VOL: 0
+;PCODE: $00000277 VOL: 0
+;PCODE: $00000278 VOL: 0
+;PCODE: $00000279 VOL: 0
+;PCODE: $0000027A VOL: 0
+; 0001 019A 
+; 0001 019B     /* Читаем сектор */
+; 0001 019C     if(sd_readBuf(fs_fatbase + s)) goto abort;
+;PCODE: $0000027B VOL: 0
+;PCODE: $0000027C VOL: 0
+;PCODE: $0000027D VOL: 0
+;PCODE: $0000027E VOL: 0
+;PCODE: $0000027F VOL: 0
+;PCODE: $00000280 VOL: 0
+;PCODE: $00000281 VOL: 0
+;PCODE: $00000282 VOL: 0
+;PCODE: $00000283 VOL: 0
+; 0001 019D 
+; 0001 019E     /* Среди 128/256 чисел в секторе ищем 0 */
+; 0001 019F     /* Куча проверок внутри цикла не самое быстрое решение, но зато получается очень компактный код. */
+; 0001 01A0     do {
+;PCODE: $00000284 VOL: 0
+;PCODE: $00000285 VOL: 0
+; 0001 01A1       /* Кластеры кончились */
+; 0001 01A2       if(fs_tmp >= fs_n_fatent) { DIS(if(freeSpace) return 0;) lastError = ERR_NO_FREE_SPACE; goto abort; }
+;PCODE: $00000286 VOL: 0
+;PCODE: $00000287 VOL: 0
+;PCODE: $00000288 VOL: 0
+;PCODE: $00000289 VOL: 0
+;PCODE: $0000028A VOL: 0
+;PCODE: $0000028B VOL: 0
+;PCODE: $0000028C VOL: 0
+;PCODE: $0000028D VOL: 0
+;PCODE: $0000028E VOL: 0
+;PCODE: $0000028F VOL: 0
+;PCODE: $00000290 VOL: 0
+;PCODE: $00000291 VOL: 0
+;PCODE: $00000292 VOL: 0
+;PCODE: $00000293 VOL: 0
+;PCODE: $00000294 VOL: 0
+; 0001 01A3 
+; 0001 01A4       /* Ищем свободный кластер и помечаем как последний */
+; 0001 01A5       if(fs_type == FS_FAT16) {
+;PCODE: $00000295 VOL: 0
+;PCODE: $00000296 VOL: 0
+;PCODE: $00000297 VOL: 0
+; 0001 01A6         if(LD_WORD(a) == 0) { DIS(if(!freeSpace) {) LD_WORD(a) = (WORD)LAST_CLUSTER; goto founded; DIS(} fs_file.sector++;) }
+;PCODE: $00000298 VOL: 0
+;PCODE: $00000299 VOL: 0
+;PCODE: $0000029A VOL: 0
+;PCODE: $0000029B VOL: 0
+;PCODE: $0000029C VOL: 0
+;PCODE: $0000029D VOL: 0
+;PCODE: $0000029E VOL: 0
+;PCODE: $0000029F VOL: 0
+;PCODE: $000002A0 VOL: 0
+;PCODE: $000002A1 VOL: 0
+;PCODE: $000002A2 VOL: 0
+;PCODE: $000002A3 VOL: 0
+;PCODE: $000002A4 VOL: 0
+;PCODE: $000002A5 VOL: 0
+;PCODE: $000002A6 VOL: 0
+;PCODE: $000002A7 VOL: 0
+;PCODE: $000002A8 VOL: 0
+; 0001 01A7         a += 2;
+;PCODE: $000002A9 VOL: 0
+;PCODE: $000002AA VOL: 0
+;PCODE: $000002AB VOL: 0
+; 0001 01A8       } else {
+;PCODE: $000002AC VOL: 0
+;PCODE: $000002AD VOL: 0
+; 0001 01A9         if(LD_DWORD(a) == 0) { DIS(if(!freeSpace) {) LD_DWORD(a) = LAST_CLUSTER; goto founded; DIS(} fs_file.sector++;) }
+;PCODE: $000002AE VOL: 0
+;PCODE: $000002AF VOL: 0
+;PCODE: $000002B0 VOL: 0
+;PCODE: $000002B1 VOL: 0
+;PCODE: $000002B2 VOL: 0
+;PCODE: $000002B3 VOL: 0
+;PCODE: $000002B4 VOL: 0
+;PCODE: $000002B5 VOL: 0
+;PCODE: $000002B6 VOL: 0
+;PCODE: $000002B7 VOL: 0
+;PCODE: $000002B8 VOL: 0
+;PCODE: $000002B9 VOL: 0
+;PCODE: $000002BA VOL: 0
+;PCODE: $000002BB VOL: 0
+;PCODE: $000002BC VOL: 0
+;PCODE: $000002BD VOL: 0
+;PCODE: $000002BE VOL: 0
+; 0001 01AA         a += 4;
+;PCODE: $000002BF VOL: 0
+;PCODE: $000002C0 VOL: 0
+;PCODE: $000002C1 VOL: 0
+; 0001 01AB       }
+;PCODE: $000002C2 VOL: 0
+; 0001 01AC 
+; 0001 01AD       /* Счетчик */
+; 0001 01AE       ++fs_tmp, ++i;
+;PCODE: $000002C3 VOL: 0
+;PCODE: $000002C4 VOL: 0
+;PCODE: $000002C5 VOL: 0
+;PCODE: $000002C6 VOL: 0
+;PCODE: $000002C7 VOL: 0
+;PCODE: $000002C8 VOL: 0
+; 0001 01AF     } while(i != 0);
+;PCODE: $000002C9 VOL: 0
+;PCODE: $000002CA VOL: 0
+;PCODE: $000002CB VOL: 0
+;PCODE: $000002CC VOL: 0
+;PCODE: $000002CD VOL: 0
+; 0001 01B0   }
+;PCODE: $000002CE VOL: 0
+;PCODE: $000002CF VOL: 0
+; 0001 01B1 founded:
+;PCODE: $000002D0 VOL: 0
+; 0001 01B2   /* Оптимизация */
+; 0001 01B3   fs_fatoptim = fs_tmp;
+;PCODE: $000002D1 VOL: 0
+;PCODE: $000002D2 VOL: 0
+; 0001 01B4 
+; 0001 01B5   /* Сохраняем изменения */
+; 0001 01B6   return fs_saveFatSector(s);
+;PCODE: $000002D3 VOL: 0
+;PCODE: $000002D4 VOL: 0
+;PCODE: $000002D5 VOL: 0
+;PCODE: $000002D6 VOL: 0
+;PCODE: $000002D7 VOL: 0
+;PCODE: $000002D8 VOL: 0
+; 0001 01B7 abort:
+;PCODE: $000002D9 VOL: 0
+; 0001 01B8   return 1;
+;PCODE: $000002DA VOL: 0
+;PCODE: $000002DB VOL: 0
+;PCODE: $000002DC VOL: 0
+;PCODE: $000002DD VOL: 0
+; 0001 01B9 }
+;PCODE: $000002DE VOL: 0
+;
+;#undef DIS
+;
+;/**************************************************************************
+;*  Изменение таблицы FAT                                                  *
+;*                                                                         *
+;*  Если fs_tmp!=0, то FAT[cluster] = fs_tmp                               *
+;*  Если fs_tmp==0, то swap(FAT[cluster], fs_tmp)                          *
+;**************************************************************************/
+;
+;static BYTE fs_setNextCluster(DWORD cluster) {
+; 0001 01C4 static BYTE fs_setNextCluster(DWORD cluster) {
+;PCODE: $000002DF VOL: 0
+;PCODE: $000002E0 VOL: 0
+; 0001 01C5   DWORD s, prev;
+; 0001 01C6   void* a;
+; 0001 01C7 
+; 0001 01C8   /* Вычисляем сектор */
+; 0001 01C9   s = cluster / 128;
+;PCODE: $000002E1 VOL: 0
+;PCODE: $000002E2 VOL: 0
+;	cluster -> Y+10
+;	s -> Y+6
+;	prev -> Y+2
+;	*a -> R16,R17
+;PCODE: $000002E3 VOL: 0
+;PCODE: $000002E4 VOL: 0
+;PCODE: $000002E5 VOL: 0
+;PCODE: $000002E6 VOL: 0
+; 0001 01CA   if(fs_type == FS_FAT16) s = cluster / 256;
+;PCODE: $000002E7 VOL: 0
+;PCODE: $000002E8 VOL: 0
+;PCODE: $000002E9 VOL: 0
+;PCODE: $000002EA VOL: 0
+;PCODE: $000002EB VOL: 0
+;PCODE: $000002EC VOL: 0
+; 0001 01CB 
+; 0001 01CC   /* Читаем сектор */
+; 0001 01CD   if(sd_readBuf(fs_fatbase + s)) return 1;
+;PCODE: $000002ED VOL: 0
+;PCODE: $000002EE VOL: 0
+;PCODE: $000002EF VOL: 0
+;PCODE: $000002F0 VOL: 0
+;PCODE: $000002F1 VOL: 0
+;PCODE: $000002F2 VOL: 0
+;PCODE: $000002F3 VOL: 0
+;PCODE: $000002F4 VOL: 0
+;PCODE: $000002F5 VOL: 0
+;PCODE: $000002F6 VOL: 0
+;PCODE: $000002F7 VOL: 0
+;PCODE: $000002F8 VOL: 0
+; 0001 01CE 
+; 0001 01CF   /* Изменяем отдельный кластер */
+; 0001 01D0   if(fs_type == FS_FAT16) {
+;PCODE: $000002F9 VOL: 0
+;PCODE: $000002FA VOL: 0
+;PCODE: $000002FB VOL: 0
+; 0001 01D1     a = (WORD*)buf + (BYTE)cluster;
+;PCODE: $000002FC VOL: 0
+;PCODE: $000002FD VOL: 0
+;PCODE: $000002FE VOL: 0
+;PCODE: $000002FF VOL: 0
+;PCODE: $00000300 VOL: 0
+;PCODE: $00000301 VOL: 0
+; 0001 01D2     prev = LD_WORD(a);
+;PCODE: $00000302 VOL: 0
+;PCODE: $00000303 VOL: 0
+;PCODE: $00000304 VOL: 0
+;PCODE: $00000305 VOL: 0
+; 0001 01D3     LD_WORD(a) = (WORD)fs_tmp;
+;PCODE: $00000306 VOL: 0
+;PCODE: $00000307 VOL: 0
+;PCODE: $00000308 VOL: 0
+; 0001 01D4   } else {
+;PCODE: $00000309 VOL: 0
+;PCODE: $0000030A VOL: 0
+; 0001 01D5     a = (DWORD*)buf + (BYTE)cluster % 128;
+;PCODE: $0000030B VOL: 0
+;PCODE: $0000030C VOL: 0
+;PCODE: $0000030D VOL: 0
+;PCODE: $0000030E VOL: 0
+;PCODE: $0000030F VOL: 0
+;PCODE: $00000310 VOL: 0
+;PCODE: $00000311 VOL: 0
+;PCODE: $00000312 VOL: 0
+; 0001 01D6     prev = LD_DWORD(a);
+;PCODE: $00000313 VOL: 0
+;PCODE: $00000314 VOL: 0
+;PCODE: $00000315 VOL: 0
+; 0001 01D7     LD_DWORD(a) = fs_tmp;
+;PCODE: $00000316 VOL: 0
+;PCODE: $00000317 VOL: 0
+;PCODE: $00000318 VOL: 0
+; 0001 01D8   }
+;PCODE: $00000319 VOL: 0
+; 0001 01D9 
+; 0001 01DA   /* Оптимизация поиска свободного кластера. Внезапно if() if() занимает меньше ПЗУ, чем && */
+; 0001 01DB   if(fs_tmp == FREE_CLUSTER) if(cluster < fs_fatoptim) fs_fatoptim = cluster;
+;PCODE: $0000031A VOL: 0
+;PCODE: $0000031B VOL: 0
+;PCODE: $0000031C VOL: 0
+;PCODE: $0000031D VOL: 0
+;PCODE: $0000031E VOL: 0
+;PCODE: $0000031F VOL: 0
+;PCODE: $00000320 VOL: 0
+;PCODE: $00000321 VOL: 0
+;PCODE: $00000322 VOL: 0
+; 0001 01DC 
+; 0001 01DD   /* Результат */
+; 0001 01DE   if(fs_tmp == LAST_CLUSTER || fs_tmp == FREE_CLUSTER)
+;PCODE: $00000323 VOL: 0
+;PCODE: $00000324 VOL: 0
+;PCODE: $00000325 VOL: 0
+;PCODE: $00000326 VOL: 0
+;PCODE: $00000327 VOL: 0
+;PCODE: $00000328 VOL: 0
+;PCODE: $00000329 VOL: 0
+;PCODE: $0000032A VOL: 0
+;PCODE: $0000032B VOL: 0
+;PCODE: $0000032C VOL: 0
+; 0001 01DF     fs_tmp = prev;
+;PCODE: $0000032D VOL: 0
+;PCODE: $0000032E VOL: 0
+; 0001 01E0 
+; 0001 01E1   /* Сохраняем сектор */
+; 0001 01E2   return fs_saveFatSector(s);
+;PCODE: $0000032F VOL: 0
+;PCODE: $00000330 VOL: 0
+;PCODE: $00000331 VOL: 0
+;PCODE: $00000332 VOL: 0
+;PCODE: $00000333 VOL: 0
+;PCODE: $00000334 VOL: 0
+;PCODE: $00000335 VOL: 0
+; 0001 01E3 }
+;PCODE: $00000336 VOL: 0
+;
+;/**************************************************************************
+;*  Установить в описатель кластер                                         *
+;**************************************************************************/
+;
+;static void fs_setEntryCluster(BYTE* entry, DWORD cluster) {
+; 0001 01E9 static void fs_setEntryCluster(BYTE* entry, DWORD cluster) {
+;PCODE: $00000337 VOL: 0
+;PCODE: $00000338 VOL: 0
+; 0001 01EA   LD_WORD(entry + DIR_FstClusLO) = (WORD)(cluster);
+;	*entry -> Y+4
+;	cluster -> Y+0
+;PCODE: $00000339 VOL: 0
+;PCODE: $0000033A VOL: 0
+;PCODE: $0000033B VOL: 0
+; 0001 01EB   LD_WORD(entry + DIR_FstClusHI) = (WORD)(cluster >> 16);
+;PCODE: $0000033C VOL: 0
+;PCODE: $0000033D VOL: 0
+;PCODE: $0000033E VOL: 0
+;PCODE: $0000033F VOL: 0
+; 0001 01EC }
+;PCODE: $00000340 VOL: 0
+;PCODE: $00000341 VOL: 0
+;PCODE: $00000342 VOL: 0
+;
+;/**************************************************************************
+;*  Очистить кластер и буфер                                               *
+;**************************************************************************/
+;
+;static BYTE fs_eraseCluster(BYTE i) {
+; 0001 01F2 static BYTE fs_eraseCluster(BYTE i) {
+;PCODE: $00000343 VOL: 0
+;PCODE: $00000344 VOL: 0
+; 0001 01F3   memset(buf, 0, 512);
+;	i -> Y+0
+;PCODE: $00000345 VOL: 0
+;PCODE: $00000346 VOL: 0
+;PCODE: $00000347 VOL: 0
+;PCODE: $00000348 VOL: 0
+;PCODE: $00000349 VOL: 0
+;PCODE: $0000034A VOL: 0
+;PCODE: $0000034B VOL: 0
+; 0001 01F4   for(; i < fs_csize; ++i)
+;PCODE: $0000034C VOL: 0
+;PCODE: $0000034D VOL: 0
+;PCODE: $0000034E VOL: 0
+;PCODE: $0000034F VOL: 0
+;PCODE: $00000350 VOL: 0
+;PCODE: $00000351 VOL: 0
+;PCODE: $00000352 VOL: 0
+;PCODE: $00000353 VOL: 0
+; 0001 01F5     if(sd_writeBuf(fs_tmp + i)) return 1;
+;PCODE: $00000354 VOL: 0
+;PCODE: $00000355 VOL: 0
+;PCODE: $00000356 VOL: 0
+;PCODE: $00000357 VOL: 0
+;PCODE: $00000358 VOL: 0
+;PCODE: $00000359 VOL: 0
+;PCODE: $0000035A VOL: 0
+;PCODE: $0000035B VOL: 0
+;PCODE: $0000035C VOL: 0
+;PCODE: $0000035D VOL: 0
+;PCODE: $0000035E VOL: 0
+;PCODE: $0000035F VOL: 0
+; 0001 01F6   return 0;
+;PCODE: $00000360 VOL: 0
+;PCODE: $00000361 VOL: 0
+;PCODE: $00000362 VOL: 0
+;PCODE: $00000363 VOL: 0
+;PCODE: $00000364 VOL: 0
+;PCODE: $00000365 VOL: 0
+;PCODE: $00000366 VOL: 0
+;PCODE: $00000367 VOL: 0
+;PCODE: $00000368 VOL: 0
+;PCODE: $00000369 VOL: 0
+; 0001 01F7 }
+;PCODE: $0000036A VOL: 0
+;
+;/**************************************************************************
+;*  Выделить описатель в каталоге                                          *
+;*                                                                         *
+;*  entry_able должно быть равно 0                                         *
+;*  entry_start_cluster должен содержать первый кластер папки              *
+;**************************************************************************/
+;
+;static BYTE* fs_allocEntry() {
+; 0001 0200 static BYTE* fs_allocEntry() {
+;PCODE: $0000036B VOL: 0
+;PCODE: $0000036C VOL: 0
+; 0001 0201   /* Ищем в папке пустой описатель. */
+; 0001 0202   while(1) {
+;PCODE: $0000036D VOL: 0
+; 0001 0203     if(fs_readdirInt()) return 0;
+;PCODE: $0000036E VOL: 0
+;PCODE: $0000036F VOL: 0
+;PCODE: $00000370 VOL: 0
+;PCODE: $00000371 VOL: 0
+;PCODE: $00000372 VOL: 0
+; 0001 0204 
+; 0001 0205     /* Кластеры кончились */
+; 0001 0206     if(!fs_file.entry_able) break;
+;PCODE: $00000373 VOL: 0
+;PCODE: $00000374 VOL: 0
+;PCODE: $00000375 VOL: 0
+;PCODE: $00000376 VOL: 0
+;PCODE: $00000377 VOL: 0
+;PCODE: $00000378 VOL: 0
+; 0001 0207 
+; 0001 0208     /* Это свободный описатель */
+; 0001 0209     if(FS_DIRENTRY[0] == 0xE5 || FS_DIRENTRY[0] == 0) { /* Может быть еще 0x05 */
+;PCODE: $00000379 VOL: 0
+;PCODE: $0000037A VOL: 0
+;PCODE: $0000037B VOL: 0
+;PCODE: $0000037C VOL: 0
+;PCODE: $0000037D VOL: 0
+;PCODE: $0000037E VOL: 0
+;PCODE: $0000037F VOL: 0
+;PCODE: $00000380 VOL: 0
+;PCODE: $00000381 VOL: 0
+;PCODE: $00000382 VOL: 0
+;PCODE: $00000383 VOL: 0
+; 0001 020A 
+; 0001 020B       /* Читаем сектор */
+; 0001 020C       if(sd_readBuf(fs_file.entry_sector)) return 0;
+;PCODE: $00000384 VOL: 0
+;PCODE: $00000385 VOL: 0
+;PCODE: $00000386 VOL: 0
+;PCODE: $00000387 VOL: 0
+;PCODE: $00000388 VOL: 0
+;PCODE: $00000389 VOL: 0
+;PCODE: $0000038A VOL: 0
+;PCODE: $0000038B VOL: 0
+; 0001 020D 
+; 0001 020E       /* Найденный описатель */
+; 0001 020F       return buf + (fs_file.entry_index % 16) * 32;
+;PCODE: $0000038C VOL: 0
+;PCODE: $0000038D VOL: 0
+;PCODE: $0000038E VOL: 0
+;PCODE: $0000038F VOL: 0
+;PCODE: $00000390 VOL: 0
+;PCODE: $00000391 VOL: 0
+;PCODE: $00000392 VOL: 0
+;PCODE: $00000393 VOL: 0
+; 0001 0210     }
+; 0001 0211   }
+;PCODE: $00000394 VOL: 0
+;PCODE: $00000395 VOL: 0
+;PCODE: $00000396 VOL: 0
+; 0001 0212 
+; 0001 0213   /* Ограничение по кол-ву файлов */
+; 0001 0214   /* Корневой каталог FAT16 так же вернет fs_file.entry_index == 0 */
+; 0001 0215   if(fs_file.entry_index == 0) { lastError = ERR_DIR_FULL; return 0; }
+;PCODE: $00000397 VOL: 0
+;PCODE: $00000398 VOL: 0
+;PCODE: $00000399 VOL: 0
+;PCODE: $0000039A VOL: 0
+;PCODE: $0000039B VOL: 0
+;PCODE: $0000039C VOL: 0
+;PCODE: $0000039D VOL: 0
+;PCODE: $0000039E VOL: 0
+; 0001 0216 
+; 0001 0217   /* Выделить кластер. Результат в fs_tmp */
+; 0001 0218   if(fs_allocCluster(ALLOCCLUSTER)) return 0;
+;PCODE: $0000039F VOL: 0
+;PCODE: $000003A0 VOL: 0
+;PCODE: $000003A1 VOL: 0
+;PCODE: $000003A2 VOL: 0
+;PCODE: $000003A3 VOL: 0
+;PCODE: $000003A4 VOL: 0
+;PCODE: $000003A5 VOL: 0
+;PCODE: $000003A6 VOL: 0
+; 0001 0219 
+; 0001 021A   /* Добавить еще один кластер к папке. */
+; 0001 021B   if(fs_setNextCluster(fs_file.entry_cluster)) return 0; /* fs_tmp сохранится, так как он не LAST и не FREE */
+;PCODE: $000003A7 VOL: 0
+;PCODE: $000003A8 VOL: 0
+;PCODE: $000003A9 VOL: 0
+;PCODE: $000003AA VOL: 0
+;PCODE: $000003AB VOL: 0
+;PCODE: $000003AC VOL: 0
+;PCODE: $000003AD VOL: 0
+;PCODE: $000003AE VOL: 0
+;PCODE: $000003AF VOL: 0
+; 0001 021C 
+; 0001 021D   /* Заполняем ответ */
+; 0001 021E   fs_file.entry_cluster = fs_tmp;
+;PCODE: $000003B0 VOL: 0
+;PCODE: $000003B1 VOL: 0
+;PCODE: $000003B2 VOL: 0
+;PCODE: $000003B3 VOL: 0
+; 0001 021F   fs_clust2sect();
+;PCODE: $000003B4 VOL: 0
+; 0001 0220   fs_file.entry_sector  = fs_tmp;
+;PCODE: $000003B5 VOL: 0
+;PCODE: $000003B6 VOL: 0
+;PCODE: $000003B7 VOL: 0
+; 0001 0221 
+; 0001 0222   /* Очищаем кластер и за одно BUF (используется переменная fs_tmp) */
+; 0001 0223   fs_eraseCluster(0);
+;PCODE: $000003B8 VOL: 0
+;PCODE: $000003B9 VOL: 0
+;PCODE: $000003BA VOL: 0
+; 0001 0224 
+; 0001 0225   /* Найденный описатель */
+; 0001 0226   return buf;
+;PCODE: $000003BB VOL: 0
+;PCODE: $000003BC VOL: 0
+; 0001 0227 }
+;PCODE: $000003BD VOL: 0
+;
+;/**************************************************************************
+;*  Открыть/создать файл или папку                                         *
+;*                                                                         *
+;*  Имя файла в buf. Оно не должно превышать FS_MAXFILE симолов включая 0  *
+;*                                                                         *
+;*  what = OPENED_NONE - Открыть файл или папку                            *
+;*  what = OPENED_FILE - Создать файл (созданный файл открыт)              *
+;*  what = OPENED_DIR  - Создать папку (созданная папка не открыта)        *
+;*  what | 0x80        - Не создавать файл в папке entry_start_cluster     *
+;*                                                                         *
+;*  На выходе                                                              *
+;*   FS_DIRENTRY                 - описатель                               *
+;*   fs_file.entry_able          - 0 (если открыт существующий файл/папка) *
+;*   fs_file.entry_sector        - сектор описателя                        *
+;*   fs_file.entry_cluster       - кластер описателя                       *
+;*   fs_file.entry_index         - номер описателя                         *
+;*   fs_file.entry_start_cluster - первый кластер файла или папки          *
+;*   fs_parent_dir_cluster       - первый кластер папки предка (CREATE)    *
+;*   fs_file.ptr                 - 0 (если открыт файл)                    *
+;*   fs_file.size                - размер файла (если открыт файл)         *
+;*                                                                         *
+;*  Функция не портит buf[0..MAX_FILENAME-1]                               *
+;**************************************************************************/
+;
+;static BYTE fs_open0_create(BYTE dir); /* forward */
+;static CONST BYTE* fs_open0_name(CONST BYTE *p); /* forward */
+;
+;#define FS_DIRFIND      (buf + 469)           /* 11 байт использующиеся внутри функции fs_open0 */
+;#define fs_notrootdir (*(BYTE*)&fs_file.size) /* Используется fs_open0, в это время переменные fs_file. не содежат нужных значения */
+;#define fs_parent_dir_cluster fs_file.sector  /* Так же используется fs_file.sector для хранения первого кластера папки предка. */
+;
+;BYTE fs_open0(BYTE what) {
+; 0001 0248 BYTE fs_open0(BYTE what) {
+;PCODE: $000003BE VOL: 0
+;PCODE: $000003BF VOL: 0
+; 0001 0249   CONST BYTE *path;
+; 0001 024A   BYTE r;
+; 0001 024B 
+; 0001 024C   /* Проверка ошибок программиста */
+; 0001 024D #ifndef FS_DISABLE_CHECK
+; 0001 024E   if(fs_type == FS_ERROR) { lastError = ERR_NO_FILESYSTEM; goto abort; }
+;PCODE: $000003C0 VOL: 0
+;	what -> Y+4
+;	*path -> R16,R17
+;	r -> R19
+;PCODE: $000003C1 VOL: 0
+;PCODE: $000003C2 VOL: 0
+;PCODE: $000003C3 VOL: 0
+;PCODE: $000003C4 VOL: 0
+;PCODE: $000003C5 VOL: 0
+;PCODE: $000003C6 VOL: 0
+; 0001 024F   fs_file.opened = OPENED_NONE;
+;PCODE: $000003C7 VOL: 0
+;PCODE: $000003C8 VOL: 0
+;PCODE: $000003C9 VOL: 0
+; 0001 0250 #endif
+; 0001 0251 
+; 0001 0252   /* Предотвращение рекурсии */
+; 0001 0253   r = what & 0x80; what &= 0x7F;
+;PCODE: $000003CA VOL: 0
+;PCODE: $000003CB VOL: 0
+;PCODE: $000003CC VOL: 0
+;PCODE: $000003CD VOL: 0
+;PCODE: $000003CE VOL: 0
+;PCODE: $000003CF VOL: 0
+; 0001 0254   fs_parent_dir_cluster = fs_file.entry_start_cluster;
+;PCODE: $000003D0 VOL: 0
+;PCODE: $000003D1 VOL: 0
+;PCODE: $000003D2 VOL: 0
+;PCODE: $000003D3 VOL: 0
+; 0001 0255 
+; 0001 0256   /* Корневой каталог */
+; 0001 0257   fs_notrootdir = 0;
+;PCODE: $000003D4 VOL: 0
+;PCODE: $000003D5 VOL: 0
+;PCODE: $000003D6 VOL: 0
+; 0001 0258   fs_file.entry_start_cluster = fs_dirbase;
+;PCODE: $000003D7 VOL: 0
+;PCODE: $000003D8 VOL: 0
+;PCODE: $000003D9 VOL: 0
+; 0001 0259   if(fs_type == FS_FAT16) fs_file.entry_start_cluster =  0;
+;PCODE: $000003DA VOL: 0
+;PCODE: $000003DB VOL: 0
+;PCODE: $000003DC VOL: 0
+;PCODE: $000003DD VOL: 0
+;PCODE: $000003DE VOL: 0
+; 0001 025A 
+; 0001 025B   /* Корневая папка */
+; 0001 025C   if(buf[0] == 0) {
+;PCODE: $000003DF VOL: 0
+;PCODE: $000003E0 VOL: 0
+;PCODE: $000003E1 VOL: 0
+;PCODE: $000003E2 VOL: 0
+; 0001 025D     if(what) goto abort_noPath;
+;PCODE: $000003E3 VOL: 0
+;PCODE: $000003E4 VOL: 0
+;PCODE: $000003E5 VOL: 0
+;PCODE: $000003E6 VOL: 0
+; 0001 025E     FS_DIRENTRY[0] = 0;             /* Признак корневой папки */
+;PCODE: $000003E7 VOL: 0
+;PCODE: $000003E8 VOL: 0
+;PCODE: $000003E9 VOL: 0
+;PCODE: $000003EA VOL: 0
+; 0001 025F     FS_DIRENTRY[DIR_Attr] = AM_DIR; /* Для упрощения определения файл/папка запишем сюда AM_DIR */
+;PCODE: $000003EB VOL: 0
+;PCODE: $000003EC VOL: 0
+;PCODE: $000003ED VOL: 0
+; 0001 0260   } else {
+;PCODE: $000003EE VOL: 0
+;PCODE: $000003EF VOL: 0
+; 0001 0261     path = buf;
+;PCODE: $000003F0 VOL: 0
+;PCODE: $000003F1 VOL: 0
+; 0001 0262     while(1) {
+;PCODE: $000003F2 VOL: 0
+; 0001 0263       /* Получаем очередное имя из path в FS_DIRFIND */
+; 0001 0264       path = fs_open0_name(path);
+;PCODE: $000003F3 VOL: 0
+;PCODE: $000003F4 VOL: 0
+;PCODE: $000003F5 VOL: 0
+; 0001 0265       if(path == (CONST BYTE*)1) goto abort_noPath;
+;PCODE: $000003F6 VOL: 0
+;PCODE: $000003F7 VOL: 0
+;PCODE: $000003F8 VOL: 0
+;PCODE: $000003F9 VOL: 0
+; 0001 0266       /* Ищем имя в папке */
+; 0001 0267       fs_file.entry_able = 0;
+;PCODE: $000003FA VOL: 0
+;PCODE: $000003FB VOL: 0
+;PCODE: $000003FC VOL: 0
+;PCODE: $000003FD VOL: 0
+; 0001 0268       while(1) {
+;PCODE: $000003FE VOL: 0
+; 0001 0269         if(fs_readdir_nocheck()) return 1;
+;PCODE: $000003FF VOL: 0
+;PCODE: $00000400 VOL: 0
+;PCODE: $00000401 VOL: 0
+;PCODE: $00000402 VOL: 0
+;PCODE: $00000403 VOL: 0
+;PCODE: $00000404 VOL: 0
+;PCODE: $00000405 VOL: 0
+; 0001 026A         if(fs_file.entry_able == 0) break;
+;PCODE: $00000406 VOL: 0
+;PCODE: $00000407 VOL: 0
+;PCODE: $00000408 VOL: 0
+;PCODE: $00000409 VOL: 0
+;PCODE: $0000040A VOL: 0
+;PCODE: $0000040B VOL: 0
+; 0001 026B         if(!memcmp(FS_DIRENTRY, FS_DIRFIND, 11)) break;
+;PCODE: $0000040C VOL: 0
+;PCODE: $0000040D VOL: 0
+;PCODE: $0000040E VOL: 0
+;PCODE: $0000040F VOL: 0
+;PCODE: $00000410 VOL: 0
+;PCODE: $00000411 VOL: 0
+;PCODE: $00000412 VOL: 0
+;PCODE: $00000413 VOL: 0
+;PCODE: $00000414 VOL: 0
+;PCODE: $00000415 VOL: 0
+;PCODE: $00000416 VOL: 0
+;PCODE: $00000417 VOL: 0
+;PCODE: $00000418 VOL: 0
+; 0001 026C       }
+;PCODE: $00000419 VOL: 0
+;PCODE: $0000041A VOL: 0
+;PCODE: $0000041B VOL: 0
+; 0001 026D       /* Последний элементу пути в режиме создания */
+; 0001 026E       if(what && path == 0) {
+;PCODE: $0000041C VOL: 0
+;PCODE: $0000041D VOL: 0
+;PCODE: $0000041E VOL: 0
+;PCODE: $0000041F VOL: 0
+;PCODE: $00000420 VOL: 0
+;PCODE: $00000421 VOL: 0
+;PCODE: $00000422 VOL: 0
+;PCODE: $00000423 VOL: 0
+;PCODE: $00000424 VOL: 0
+; 0001 026F         fs_parent_dir_cluster = fs_file.entry_start_cluster; /* Сохраняем в этой переменной результат для фунции fs_move */
+;PCODE: $00000425 VOL: 0
+;PCODE: $00000426 VOL: 0
+;PCODE: $00000427 VOL: 0
+;PCODE: $00000428 VOL: 0
+; 0001 0270         if(fs_type == FS_FAT32 && fs_parent_dir_cluster == fs_dirbase) fs_parent_dir_cluster = 0;
+;PCODE: $00000429 VOL: 0
+;PCODE: $0000042A VOL: 0
+;PCODE: $0000042B VOL: 0
+;PCODE: $0000042C VOL: 0
+;PCODE: $0000042D VOL: 0
+;PCODE: $0000042E VOL: 0
+;PCODE: $0000042F VOL: 0
+;PCODE: $00000430 VOL: 0
+;PCODE: $00000431 VOL: 0
+;PCODE: $00000432 VOL: 0
+;PCODE: $00000433 VOL: 0
+;PCODE: $00000434 VOL: 0
+;PCODE: $00000435 VOL: 0
+;PCODE: $00000436 VOL: 0
+;PCODE: $00000437 VOL: 0
+; 0001 0271         if(fs_file.entry_able == 0) return fs_open0_create(what-1); /* Продолжим там */
+;PCODE: $00000438 VOL: 0
+;PCODE: $00000439 VOL: 0
+;PCODE: $0000043A VOL: 0
+;PCODE: $0000043B VOL: 0
+;PCODE: $0000043C VOL: 0
+;PCODE: $0000043D VOL: 0
+;PCODE: $0000043E VOL: 0
+;PCODE: $0000043F VOL: 0
+;PCODE: $00000440 VOL: 0
+;PCODE: $00000441 VOL: 0
+;PCODE: $00000442 VOL: 0
+;PCODE: $00000443 VOL: 0
+;PCODE: $00000444 VOL: 0
+; 0001 0272         lastError = ERR_FILE_EXISTS; goto abort;
+;PCODE: $00000445 VOL: 0
+;PCODE: $00000446 VOL: 0
+;PCODE: $00000447 VOL: 0
+;PCODE: $00000448 VOL: 0
+; 0001 0273       }
+; 0001 0274       /* Файл/папка не найдена */
+; 0001 0275       if(fs_file.entry_able == 0) goto abort_noPath;
+;PCODE: $00000449 VOL: 0
+;PCODE: $0000044A VOL: 0
+;PCODE: $0000044B VOL: 0
+;PCODE: $0000044C VOL: 0
+;PCODE: $0000044D VOL: 0
+;PCODE: $0000044E VOL: 0
+; 0001 0276 
+; 0001 0277       /* Что то найдено */
+; 0001 0278       fs_file.entry_start_cluster = fs_getEntryCluster();
+;PCODE: $0000044F VOL: 0
+;PCODE: $00000450 VOL: 0
+;PCODE: $00000451 VOL: 0
+;PCODE: $00000452 VOL: 0
+; 0001 0279       /* Это был последний элемент пути */
+; 0001 027A       if(path == 0) break;
+;PCODE: $00000453 VOL: 0
+;PCODE: $00000454 VOL: 0
+;PCODE: $00000455 VOL: 0
+; 0001 027B       /* Это должна быть папка */
+; 0001 027C       if((FS_DIRENTRY[DIR_Attr] & AM_DIR) == 0) goto abort_noPath;
+;PCODE: $00000456 VOL: 0
+;PCODE: $00000457 VOL: 0
+;PCODE: $00000458 VOL: 0
+;PCODE: $00000459 VOL: 0
+;PCODE: $0000045A VOL: 0
+;PCODE: $0000045B VOL: 0
+; 0001 027D       /* Предотвращаем рекурсию для функции fs_move */
+; 0001 027E       if(r && fs_file.entry_start_cluster == fs_parent_dir_cluster) goto abort_noPath;
+;PCODE: $0000045C VOL: 0
+;PCODE: $0000045D VOL: 0
+;PCODE: $0000045E VOL: 0
+;PCODE: $0000045F VOL: 0
+;PCODE: $00000460 VOL: 0
+;PCODE: $00000461 VOL: 0
+;PCODE: $00000462 VOL: 0
+;PCODE: $00000463 VOL: 0
+;PCODE: $00000464 VOL: 0
+;PCODE: $00000465 VOL: 0
+;PCODE: $00000466 VOL: 0
+;PCODE: $00000467 VOL: 0
+;PCODE: $00000468 VOL: 0
+;PCODE: $00000469 VOL: 0
+; 0001 027F       /* Наденная папка уже не будет корневой */
+; 0001 0280       fs_notrootdir = 1;
+;PCODE: $0000046A VOL: 0
+;PCODE: $0000046B VOL: 0
+;PCODE: $0000046C VOL: 0
+;PCODE: $0000046D VOL: 0
+; 0001 0281     }
+;PCODE: $0000046E VOL: 0
+;PCODE: $0000046F VOL: 0
+; 0001 0282   }
+;PCODE: $00000470 VOL: 0
+; 0001 0283   /* Устанавливаем переменные */
+; 0001 0284   fs_file.entry_able = 0;
+;PCODE: $00000471 VOL: 0
+;PCODE: $00000472 VOL: 0
+;PCODE: $00000473 VOL: 0
+; 0001 0285   fs_file.size  = LD_DWORD(FS_DIRENTRY + DIR_FileSize);
+;PCODE: $00000474 VOL: 0
+;PCODE: $00000475 VOL: 0
+;PCODE: $00000476 VOL: 0
+;PCODE: $00000477 VOL: 0
+; 0001 0286   fs_file.ptr   = 0;
+;PCODE: $00000478 VOL: 0
+;PCODE: $00000479 VOL: 0
+;PCODE: $0000047A VOL: 0
+; 0001 0287 #ifndef FS_DISABLE_CHECK
+; 0001 0288   fs_file.opened     = OPENED_FILE;
+;PCODE: $0000047B VOL: 0
+;PCODE: $0000047C VOL: 0
+; 0001 0289   if(FS_DIRENTRY[DIR_Attr] & AM_DIR) fs_file.opened = OPENED_DIR;
+;PCODE: $0000047D VOL: 0
+;PCODE: $0000047E VOL: 0
+;PCODE: $0000047F VOL: 0
+;PCODE: $00000480 VOL: 0
+;PCODE: $00000481 VOL: 0
+;PCODE: $00000482 VOL: 0
+; 0001 028A #endif
+; 0001 028B 
+; 0001 028C   /* Нельзя дважды открывать файл */
+; 0001 028D #ifndef FS_DISABLE_CHECK
+; 0001 028E #ifndef FS_DISABLE_SWAP
+; 0001 028F   if(fs_secondFile.opened==OPENED_FILE && fs_file.opened==OPENED_FILE && fs_secondFile.entry_sector == fs_file.entry_sector && fs_secondFile.entry_index==fs_file.entry_index) {
+;PCODE: $00000483 VOL: 0
+;PCODE: $00000484 VOL: 0
+;PCODE: $00000485 VOL: 0
+;PCODE: $00000486 VOL: 0
+;PCODE: $00000487 VOL: 0
+;PCODE: $00000488 VOL: 0
+;PCODE: $00000489 VOL: 0
+;PCODE: $0000048A VOL: 0
+;PCODE: $0000048B VOL: 0
+;PCODE: $0000048C VOL: 0
+;PCODE: $0000048D VOL: 0
+;PCODE: $0000048E VOL: 0
+;PCODE: $0000048F VOL: 0
+;PCODE: $00000490 VOL: 0
+;PCODE: $00000491 VOL: 0
+;PCODE: $00000492 VOL: 0
+;PCODE: $00000493 VOL: 0
+;PCODE: $00000494 VOL: 0
+;PCODE: $00000495 VOL: 0
+;PCODE: $00000496 VOL: 0
+;PCODE: $00000497 VOL: 0
+;PCODE: $00000498 VOL: 0
+;PCODE: $00000499 VOL: 0
+; 0001 0290     fs_secondFile.opened = OPENED_NONE; //!9-05-2014 Закрываем второй файл
+;PCODE: $0000049A VOL: 0
+;PCODE: $0000049B VOL: 0
+; 0001 0291   }
+; 0001 0292 #endif
+; 0001 0293 #endif
+; 0001 0294 
+; 0001 0295   return 0;
+;PCODE: $0000049C VOL: 0
+;PCODE: $0000049D VOL: 0
+;PCODE: $0000049E VOL: 0
+;PCODE: $0000049F VOL: 0
+;PCODE: $000004A0 VOL: 0
+; 0001 0296 abort_noPath:
+;PCODE: $000004A1 VOL: 0
+; 0001 0297   lastError = ERR_NO_PATH;
+;PCODE: $000004A2 VOL: 0
+;PCODE: $000004A3 VOL: 0
+; 0001 0298 abort:
+;PCODE: $000004A4 VOL: 0
+; 0001 0299   return 1;
+;PCODE: $000004A5 VOL: 0
+;PCODE: $000004A6 VOL: 0
+;PCODE: $000004A7 VOL: 0
+;PCODE: $000004A8 VOL: 0
+; 0001 029A }
+;PCODE: $000004A9 VOL: 0
+;
+;static BYTE exists(const flash BYTE* str, BYTE c) {
+; 0001 029C static BYTE exists(const flash BYTE* str, BYTE c) {
+;PCODE: $000004AA VOL: 0
+;PCODE: $000004AB VOL: 0
+; 0001 029D   while(*str)
+;	*str -> Y+1
+;	c -> Y+0
+;PCODE: $000004AC VOL: 0
+;PCODE: $000004AD VOL: 0
+;PCODE: $000004AE VOL: 0
+;PCODE: $000004AF VOL: 0
+;PCODE: $000004B0 VOL: 0
+; 0001 029E     if(*str++ == c)
+;PCODE: $000004B1 VOL: 0
+;PCODE: $000004B2 VOL: 0
+;PCODE: $000004B3 VOL: 0
+;PCODE: $000004B4 VOL: 0
+;PCODE: $000004B5 VOL: 0
+;PCODE: $000004B6 VOL: 0
+;PCODE: $000004B7 VOL: 0
+;PCODE: $000004B8 VOL: 0
+; 0001 029F       return c;
+;PCODE: $000004B9 VOL: 0
+;PCODE: $000004BA VOL: 0
+;PCODE: $000004BB VOL: 0
+; 0001 02A0   return 0;
+;PCODE: $000004BC VOL: 0
+;PCODE: $000004BD VOL: 0
+;PCODE: $000004BE VOL: 0
+;PCODE: $000004BF VOL: 0
+;PCODE: $000004C0 VOL: 0
+;PCODE: $000004C1 VOL: 0
+; 0001 02A1 }
+;PCODE: $000004C2 VOL: 0
+;
+;static CONST BYTE * fs_open0_name(CONST BYTE *p) {
+; 0001 02A3 static  BYTE * fs_open0_name( BYTE *p) {
+;PCODE: $000004C3 VOL: 0
+;PCODE: $000004C4 VOL: 0
+; 0001 02A4   BYTE c, ni, i;
+; 0001 02A5 
+; 0001 02A6   memset(FS_DIRFIND, ' ', 11);
+;PCODE: $000004C5 VOL: 0
+;	*p -> Y+4
+;	c -> R17
+;	ni -> R16
+;	i -> R19
+;PCODE: $000004C6 VOL: 0
+;PCODE: $000004C7 VOL: 0
+;PCODE: $000004C8 VOL: 0
+;PCODE: $000004C9 VOL: 0
+;PCODE: $000004CA VOL: 0
+;PCODE: $000004CB VOL: 0
+;PCODE: $000004CC VOL: 0
+;PCODE: $000004CD VOL: 0
+; 0001 02A7   i = 0; ni = 8;
+;PCODE: $000004CE VOL: 0
+;PCODE: $000004CF VOL: 0
+;PCODE: $000004D0 VOL: 0
+;PCODE: $000004D1 VOL: 0
+; 0001 02A8   while(1) {
+;PCODE: $000004D2 VOL: 0
+; 0001 02A9     c = *p++;
+;PCODE: $000004D3 VOL: 0
+;PCODE: $000004D4 VOL: 0
+;PCODE: $000004D5 VOL: 0
+; 0001 02AA     if(c == 0) {
+;PCODE: $000004D6 VOL: 0
+;PCODE: $000004D7 VOL: 0
+; 0001 02AB       if(i == 0) break; /* Пустое имя файла */
+;PCODE: $000004D8 VOL: 0
+;PCODE: $000004D9 VOL: 0
+;PCODE: $000004DA VOL: 0
+; 0001 02AC       return 0;
+;PCODE: $000004DB VOL: 0
+;PCODE: $000004DC VOL: 0
+;PCODE: $000004DD VOL: 0
+;PCODE: $000004DE VOL: 0
+;PCODE: $000004DF VOL: 0
+; 0001 02AD     }
+; 0001 02AE     if(c == '/') return p;
+;PCODE: $000004E0 VOL: 0
+;PCODE: $000004E1 VOL: 0
+;PCODE: $000004E2 VOL: 0
+;PCODE: $000004E3 VOL: 0
+;PCODE: $000004E4 VOL: 0
+;PCODE: $000004E5 VOL: 0
+;PCODE: $000004E6 VOL: 0
+;PCODE: $000004E7 VOL: 0
+; 0001 02AF     if(c == '.') {
+;PCODE: $000004E8 VOL: 0
+;PCODE: $000004E9 VOL: 0
+;PCODE: $000004EA VOL: 0
+;PCODE: $000004EB VOL: 0
+; 0001 02B0       if(i == 0) break; /* Пустое имя файла */
+;PCODE: $000004EC VOL: 0
+;PCODE: $000004ED VOL: 0
+;PCODE: $000004EE VOL: 0
+; 0001 02B1 #ifndef FS_DISABLE_CHECK
+; 0001 02B2       if(ni != 8) break; /* Вторая точка */
+;PCODE: $000004EF VOL: 0
+;PCODE: $000004F0 VOL: 0
+;PCODE: $000004F1 VOL: 0
+;PCODE: $000004F2 VOL: 0
+;PCODE: $000004F3 VOL: 0
+; 0001 02B3 #endif
+; 0001 02B4       i = 8; ni = 11;
+;PCODE: $000004F4 VOL: 0
+;PCODE: $000004F5 VOL: 0
+;PCODE: $000004F6 VOL: 0
+;PCODE: $000004F7 VOL: 0
+;PCODE: $000004F8 VOL: 0
+; 0001 02B5       continue;
+;PCODE: $000004F9 VOL: 0
+; 0001 02B6     }
+; 0001 02B7     /* Слишком длинное име */
+; 0001 02B8     if(i == ni) break;
+;PCODE: $000004FA VOL: 0
+;PCODE: $000004FB VOL: 0
+;PCODE: $000004FC VOL: 0
+;PCODE: $000004FD VOL: 0
+;PCODE: $000004FE VOL: 0
+; 0001 02B9     /* Запрещенные символы */
+; 0001 02BA #ifndef FS_DISABLE_CHECK
+; 0001 02BB     if(exists((const flash BYTE* )"+,;=[]*?<:>\\|\"", c)) break;
+;PCODE: $000004FF VOL: 0
+;PCODE: $00000500 VOL: 0
+;PCODE: $00000501 VOL: 0
+;PCODE: $00000502 VOL: 0
+;PCODE: $00000503 VOL: 0
+;PCODE: $00000504 VOL: 0
+;PCODE: $00000505 VOL: 0
+;PCODE: $00000506 VOL: 0
+;PCODE: $00000507 VOL: 0
+; 0001 02BC     if(c <= 0x20) break;
+;PCODE: $00000508 VOL: 0
+;PCODE: $00000509 VOL: 0
+;PCODE: $0000050A VOL: 0
+;PCODE: $0000050B VOL: 0
+;PCODE: $0000050C VOL: 0
+; 0001 02BD     if(c >= 0x80) break;
+;PCODE: $0000050D VOL: 0
+;PCODE: $0000050E VOL: 0
+;PCODE: $0000050F VOL: 0
+;PCODE: $00000510 VOL: 0
+;PCODE: $00000511 VOL: 0
+; 0001 02BE #endif
+; 0001 02BF     /* Приводим к верхнему регистру */
+; 0001 02C0     if(c >= 'a' && c <= 'z') c -= 0x20;
+;PCODE: $00000512 VOL: 0
+;PCODE: $00000513 VOL: 0
+;PCODE: $00000514 VOL: 0
+;PCODE: $00000515 VOL: 0
+;PCODE: $00000516 VOL: 0
+;PCODE: $00000517 VOL: 0
+;PCODE: $00000518 VOL: 0
+;PCODE: $00000519 VOL: 0
+;PCODE: $0000051A VOL: 0
+;PCODE: $0000051B VOL: 0
+;PCODE: $0000051C VOL: 0
+;PCODE: $0000051D VOL: 0
+;PCODE: $0000051E VOL: 0
+;PCODE: $0000051F VOL: 0
+;PCODE: $00000520 VOL: 0
+; 0001 02C1     /* Сохраняем имя */
+; 0001 02C2     FS_DIRFIND[i++] = c;
+;PCODE: $00000521 VOL: 0
+;PCODE: $00000522 VOL: 0
+;PCODE: $00000523 VOL: 0
+;PCODE: $00000524 VOL: 0
+;PCODE: $00000525 VOL: 0
+;PCODE: $00000526 VOL: 0
+;PCODE: $00000527 VOL: 0
+;PCODE: $00000528 VOL: 0
+;PCODE: $00000529 VOL: 0
+; 0001 02C3   }
+;PCODE: $0000052A VOL: 0
+;PCODE: $0000052B VOL: 0
+; 0001 02C4   /* Ошибка */
+; 0001 02C5   return (CONST BYTE*)1;
+;PCODE: $0000052C VOL: 0
+;PCODE: $0000052D VOL: 0
+;PCODE: $0000052E VOL: 0
+;PCODE: $0000052F VOL: 0
+; 0001 02C6 }
+;PCODE: $00000530 VOL: 0
+;
+;static BYTE fs_open0_create(BYTE dir) {
+; 0001 02C8 static BYTE fs_open0_create(BYTE dir) {
+;PCODE: $00000531 VOL: 0
+;PCODE: $00000532 VOL: 0
+; 0001 02C9   BYTE  new_name[11];
+; 0001 02CA   DWORD allocatedCluster;
+; 0001 02CB   BYTE* allocatedEntry;
+; 0001 02CC 
+; 0001 02CD   /* Сохраняем имя, так как весь буфер будет затерт */
+; 0001 02CE   memcpy(new_name, FS_DIRFIND, 11);
+;PCODE: $00000533 VOL: 0
+;PCODE: $00000534 VOL: 0
+;	dir -> Y+17
+;	new_name -> Y+6
+;	allocatedCluster -> Y+2
+;	*allocatedEntry -> R16,R17
+;PCODE: $00000535 VOL: 0
+;PCODE: $00000536 VOL: 0
+;PCODE: $00000537 VOL: 0
+;PCODE: $00000538 VOL: 0
+;PCODE: $00000539 VOL: 0
+;PCODE: $0000053A VOL: 0
+;PCODE: $0000053B VOL: 0
+;PCODE: $0000053C VOL: 0
+; 0001 02CF 
+; 0001 02D0   /* Выделяем кластер для папки */
+; 0001 02D1   if(dir) {
+;PCODE: $0000053D VOL: 0
+;PCODE: $0000053E VOL: 0
+;PCODE: $0000053F VOL: 0
+; 0001 02D2     if(fs_allocCluster(ALLOCCLUSTER)) goto abort; /* fs_file.entry_start_cluster изменен не будет, там первый кластер папки в которой мы создадим файл */
+;PCODE: $00000540 VOL: 0
+;PCODE: $00000541 VOL: 0
+;PCODE: $00000542 VOL: 0
+;PCODE: $00000543 VOL: 0
+;PCODE: $00000544 VOL: 0
+;PCODE: $00000545 VOL: 0
+; 0001 02D3     allocatedCluster = fs_tmp;
+;PCODE: $00000546 VOL: 0
+;PCODE: $00000547 VOL: 0
+;PCODE: $00000548 VOL: 0
+; 0001 02D4   }
+; 0001 02D5 
+; 0001 02D6   /* Добавляем в папку описатель (сектор не сохранен) */
+; 0001 02D7   allocatedEntry = fs_allocEntry();
+;PCODE: $00000549 VOL: 0
+;PCODE: $0000054A VOL: 0
+;PCODE: $0000054B VOL: 0
+; 0001 02D8   if(allocatedEntry == 0) {
+;PCODE: $0000054C VOL: 0
+;PCODE: $0000054D VOL: 0
+; 0001 02D9 
+; 0001 02DA     /* В случае ошибки освобождаем кластер */
+; 0001 02DB     fs_tmp = FREE_CLUSTER;
+;PCODE: $0000054E VOL: 0
+;PCODE: $0000054F VOL: 0
+; 0001 02DC     fs_setNextCluster(allocatedCluster);
+;PCODE: $00000550 VOL: 0
+;PCODE: $00000551 VOL: 0
+;PCODE: $00000552 VOL: 0
+; 0001 02DD     goto abort;
+;PCODE: $00000553 VOL: 0
+; 0001 02DE   }
+; 0001 02DF 
+; 0001 02E0   /* Устаналиваем имя в описатель. */
+; 0001 02E1   memset(allocatedEntry, 0, 32);
+;PCODE: $00000554 VOL: 0
+;PCODE: $00000555 VOL: 0
+;PCODE: $00000556 VOL: 0
+;PCODE: $00000557 VOL: 0
+;PCODE: $00000558 VOL: 0
+;PCODE: $00000559 VOL: 0
+;PCODE: $0000055A VOL: 0
+; 0001 02E2   memcpy(allocatedEntry, new_name, 11);
+;PCODE: $0000055B VOL: 0
+;PCODE: $0000055C VOL: 0
+;PCODE: $0000055D VOL: 0
+;PCODE: $0000055E VOL: 0
+;PCODE: $0000055F VOL: 0
+;PCODE: $00000560 VOL: 0
+; 0001 02E3 
+; 0001 02E4   if(!dir) {
+;PCODE: $00000561 VOL: 0
+;PCODE: $00000562 VOL: 0
+;PCODE: $00000563 VOL: 0
+; 0001 02E5     /* Сохраняем описатель на диск */
+; 0001 02E6     if(sd_writeBuf(fs_file.entry_sector)) goto abort;
+;PCODE: $00000564 VOL: 0
+;PCODE: $00000565 VOL: 0
+;PCODE: $00000566 VOL: 0
+;PCODE: $00000567 VOL: 0
+;PCODE: $00000568 VOL: 0
+;PCODE: $00000569 VOL: 0
+;PCODE: $0000056A VOL: 0
+; 0001 02E7     /* fs_file.entry_sector, fs_file.entry_index - устанавлиается в fs_allocCluster */
+; 0001 02E8     fs_file.entry_start_cluster = 0;
+;PCODE: $0000056B VOL: 0
+;PCODE: $0000056C VOL: 0
+;PCODE: $0000056D VOL: 0
+;PCODE: $0000056E VOL: 0
+; 0001 02E9     fs_file.size           = 0;
+;PCODE: $0000056F VOL: 0
+;PCODE: $00000570 VOL: 0
+;PCODE: $00000571 VOL: 0
+; 0001 02EA     fs_file.ptr            = 0;
+;PCODE: $00000572 VOL: 0
+;PCODE: $00000573 VOL: 0
+;PCODE: $00000574 VOL: 0
+; 0001 02EB #ifndef FS_DISABLE_CHECK
+; 0001 02EC     fs_file.opened              = OPENED_FILE;
+;PCODE: $00000575 VOL: 0
+;PCODE: $00000576 VOL: 0
+; 0001 02ED #endif
+; 0001 02EE     return 0;
+;PCODE: $00000577 VOL: 0
+;PCODE: $00000578 VOL: 0
+;PCODE: $00000579 VOL: 0
+;PCODE: $0000057A VOL: 0
+; 0001 02EF   }
+; 0001 02F0 
+; 0001 02F1   /* Это папка */
+; 0001 02F2   allocatedEntry[DIR_Attr] = AM_DIR;
+;PCODE: $0000057B VOL: 0
+;PCODE: $0000057C VOL: 0
+;PCODE: $0000057D VOL: 0
+;PCODE: $0000057E VOL: 0
+;PCODE: $0000057F VOL: 0
+; 0001 02F3   fs_setEntryCluster(allocatedEntry, allocatedCluster);
+;PCODE: $00000580 VOL: 0
+;PCODE: $00000581 VOL: 0
+;PCODE: $00000582 VOL: 0
+;PCODE: $00000583 VOL: 0
+; 0001 02F4 
+; 0001 02F5   /* Сохраняем описатель на диск */
+; 0001 02F6   if(sd_writeBuf(fs_file.entry_sector)) goto abort;
+;PCODE: $00000584 VOL: 0
+;PCODE: $00000585 VOL: 0
+;PCODE: $00000586 VOL: 0
+;PCODE: $00000587 VOL: 0
+;PCODE: $00000588 VOL: 0
+;PCODE: $00000589 VOL: 0
+;PCODE: $0000058A VOL: 0
+; 0001 02F7 
+; 0001 02F8   /* Сектор для новой папки */
+; 0001 02F9   fs_tmp = allocatedCluster;
+;PCODE: $0000058B VOL: 0
+;PCODE: $0000058C VOL: 0
+;PCODE: $0000058D VOL: 0
+; 0001 02FA   fs_clust2sect();
+;PCODE: $0000058E VOL: 0
+; 0001 02FB 
+; 0001 02FC   /* Очищаем fs_tmp и за одно buf */
+; 0001 02FD   fs_eraseCluster(1);
+;PCODE: $0000058F VOL: 0
+;PCODE: $00000590 VOL: 0
+;PCODE: $00000591 VOL: 0
+; 0001 02FE 
+; 0001 02FF   /* Создаем пустую папку */
+; 0001 0300   memset(buf, ' ', 11); buf[0] = '.'; buf[11] = 0x10;
+;PCODE: $00000592 VOL: 0
+;PCODE: $00000593 VOL: 0
+;PCODE: $00000594 VOL: 0
+;PCODE: $00000595 VOL: 0
+;PCODE: $00000596 VOL: 0
+;PCODE: $00000597 VOL: 0
+;PCODE: $00000598 VOL: 0
+;PCODE: $00000599 VOL: 0
+;PCODE: $0000059A VOL: 0
+;PCODE: $0000059B VOL: 0
+;PCODE: $0000059C VOL: 0
+;PCODE: $0000059D VOL: 0
+; 0001 0301   fs_setEntryCluster(buf, allocatedCluster);
+;PCODE: $0000059E VOL: 0
+;PCODE: $0000059F VOL: 0
+;PCODE: $000005A0 VOL: 0
+;PCODE: $000005A1 VOL: 0
+;PCODE: $000005A2 VOL: 0
+; 0001 0302 
+; 0001 0303   memset(buf+32, ' ', 11); buf[32] = '.'; buf[33] = '.'; buf[32+11] = 0x10;
+;PCODE: $000005A3 VOL: 0
+;PCODE: $000005A4 VOL: 0
+;PCODE: $000005A5 VOL: 0
+;PCODE: $000005A6 VOL: 0
+;PCODE: $000005A7 VOL: 0
+;PCODE: $000005A8 VOL: 0
+;PCODE: $000005A9 VOL: 0
+;PCODE: $000005AA VOL: 0
+;PCODE: $000005AB VOL: 0
+;PCODE: $000005AC VOL: 0
+;PCODE: $000005AD VOL: 0
+;PCODE: $000005AE VOL: 0
+;PCODE: $000005AF VOL: 0
+;PCODE: $000005B0 VOL: 0
+;PCODE: $000005B1 VOL: 0
+;PCODE: $000005B2 VOL: 0
+;PCODE: $000005B3 VOL: 0
+; 0001 0304   if(fs_notrootdir) fs_setEntryCluster(buf + 32, fs_file.entry_start_cluster); /* Сейчас в fs_file.size==0 значит корневой каталог */
+;PCODE: $000005B4 VOL: 0
+;PCODE: $000005B5 VOL: 0
+;PCODE: $000005B6 VOL: 0
+;PCODE: $000005B7 VOL: 0
+;PCODE: $000005B8 VOL: 0
+;PCODE: $000005B9 VOL: 0
+;PCODE: $000005BA VOL: 0
+;PCODE: $000005BB VOL: 0
+;PCODE: $000005BC VOL: 0
+;PCODE: $000005BD VOL: 0
+;PCODE: $000005BE VOL: 0
+; 0001 0305 
+; 0001 0306   /* Сохраняем папку */
+; 0001 0307   return sd_writeBuf(fs_tmp);
+;PCODE: $000005BF VOL: 0
+;PCODE: $000005C0 VOL: 0
+;PCODE: $000005C1 VOL: 0
+;PCODE: $000005C2 VOL: 0
+;PCODE: $000005C3 VOL: 0
+;PCODE: $000005C4 VOL: 0
+;PCODE: $000005C5 VOL: 0
+; 0001 0308 abort:
+;PCODE: $000005C6 VOL: 0
+; 0001 0309   return 1;
+;PCODE: $000005C7 VOL: 0
+;PCODE: $000005C8 VOL: 0
+;PCODE: $000005C9 VOL: 0
+;PCODE: $000005CA VOL: 0
+; 0001 030A }
+;PCODE: $000005CB VOL: 0
+;
+;/**************************************************************************
+;*  Открыть файл                                                           *
+;**************************************************************************/
+;
+;BYTE fs_open() {
+; 0001 0310 BYTE fs_open() {
+;PCODE: $000005CC VOL: 0
+;PCODE: $000005CD VOL: 0
+; 0001 0311   if(fs_openany()) goto abort;
+;PCODE: $000005CE VOL: 0
+;PCODE: $000005CF VOL: 0
+;PCODE: $000005D0 VOL: 0
+;PCODE: $000005D1 VOL: 0
+;PCODE: $000005D2 VOL: 0
+;PCODE: $000005D3 VOL: 0
+; 0001 0312 #ifndef FS_DISABLE_CHECK
+; 0001 0313   if(fs_file.opened == OPENED_FILE) return 0;
+;PCODE: $000005D4 VOL: 0
+;PCODE: $000005D5 VOL: 0
+;PCODE: $000005D6 VOL: 0
+;PCODE: $000005D7 VOL: 0
+;PCODE: $000005D8 VOL: 0
+;PCODE: $000005D9 VOL: 0
+; 0001 0314   fs_file.opened = OPENED_NONE;
+;PCODE: $000005DA VOL: 0
+;PCODE: $000005DB VOL: 0
+;PCODE: $000005DC VOL: 0
+; 0001 0315 #else
+; 0001 0316   if((FS_DIRENTRY[DIR_Attr] & AM_DIR) == 0) return 0;
+; 0001 0317 #endif
+; 0001 0318   lastError = ERR_NO_PATH;
+;PCODE: $000005DD VOL: 0
+;PCODE: $000005DE VOL: 0
+; 0001 0319 abort:
+;PCODE: $000005DF VOL: 0
+; 0001 031A   return 1;
+;PCODE: $000005E0 VOL: 0
+;PCODE: $000005E1 VOL: 0
+; 0001 031B }
+;PCODE: $000005E2 VOL: 0
+;
+;/**************************************************************************
+;*  Открыть папку                                                          *
+;**************************************************************************/
+;
+;BYTE fs_opendir() {
+; 0001 0321 BYTE fs_opendir() {
+;PCODE: $000005E3 VOL: 0
+;PCODE: $000005E4 VOL: 0
+; 0001 0322   if(fs_openany()) goto abort;
+;PCODE: $000005E5 VOL: 0
+;PCODE: $000005E6 VOL: 0
+;PCODE: $000005E7 VOL: 0
+;PCODE: $000005E8 VOL: 0
+;PCODE: $000005E9 VOL: 0
+;PCODE: $000005EA VOL: 0
+; 0001 0323 #ifndef FS_DISABLE_CHECK
+; 0001 0324   if(fs_file.opened == OPENED_DIR) return 0;
+;PCODE: $000005EB VOL: 0
+;PCODE: $000005EC VOL: 0
+;PCODE: $000005ED VOL: 0
+;PCODE: $000005EE VOL: 0
+;PCODE: $000005EF VOL: 0
+;PCODE: $000005F0 VOL: 0
+; 0001 0325   fs_file.opened = OPENED_NONE;
+;PCODE: $000005F1 VOL: 0
+;PCODE: $000005F2 VOL: 0
+;PCODE: $000005F3 VOL: 0
+; 0001 0326 #else
+; 0001 0327   if(FS_DIRENTRY[DIR_Attr] & AM_DIR) return 0;
+; 0001 0328 #endif
+; 0001 0329   lastError = ERR_NO_PATH;
+;PCODE: $000005F4 VOL: 0
+;PCODE: $000005F5 VOL: 0
+; 0001 032A abort:
+;PCODE: $000005F6 VOL: 0
+; 0001 032B   return 1;
+;PCODE: $000005F7 VOL: 0
+;PCODE: $000005F8 VOL: 0
+; 0001 032C }
+;PCODE: $000005F9 VOL: 0
+;
+;/**************************************************************************
+;*  Вычислить номер следующего сектора для чтения/записи                   *
+;*  Вызывается только из fs_read0, fs_write_start                          *
+;**************************************************************************/
+;
+;static BYTE fs_nextRWSector() {
+; 0001 0333 static BYTE fs_nextRWSector() {
+;PCODE: $000005FA VOL: 0
+;PCODE: $000005FB VOL: 0
+; 0001 0334   if(fs_file.ptr == 0) {
+;PCODE: $000005FC VOL: 0
+;PCODE: $000005FD VOL: 0
+;PCODE: $000005FE VOL: 0
+;PCODE: $000005FF VOL: 0
+; 0001 0335     /* Чтение файла еще не начато */
+; 0001 0336     fs_tmp = fs_file.entry_start_cluster;
+;PCODE: $00000600 VOL: 0
+;PCODE: $00000601 VOL: 0
+;PCODE: $00000602 VOL: 0
+; 0001 0337   } else {
+;PCODE: $00000603 VOL: 0
+;PCODE: $00000604 VOL: 0
+; 0001 0338     /* Еще не конец сектора */
+; 0001 0339     if((WORD)fs_file.ptr % 512) return 0;
+;PCODE: $00000605 VOL: 0
+;PCODE: $00000606 VOL: 0
+;PCODE: $00000607 VOL: 0
+;PCODE: $00000608 VOL: 0
+;PCODE: $00000609 VOL: 0
+;PCODE: $0000060A VOL: 0
+;PCODE: $0000060B VOL: 0
+; 0001 033A 
+; 0001 033B     /* Следующий сектор */
+; 0001 033C     fs_file.sector++;
+;PCODE: $0000060C VOL: 0
+;PCODE: $0000060D VOL: 0
+;PCODE: $0000060E VOL: 0
+;PCODE: $0000060F VOL: 0
+;PCODE: $00000610 VOL: 0
+;PCODE: $00000611 VOL: 0
+; 0001 033D 
+; 0001 033E     /* Еще не конец кластера */
+; 0001 033F     if(((fs_file.sector - fs_database) % fs_csize) != 0) return 0;
+;PCODE: $00000612 VOL: 0
+;PCODE: $00000613 VOL: 0
+;PCODE: $00000614 VOL: 0
+;PCODE: $00000615 VOL: 0
+;PCODE: $00000616 VOL: 0
+;PCODE: $00000617 VOL: 0
+;PCODE: $00000618 VOL: 0
+;PCODE: $00000619 VOL: 0
+;PCODE: $0000061A VOL: 0
+;PCODE: $0000061B VOL: 0
+;PCODE: $0000061C VOL: 0
+;PCODE: $0000061D VOL: 0
+;PCODE: $0000061E VOL: 0
+; 0001 0340 
+; 0001 0341     /* Следующий кластер */
+; 0001 0342     fs_tmp = fs_file.cluster;
+;PCODE: $0000061F VOL: 0
+;PCODE: $00000620 VOL: 0
+;PCODE: $00000621 VOL: 0
+;PCODE: $00000622 VOL: 0
+; 0001 0343     if(fs_nextCluster()) return 1;
+;PCODE: $00000623 VOL: 0
+;PCODE: $00000624 VOL: 0
+;PCODE: $00000625 VOL: 0
+;PCODE: $00000626 VOL: 0
+;PCODE: $00000627 VOL: 0
+; 0001 0344   }
+;PCODE: $00000628 VOL: 0
+;PCODE: $00000629 VOL: 0
+; 0001 0345 
+; 0001 0346   /* Если это был последний кластер, добавляем новый */
+; 0001 0347   if(fs_tmp == 0) {
+;PCODE: $0000062A VOL: 0
+;PCODE: $0000062B VOL: 0
+;PCODE: $0000062C VOL: 0
+; 0001 0348     if(fs_allocCluster(ALLOCCLUSTER)) return 1;
+;PCODE: $0000062D VOL: 0
+;PCODE: $0000062E VOL: 0
+;PCODE: $0000062F VOL: 0
+;PCODE: $00000630 VOL: 0
+;PCODE: $00000631 VOL: 0
+;PCODE: $00000632 VOL: 0
+;PCODE: $00000633 VOL: 0
+; 0001 0349     if(fs_file.ptr == 0) fs_file.entry_start_cluster = fs_tmp;
+;PCODE: $00000634 VOL: 0
+;PCODE: $00000635 VOL: 0
+;PCODE: $00000636 VOL: 0
+;PCODE: $00000637 VOL: 0
+;PCODE: $00000638 VOL: 0
+;PCODE: $00000639 VOL: 0
+;PCODE: $0000063A VOL: 0
+;PCODE: $0000063B VOL: 0
+; 0001 034A                     else fs_setNextCluster(fs_file.cluster); /* fs_tmp сохранится, так как он не LAST и не FREE */
+;PCODE: $0000063C VOL: 0
+;PCODE: $0000063D VOL: 0
+;PCODE: $0000063E VOL: 0
+;PCODE: $0000063F VOL: 0
+;PCODE: $00000640 VOL: 0
+;PCODE: $00000641 VOL: 0
+; 0001 034B   }
+;PCODE: $00000642 VOL: 0
+; 0001 034C 
+; 0001 034D   /* Ок */
+; 0001 034E   fs_file.cluster = fs_tmp;
+;PCODE: $00000643 VOL: 0
+;PCODE: $00000644 VOL: 0
+;PCODE: $00000645 VOL: 0
+;PCODE: $00000646 VOL: 0
+; 0001 034F   fs_clust2sect();
+;PCODE: $00000647 VOL: 0
+; 0001 0350   fs_file.sector  = fs_tmp;
+;PCODE: $00000648 VOL: 0
+;PCODE: $00000649 VOL: 0
+;PCODE: $0000064A VOL: 0
+; 0001 0351   return 0;
+;PCODE: $0000064B VOL: 0
+;PCODE: $0000064C VOL: 0
+; 0001 0352 }
+;PCODE: $0000064D VOL: 0
+;
+;/**************************************************************************
+;*  Прочитать из файла несколько байт в buf                                *
+;*                                                                         *
+;*  Пользователь не должен выходить за пределы файла при чтении, иначе     *
+;*  возникнет утечка свобожного места на диске.                            *
+;*                                                                         *
+;*  Аргументы:                                                             *
+;*    ptr      - буфер для чтения, может быть buf                          *
+;*    len      - кол-во байт, которые необходимо прочитать                 *
+;**************************************************************************/
+;
+;BYTE fs_read0(BYTE* ptr, WORD len) {
+; 0001 035F BYTE fs_read0(BYTE* ptr, WORD len) {
+;PCODE: $0000064E VOL: 0
+;PCODE: $0000064F VOL: 0
+; 0001 0360   WORD sectorLen;
+; 0001 0361 
+; 0001 0362   /* Проверка ошибок программиста */
+; 0001 0363 #ifndef FS_DISABLE_CHECK
+; 0001 0364   if(fs_file.opened != OPENED_FILE) { lastError = ERR_NOT_OPENED; goto abort; }
+;PCODE: $00000650 VOL: 0
+;	*ptr -> Y+4
+;	len -> Y+2
+;	sectorLen -> R16,R17
+;PCODE: $00000651 VOL: 0
+;PCODE: $00000652 VOL: 0
+;PCODE: $00000653 VOL: 0
+;PCODE: $00000654 VOL: 0
+;PCODE: $00000655 VOL: 0
+;PCODE: $00000656 VOL: 0
+; 0001 0365 #endif
+; 0001 0366 
+; 0001 0367   while(len) {
+;PCODE: $00000657 VOL: 0
+;PCODE: $00000658 VOL: 0
+;PCODE: $00000659 VOL: 0
+;PCODE: $0000065A VOL: 0
+;PCODE: $0000065B VOL: 0
+; 0001 0368     /* Если указатель находится на границе сектора */
+; 0001 0369     if(fs_nextRWSector()) goto abort;
+;PCODE: $0000065C VOL: 0
+;PCODE: $0000065D VOL: 0
+;PCODE: $0000065E VOL: 0
+;PCODE: $0000065F VOL: 0
+; 0001 036A 
+; 0001 036B     /* Кол-во байт до конца сектора */
+; 0001 036C     sectorLen = 512 - ((WORD)fs_file.ptr % 512);
+;PCODE: $00000660 VOL: 0
+;PCODE: $00000661 VOL: 0
+;PCODE: $00000662 VOL: 0
+;PCODE: $00000663 VOL: 0
+;PCODE: $00000664 VOL: 0
+;PCODE: $00000665 VOL: 0
+;PCODE: $00000666 VOL: 0
+; 0001 036D     if(len < sectorLen) sectorLen = len;
+;PCODE: $00000667 VOL: 0
+;PCODE: $00000668 VOL: 0
+;PCODE: $00000669 VOL: 0
+;PCODE: $0000066A VOL: 0
+;PCODE: $0000066B VOL: 0
+; 0001 036E 
+; 0001 036F     /* Читаем данные */
+; 0001 0370     if(ptr) {
+;PCODE: $0000066C VOL: 0
+;PCODE: $0000066D VOL: 0
+;PCODE: $0000066E VOL: 0
+;PCODE: $0000066F VOL: 0
+; 0001 0371       if(sd_read(ptr, fs_file.sector, (WORD)fs_file.ptr % 512, sectorLen)) goto abort;
+;PCODE: $00000670 VOL: 0
+;PCODE: $00000671 VOL: 0
+;PCODE: $00000672 VOL: 0
+;PCODE: $00000673 VOL: 0
+;PCODE: $00000674 VOL: 0
+;PCODE: $00000675 VOL: 0
+;PCODE: $00000676 VOL: 0
+;PCODE: $00000677 VOL: 0
+;PCODE: $00000678 VOL: 0
+;PCODE: $00000679 VOL: 0
+;PCODE: $0000067A VOL: 0
+;PCODE: $0000067B VOL: 0
+;PCODE: $0000067C VOL: 0
+;PCODE: $0000067D VOL: 0
+; 0001 0372       ptr += sectorLen;
+;PCODE: $0000067E VOL: 0
+;PCODE: $0000067F VOL: 0
+;PCODE: $00000680 VOL: 0
+;PCODE: $00000681 VOL: 0
+;PCODE: $00000682 VOL: 0
+; 0001 0373     }
+; 0001 0374 
+; 0001 0375     /* Увеличиваем смещение */
+; 0001 0376     fs_file.ptr += sectorLen;
+;PCODE: $00000683 VOL: 0
+;PCODE: $00000684 VOL: 0
+;PCODE: $00000685 VOL: 0
+;PCODE: $00000686 VOL: 0
+;PCODE: $00000687 VOL: 0
+;PCODE: $00000688 VOL: 0
+;PCODE: $00000689 VOL: 0
+;PCODE: $0000068A VOL: 0
+; 0001 0377     len -= sectorLen;
+;PCODE: $0000068B VOL: 0
+;PCODE: $0000068C VOL: 0
+;PCODE: $0000068D VOL: 0
+; 0001 0378   }
+;PCODE: $0000068E VOL: 0
+;PCODE: $0000068F VOL: 0
+; 0001 0379 
+; 0001 037A   /* Увеличение размера файла */
+; 0001 037B   if(fs_file.ptr > fs_file.size) fs_file.size = fs_file.ptr, fs_file.changed = 1;
+;PCODE: $00000690 VOL: 0
+;PCODE: $00000691 VOL: 0
+;PCODE: $00000692 VOL: 0
+;PCODE: $00000693 VOL: 0
+;PCODE: $00000694 VOL: 0
+;PCODE: $00000695 VOL: 0
+;PCODE: $00000696 VOL: 0
+;PCODE: $00000697 VOL: 0
+;PCODE: $00000698 VOL: 0
+;PCODE: $00000699 VOL: 0
+;PCODE: $0000069A VOL: 0
+;PCODE: $0000069B VOL: 0
+;PCODE: $0000069C VOL: 0
+; 0001 037C 
+; 0001 037D   return 0;
+;PCODE: $0000069D VOL: 0
+;PCODE: $0000069E VOL: 0
+;PCODE: $0000069F VOL: 0
+;PCODE: $000006A0 VOL: 0
+;PCODE: $000006A1 VOL: 0
+; 0001 037E abort:
+;PCODE: $000006A2 VOL: 0
+; 0001 037F #ifndef FS_DISABLE_CHECK
+; 0001 0380   fs_file.opened = OPENED_NONE;
+;PCODE: $000006A3 VOL: 0
+;PCODE: $000006A4 VOL: 0
+; 0001 0381 #endif
+; 0001 0382   return 1;
+;PCODE: $000006A5 VOL: 0
+;PCODE: $000006A6 VOL: 0
+;PCODE: $000006A7 VOL: 0
+;PCODE: $000006A8 VOL: 0
+; 0001 0383 }
+;PCODE: $000006A9 VOL: 0
+;
+;/**************************************************************************
+;*  Прочитать из файла несколько байт в buf                                *
+;*                                                                         *
+;*  Аргументы:                                                             *
+;*    ptr      - буфер для чтения, может быть buf                          *
+;*    len      - кол-во байт, которые необходимо прочитать                 *
+;*    readed   - указатель, для сохранения кол-ва реально прочитанных байт *
+;**************************************************************************/
+;
+;BYTE fs_read(BYTE* ptr, WORD len, WORD* readed) {
+; 0001 038E BYTE fs_read(BYTE* ptr, WORD len, WORD* readed) {
+;PCODE: $000006AA VOL: 0
+;PCODE: $000006AB VOL: 0
+; 0001 038F   /* Ограничиваем кол-во байт для чтения */
+; 0001 0390   if(len > fs_file.size - fs_file.ptr) len = (WORD)(fs_file.size - fs_file.ptr);
+;	*ptr -> Y+4
+;	len -> Y+2
+;	*readed -> Y+0
+;PCODE: $000006AC VOL: 0
+;PCODE: $000006AD VOL: 0
+;PCODE: $000006AE VOL: 0
+;PCODE: $000006AF VOL: 0
+;PCODE: $000006B0 VOL: 0
+;PCODE: $000006B1 VOL: 0
+;PCODE: $000006B2 VOL: 0
+;PCODE: $000006B3 VOL: 0
+;PCODE: $000006B4 VOL: 0
+;PCODE: $000006B5 VOL: 0
+;PCODE: $000006B6 VOL: 0
+;PCODE: $000006B7 VOL: 0
+;PCODE: $000006B8 VOL: 0
+;PCODE: $000006B9 VOL: 0
+;PCODE: $000006BA VOL: 0
+; 0001 0391   *readed = len;
+;PCODE: $000006BB VOL: 0
+;PCODE: $000006BC VOL: 0
+;PCODE: $000006BD VOL: 0
+;PCODE: $000006BE VOL: 0
+; 0001 0392 
+; 0001 0393   /* Проверка на ошибки происходит там */
+; 0001 0394   return fs_read0(ptr, len);
+;PCODE: $000006BF VOL: 0
+;PCODE: $000006C0 VOL: 0
+;PCODE: $000006C1 VOL: 0
+;PCODE: $000006C2 VOL: 0
+;PCODE: $000006C3 VOL: 0
+;PCODE: $000006C4 VOL: 0
+;PCODE: $000006C5 VOL: 0
+; 0001 0395 }
+;PCODE: $000006C6 VOL: 0
+;
+;/**************************************************************************
+;*  Сохранить длину файла и превый кластер в опистаель                     *
+;*  Вызывается из fs_lseek, fs_write_start, fs_write_end, fs_write_eof     *
+;**************************************************************************/
+;
+;static char fs_saveFileLength() {
+; 0001 039C static char fs_saveFileLength() {
+;PCODE: $000006C7 VOL: 0
+;PCODE: $000006C8 VOL: 0
+; 0001 039D   BYTE* entry;
+; 0001 039E 
+; 0001 039F   if(fs_file.changed == 0) return 0;
+;PCODE: $000006C9 VOL: 0
+;	*entry -> R16,R17
+;PCODE: $000006CA VOL: 0
+;PCODE: $000006CB VOL: 0
+;PCODE: $000006CC VOL: 0
+;PCODE: $000006CD VOL: 0
+;PCODE: $000006CE VOL: 0
+;PCODE: $000006CF VOL: 0
+;PCODE: $000006D0 VOL: 0
+; 0001 03A0   fs_file.changed = 0;
+;PCODE: $000006D1 VOL: 0
+;PCODE: $000006D2 VOL: 0
+;PCODE: $000006D3 VOL: 0
+;PCODE: $000006D4 VOL: 0
+; 0001 03A1 
+; 0001 03A2   /* Изменение описателя файла */
+; 0001 03A3   if(sd_readBuf(fs_file.entry_sector)) return 1;
+;PCODE: $000006D5 VOL: 0
+;PCODE: $000006D6 VOL: 0
+;PCODE: $000006D7 VOL: 0
+;PCODE: $000006D8 VOL: 0
+;PCODE: $000006D9 VOL: 0
+;PCODE: $000006DA VOL: 0
+;PCODE: $000006DB VOL: 0
+;PCODE: $000006DC VOL: 0
+;PCODE: $000006DD VOL: 0
+; 0001 03A4 
+; 0001 03A5   entry = buf + (fs_file.entry_index % 16) * 32;
+;PCODE: $000006DE VOL: 0
+;PCODE: $000006DF VOL: 0
+;PCODE: $000006E0 VOL: 0
+;PCODE: $000006E1 VOL: 0
+;PCODE: $000006E2 VOL: 0
+;PCODE: $000006E3 VOL: 0
+;PCODE: $000006E4 VOL: 0
+;PCODE: $000006E5 VOL: 0
+; 0001 03A6   LD_DWORD(entry + DIR_FileSize) = fs_file.size;
+;PCODE: $000006E6 VOL: 0
+;PCODE: $000006E7 VOL: 0
+;PCODE: $000006E8 VOL: 0
+;PCODE: $000006E9 VOL: 0
+; 0001 03A7   fs_setEntryCluster(entry, fs_file.entry_start_cluster);
+;PCODE: $000006EA VOL: 0
+;PCODE: $000006EB VOL: 0
+;PCODE: $000006EC VOL: 0
+;PCODE: $000006ED VOL: 0
+;PCODE: $000006EE VOL: 0
+; 0001 03A8 
+; 0001 03A9   return sd_writeBuf(fs_file.entry_sector);
+;PCODE: $000006EF VOL: 0
+;PCODE: $000006F0 VOL: 0
+;PCODE: $000006F1 VOL: 0
+;PCODE: $000006F2 VOL: 0
+;PCODE: $000006F3 VOL: 0
+;PCODE: $000006F4 VOL: 0
+; 0001 03AA }
+;PCODE: $000006F5 VOL: 0
+;
+;/**************************************************************************
+;*  Установить смещение чтения/записи файла                                *
+;**************************************************************************/
+;
+;#define LSEEK_STEP 32768
+;
+;BYTE fs_lseek(DWORD off, BYTE mode) {
+; 0001 03B2 BYTE fs_lseek(DWORD off, BYTE mode) {
+;PCODE: $000006F6 VOL: 0
+;PCODE: $000006F7 VOL: 0
+; 0001 03B3   DWORD l;
+; 0001 03B4 
+; 0001 03B5   /* Режим */
+; 0001 03B6   if(mode==1) off += fs_file.ptr; else
+;PCODE: $000006F8 VOL: 0
+;	off -> Y+5
+;	mode -> Y+4
+;	l -> Y+0
+;PCODE: $000006F9 VOL: 0
+;PCODE: $000006FA VOL: 0
+;PCODE: $000006FB VOL: 0
+;PCODE: $000006FC VOL: 0
+;PCODE: $000006FD VOL: 0
+;PCODE: $000006FE VOL: 0
+;PCODE: $000006FF VOL: 0
+;PCODE: $00000700 VOL: 0
+;PCODE: $00000701 VOL: 0
+;PCODE: $00000702 VOL: 0
+; 0001 03B7   if(mode==2) off += fs_file.size;
+;PCODE: $00000703 VOL: 0
+;PCODE: $00000704 VOL: 0
+;PCODE: $00000705 VOL: 0
+;PCODE: $00000706 VOL: 0
+;PCODE: $00000707 VOL: 0
+;PCODE: $00000708 VOL: 0
+;PCODE: $00000709 VOL: 0
+;PCODE: $0000070A VOL: 0
+; 0001 03B8 
+; 0001 03B9   /* Можно заменить на fs_file.ptr = 0 для уменьшения кода*/
+; 0001 03BA   if(off >= fs_file.ptr) off -= fs_file.ptr; else fs_file.ptr = 0;
+;PCODE: $0000070B VOL: 0
+;PCODE: $0000070C VOL: 0
+;PCODE: $0000070D VOL: 0
+;PCODE: $0000070E VOL: 0
+;PCODE: $0000070F VOL: 0
+;PCODE: $00000710 VOL: 0
+;PCODE: $00000711 VOL: 0
+;PCODE: $00000712 VOL: 0
+;PCODE: $00000713 VOL: 0
+;PCODE: $00000714 VOL: 0
+;PCODE: $00000715 VOL: 0
+;PCODE: $00000716 VOL: 0
+;PCODE: $00000717 VOL: 0
+;PCODE: $00000718 VOL: 0
+;PCODE: $00000719 VOL: 0
+;PCODE: $0000071A VOL: 0
+;PCODE: $0000071B VOL: 0
+; 0001 03BB 
+; 0001 03BC   do { /* Выполняем один цикл даже для off=0, так как внутри происходит проверка на ошибки */
+;PCODE: $0000071C VOL: 0
+;PCODE: $0000071D VOL: 0
+; 0001 03BD     l = off;
+;PCODE: $0000071E VOL: 0
+;PCODE: $0000071F VOL: 0
+; 0001 03BE     if(l > LSEEK_STEP) l = LSEEK_STEP;
+;PCODE: $00000720 VOL: 0
+;PCODE: $00000721 VOL: 0
+;PCODE: $00000722 VOL: 0
+;PCODE: $00000723 VOL: 0
+;PCODE: $00000724 VOL: 0
+; 0001 03BF     if(fs_read0(0, (WORD)l)) return 1;
+;PCODE: $00000725 VOL: 0
+;PCODE: $00000726 VOL: 0
+;PCODE: $00000727 VOL: 0
+;PCODE: $00000728 VOL: 0
+;PCODE: $00000729 VOL: 0
+;PCODE: $0000072A VOL: 0
+;PCODE: $0000072B VOL: 0
+;PCODE: $0000072C VOL: 0
+;PCODE: $0000072D VOL: 0
+;PCODE: $0000072E VOL: 0
+;PCODE: $0000072F VOL: 0
+; 0001 03C0     off -= l;
+;PCODE: $00000730 VOL: 0
+;PCODE: $00000731 VOL: 0
+;PCODE: $00000732 VOL: 0
+;PCODE: $00000733 VOL: 0
+;PCODE: $00000734 VOL: 0
+; 0001 03C1   } while(off);
+;PCODE: $00000735 VOL: 0
+;PCODE: $00000736 VOL: 0
+;PCODE: $00000737 VOL: 0
+;PCODE: $00000738 VOL: 0
+;PCODE: $00000739 VOL: 0
+;PCODE: $0000073A VOL: 0
+; 0001 03C2 
+; 0001 03C3   /* Размер файла мог изменится */
+; 0001 03C4   fs_saveFileLength();
+;PCODE: $0000073B VOL: 0
+; 0001 03C5 
+; 0001 03C6   /* Результат */
+; 0001 03C7   fs_tmp = fs_file.ptr;
+;PCODE: $0000073C VOL: 0
+;PCODE: $0000073D VOL: 0
+;PCODE: $0000073E VOL: 0
+; 0001 03C8 
+; 0001 03C9   return 0;
+;PCODE: $0000073F VOL: 0
+;PCODE: $00000740 VOL: 0
+;PCODE: $00000741 VOL: 0
+; 0001 03CA }
+;PCODE: $00000742 VOL: 0
+;
+;/**************************************************************************
+;*  Записать в файл (шаг 1)                                                *
+;***************************************************************************/
+;
+;BYTE fs_write_start() {
+; 0001 03D0 BYTE fs_write_start() {
+;PCODE: $00000743 VOL: 0
+;PCODE: $00000744 VOL: 0
+; 0001 03D1   WORD len;
+; 0001 03D2 
+; 0001 03D3   /* Проверка ошибок программиста */
+; 0001 03D4 #ifndef FS_DISABLE_CHECK
+; 0001 03D5   if(fs_file.opened != OPENED_FILE) { lastError = ERR_NOT_OPENED; goto abort; }
+;PCODE: $00000745 VOL: 0
+;	len -> R16,R17
+;PCODE: $00000746 VOL: 0
+;PCODE: $00000747 VOL: 0
+;PCODE: $00000748 VOL: 0
+;PCODE: $00000749 VOL: 0
+;PCODE: $0000074A VOL: 0
+;PCODE: $0000074B VOL: 0
+; 0001 03D6   if(fs_wtotal == 0) { lastError = ERR_NO_DATA; goto abort; }
+;PCODE: $0000074C VOL: 0
+;PCODE: $0000074D VOL: 0
+;PCODE: $0000074E VOL: 0
+;PCODE: $0000074F VOL: 0
+;PCODE: $00000750 VOL: 0
+;PCODE: $00000751 VOL: 0
+;PCODE: $00000752 VOL: 0
+; 0001 03D7 #endif
+; 0001 03D8 
+; 0001 03D9   /* Сколько можно еще дописать в этот сектор? */
+; 0001 03DA   len = 512 - (WORD)fs_file.ptr % 512;
+;PCODE: $00000753 VOL: 0
+;PCODE: $00000754 VOL: 0
+;PCODE: $00000755 VOL: 0
+;PCODE: $00000756 VOL: 0
+;PCODE: $00000757 VOL: 0
+;PCODE: $00000758 VOL: 0
+;PCODE: $00000759 VOL: 0
+; 0001 03DB 
+; 0001 03DC   /* Ограничиваем остатком данных в файле */
+; 0001 03DD   if(len > fs_wtotal) len = (WORD)fs_wtotal;
+;PCODE: $0000075A VOL: 0
+;PCODE: $0000075B VOL: 0
+;PCODE: $0000075C VOL: 0
+;PCODE: $0000075D VOL: 0
+;PCODE: $0000075E VOL: 0
+; 0001 03DE 
+; 0001 03DF   /* Вычисление fs_file.sector, выделение кластеров */
+; 0001 03E0   if(fs_nextRWSector()) goto abort; /* Должно вылетать только по ошибкам ERR_NO_FREE_SPACE, ERR_DISK_ERR */
+;PCODE: $0000075F VOL: 0
+;PCODE: $00000760 VOL: 0
+;PCODE: $00000761 VOL: 0
+;PCODE: $00000762 VOL: 0
+;PCODE: $00000763 VOL: 0
+; 0001 03E1 
+; 0001 03E2   /* Корректируем длину файла */
+; 0001 03E3   if(fs_file.size < fs_file.ptr + len) {
+;PCODE: $00000764 VOL: 0
+;PCODE: $00000765 VOL: 0
+;PCODE: $00000766 VOL: 0
+;PCODE: $00000767 VOL: 0
+;PCODE: $00000768 VOL: 0
+;PCODE: $00000769 VOL: 0
+;PCODE: $0000076A VOL: 0
+;PCODE: $0000076B VOL: 0
+;PCODE: $0000076C VOL: 0
+;PCODE: $0000076D VOL: 0
+; 0001 03E4     fs_file.size = fs_file.ptr + len;
+;PCODE: $0000076E VOL: 0
+;PCODE: $0000076F VOL: 0
+;PCODE: $00000770 VOL: 0
+;PCODE: $00000771 VOL: 0
+;PCODE: $00000772 VOL: 0
+;PCODE: $00000773 VOL: 0
+;PCODE: $00000774 VOL: 0
+; 0001 03E5     fs_file.changed = 1;
+;PCODE: $00000775 VOL: 0
+;PCODE: $00000776 VOL: 0
+;PCODE: $00000777 VOL: 0
+; 0001 03E6   }
+; 0001 03E7 
+; 0001 03E8   /* Читаем данные сектора, если не весь сектор будет заполнен */
+; 0001 03E9   if(len != 512) {
+;PCODE: $00000778 VOL: 0
+;PCODE: $00000779 VOL: 0
+;PCODE: $0000077A VOL: 0
+;PCODE: $0000077B VOL: 0
+; 0001 03EA     if(sd_readBuf(fs_file.sector)) goto abort;
+;PCODE: $0000077C VOL: 0
+;PCODE: $0000077D VOL: 0
+;PCODE: $0000077E VOL: 0
+;PCODE: $0000077F VOL: 0
+;PCODE: $00000780 VOL: 0
+;PCODE: $00000781 VOL: 0
+;PCODE: $00000782 VOL: 0
+; 0001 03EB   }
+;PCODE: $00000783 VOL: 0
+; 0001 03EC 
+; 0001 03ED   fs_file_wlen = len;
+;PCODE: $00000784 VOL: 0
+;PCODE: $00000785 VOL: 0
+;PCODE: $00000786 VOL: 0
+; 0001 03EE   fs_file_woff = (WORD)fs_file.ptr % 512;
+;PCODE: $00000787 VOL: 0
+;PCODE: $00000788 VOL: 0
+;PCODE: $00000789 VOL: 0
+;PCODE: $0000078A VOL: 0
+;PCODE: $0000078B VOL: 0
+; 0001 03EF   return 0;
+;PCODE: $0000078C VOL: 0
+;PCODE: $0000078D VOL: 0
+;PCODE: $0000078E VOL: 0
+; 0001 03F0 abort:
+;PCODE: $0000078F VOL: 0
+; 0001 03F1   /* Скорее всего это ошибка ERR_NO_FREE_SPACE */
+; 0001 03F2   /* Если размер файла был изменен, то надо бы сохранить изменения в описатель файла. */
+; 0001 03F3   fs_saveFileLength();
+;PCODE: $00000790 VOL: 0
+; 0001 03F4   /* Закрываем файл */
+; 0001 03F5 #ifndef FS_DISABLE_CHECK
+; 0001 03F6   fs_file.opened = OPENED_NONE;
+;PCODE: $00000791 VOL: 0
+;PCODE: $00000792 VOL: 0
+; 0001 03F7 #endif
+; 0001 03F8   return 1;
+;PCODE: $00000793 VOL: 0
+;PCODE: $00000794 VOL: 0
+;PCODE: $00000795 VOL: 0
+; 0001 03F9 }
+;PCODE: $00000796 VOL: 0
+;
+;/**************************************************************************
+;*  Записать в файл (шаг 2)                                                *
+;***************************************************************************/
+;
+;BYTE fs_write_end() {
+; 0001 03FF BYTE fs_write_end() {
+;PCODE: $00000797 VOL: 0
+;PCODE: $00000798 VOL: 0
+; 0001 0400 #ifndef FS_DISABLE_CHECK
+; 0001 0401   if(fs_file.opened != OPENED_FILE) { lastError = ERR_NOT_OPENED; goto abort; }
+;PCODE: $00000799 VOL: 0
+;PCODE: $0000079A VOL: 0
+;PCODE: $0000079B VOL: 0
+;PCODE: $0000079C VOL: 0
+;PCODE: $0000079D VOL: 0
+;PCODE: $0000079E VOL: 0
+; 0001 0402 #endif
+; 0001 0403 
+; 0001 0404   /* Записываем изменения на диск */
+; 0001 0405   if(sd_writeBuf(fs_file.sector)) goto abort;
+;PCODE: $0000079F VOL: 0
+;PCODE: $000007A0 VOL: 0
+;PCODE: $000007A1 VOL: 0
+;PCODE: $000007A2 VOL: 0
+;PCODE: $000007A3 VOL: 0
+;PCODE: $000007A4 VOL: 0
+;PCODE: $000007A5 VOL: 0
+;PCODE: $000007A6 VOL: 0
+; 0001 0406 
+; 0001 0407   /* В случае ошибки файл может содержать больше кластеров, чем требуется по его размеру. */
+; 0001 0408   /* Но это не плохо, данные не повреждены. А эта ошибка проявится лишь в уменьшении */
+; 0001 0409   /* места на диске. */
+; 0001 040A 
+; 0001 040B   /* Счетчики */
+; 0001 040C   fs_file.ptr += fs_file_wlen;
+;PCODE: $000007A7 VOL: 0
+;PCODE: $000007A8 VOL: 0
+;PCODE: $000007A9 VOL: 0
+;PCODE: $000007AA VOL: 0
+;PCODE: $000007AB VOL: 0
+;PCODE: $000007AC VOL: 0
+;PCODE: $000007AD VOL: 0
+;PCODE: $000007AE VOL: 0
+; 0001 040D   fs_wtotal   -= fs_file_wlen;
+;PCODE: $000007AF VOL: 0
+;PCODE: $000007B0 VOL: 0
+;PCODE: $000007B1 VOL: 0
+;PCODE: $000007B2 VOL: 0
+; 0001 040E 
+; 0001 040F   /* Если запись закончена, сохраняем размера файла и первый кластер */
+; 0001 0410   if(fs_wtotal == 0) {
+;PCODE: $000007B3 VOL: 0
+;PCODE: $000007B4 VOL: 0
+;PCODE: $000007B5 VOL: 0
+; 0001 0411     if(fs_saveFileLength()) goto abort;
+;PCODE: $000007B6 VOL: 0
+;PCODE: $000007B7 VOL: 0
+;PCODE: $000007B8 VOL: 0
+;PCODE: $000007B9 VOL: 0
+; 0001 0412   }
+;PCODE: $000007BA VOL: 0
+; 0001 0413 
+; 0001 0414   /* Ок */
+; 0001 0415   return 0;
+;PCODE: $000007BB VOL: 0
+;PCODE: $000007BC VOL: 0
+;PCODE: $000007BD VOL: 0
+; 0001 0416 abort:
+;PCODE: $000007BE VOL: 0
+; 0001 0417 #ifndef FS_DISABLE_CHECK
+; 0001 0418     fs_file.opened = OPENED_NONE;
+;PCODE: $000007BF VOL: 0
+;PCODE: $000007C0 VOL: 0
+; 0001 0419 #endif
+; 0001 041A   return 1;
+;PCODE: $000007C1 VOL: 0
+;PCODE: $000007C2 VOL: 0
+; 0001 041B }
+;PCODE: $000007C3 VOL: 0
+;
+;/**************************************************************************
+;*  Освободить цепочку кластеров начиная с fs_tmp                          *
+;**************************************************************************/
+;
+;static BYTE fs_freeChain() {
+; 0001 0421 static BYTE fs_freeChain() {
+;PCODE: $000007C4 VOL: 0
+;PCODE: $000007C5 VOL: 0
+; 0001 0422   DWORD c;
+; 0001 0423   while(1) {
+;PCODE: $000007C6 VOL: 0
+;	c -> Y+0
+;PCODE: $000007C7 VOL: 0
+; 0001 0424     if(fs_tmp < 2 || fs_tmp >= fs_n_fatent) return 0;
+;PCODE: $000007C8 VOL: 0
+;PCODE: $000007C9 VOL: 0
+;PCODE: $000007CA VOL: 0
+;PCODE: $000007CB VOL: 0
+;PCODE: $000007CC VOL: 0
+;PCODE: $000007CD VOL: 0
+;PCODE: $000007CE VOL: 0
+;PCODE: $000007CF VOL: 0
+;PCODE: $000007D0 VOL: 0
+;PCODE: $000007D1 VOL: 0
+;PCODE: $000007D2 VOL: 0
+;PCODE: $000007D3 VOL: 0
+; 0001 0425     /* Освободить кластер fs_tmp и записть в fs_tmp следующий за ним кластер */
+; 0001 0426     c = fs_tmp, fs_tmp = FREE_CLUSTER;
+;PCODE: $000007D4 VOL: 0
+;PCODE: $000007D5 VOL: 0
+;PCODE: $000007D6 VOL: 0
+;PCODE: $000007D7 VOL: 0
+;PCODE: $000007D8 VOL: 0
+; 0001 0427     if(fs_setNextCluster(c)) break; /* fs_tmp будет содержать следующий кластер, так как записывается FREE_CLUSTER */
+;PCODE: $000007D9 VOL: 0
+;PCODE: $000007DA VOL: 0
+;PCODE: $000007DB VOL: 0
+;PCODE: $000007DC VOL: 0
+;PCODE: $000007DD VOL: 0
+;PCODE: $000007DE VOL: 0
+; 0001 0428   }
+;PCODE: $000007DF VOL: 0
+;PCODE: $000007E0 VOL: 0
+;PCODE: $000007E1 VOL: 0
+; 0001 0429   return 1;
+;PCODE: $000007E2 VOL: 0
+;PCODE: $000007E3 VOL: 0
+;PCODE: $000007E4 VOL: 0
+; 0001 042A }
+;PCODE: $000007E5 VOL: 0
+;
+;/**************************************************************************
+;*  Переместить файл/папку                                                 *
+;**************************************************************************/
+;
+;BYTE fs_move0() {
+; 0001 0430 BYTE fs_move0() {
+;PCODE: $000007E6 VOL: 0
+;PCODE: $000007E7 VOL: 0
+; 0001 0431   BYTE* entry;
+; 0001 0432   BYTE tmp[21];
+; 0001 0433   WORD old_index;
+; 0001 0434   DWORD old_sector, old_start_cluster;
+; 0001 0435 
+; 0001 0436 #ifndef FS_DISABLE_CHECK
+; 0001 0437   if(fs_file.opened == OPENED_NONE) { lastError = ERR_NOT_OPENED; goto abort; }
+;PCODE: $000007E8 VOL: 0
+;PCODE: $000007E9 VOL: 0
+;	*entry -> R16,R17
+;	tmp -> Y+12
+;	old_index -> R18,R19
+;	old_sector -> Y+8
+;	old_start_cluster -> Y+4
+;PCODE: $000007EA VOL: 0
+;PCODE: $000007EB VOL: 0
+;PCODE: $000007EC VOL: 0
+;PCODE: $000007ED VOL: 0
+;PCODE: $000007EE VOL: 0
+;PCODE: $000007EF VOL: 0
+; 0001 0438 #endif
+; 0001 0439 
+; 0001 043A   /* Запоминаем старый описатель */
+; 0001 043B   old_index         = fs_file.entry_index;
+;PCODE: $000007F0 VOL: 0
+;PCODE: $000007F1 VOL: 0
+;PCODE: $000007F2 VOL: 0
+;PCODE: $000007F3 VOL: 0
+; 0001 043C   old_sector        = fs_file.entry_sector;
+;PCODE: $000007F4 VOL: 0
+;PCODE: $000007F5 VOL: 0
+;PCODE: $000007F6 VOL: 0
+; 0001 043D   old_start_cluster = fs_file.entry_start_cluster;
+;PCODE: $000007F7 VOL: 0
+;PCODE: $000007F8 VOL: 0
+;PCODE: $000007F9 VOL: 0
+; 0001 043E 
+; 0001 043F   /* Создаем новый файл. В папку он превратится позже. 0x80 - это предотвращаем рекурсию. */
+; 0001 0440   if(fs_open0(OPENED_FILE | 0x80)) goto abort;
+;PCODE: $000007FA VOL: 0
+;PCODE: $000007FB VOL: 0
+;PCODE: $000007FC VOL: 0
+;PCODE: $000007FD VOL: 0
+;PCODE: $000007FE VOL: 0
+;PCODE: $000007FF VOL: 0
+; 0001 0441 
+; 0001 0442   /* Предотвращаем ошибки программиста */
+; 0001 0443 #ifndef FS_DISABLE_CHECK
+; 0001 0444   fs_file.opened = OPENED_NONE;
+;PCODE: $00000800 VOL: 0
+;PCODE: $00000801 VOL: 0
+;PCODE: $00000802 VOL: 0
+; 0001 0445 #ifndef FS_DISABLE_SWAP
+; 0001 0446   fs_secondFile.opened = OPENED_NONE;
+;PCODE: $00000803 VOL: 0
+;PCODE: $00000804 VOL: 0
+; 0001 0447 #endif
+; 0001 0448 #endif
+; 0001 0449   /* fs_file.sector содежит первый кластер папки, в которой находится созданный файл. */
+; 0001 044A 
+; 0001 044B   /* Удаление старого файла/папки и перенос всех свойств */
+; 0001 044C   if(sd_readBuf(old_sector)) goto abort;
+;PCODE: $00000805 VOL: 0
+;PCODE: $00000806 VOL: 0
+;PCODE: $00000807 VOL: 0
+;PCODE: $00000808 VOL: 0
+;PCODE: $00000809 VOL: 0
+;PCODE: $0000080A VOL: 0
+; 0001 044D   entry = buf + (old_index % 16) * 32;
+;PCODE: $0000080B VOL: 0
+;PCODE: $0000080C VOL: 0
+;PCODE: $0000080D VOL: 0
+;PCODE: $0000080E VOL: 0
+;PCODE: $0000080F VOL: 0
+;PCODE: $00000810 VOL: 0
+;PCODE: $00000811 VOL: 0
+; 0001 044E   memcpy(tmp, entry+11, 21);
+;PCODE: $00000812 VOL: 0
+;PCODE: $00000813 VOL: 0
+;PCODE: $00000814 VOL: 0
+;PCODE: $00000815 VOL: 0
+;PCODE: $00000816 VOL: 0
+;PCODE: $00000817 VOL: 0
+;PCODE: $00000818 VOL: 0
+;PCODE: $00000819 VOL: 0
+; 0001 044F   entry[0] = 0xE5;
+;PCODE: $0000081A VOL: 0
+;PCODE: $0000081B VOL: 0
+;PCODE: $0000081C VOL: 0
+; 0001 0450   if(sd_writeBuf(old_sector)) goto abort;
+;PCODE: $0000081D VOL: 0
+;PCODE: $0000081E VOL: 0
+;PCODE: $0000081F VOL: 0
+;PCODE: $00000820 VOL: 0
+;PCODE: $00000821 VOL: 0
+;PCODE: $00000822 VOL: 0
+; 0001 0451 
+; 0001 0452   /* Копируем все свойства новому файлу, тем самым превращая его в папку */
+; 0001 0453   if(sd_readBuf(fs_file.entry_sector)) goto abort;
+;PCODE: $00000823 VOL: 0
+;PCODE: $00000824 VOL: 0
+;PCODE: $00000825 VOL: 0
+;PCODE: $00000826 VOL: 0
+;PCODE: $00000827 VOL: 0
+;PCODE: $00000828 VOL: 0
+;PCODE: $00000829 VOL: 0
+;PCODE: $0000082A VOL: 0
+; 0001 0454   entry = buf + (fs_file.entry_index % 16) * 32;
+;PCODE: $0000082B VOL: 0
+;PCODE: $0000082C VOL: 0
+;PCODE: $0000082D VOL: 0
+;PCODE: $0000082E VOL: 0
+;PCODE: $0000082F VOL: 0
+;PCODE: $00000830 VOL: 0
+;PCODE: $00000831 VOL: 0
+;PCODE: $00000832 VOL: 0
+; 0001 0455   memcpy(entry+11, tmp, 21);
+;PCODE: $00000833 VOL: 0
+;PCODE: $00000834 VOL: 0
+;PCODE: $00000835 VOL: 0
+;PCODE: $00000836 VOL: 0
+;PCODE: $00000837 VOL: 0
+;PCODE: $00000838 VOL: 0
+;PCODE: $00000839 VOL: 0
+;PCODE: $0000083A VOL: 0
+; 0001 0456   if(sd_writeBuf(fs_file.entry_sector)) goto abort;
+;PCODE: $0000083B VOL: 0
+;PCODE: $0000083C VOL: 0
+;PCODE: $0000083D VOL: 0
+;PCODE: $0000083E VOL: 0
+;PCODE: $0000083F VOL: 0
+;PCODE: $00000840 VOL: 0
+;PCODE: $00000841 VOL: 0
+; 0001 0457 
+; 0001 0458   /* В папке надо еще скорретировать описатель .. */
+; 0001 0459   if(entry[DIR_Attr] & AM_DIR) {
+;PCODE: $00000842 VOL: 0
+;PCODE: $00000843 VOL: 0
+;PCODE: $00000844 VOL: 0
+;PCODE: $00000845 VOL: 0
+;PCODE: $00000846 VOL: 0
+; 0001 045A     fs_tmp = old_start_cluster; /* Первый кластер нашей папки */
+;PCODE: $00000847 VOL: 0
+;PCODE: $00000848 VOL: 0
+; 0001 045B     fs_clust2sect();
+;PCODE: $00000849 VOL: 0
+; 0001 045C     if(sd_readBuf(fs_tmp)) goto abort;
+;PCODE: $0000084A VOL: 0
+;PCODE: $0000084B VOL: 0
+;PCODE: $0000084C VOL: 0
+;PCODE: $0000084D VOL: 0
+;PCODE: $0000084E VOL: 0
+;PCODE: $0000084F VOL: 0
+; 0001 045D     fs_setEntryCluster(buf+32, fs_parent_dir_cluster); /* Первый кластер папки предка.*/
+;PCODE: $00000850 VOL: 0
+;PCODE: $00000851 VOL: 0
+;PCODE: $00000852 VOL: 0
+;PCODE: $00000853 VOL: 0
+;PCODE: $00000854 VOL: 0
+;PCODE: $00000855 VOL: 0
+;PCODE: $00000856 VOL: 0
+;PCODE: $00000857 VOL: 0
+; 0001 045E     if(sd_writeBuf(fs_tmp)) goto abort;
+;PCODE: $00000858 VOL: 0
+;PCODE: $00000859 VOL: 0
+;PCODE: $0000085A VOL: 0
+;PCODE: $0000085B VOL: 0
+;PCODE: $0000085C VOL: 0
+;PCODE: $0000085D VOL: 0
+; 0001 045F   }
+;PCODE: $0000085E VOL: 0
+; 0001 0460 
+; 0001 0461   return 0;
+;PCODE: $0000085F VOL: 0
+;PCODE: $00000860 VOL: 0
+;PCODE: $00000861 VOL: 0
+;PCODE: $00000862 VOL: 0
+;PCODE: $00000863 VOL: 0
+; 0001 0462 abort:
+;PCODE: $00000864 VOL: 0
+; 0001 0463   return 1;
+;PCODE: $00000865 VOL: 0
+;PCODE: $00000866 VOL: 0
+;PCODE: $00000867 VOL: 0
+;PCODE: $00000868 VOL: 0
+; 0001 0464 }
+;PCODE: $00000869 VOL: 0
+;
+;BYTE fs_move(const char* from, const char* to) {
+; 0001 0466 BYTE fs_move(const char* from, const char* to) {
+;PCODE: $0000086A VOL: 0
+;PCODE: $0000086B VOL: 0
+; 0001 0467   strcpy((char*)buf, from);
+;	*from -> Y+2
+;	*to -> Y+0
+;PCODE: $0000086C VOL: 0
+;PCODE: $0000086D VOL: 0
+;PCODE: $0000086E VOL: 0
+;PCODE: $0000086F VOL: 0
+;PCODE: $00000870 VOL: 0
+; 0001 0468   if(fs_openany()) return 1;
+;PCODE: $00000871 VOL: 0
+;PCODE: $00000872 VOL: 0
+;PCODE: $00000873 VOL: 0
+;PCODE: $00000874 VOL: 0
+;PCODE: $00000875 VOL: 0
+;PCODE: $00000876 VOL: 0
+;PCODE: $00000877 VOL: 0
+;PCODE: $00000878 VOL: 0
+; 0001 0469   strcpy((char*)buf, to);
+;PCODE: $00000879 VOL: 0
+;PCODE: $0000087A VOL: 0
+;PCODE: $0000087B VOL: 0
+;PCODE: $0000087C VOL: 0
+;PCODE: $0000087D VOL: 0
+;PCODE: $0000087E VOL: 0
+; 0001 046A   return fs_move0();
+;PCODE: $0000087F VOL: 0
+;PCODE: $00000880 VOL: 0
+;PCODE: $00000881 VOL: 0
+; 0001 046B }
+;PCODE: $00000882 VOL: 0
+;
+;/**************************************************************************
+;*  Удалить файл или пустую папку                                          *
+;*  Имя файла должно содержаться в buf и не превышать FS_MAXFILE симолов   *
+;*  включая терминатор                                                     *
+;**************************************************************************/
+;
+;BYTE fs_delete() {
+; 0001 0473 BYTE fs_delete() {
+;PCODE: $00000883 VOL: 0
+;PCODE: $00000884 VOL: 0
+; 0001 0474   DWORD entrySector;
+; 0001 0475   BYTE* entry;
+; 0001 0476 
+; 0001 0477   /* Там будет проверен fs_type == FS_ERROR */
+; 0001 0478   if(fs_openany()) goto abort;
+;PCODE: $00000885 VOL: 0
+;PCODE: $00000886 VOL: 0
+;	entrySector -> Y+2
+;	*entry -> R16,R17
+;PCODE: $00000887 VOL: 0
+;PCODE: $00000888 VOL: 0
+;PCODE: $00000889 VOL: 0
+;PCODE: $0000088A VOL: 0
+;PCODE: $0000088B VOL: 0
+;PCODE: $0000088C VOL: 0
+; 0001 0479 
+; 0001 047A   /* Предотвращаем ошибки программиста */
+; 0001 047B   fs_file.opened = OPENED_NONE;
+;PCODE: $0000088D VOL: 0
+;PCODE: $0000088E VOL: 0
+;PCODE: $0000088F VOL: 0
+; 0001 047C #ifndef FS_DISABLE_SWAP
+; 0001 047D   fs_secondFile.opened = OPENED_NONE;
+;PCODE: $00000890 VOL: 0
+;PCODE: $00000891 VOL: 0
+; 0001 047E #endif
+; 0001 047F 
+; 0001 0480   /* Корневую папку удалять нельзя */
+; 0001 0481   if(FS_DIRENTRY[0] == 0) { lastError = ERR_NO_PATH; goto abort; }
+;PCODE: $00000892 VOL: 0
+;PCODE: $00000893 VOL: 0
+;PCODE: $00000894 VOL: 0
+;PCODE: $00000895 VOL: 0
+;PCODE: $00000896 VOL: 0
+;PCODE: $00000897 VOL: 0
+;PCODE: $00000898 VOL: 0
+; 0001 0482 
+; 0001 0483   /* Сохраняем интерформацию о найденном файле, так как fs_readdir ниже их прибьет */
+; 0001 0484   entrySector = fs_file.entry_sector;
+;PCODE: $00000899 VOL: 0
+;PCODE: $0000089A VOL: 0
+;PCODE: $0000089B VOL: 0
+;PCODE: $0000089C VOL: 0
+; 0001 0485   entry = buf + (fs_file.entry_index % 16) * 32;
+;PCODE: $0000089D VOL: 0
+;PCODE: $0000089E VOL: 0
+;PCODE: $0000089F VOL: 0
+;PCODE: $000008A0 VOL: 0
+;PCODE: $000008A1 VOL: 0
+;PCODE: $000008A2 VOL: 0
+;PCODE: $000008A3 VOL: 0
+; 0001 0486 
+; 0001 0487   /* В папке не должно быть файлов */
+; 0001 0488   if(FS_DIRENTRY[DIR_Attr] & AM_DIR) {
+;PCODE: $000008A4 VOL: 0
+;PCODE: $000008A5 VOL: 0
+;PCODE: $000008A6 VOL: 0
+;PCODE: $000008A7 VOL: 0
+; 0001 0489     /* Перематывем папку на начало */
+; 0001 048A     fs_file.entry_able = 0;
+;PCODE: $000008A8 VOL: 0
+;PCODE: $000008A9 VOL: 0
+;PCODE: $000008AA VOL: 0
+; 0001 048B     /* Ищем первый файл или папку */
+; 0001 048C     /* fs_file.entry_start_cluster сохряняется (содержит первый кластер файла или папки) */
+; 0001 048D     if(fs_readdir_nocheck()) goto abort;
+;PCODE: $000008AB VOL: 0
+;PCODE: $000008AC VOL: 0
+;PCODE: $000008AD VOL: 0
+;PCODE: $000008AE VOL: 0
+; 0001 048E     /* Если нашли, то ошибка */
+; 0001 048F     if(fs_file.entry_able) { lastError = ERR_DIR_NOT_EMPTY; goto abort; }
+;PCODE: $000008AF VOL: 0
+;PCODE: $000008B0 VOL: 0
+;PCODE: $000008B1 VOL: 0
+;PCODE: $000008B2 VOL: 0
+;PCODE: $000008B3 VOL: 0
+;PCODE: $000008B4 VOL: 0
+;PCODE: $000008B5 VOL: 0
+;PCODE: $000008B6 VOL: 0
+; 0001 0490   }
+;PCODE: $000008B7 VOL: 0
+; 0001 0491 
+; 0001 0492   /* Удаляем описатель */
+; 0001 0493   if(sd_readBuf(entrySector)) goto abort;
+;PCODE: $000008B8 VOL: 0
+;PCODE: $000008B9 VOL: 0
+;PCODE: $000008BA VOL: 0
+;PCODE: $000008BB VOL: 0
+;PCODE: $000008BC VOL: 0
+;PCODE: $000008BD VOL: 0
+;PCODE: $000008BE VOL: 0
+; 0001 0494   entry[0] = 0xE5;
+;PCODE: $000008BF VOL: 0
+;PCODE: $000008C0 VOL: 0
+;PCODE: $000008C1 VOL: 0
+;PCODE: $000008C2 VOL: 0
+; 0001 0495   if(sd_writeBuf(entrySector)) goto abort;
+;PCODE: $000008C3 VOL: 0
+;PCODE: $000008C4 VOL: 0
+;PCODE: $000008C5 VOL: 0
+;PCODE: $000008C6 VOL: 0
+;PCODE: $000008C7 VOL: 0
+;PCODE: $000008C8 VOL: 0
+; 0001 0496 
+; 0001 0497   /* Освобождаем цепочку кластеров */
+; 0001 0498   fs_tmp = fs_file.entry_start_cluster;
+;PCODE: $000008C9 VOL: 0
+;PCODE: $000008CA VOL: 0
+;PCODE: $000008CB VOL: 0
+;PCODE: $000008CC VOL: 0
+; 0001 0499   return fs_freeChain();
+;PCODE: $000008CD VOL: 0
+;PCODE: $000008CE VOL: 0
+;PCODE: $000008CF VOL: 0
+;PCODE: $000008D0 VOL: 0
+; 0001 049A abort:
+;PCODE: $000008D1 VOL: 0
+; 0001 049B   return 1;
+;PCODE: $000008D2 VOL: 0
+;PCODE: $000008D3 VOL: 0
+;PCODE: $000008D4 VOL: 0
+;PCODE: $000008D5 VOL: 0
+; 0001 049C }
+;PCODE: $000008D6 VOL: 0
+;
+;/**************************************************************************
+;*  Установить конец файла                                                 *
+;**************************************************************************/
+;
+;BYTE fs_write_eof() {
+; 0001 04A2 BYTE fs_write_eof() {
+;PCODE: $000008D7 VOL: 0
+;PCODE: $000008D8 VOL: 0
+; 0001 04A3   /* Проверка ошибок программиста */
+; 0001 04A4 #ifndef FS_DISABLE_CHECK
+; 0001 04A5   if(fs_file.opened != OPENED_FILE) { lastError = ERR_NOT_OPENED; goto abort; }
+;PCODE: $000008D9 VOL: 0
+;PCODE: $000008DA VOL: 0
+;PCODE: $000008DB VOL: 0
+;PCODE: $000008DC VOL: 0
+;PCODE: $000008DD VOL: 0
+;PCODE: $000008DE VOL: 0
+; 0001 04A6 #endif
+; 0001 04A7 
+; 0001 04A8   /* Корректируем либо FAT, либо описатель файла. */
+; 0001 04A9   if(fs_file.ptr == 0) {
+;PCODE: $000008DF VOL: 0
+;PCODE: $000008E0 VOL: 0
+;PCODE: $000008E1 VOL: 0
+;PCODE: $000008E2 VOL: 0
+;PCODE: $000008E3 VOL: 0
+; 0001 04AA     /* Удалем все кластеры файла */
+; 0001 04AB     fs_tmp = fs_file.entry_start_cluster;
+;PCODE: $000008E4 VOL: 0
+;PCODE: $000008E5 VOL: 0
+;PCODE: $000008E6 VOL: 0
+; 0001 04AC     fs_file.entry_start_cluster = 0;
+;PCODE: $000008E7 VOL: 0
+;PCODE: $000008E8 VOL: 0
+;PCODE: $000008E9 VOL: 0
+; 0001 04AD   } else {
+;PCODE: $000008EA VOL: 0
+;PCODE: $000008EB VOL: 0
+; 0001 04AE     /* Этот кластер файла последний. */
+; 0001 04AF     fs_tmp = LAST_CLUSTER;
+;PCODE: $000008EC VOL: 0
+;PCODE: $000008ED VOL: 0
+; 0001 04B0     if(fs_setNextCluster(fs_file.cluster)) goto abort; /* fs_tmp будет содержать следующий кластер, так как записывается LAST_CLUSTER */
+;PCODE: $000008EE VOL: 0
+;PCODE: $000008EF VOL: 0
+;PCODE: $000008F0 VOL: 0
+;PCODE: $000008F1 VOL: 0
+;PCODE: $000008F2 VOL: 0
+;PCODE: $000008F3 VOL: 0
+;PCODE: $000008F4 VOL: 0
+; 0001 04B1   }
+;PCODE: $000008F5 VOL: 0
+;PCODE: $000008F6 VOL: 0
+; 0001 04B2 
+; 0001 04B3   /* Удалем все кластеры файла после этого. (они содержатся в fs_tmp); */
+; 0001 04B4   if(fs_freeChain()) goto abort;
+;PCODE: $000008F7 VOL: 0
+;PCODE: $000008F8 VOL: 0
+;PCODE: $000008F9 VOL: 0
+;PCODE: $000008FA VOL: 0
+; 0001 04B5 
+; 0001 04B6   /* Сохраняем длну и первый кластер */
+; 0001 04B7   fs_file.size    = fs_file.ptr;
+;PCODE: $000008FB VOL: 0
+;PCODE: $000008FC VOL: 0
+;PCODE: $000008FD VOL: 0
+;PCODE: $000008FE VOL: 0
+;PCODE: $000008FF VOL: 0
+; 0001 04B8   fs_file.changed = 1;
+;PCODE: $00000900 VOL: 0
+;PCODE: $00000901 VOL: 0
+;PCODE: $00000902 VOL: 0
+; 0001 04B9   if(!fs_saveFileLength()) return 0;
+;PCODE: $00000903 VOL: 0
+;PCODE: $00000904 VOL: 0
+;PCODE: $00000905 VOL: 0
+;PCODE: $00000906 VOL: 0
+;PCODE: $00000907 VOL: 0
+; 0001 04BA 
+; 0001 04BB abort:
+;PCODE: $00000908 VOL: 0
+;PCODE: $00000909 VOL: 0
+; 0001 04BC #ifndef FS_DISABLE_CHECK
+; 0001 04BD   fs_file.opened = OPENED_NONE;
+;PCODE: $0000090A VOL: 0
+;PCODE: $0000090B VOL: 0
+; 0001 04BE #endif
+; 0001 04BF   return 1;
+;PCODE: $0000090C VOL: 0
+;PCODE: $0000090D VOL: 0
+; 0001 04C0 }
+;PCODE: $0000090E VOL: 0
+;
+;/**************************************************************************
+;*  Записать в файл                                                        *
+;**************************************************************************/
+;
+;BYTE fs_write(CONST BYTE* ptr, WORD len) {
+; 0001 04C6 BYTE fs_write( BYTE* ptr, WORD len) {
+;PCODE: $0000090F VOL: 0
+;PCODE: $00000910 VOL: 0
+; 0001 04C7   /* Проверка на ошибки происходит в вызываемых функциях */
+; 0001 04C8 
+; 0001 04C9   /* Конец файла */
+; 0001 04CA   if(len == 0) return fs_write_eof();
+;	*ptr -> Y+2
+;	len -> Y+0
+;PCODE: $00000911 VOL: 0
+;PCODE: $00000912 VOL: 0
+;PCODE: $00000913 VOL: 0
+;PCODE: $00000914 VOL: 0
+;PCODE: $00000915 VOL: 0
+;PCODE: $00000916 VOL: 0
+; 0001 04CB 
+; 0001 04CC   fs_wtotal = len;
+;PCODE: $00000917 VOL: 0
+;PCODE: $00000918 VOL: 0
+;PCODE: $00000919 VOL: 0
+; 0001 04CD   do {
+;PCODE: $0000091A VOL: 0
+; 0001 04CE     if(fs_write_start()) goto abort;
+;PCODE: $0000091B VOL: 0
+;PCODE: $0000091C VOL: 0
+;PCODE: $0000091D VOL: 0
+;PCODE: $0000091E VOL: 0
+; 0001 04CF     memcpy(fs_file_wbuf, ptr, fs_file_wlen);
+;PCODE: $0000091F VOL: 0
+;PCODE: $00000920 VOL: 0
+;PCODE: $00000921 VOL: 0
+;PCODE: $00000922 VOL: 0
+;PCODE: $00000923 VOL: 0
+;PCODE: $00000924 VOL: 0
+;PCODE: $00000925 VOL: 0
+;PCODE: $00000926 VOL: 0
+;PCODE: $00000927 VOL: 0
+;PCODE: $00000928 VOL: 0
+; 0001 04D0     ptr += fs_file_wlen;
+;PCODE: $00000929 VOL: 0
+;PCODE: $0000092A VOL: 0
+;PCODE: $0000092B VOL: 0
+;PCODE: $0000092C VOL: 0
+; 0001 04D1     if(fs_write_end()) goto abort;
+;PCODE: $0000092D VOL: 0
+;PCODE: $0000092E VOL: 0
+;PCODE: $0000092F VOL: 0
+;PCODE: $00000930 VOL: 0
+; 0001 04D2   } while(fs_wtotal);
+;PCODE: $00000931 VOL: 0
+;PCODE: $00000932 VOL: 0
+;PCODE: $00000933 VOL: 0
+;PCODE: $00000934 VOL: 0
+;PCODE: $00000935 VOL: 0
+;PCODE: $00000936 VOL: 0
+;PCODE: $00000937 VOL: 0
+; 0001 04D3 
+; 0001 04D4   return 0;
+;PCODE: $00000938 VOL: 0
+;PCODE: $00000939 VOL: 0
+;PCODE: $0000093A VOL: 0
+; 0001 04D5 abort:
+;PCODE: $0000093B VOL: 0
+; 0001 04D6   return 1;
+;PCODE: $0000093C VOL: 0
+;PCODE: $0000093D VOL: 0
+;PCODE: $0000093E VOL: 0
+; 0001 04D7 }
+;PCODE: $0000093F VOL: 0
+;
+;/**************************************************************************
+;*  Переключить файлы                                                      *
+;**************************************************************************/
+;
+;#ifndef FS_DISABLE_SWAP
+;void fs_swap() {
+; 0001 04DE void fs_swap() {
+;PCODE: $00000940 VOL: 0
+;PCODE: $00000941 VOL: 0
+; 0001 04DF   /* Это занимает меньше ПЗУ, чем три функции memcpy */
+; 0001 04E0   BYTE t, *a = (BYTE*)&fs_file, *b = (BYTE*)&fs_secondFile, n = sizeof(File);
+; 0001 04E1   do {
+;PCODE: $00000942 VOL: 0
+;	t -> R17
+;	*a -> R18,R19
+;	*b -> R20,R21
+;	n -> R16
+;PCODE: $00000943 VOL: 0
+;PCODE: $00000944 VOL: 0
+;PCODE: $00000945 VOL: 0
+;PCODE: $00000946 VOL: 0
+;PCODE: $00000947 VOL: 0
+;PCODE: $00000948 VOL: 0
+;PCODE: $00000949 VOL: 0
+; 0001 04E2     t=*a, *a=*b, *b=t; ++a; ++b;
+;PCODE: $0000094A VOL: 0
+;PCODE: $0000094B VOL: 0
+;PCODE: $0000094C VOL: 0
+;PCODE: $0000094D VOL: 0
+;PCODE: $0000094E VOL: 0
+;PCODE: $0000094F VOL: 0
+;PCODE: $00000950 VOL: 0
+;PCODE: $00000951 VOL: 0
+;PCODE: $00000952 VOL: 0
+;PCODE: $00000953 VOL: 0
+;PCODE: $00000954 VOL: 0
+;PCODE: $00000955 VOL: 0
+;PCODE: $00000956 VOL: 0
+; 0001 04E3   } while(--n);
+;PCODE: $00000957 VOL: 0
+;PCODE: $00000958 VOL: 0
+;PCODE: $00000959 VOL: 0
+;PCODE: $0000095A VOL: 0
+;PCODE: $0000095B VOL: 0
+;PCODE: $0000095C VOL: 0
+;PCODE: $0000095D VOL: 0
+; 0001 04E4 }
+;PCODE: $0000095E VOL: 0
+;PCODE: $0000095F VOL: 0
+;PCODE: $00000960 VOL: 0
+;PCODE: $00000961 VOL: 0
+;#endif
+;
+;/**************************************************************************
+;*  Расчет свободного места                                                *
+;*                                                                         *
+;*  Результат в переменной fs_tmp в мегабайтах                             *
+;*  Функция закрывает файл                                                 *
+;**************************************************************************/
+;
+;#ifndef FS_DISABLE_GETFREESPACE
+;BYTE fs_getfree() {
+; 0001 04EF BYTE fs_getfree() {
+;PCODE: $00000962 VOL: 0
+;PCODE: $00000963 VOL: 0
+; 0001 04F0   /* Мы испортим переменную fs_file.sector, поэтому закрываем файл */
+; 0001 04F1   fs_file.opened = OPENED_NONE;
+;PCODE: $00000964 VOL: 0
+;PCODE: $00000965 VOL: 0
+; 0001 04F2 
+; 0001 04F3   /* Кол-во свободных кластеров будет в fs_file.sector */
+; 0001 04F4   fs_file.sector = 0;
+;PCODE: $00000966 VOL: 0
+;PCODE: $00000967 VOL: 0
+;PCODE: $00000968 VOL: 0
+; 0001 04F5   if(fs_allocCluster(1)) return 1;
+;PCODE: $00000969 VOL: 0
+;PCODE: $0000096A VOL: 0
+;PCODE: $0000096B VOL: 0
+;PCODE: $0000096C VOL: 0
+;PCODE: $0000096D VOL: 0
+;PCODE: $0000096E VOL: 0
+;PCODE: $0000096F VOL: 0
+; 0001 04F6 
+; 0001 04F7   /* Пересчет в мегабайты */
+; 0001 04F8   fs_tmp = ((fs_file.sector >> 10) + 1) / 2 * fs_csize;
+;PCODE: $00000970 VOL: 0
+;PCODE: $00000971 VOL: 0
+;PCODE: $00000972 VOL: 0
+;PCODE: $00000973 VOL: 0
+;PCODE: $00000974 VOL: 0
+;PCODE: $00000975 VOL: 0
+;PCODE: $00000976 VOL: 0
+;PCODE: $00000977 VOL: 0
+;PCODE: $00000978 VOL: 0
+;PCODE: $00000979 VOL: 0
+;PCODE: $0000097A VOL: 0
+;PCODE: $0000097B VOL: 0
+;PCODE: $0000097C VOL: 0
+; 0001 04F9 
+; 0001 04FA   return 0;
+;PCODE: $0000097D VOL: 0
+;PCODE: $0000097E VOL: 0
+; 0001 04FB }
+;PCODE: $0000097F VOL: 0
+;#endif
+;
+;/**************************************************************************
+;*  Размер накопителя в мегабайтах                                         *
+;**************************************************************************/
+;
+;BYTE fs_gettotal() {
+; 0001 0502 BYTE fs_gettotal() {
+;PCODE: $00000980 VOL: 0
+;PCODE: $00000981 VOL: 0
+; 0001 0503   /* Проверка ошибок программиста */
+; 0001 0504 #ifndef FS_DISABLE_CHECK
+; 0001 0505   if(fs_type == FS_ERROR) { lastError = ERR_NO_FILESYSTEM; return 1; }
+;PCODE: $00000982 VOL: 0
+;PCODE: $00000983 VOL: 0
+;PCODE: $00000984 VOL: 0
+;PCODE: $00000985 VOL: 0
+;PCODE: $00000986 VOL: 0
+;PCODE: $00000987 VOL: 0
+;PCODE: $00000988 VOL: 0
+; 0001 0506 #endif
+; 0001 0507 
+; 0001 0508   fs_tmp = ((fs_n_fatent >> 10) + 1) / 2 * fs_csize;
+;PCODE: $00000989 VOL: 0
+;PCODE: $0000098A VOL: 0
+;PCODE: $0000098B VOL: 0
+;PCODE: $0000098C VOL: 0
+;PCODE: $0000098D VOL: 0
+;PCODE: $0000098E VOL: 0
+;PCODE: $0000098F VOL: 0
+;PCODE: $00000990 VOL: 0
+;PCODE: $00000991 VOL: 0
+;PCODE: $00000992 VOL: 0
+;PCODE: $00000993 VOL: 0
+;PCODE: $00000994 VOL: 0
+; 0001 0509   return 0;
+;PCODE: $00000995 VOL: 0
+;PCODE: $00000996 VOL: 0
+; 0001 050A }
+;PCODE: $00000997 VOL: 0
+;
+;/**************************************************************************
+;*  Размер файла                                                           *
+;**************************************************************************/
+;
+;BYTE fs_getfilesize() {
+; 0001 0510 BYTE fs_getfilesize() {
+;PCODE: $00000998 VOL: 0
+;PCODE: $00000999 VOL: 0
+; 0001 0511 #ifndef FS_DISABLE_CHECK
+; 0001 0512   if(fs_file.opened != OPENED_FILE) {
+;PCODE: $0000099A VOL: 0
+;PCODE: $0000099B VOL: 0
+;PCODE: $0000099C VOL: 0
+; 0001 0513     lastError = ERR_NOT_OPENED;
+;PCODE: $0000099D VOL: 0
+;PCODE: $0000099E VOL: 0
+; 0001 0514     return 1;
+;PCODE: $0000099F VOL: 0
+;PCODE: $000009A0 VOL: 0
+; 0001 0515   }
+; 0001 0516 #endif
+; 0001 0517   fs_tmp = fs_file.size;
+;PCODE: $000009A1 VOL: 0
+;PCODE: $000009A2 VOL: 0
+;PCODE: $000009A3 VOL: 0
+;PCODE: $000009A4 VOL: 0
+; 0001 0518   return 0;
+;PCODE: $000009A5 VOL: 0
+;PCODE: $000009A6 VOL: 0
+; 0001 0519 }
+;PCODE: $000009A7 VOL: 0
+;
+;/**************************************************************************
+;*  Указатель чтения записи файла                                          *
+;**************************************************************************/
+;
+;BYTE fs_tell() {
+; 0001 051F BYTE fs_tell() {
+;PCODE: $000009A8 VOL: 0
+;PCODE: $000009A9 VOL: 0
+; 0001 0520 #ifndef FS_DISABLE_CHECK
+; 0001 0521   if(fs_file.opened != OPENED_FILE) {
+;PCODE: $000009AA VOL: 0
+;PCODE: $000009AB VOL: 0
+;PCODE: $000009AC VOL: 0
+; 0001 0522     lastError = ERR_NOT_OPENED;
+;PCODE: $000009AD VOL: 0
+;PCODE: $000009AE VOL: 0
+; 0001 0523     return 1;
+;PCODE: $000009AF VOL: 0
+;PCODE: $000009B0 VOL: 0
+; 0001 0524   }
+; 0001 0525 #endif
+; 0001 0526   fs_tmp = fs_file.ptr;
+;PCODE: $000009B1 VOL: 0
+;PCODE: $000009B2 VOL: 0
+;PCODE: $000009B3 VOL: 0
+;PCODE: $000009B4 VOL: 0
+; 0001 0527   return 0;
+;PCODE: $000009B5 VOL: 0
+;PCODE: $000009B6 VOL: 0
+; 0001 0528 }
+;PCODE: $000009B7 VOL: 0

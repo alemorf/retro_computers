@@ -1,0 +1,1 @@
+extern uchar game[9][9];

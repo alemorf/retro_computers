@@ -1,0 +1,29 @@
+// Умножение HL на DE, результат в HL. BC портить нельзя
+
+void op_mul16() {
+asm {
+  push b
+  mov b, h
+  mov c, l
+  lxi h, 0
+  mvi a, 17
+op_mul16_1:
+  dcr a
+  jz pop_bc_ret
+  dad h
+  xchg
+  jnc op_mul16_2
+  dad h
+  inx h
+  jmp op_mul16_3
+op_mul16_2:
+  dad h
+op_mul16_3:
+  xchg
+  jnc op_mul16_1
+  dad b
+  jnc op_mul16_1
+  inx d
+  jmp op_mul16_1
+}
+}  

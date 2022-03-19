@@ -1,0 +1,1696 @@
+I only had a hexadecimal dump of the ROM of the UT-88 computer. I disassembled 
+it, i.e. turned into an assembler program. And then i rewrote this program line
+by line in our CMM programming language, which is an assembler with C syntax.
+If we compile this program, we will get a byte-for-byte binary file identical to
+the original ROM. Few people today can understand assembler, but a C-like
+language is understandable to many.
+
+Constructions unusual for C:
+[X]             - Evaluate expression at compile time.
+>>r=            - Cyclic shift to the right.
+>>@=            - Cyclic shift to the right via carry flag.
+-@=             - Subtract with CF flag.
+<$              - Less for signed types (the M flag is checked).
+>=$             - Greater than or equal to signed types (the P flag is checked).
+if (flag_m) X   - X is executed if the M flag is set.
+if (flag_m X) Y - Evalude X, Y is executed if the M flag is set.
+noreturn;       - The compiler should not insert ret at the end of a function.
+
+--------------------------------------------------------------------------------
+
+// Оргинальное ПЗУ ЮТ-88
+// Восстановил Алексей Морозов, версия от 19-06-2020
+
+extern uint8_t outputFileBegin = 0xF800;
+extern uint8_t outputFileEnd = 0x10000;
+
+// Константы
+
+const int screenWidth        = 64;
+const int screenHeight       = 28;
+const int screenAddr         = 0xE800;
+const int screenAddrEnd2     = 0xF000;
+const int lastRamAddr        = 0xDFFF;
+const int initalStackAddr    = 0xF7AF;
+const int ioSysConfigValue   = 0x8B;
+const int ioUserConfigValue  = 0x82;
+const int tapeSpeedInitValue = 0x1D2A;
+
+// Системные переменные
+
+const int systemVariablesBegin = 0xF7B0;
+const int systemVariablesEnd   = 0xF7FF;
+
+extern uint16_t vCursorPos          = 0xF7B0;
+extern uint16_t vCursor             = 0xF7B2;
+extern uint16_t vBreakSavedPc       = 0xF7B4;
+extern uint8_t  vBreakSavedHl       = 0xF7B6;
+extern uint8_t  vBreakRegs          = 0xF7B8;
+extern uint8_t  vInitalStackAddr    = 0xF7BC;
+extern uint16_t vBreakSavedPsw      = 0xF7BE;
+extern uint16_t vSp                 = 0xF7C0;
+extern uint8_t  vBreakAddr          = 0xF7C3;
+extern uint8_t  vBreakPrevCmd       = 0xF7C5;
+extern uint8_t  vJmp                = 0xF7C6;
+extern uint16_t vCmdArg1            = 0xF7C7;
+extern uint16_t vCmdArg2            = 0xF7C9;
+extern uint16_t vCmdArg3            = 0xF7CB;
+extern uint8_t  vCmdArg2Able        = 0xF7CD;
+extern uint8_t  vTapeInverted       = 0xF7CE;
+extern uint8_t  vTapeSpeedRd        = 0xF7CF;
+extern uint8_t  vTapeSpeedWr        = 0xF7D0;
+extern uint16_t vLastRamAddr        = 0xF7D1;
+extern uint8_t  vLineBuffer         = 0xF7D3; // Максимальная длина строки 31 байт без учета завершающего символа.
+extern uint8_t  vLineBufferLastByte = 0xF7F2;
+extern uint8_t  vFirstPressCounter  = 0xF7F3;
+extern uint8_t  vFirstPress         = 0xF7F4;
+extern uint8_t  vPutchEscMode       = 0xF7F8;
+
+// Вызов этих команд запускает подпрограммы по этим адресам
+
+extern uint8_t  cmdW = 0xC000;
+extern uint8_t  cmdU = 0xF000;
+
+// Порты ввода вывода
+
+const int ioSysConfig  = 0x04; // КР580ВВ55А. Системный порт и порт клавиатуры.
+const int ioSysC       = 0x05;
+const int ioSysB       = 0x06;
+const int ioSysA       = 0x07;
+const int ioTape       = 0xA1; // Порт накопителя на магнитной ленте.
+const int ioUserA      = 0xF8; // КР580ВВ55А. Пользовательский порт. Сюда подключается внешее ПЗУ.
+const int ioUserB      = 0xF9;
+const int ioUserC      = 0xFA;
+const int ioUserConfig = 0xFB;
+
+// Коды команд КР580ВМ80А
+
+const int opcodeJmp = 0xC3;
+const int opcodeRst6 = 0xF7;
+
+// Коды символов для putch, getch и inkey
+
+const int charCodeLeft        = 0x08;
+const int charCodeNextLine    = 0x0A;
+const int charCodeHome        = 0x0C;
+const int charCodeEnter       = 0x0D;
+const int charCodeRight       = 0x18;
+const int charCodeUp          = 0x19;
+const int charCodeDown        = 0x1A;
+const int charCodeEsc         = 0x1B;
+const int charCodeClearScreen = 0x1F;
+const int charCodeSpace       = 0x20;
+const int charCodeBackspace   = 0x7F;
+
+// Точки входа
+
+#org 0xF800
+
+void entryPoints()
+{
+    // Точки входа соответствуют Радио 86РК
+    return reboot();
+    return getch();
+    return tapeInput();
+    return putch(c);
+    return tapeOutput(c);
+    return putch(c);
+    return isAnyKeyPressed();
+    return put8(a);
+    return puts(hl);
+    return inkey();
+    return getCursor();
+    return getCursorChar();
+    return tapeInputFile(hl);
+    return tapeOutputFile(hl, de, bc);
+    return calcSum(hl, de);
+    return; rst(0x38); rst(0x38); // Инициализация видеоконтроллера. Не требуется.
+    return getLastRamAddr();
+    return setLastRamAddr(hl);
+    noreturn;
+}
+
+// Инициализация. Выполняется после перезагрузки или пользовательской программой.
+// Параметры: нет. Функция никогда не завершается.
+
+void reboot()
+{
+    out(ioSysConfig, a = ioSysConfigValue);
+    out(ioUserConfig, a = ioUserConfigValue);
+    sp = initalStackAddr;
+    cmdF(hl = systemVariablesBegin, de = systemVariablesEnd, c = 0);
+    vInitalStackAddr = hl = initalStackAddr;
+    puts(hl = &aClearUt88); // Очистка экрана и вывод *ЮТ/88*
+    nop(3);
+    vLastRamAddr = hl = lastRamAddr;
+    vTapeSpeedRd = hl = tapeSpeedInitValue;
+    vJmp = a = opcodeJmp;
+    noreturn; // Продолжение в monitor
+}
+
+// Ввод команды пользователем и её выполнение. Выполнение любой команды возвращается к этой точке.
+// Параметры: нет. Функция никогда не завершается.
+
+void monitor()
+{
+    // Возвращаем стек на место
+    sp = initalStackAddr;
+
+    // Перевод строки и вывод на экран =>
+    puts(hl = &aCrLfPrompt);
+
+    // Ввод строки в vLineBuffer
+    nop(4);
+    getLine();
+
+    // После этого любая команда может вернуться в монитор выполнив ret
+    hl = &monitor;
+    push(hl);
+
+    // Код введеной команды
+    hl = &vLineBuffer;
+    a = *hl;
+
+    // Разбор команд
+    if (a == 'X') return cmdX();
+    if (a == 'U') return cmdU();
+
+    // У команды может быть от 0 до 3-х параметров, 16-ричных чисел разделенных запятой
+    push(a)
+    {
+        parseCommandArgs();
+        hl = vCmdArg3; c = l; b = h;
+        hl = vCmdArg2; swap(hl, de);
+        hl = vCmdArg1;
+    }
+
+    // Разбор команд
+    if (a == 'D') return cmdD(hl, de);
+    if (a == 'C') return cmdC(hl, de, bc);
+    if (a == 'F') return cmdF(hl, de, c);
+    if (a == 'S') return cmdS(hl, de, c);
+    if (a == 'T') return cmdT(hl, de, bc);
+    if (a == 'M') return cmdM(hl);
+    if (a == 'G') return cmdG(hl, de);
+    if (a == 'I') return cmdI(hl);
+    if (a == 'O') return cmdO(hl, de);
+    if (a == 'L') return cmdL(hl, de);
+    if (a == 'R') return cmdR(hl, de, bc);
+
+    // Продолжение разбора команд в следующей функции
+    return monitor2(a, hl, de);
+    noreturn;
+}
+
+// Вспомогательная функция ввода строки с клавиатуры.
+
+void getLineBackspace()
+{
+    if ((a = 0x63) == l) goto getLine0; //! Ошибка. Тут должен быть адрес начала строки, т.е. &vLineBuffer.
+    push(hl)
+    {
+        puts(hl = &aBsSpBs);
+    }
+    hl--;
+    //! Ошибка. Если строка пустая, то нужно обнулить b.
+    goto getLineLoop;
+    noreturn;
+}
+
+// Ввод строки с клавиатуры.
+// Строка сохраняется по адресам vLineBuffer .. vLineBufferLastByte.
+// Параметры: нет. Результат de = адрес vLineBuffer, b = 0, cf - если строка не пустая
+
+void getLine()
+{
+    hl = &vLineBuffer;
+getLine0:
+    b = 0; // Признак пустой строки.
+    while ()
+    {
+getLineLoop:
+        getch();
+        if (a == charCodeLeft) goto getLineBackspace;
+        if (a == charCodeBackspace) goto getLineBackspace;
+        //! Плохо. Не надо выводить непечатные и управляющие символы.
+        if (flag_nz) putchA(a); //! Лишнее условие, которое всегда истинно.
+        *hl = a;
+        if (a == charCodeEnter) break;
+        if (a == '.') return monitor();
+        b = 0xFF;
+        if ((a = &vLineBufferLastByte) == l) return error();
+        hl++;
+    }
+    (a = b) <<@= 1; // Признак пустой строки. 7-ой бит помещаем во флаг CF.
+
+    // Результат
+    de = &vLineBuffer;
+    b = 0; //! Лишняя команда
+}
+
+// Функция для пользовательской программы. Вывод строки на экран.
+// Параметры: hl - адрес стороки. Результат: hl - следующий адрес за терминатором строки. Сохраняются: bc, de.
+
+void puts(hl)
+{
+    while ()
+    {
+        a = *hl;
+        if (flag_z a &= a) return;
+        putchA(a);
+        hl++;
+    }
+    noreturn;
+}
+
+// Выделить из введенной пользователем строки пераметры в переменные vCmdArg*
+// Параметры: нет. В случае ошибки функция переходит на error, а затем на monitor.
+
+void parseCommandArgs()
+{
+    // Зануление переменных vCmdArg*
+    cmdF(hl = &vCmdArg1, de = &vCmdArg2Able, c = 0);
+
+    // Указатель на введенную команду. Первый байт это код команды, мы его пропускаем.
+    de = [&vLineBuffer + 1];
+
+    // Преобразование 1 параметра из строки в число. В случае ошибки функция переходит на error, а затем на monitor.
+    parseHexNumber16(de);
+    vCmdArg1 = hl;
+    vCmdArg2 = hl;
+
+    // В строке больше нет параметров
+    if (flag_c) return;
+
+    // Преобразование 2 параметра из строки в число. В случае ошибки функция переходит на error, а затем на monitor.
+    vCmdArg2Able = a = 0xFF;
+    parseHexNumber16(de);
+    vCmdArg2 = hl;
+
+    // В строке больше нет параметров
+    if (flag_c) return;
+
+    // Преобразование 3 параметра из строки в число. В случае ошибки функция переходит на error, а затем на monitor.
+    parseHexNumber16(de);
+    vCmdArg3 = hl;
+
+    // В строке больше нет параметров
+    if (flag_c) return;
+
+    // Вывод ошибки, если в строке еще что то осталось. Эта функция переходит на monitor.
+    return error();
+    noreturn;
+}
+
+// Преобразовать строку содержащую 16 ричное 16 битное число в число.
+// Параметры: de - адрес стороки. Результат: hl - число, cf - если в строке больше ничего нет.
+
+void parseHexNumber16(de)
+{
+    hl = 0;
+    while ()
+    {
+        a = *de; de++;
+        if (a == 0x0D) break;
+        if (a == ',') return; // выход с флагами z nc. //! Не проверяются лишние пробелы
+        if (a == ' ') continue;
+        a -= '0';
+        if (flag_m) return error(); // Если получилось отрицательное число
+        if (a >=$ 10)
+        {
+            if (a <$ ['A' - '0']) return error();
+            if (a >=$ ['F' - '0' + 1]) return error();
+            a -= ['A' - '0' - 10];
+        }
+        c = a;
+        hl += hl += hl += hl += hl;
+        if (flag_c) return error(); //! Ошибка. Не все переполнения проверяются.
+        hl += bc;
+    }
+    setFlagC();  // выход с флагами z c
+}
+
+// Сравить hl и de.
+// Параметры: hl, de - числа. Результат: флаги. Сохраняет: bc, hl, de.
+
+void cmdHlDe(hl, de)
+{
+    if ((a = h) != d) return;
+    (a = l) ? e;
+}
+
+// Если hl = de или пользователь нажал СТОП, то выйти из вызывающей функции.
+// Параметры: hl, de - числа. Результат: hl на 1 больше. Сохраняет: bc, de.
+
+void ifHlEqDeThenRetElseIncHlCanStop(hl, de)
+{
+    stopByUser();
+    noreturn; // Продолжение в ifHlEqDeThenRetElseIncHl
+}
+
+// Если hl = de, то выйти из вызывающей функции.
+// Параметры: hl, de - числа. Результат: нет на 1 больше. Сохраняет: bc, de.
+
+void ifHlEqDeThenRetElseIncHl(hl, de)
+{
+    cmdHlDe(hl, de);
+    if (flag_z)
+    {
+        sp++;
+        sp++;
+        return;
+    }
+    hl++;
+}
+
+// Возможность прерывания длительной функции пользователем.
+// Параметры: нет. Результат: нет. Сохраняет: bc, de, hl.
+
+void stopByUser()
+{
+    a = 0xFF; //! Ошибка. Тут должна быть проверка нажатия какой то клавиши на клавиатуре.
+    a &= a;
+    if (a != 3) return;
+    return error();
+    noreturn;
+}
+
+// Вывод на экран: перевод строки, отступ на 4 символа
+// Параметры: нет. Результат: нет. Сохраняет: a, bc, de, hl.
+
+void putCrLfTab()
+{
+    push(hl)
+    {
+        puts(hl = &aCrLfTab);
+    }
+}
+
+// Вывод на экран: 8 битное число из памяти по адресу HL, пробел.
+// Параметры: нет. Результат: нет. Сохраняет: bc, de, hl.
+
+void putMSp(hl)
+{
+    a = *hl;
+    noreturn;
+}
+
+// Вывод на экран: 8 битное число из регистра А, пробел.
+// Параметры: нет. Результат: нет. Сохраняет: bc, de, hl.
+
+void put8Sp(a)
+{
+    push(bc)
+    {
+        put8(a);
+        putchA(a = ' ');
+    }
+}
+
+// Команда D <начальный адрес> <конечный адрес>
+// Вывод блока данных из адресного пространства на экран в 16-ричном виде
+
+void cmdD(hl, de)
+{
+    putCrLfTabHlSp(hl);
+    while ()
+    {
+        putMSp(hl);
+        ifHlEqDeThenRetElseIncHlCanStop(hl, de);
+        if (flag_z (a = l) &= 0x0F) goto cmdD;
+    }
+    noreturn;
+}
+
+// Команда С <начальный адрес 1> <конечный адрес 1> <начальный адрес 2>
+// Сравнить два блока адресного пространство
+
+void cmdC(hl, de, bc)
+{
+    while ()
+    {
+        a = *bc;
+        if (a != *hl)
+        {
+            putCrLfTabHlSp(hl);
+            putMSp(hl);
+            put8Sp(a = *bc);
+        }
+        bc++;
+        ifHlEqDeThenRetElseIncHlCanStop(hl, de);
+    }
+    noreturn;
+}
+
+// Команда S <начальный адрес> <конечный адрес> <байт>
+// Заполнить блок в адресном пространстве одним байтом
+
+void cmdF(hl, de, c)
+{
+    while ()
+    {
+        *hl = c;
+        ifHlEqDeThenRetElseIncHl(hl, de);
+    }
+    noreturn;
+}
+
+// Команда S <начальный адрес> <конечный адрес> <байт>
+// Найти байт (8 битное значение) в адресном пространстве
+
+void cmdS(hl, de, c)
+{
+    while ()
+    {
+        if ((a = c) == *hl)
+            putCrLfTabHlSp(hl);
+        ifHlEqDeThenRetElseIncHlCanStop(hl, de);
+    }
+    noreturn;
+}
+
+// Команда S <начальный адрес источника> <конечный адрес источника> <начальный адрес назначения>
+// Копировать блок в адресном пространстве
+
+void cmdT(hl, de, bc)
+{
+    while ()
+    {
+        *bc = a = *hl;
+        bc++;
+        ifHlEqDeThenRetElseIncHl(hl, de);
+    }
+    noreturn;
+}
+
+// Команда L <начальный адрес> <конечный адрес>
+// Вывести на экран адресное пространство в виде текста
+
+void cmdL(hl, de)
+{
+    // Вывод адреса
+    putCrLfTabHlSp(hl);
+
+    while ()
+    {
+        a = *hl;
+        if (flag_m a |= a) goto cmdL1;
+        if (a < ' ')
+        {
+cmdL1:      a = '.';
+        }
+        putchA(a);
+        ifHlEqDeThenRetElseIncHlCanStop(hl, de);
+        if (flag_z (a = l) &= 0xF) goto cmdL;
+    }
+    noreturn;
+}
+
+// Команда M <начальный адрес>
+// Вывести на экран адресное пространство побайтно с возможностью изменения
+
+void cmdM(hl)
+{
+    while ()
+    {
+        // Вывод адреса
+        putCrLfTabHlSp(hl);
+
+        // Вывод значения по этому адресу
+        putMSp(hl);
+
+        // Ввод строки пользователем
+        push(hl)
+        {
+            getLine();
+        }
+
+        // Если пользователь ввел строку, то преобразуем её в число и записываем его в память
+        if (flag_c)
+        {
+            push(hl)
+            {
+                parseHexNumber16();
+                a = l;
+            }
+            *hl = a;
+        }
+
+        // Следующий цикл
+        hl++;
+    }
+    noreturn;
+}
+
+// Команда G <начальный адрес> <конечный адрес>
+// Запуск программы и возможным указанием точки останова.
+
+void cmdG(hl, de)
+{
+    // Нужна точка останова?
+    cmdHlDe();
+    if (flag_nz)
+    {
+        swap(hl, de);
+        vBreakAddr = hl;
+        vBreakPrevCmd = a = *hl;
+        *hl = opcodeRst6;
+        *0x30 = a = opcodeJmp;
+        *0x31 = hl = &breakHandler;
+    }
+
+    // Восстановление регистров
+    sp = &vBreakRegs;
+    pop(a, hl, de, bc);
+    sp = hl;
+    hl = vBreakSavedHl;
+
+    // Запуск
+    return vJmp();
+    noreturn;
+}
+
+// Команда R <начальный адрес ПЗУ> <конечный адрес ПЗУ> <начальный адрес назаначения>
+// Скопировать блок из внешнего ПЗУ в адресное пространство процессора
+
+void cmdR(hl, de, bc)
+{
+    out(ioUserC, a = h);
+    while ()
+    {
+        out(ioUserB, a = l);
+        *bc = a = in(ioUserA);
+        bc++;
+        ifHlEqDeThenRetElseIncHl(hl, de);
+    }
+    noreturn;
+}
+
+// Функция для пользовательской программы. Получить координаты курсора.
+// Параметры: нет. Результат: hl - координаты курсора. Сохраняет регистры: bc, de, hl.
+
+void getCursor()
+{
+    hl = vCursorPos;
+}
+
+// Функция для пользовательской программы. Получить символ под курсором
+// Параметры: нет. Результат: a - код символа. Сохраняет регистры: bc, de, hl.
+
+void getCursorChar()
+{
+    push(hl)
+    {
+        hl = vCursorPos; //! Ошибка. Тут нужно выполнить vCursor.
+        a = *hl;
+    }
+}
+
+// Команда I <смещение> <скорость>
+// Загрузить файл с магнитной ленты
+
+void cmdI(hl, de)
+{
+    // Если скорость указана, то сохраняем её в системную переменную.
+    if ((a = vCmdArg2Able) != 0)
+    {
+        vTapeSpeedRd = a = e;
+    }
+
+    // Загрузить файл с магнитной ленты
+    tapeInputFile(hl);
+
+    // Вывод адреса первого и последнего байта
+    putCrLfTabHlSp(hl);
+    swap(de, hl);
+    putCrLfTabHlSp(hl);
+    swap(de, hl);
+
+    // Расчет и вывод контрольной суммы
+    push(bc);
+    calcSum(hl, de);
+    hl = bc;
+    putCrLfTabHlSp(hl);
+    pop(de);
+
+    // Если прочитанная из файла и вычисленная контрольная суммы совпадают, то возвращаемся в монитор.
+    cmdHlDe();
+    if (flag_z) return;
+
+    // В случае ошибки выводим 4-ое число - ожидаемую контрольную сумму и текст ошибки
+    swap(de, hl);
+    putCrLfTabHlSp(hl);
+
+    noreturn; // Продолжение на error
+}
+
+// Вывести сообщение об ошибке на экран и перейти в Монитор
+
+void error()
+{
+    putchA(a = '?'); //! Лучше тут написать ОШИБКА
+    return monitor();
+    noreturn;
+}
+
+// Функция для пользовательской программы. Загрузить файл с магнитной ленты.
+// Параметры: hl - смещение загрузки. Результат: bc - прочитанная КС, hl - адрес загрузки
+
+void tapeInputFile(hl)
+{
+    // Ожидание начала блока данных на магнитной ленте и чтение 16 бит, это начальный адрес.
+    tapeInputBcEx(a = 0xFF);
+    push(hl)
+    {
+        // Прибавляем смещение загрузки, адрес загрузки временно в de
+        hl += bc;
+        swap(hl, de);
+        // Чтение 16 бит, это конечный адрес.
+        tapeInputBc();
+    }
+    // Прибавляем смещение загрузки к конечному адресу, он теперь в de, а начальный адрес в HL
+    hl += bc;
+    swap(hl, de);
+    push(hl)
+    {
+        // Чтение данных
+        tapeReadBlock(hl, de);
+
+        // Ожидание начала блока данных на магнитной ленте и чтение 16 бит, это контрольная сумма.
+        tapeInputBcEx(a = 0xFF);
+    }
+}
+
+// Неиспользуемая функция. Похоже на очистку экрана.
+
+void FAC6()
+{
+    b = 0;
+    do
+    {
+        *hl = b;
+        hl++;
+    } while ((a = h) != 0xF0);
+    pop(hl, de);
+}
+
+// Используется при перезагрузке. Очистка экрана и вывод текста *ЮТ/88*.
+
+uint8_t aClearUt88[1] = { "\x1F\x1A*`t/88*" };
+
+// Загрузка 16 битного числа с магнитной ленты без синхронизации
+// Параметры: нет. Результат: bc - значение. Сохраяет: de, hl
+
+void tapeInputBc()
+{
+    a = 8;
+    noreturn;
+}
+
+// Загрузка 16 битного числа с магнитной ленты с синхронизацией
+// Параметры: a = 0xFF. Результат: bc - значение. Сохраяет: de, hl
+
+void tapeInputBcEx(a)
+{
+    tapeInput(a);
+    b = a;
+    tapeInput(a = 8);
+    c = a;
+}
+
+// Загрузка блока данных с магнитной ленты.
+// Параметры: hl - начальный адрес, de - конечный адрес. Результат: нет. Сохраяет: de.
+
+void tapeReadBlock(hl, de)
+{
+    while ()
+    {
+        tapeInput(a = 8);
+        *hl = a;
+        ifHlEqDeThenRetElseIncHl(hl, de);
+    }
+    noreturn;
+}
+
+// Функция для пользовательской программы. Вычистить 16-битную сумму всех байт по адресам hl..de.
+// Параметры: hl - начальный адрес, de - конечный адрес. Результат: bc - сумма. Сохраяет: de.
+
+void calcSum(de, hl)
+{
+    bc = 0;
+    while ()
+    {
+        c = ((a = *hl) += c);
+        if (flag_c) b++;
+        cmdHlDe();
+        if (flag_z) return;
+        hl++;
+    }
+    noreturn;
+}
+
+// Команда O <начальный адрес> <конечный адрес> <скорость>
+// Сохранить блок данных на магнитную ленту
+
+void cmdO(c)
+{
+    // Если скорость указана, то сохраняем её в системную переменную.
+    if ((a = c) != 0)
+    {
+        vTapeSpeedWr = a;
+    }
+
+    // Расчет контрольной суммы в bc
+    push(hl)
+    {
+        calcSum(hl, de);
+    }
+
+    // Вывод на экран начального адреса, конечного адреса и контрольной суммы
+    putCrLfTabHlSp(hl);
+    swap(de, hl);
+    putCrLfTabHlSp(hl);
+    swap(de, hl);
+    push(hl)
+    {
+        putCrLfTabHlSp(hl = bc);
+    }
+
+    // Продолжение в tapeOutputFile
+    noreturn;
+}
+
+// Функция для пользовательской программы. Запись файла на магнитную ленту.
+// Параметры: de - начальный адрес, hl - конечный адрес, bc - контрольная сумма. Результат: нет.
+
+void tapeOutputFile(de, hl, bc)
+{
+    // Сохраняем в стеке контрольную сумму
+    push(bc);
+
+    // Запись пилот тона
+    bc = 0;
+    do
+    {
+        tapeOutput(c); // на входе c = 0
+        b--;
+        swap(*sp, hl);
+        swap(*sp, hl);
+    } while (flag_nz);
+
+    // Запись стартового байта
+    tapeOutput(c = 0xE6);
+
+    // Запись адреса первого байта
+    tapeOutputHl(hl);
+
+    // Запись адреса последнего байта
+    swap(hl, de);
+    tapeOutputHl(hl);
+    swap(hl, de);
+
+    // Запись данных
+    tapeOutputBlock(hl, de);
+
+    // Запись пилот тона
+    tapeOutputHl(hl = 0);
+
+    // Запись стартового байта
+    tapeOutput(c = 0xE6);
+
+    // Запись контрольной суммы
+    pop(hl);
+    tapeOutputHl(hl);
+}
+
+// Вывод на экран: перевод строки, отступ на 4 символа, 16 битное число, пробел.
+// Параметры: hl - число. Результат: нет. Сохраняет: bc
+
+void putCrLfTabHlSp(hl)
+{
+    push(bc)
+    {
+        putCrLfTab();
+        put8(a = h);
+        put8Sp(a = l);
+    }
+}
+
+// Запись блока на магнитную ленту.
+// Параметры: de - начальный адрес, hl - конечный адрес.
+
+void tapeOutputBlock(hl, de)
+{
+    while ()
+    {
+        tapeOutput(c = *hl);
+        ifHlEqDeThenRetElseIncHl(hl, de);
+    }
+    noreturn;
+}
+
+// Запись 16 битного числа на магнитную ленту.
+// Параметры: hl - число.
+
+void tapeOutputHl(hl)
+{
+    tapeOutput(c = h);
+    return tapeOutput(c = l);
+    noreturn;
+}
+
+// Функция для пользовательской программы. Загрузка байта с магнитной ленты.
+// Параметры: a = 0xFF с синхронизацией, = 8 без синхронизации. Результат: a = прочитанный байт. Сохрнаяет: bc, de, hl.
+
+void tapeInput(a)
+{
+    return tapeInput2(a);
+    noreturn;
+}
+
+// Загрузка байта с магнитной ленты.
+// Параметры: a = 0xFF с синхронизацией, = 8 без синхронизации. Результат: a = прочитанный байт.
+
+void tapeInput3(a)
+{
+    d = a;
+    while ()
+    {
+        (hl = 0) += sp;
+        sp = 0;
+        vSp = hl;
+        c = 0;
+        a = in(ioTape);
+        e = (a &= 1);
+
+        do
+        {
+            pop(a);
+
+            c = (((a = c) &= 0x7F) <>r= 4;
+        put4();
+    }
+    noreturn;
+}
+
+// Вывод 4 битного числа на экран.
+// Параметры: а - число. Результат: нет. Сохраняет: bc, de, hl.
+
+void put4(a)
+{
+    a &= 0x0F;
+    if (a >=$ 10) a += 7;
+    a += '0';
+    noreturn;
+}
+
+// Вывод символа на экран.
+// Параметры: а - символ. Результат: a и c - символ. Сохраняет: a, b, de, hl.
+
+void putchA(a)
+{
+    c = a;
+    noreturn;
+}
+
+// Функция для пользовательской программы. Вывод символа на экран.
+// Параметры: c - символ. Результат: нет. Сохраняет: a, b, de, hl.
+
+void putch(c)
+{
+    push(hl, bc, de, a);
+
+    hl = vCursor;
+
+    // Стираем курсор
+    hl++;
+    *hl = ((a = *hl) &= 0x7F);
+    hl--;
+
+    // После этого функции putchEscMode ворнутся в putchRet
+    de = &putchRet;
+    push(de);
+
+    a = vPutchEscMode;
+    a--;
+    if (flag_m) return putchEscMode0(c, hl);
+    if (flag_z) return putchEscMode1(c, hl);
+    if (flag_po) return putchEscMode2(c, hl);
+    noreturn; // Продолжение на putchEscMode4(c, hl)
+}
+
+void putchEscMode4(c, hl)
+{
+    c = ((a = c) -@= 0x20); //! Ошибка. Тут не нужно вычитать CF. Не кортроллируется выход за пределы экрана.
+    while ()
+    {
+        c--;
+        if (flag_m) break;
+        putchRight();
+    }
+    noreturn; // Продолжение на putchSetEsc0
+}
+
+void putchSetEsc0()
+{
+    a ^= a;
+    noreturn; // Продолжение на putchSetEsc
+}
+
+void putchSetEsc(a)
+{
+    vPutchEscMode = a;
+}
+
+void putchEscMode0(c, hl)
+{
+    a = c;
+    if (a == charCodeEsc        ) return putchEsc(hl);
+    if (a == charCodeClearScreen) return putchClearScreen(hl);
+    if (a == charCodeLeft       ) return putchLeft(hl);
+    if (a == charCodeRight      ) return putchRight(hl);
+    if (a == charCodeUp         ) return putchUp(hl);
+    if (a == charCodeDown       ) return putchDown(hl);
+    if (a == charCodeNextLine   ) return putchNextLine(hl);
+    if (a == charCodeHome       ) return putchHome(hl);
+    //! Ошибка, не проверяется код 0x0D. В конце каждой выводимой строки на экране будет невидимый символ 0x0D
+
+    // Если курсор находится за экраном, то прокуручиваем экран
+    if ((a = h) == [screenAddr + screenWidth * screenHeight >> 8])
+    {
+putchScrollUp:
+        // Нажатие любой клавиши приостанавливает прокрутку экрана
+        isAnyKeyPressed();
+        if (a != 0)
+        {
+            getch();
+        }
+        scrollUp();
+
+        // Новые координаты символа
+        hl = [screenAddr + screenWidth * (screenHeight - 1) - 1];  //! Ошибка
+    }
+
+    // Записываем символ в видеопамять
+    *hl = (((a = *hl) &= 0x80) |= c);
+
+    // Следующий символ
+    hl++;
+
+    // Удаляем адрес возврата (собственно putchRet) из стека
+    pop(de);
+    noreturn; // Продолжение на putchRet
+}
+
+void putchRet(hl)
+{
+    // Сохраняем новое положение курсора
+    vCursor = hl;
+
+    // Рисуем курсор на экране
+    hl++;
+    *hl = ((a = *hl) |= 0x80);
+
+    // Вычисляем координаты курсора.
+    vCursorPos = (hl += (de = [0x10000 - screenAddr])); //! Ошибка. Координаты расчитываются не правильно.
+
+    pop(hl, bc, de, a);
+}
+
+void putchClearScreen()
+{
+    clearScreen();
+    noreturn; // Продолжение на putchHome
+}
+
+void putchHome()
+{
+    hl = screenAddr;
+}
+
+// Очисть экран.
+// Параметры: нет. Результат: нет. Сохраняет: bc, de
+
+void clearScreen()
+{
+    hl = screenAddr;
+    while ()
+    {
+        *hl = ' ';
+        hl++;
+        if ((a = h) == [screenAddrEnd2 >> 8]) return;
+    }
+    noreturn;
+}
+
+void putchRight(hl)
+{
+    hl++;
+    if ((a = h) != [screenAddr + screenWidth * screenHeight >> 8]) return;
+    if (flag_z) return putchHome(); //! Лишнее условие, которое всегда истинно.
+    noreturn;
+}
+
+void putchLeft(hl)
+{
+    hl--;
+    if ((a = h) != [screenAddr - 1 >> 8]) return;
+    hl = [screenAddr + screenWidth * screenHeight - 1];
+}
+
+void putchDown(hl)
+{
+    hl += (de = screenWidth);
+    if ((a = h) != [screenAddr + screenWidth * screenHeight >> 8]) return;
+    h = [screenAddr >> 8];
+}
+
+void putchUp(hl)
+{
+    hl += (de = [-screenWidth]);
+    if ((a = h) != [screenAddr - 1 >> 8]) return;
+    hl += (de = 0x800); //! Ошибка. Курсор переместится в 31-ую строку.
+}
+
+void putchNextLine()
+{
+    do //! Некрасиво. Мы крутим цикл, что бы вычистить l &= 0x3F, hl += 0x40
+    {
+        hl++;
+    } while (flag_nz (a = l) &= 0x3F);
+
+    if ((a = h) == [screenAddr + screenWidth * screenHeight >> 8])
+        return putchScrollUp();
+}
+
+// Сместить экран на одну строку вверх.
+// Параметры: нет. Результат: нет. Сохраняет: bc
+
+void scrollUp()
+{
+    hl = [screenAddr + screenWidth];
+    de = screenAddr;
+
+    // Сдвиг экрана вверх
+    do
+    {
+        *de = a = *hl;
+        de++;
+        hl++;
+    } while ((a = h) != [screenAddr + screenWidth * screenHeight >> 8]);
+
+    // Очистка нижней строки
+    hl = [screenAddr + screenWidth * (screenHeight - 1)];
+    a = ' ';
+    do
+    {
+        *hl = a;
+        l++;
+    } while (flag_nz);
+}
+
+void putchEscMode1(c, hl)
+{
+    // Поддерживается только ESC-код Y
+    if ((a = c) != 'Y') return putchSetEsc0();
+
+    putchHome();
+    return putchSetEsc(a = 2);
+    noreturn;
+}
+
+void putchEscMode2(c, hl)
+{
+    c = ((a = c) -@= 0x20); //! Ошибка. Тут не нужно вычитать CF.
+    while ()
+    {
+        c--;
+        a = 4;
+        if (flag_m) return putchSetEsc(a);
+        putchDown();
+    }
+    noreturn;
+}
+
+void putchEsc()
+{
+    return putchSetEsc(a = 1);
+    noreturn;
+}
+
+// Функция для пользовательской программы. Получить код нажатой клавиши на клавиатуре.
+// В отличии от функции inkey, в этой функции есть задержка повтора и звук при нажатии.
+// Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
+
+void getch()
+{
+    push(hl, de, bc)
+    {
+        vFirstPressCounter = a = 127;
+
+getch1:
+        while ()
+        {
+            inkey();
+            if (a != 0xFF) break;
+            vFirstPressCounter = a = 0;
+            vFirstPress = a = 0;
+        }
+        d = a;
+
+        // Задержка перед первым повтором
+        if (flag_z (a = vFirstPress) &= a)
+        {
+            if (flag_nz (a = vFirstPressCounter) &= a)
+            {
+                vFirstPressCounter = --(a = vFirstPressCounter);
+                if (flag_nz) goto getch1;
+                vFirstPress = a = 1;
+            }
+        }
+
+        // Звук при нажатии
+        beep(); //! Создаёт очень сильнукю задержку
+        a = d;
+    }
+}
+
+// Функция для пользовательской программы. Получить код нажатой клавиши на клавиатуре.
+// Эта функция с устранением дребезга контактов.
+// Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
+
+void inkey()
+{
+    push(bc)
+    {
+        do
+        {
+            // Получить код нажатой клавиши
+            inkeyInt();
+            b = a;
+
+            // Задержка
+            c = 0xFF; //! Некрасиво. Задержка при первом нажатии не нужна.
+            do
+            {
+                c--;
+            } while (flag_nz);
+
+            // Получить код нажатой клавиши. И если он отличается, то повторить всё заново.
+            inkeyInt(); //! Некрасиво. Надо отдельно считать таймауты для нажатия и отжатия, что бы правильно подавлять дребезг.
+        } while (a != b);
+    }
+}
+
+// Получить код нажатой клавиши на клавиатуре.
+// Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
+
+void inkeyInt()
+{
+    push(bc, de, hl);
+        // Проверка каждого ряда
+        b = 0;
+        c = 0xFE;
+        d = 8;
+        do
+        {
+            // Запись ряда в микросхему и сразу вычисление следующего ряда
+            out(ioSysA, a = c);
+            a <>@= 1;
+        if (flag_nc) break;
+        b++;
+    }
+
+    // Преобразование номера клавиши в код
+    a = b;
+    if (a < 0x30)
+    {
+        a += 0x30;
+        if (a >= 0x3C)
+            if (a < 0x40)
+                a &= 0x2F;
+        c = a;
+    }
+    else
+    {
+        hl = &inkeyDecodeTable;
+        c = (a -= 0x30);
+        b = 0;
+        a = *(hl += bc);
+        goto popHlDeBcAndRet;
+    }
+
+    // Нажата ли клавиаша РУС, УС или СС ?
+    a = in(ioSysC);
+    a &= 7;
+    if (a == 7) return inkeyDecodeNoShift(c);
+    a >>@= 2;
+    if (flag_nc) return inkeyDecodeUs(c);
+    a >>@= 1;
+    if (flag_nc) return inkeyDecodeSs(c); //! Некрасиво, при нажатой РУС/ЛАТ, клавиша СС возвращает английский язык, но не наоборот.
+    noreturn; // Продолджение в inkeyDecodeRus(c)
+}
+
+void inkeyDecodeRus(c)
+{
+    a = c;
+    a |= 0x20;
+    goto popHlDeBcAndRet;
+    noreturn;
+}
+
+void inkeyDecodeUs(c)
+{
+    a = c;
+    a &= 0x1F;
+    goto popHlDeBcAndRet;
+    noreturn;
+}
+
+void inkeyDecodeSs(c)
+{
+    a = c;
+    if (a >= 0x40) goto popHlDeBcAndRet;
+    if (a < 0x30)
+    {
+        a |= 0x10;
+        goto popHlDeBcAndRet;
+    }
+    a &= 0x2F;
+    goto popHlDeBcAndRet;
+    noreturn;
+}
+
+void inkeyDecodeNoShift(c)
+{
+    a = c;
+    goto popHlDeBcAndRet;
+    noreturn;
+}
+
+uint8_t inkeyDecodeTable[] =
+{
+    charCodeSpace,
+    charCodeRight,
+    charCodeLeft,
+    charCodeUp,
+    charCodeDown,
+    charCodeEnter,
+    charCodeClearScreen,
+    charCodeHome
+};
+
+// Звуковой сигнал
+// Параметры: нет. Результат: нет. Сохраняет: de, hl.
+
+void beep()
+{
+    c = 191;
+    do
+    {
+        delay47();
+        out(ioTape, a);
+        invert(a);
+        delay47();
+        out(ioTape, a);
+        //! Ошибка. Пропущен invert(a);
+    } while (flag_nz c--);
+    noreturn;
+}
+
+// Задержка. Используется для вывода звука.
+// Параметры: нет. Результат: нет. Сохраняет: a, c, de, hl.
+
+void delay47()
+{
+    b = 47;
+    do
+    {
+    } while (flag_nz b--);
+}
+
+// Эта функция не используется.
+// Ожидать ноль на выводе B7 микросхемы системного порта КР580ВВ55А.
+// Параметры: нет. Результат: нет. Сохраняет: bc, de, hl.
+
+void FE63()
+{
+    do
+    {
+        a = in(ioSysB);
+    } while (flag_nz a &= 0x80);
+}
+
+// Функция для пользовательской программы.
+// Нажата ли хотя бы одна клавиша на клавиатуре?
+// Параметры: нет. Результат:  a - 0xFF если клавиша нажата, 0 если нет. Сохраняет: bc, de, hl.
+
+void isAnyKeyPressed()
+{
+    out(ioSysA, a ^= a);
+    a = in(ioSysB);
+    invert(a);
+    a &= 0x7F;
+    if (flag_z) return;
+    a |= 0xFF;
+    //! Несовместимость с Радио 86РК. Не обрабатывается клавиша РУС/ЛАТ.
+}
+
+// Функция для пользовательской программы.
+// Получить адрес последнего доступного байта оперативной памяти.
+// Параметры: нет. Результат: hl - адрес. Сохраняет: a, bc, de.
+
+void getLastRamAddr()
+{
+    hl = vLastRamAddr;
+}
+
+// Функция для пользовательской программы. Установить адрес последнего доступного байта оперативной памяти.
+// Параметры: hl - адрес. Результат: нет. Сохраняет: a, bc, de, hl.
+
+void setLastRamAddr(hl)
+{
+    vLastRamAddr = hl;
+}
+
+// Текстовые строки
+
+uint8_t aCrLfPrompt[] = { "\r\n\x18=>" };
+
+uint8_t aCrLfTab[] = { "\r\n\x18\x18\x18\x18" };
+
+uint8_t aRegs[] = { "\r\n PC-"
+                    "\r\n HL-"
+                    "\r\n BC-"
+                    "\r\n DE-"
+                    "\r\n SP-"
+                    "\r\n AF-"
+                    "\x19\x19\x19\x19\x19\x19" };
+
+uint8_t aBsSpBs[] = { "\x08 \x08" };
+
+// Точка остановки в программе пользователя
+
+void breakHandler()
+{
+    // Сохраняем HL
+    vBreakSavedHl = hl;
+
+    // Сохраняем PSW
+    push(a);
+    pop(hl);
+    vBreakSavedPsw = hl;
+
+    // Сохраняем PC
+    pop(hl);
+    hl--;
+    vBreakSavedPc = hl;
+
+    // Сохраняем SP, BC, DE
+    (hl = 0) += sp;
+    sp = &vBreakSavedPsw;
+    push(hl, de, bc);
+
+    // Вывод на экран адреса остановки
+    hl = vBreakSavedPc;
+    sp = initalStackAddr;
+    putCrLfTabHlSp(hl);
+
+    // Если команда в программе пользователя была заменена на RST, то восстанавливаем команду.
+    // И в любом случае возвращаемся в Монитор.
+    swap(de, hl);
+    hl = vBreakAddr;
+    cmdHlDe();
+    if (flag_nz) return monitor();
+    *hl = a = vBreakPrevCmd;
+    return monitor();
+    noreturn;
+}
+
+// Команда X
+// Вывод на экран содержимого регистров микропроцессора с возможностью их изменения.
+
+void cmdX()
+{
+    // Вывод названий регистров на экран
+    puts(hl = &aRegs);
+
+    hl = &vBreakSavedPc; // Адрес первого регистры
+    b = 6; // Кол-во регистров
+    do
+    {
+        // Тенкущее значение регистра
+        e = *hl;
+        hl++;
+        d = *hl;
+
+        push(bc, hl)
+        {
+            swap(hl, de);
+
+            // Вывод текущего значения на экран
+            putCrLfTabHlSp(hl);
+
+            // Ввод строки пользователем
+            getLine();
+
+            // Если пользователь ввел строку, то преобразуем её в число и сохраняем в памяти
+            if (flag_c)
+            {
+                parseHexNumber16();
+                pop(de);
+                push(de);
+                swap(hl, de);
+                *hl = d;
+                hl--;
+                *hl = e;
+            }
+        }
+
+        // Следующий цикл
+        b--;
+        hl++;
+    } while (flag_nz);
+}
+
+// Продложение разбора команды введенной пользователем.
+// Аргументов нет. Функция никогда не завершается.
+
+void monitor2(a, hl, de)
+{
+    // Разбор команд
+    if (a == 'B') return cmdB();
+    if (a == 'W') return cmdW();
+    if (a == 'V') return cmdV();
+
+    // Продолжение разбора команд в следующей функции
+    return monitor3(a, hl, de);
+    noreturn;
+}
+
+// Команда V
+// Измерение константы скорости чтения данных с магнитной ленты
+
+void cmdV()
+{
+    // Выключение прерываний для более точного измерения
+    disableInterrupts();
+
+    // Тут будет общая длительность
+    hl = 0;
+
+    // Маска для чтения из порта ввода-вывода b = 1
+    // Кол-во необходимыизмерений (перепадов) с = 122
+    bc = [(1 << 8) | 122];
+
+    // Ожидание изменения уровня на входе магнитной ленты
+    a = in(ioTape);
+    a &= b; // тут b = 1
+    e = a;
+    do
+    {
+        a = in(ioTape);
+        a &= b; // тут b = 1
+    } while (a == e);
+    e = a;
+
+    // Изменение длительности 122 перепадов
+    do
+    {
+        // Ожидание изменения уровня на входе магнитной ленты
+        do
+        {
+            a = in(ioTape);
+            a &= b;
+            hl++;
+        } while (a == e);
+        e = a;
+        // Цикл
+    } while (flag_nz c--);
+
+    // Вычисляем константу на основе полученной длительности
+    hl += hl += hl;
+    if (flag_p (a = h) |= a)
+    {
+        invert(a);
+        (a &= 0x20) >>r= 3;
+        b = a;
+        a >>r= 1 >>@= 1;
+        a += b;
+        a++;
+        b = a;
+        (a = h) -= b;
+    }
+
+    // Сохранение константы
+    vTapeSpeedRd = a;
+
+    // Включение прерываний
+    enableInterrupts();
+
+    // Вывод константы на экран
+    put8Sp();
+
+    // Возврат в Монитор
+    return monitor();
+    noreturn;
+}
+
+// Выравнивание?
+
+uint8_t unknown[] = { 0xFF };
+
+// Загрузка байта c магнитной ленты.
+// Параметры: a = 8 с поиском синхробайта, a = без поиска. Результат: a - считанный байт. Сохраняет: bc, de, hl.
+
+void tapeInput2()
+{
+    disableInterrupts();
+    push(hl, bc, de);
+    return tapeInput3();
+    noreturn;
+}
+
+// Выход из функций tapeInput3, tapeOutput3.
+
+void tapeInputOutputEnd(a)
+{
+    pop(hl, bc, de);
+    enableInterrupts();
+    return tapeInputOutputEnd2();
+    noreturn;
+}
+
+// Запись байта на магнитную ленту.
+// Параметры: с = байт. Результат: нет. Сохраняет: bc, de, hl.
+
+void tapeOutput2(c)
+{
+    disableInterrupts();
+    push(hl, bc, de);
+    return tapeOutput3();
+    noreturn;
+}
+
+// Продложение разбора команды введенной пользователем.
+// Параметры: нет. Функция никогда не завершается.
+
+void monitor3(a, hl, de)
+{
+    // Разбор команд
+    if (a == 'K') return cmdK(hl, de);
+
+    // Возврат в Монитор, если введена неизвестная команда.
+    return monitor(); //! Ошибка. Должен быть переход на error.
+    noreturn;
+}
+
+// Команда K <начальный адрес> <конечный адрес>
+// Вычисление 16-битной суммы всех байт по адресам hl..de.
+
+void cmdK(hl, de)
+{
+    // Расчет контрольной суммы
+    push(hl)
+    {
+        calcSum(hl, de); // Результат в bc
+    }
+
+    // Вывод: начальный адрес, конечный адрес, контрольная сумма
+    putCrLfTabHlSp(hl);
+    swap(de, hl);
+    putCrLfTabHlSp(hl);
+    swap(de, hl);
+    push(hl)
+    {
+        putCrLfTabHlSp(hl = bc);
+    }
+
+    // Возврат в Монитор
+    return monitor();
+    noreturn;
+}
+
+// Выравнивание?
+
+uint8_t padding[] =
+{
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF
+};
+
+// Эта функция не используется. Это что то связанное с микроЭВМ минимальной конфигурации.
+
+extern uint8_t  FFC0_var_0 = 0xF6FD;
+extern uint16_t FFC0_var_1 = 0xF6FE;
+
+void FFC0()
+{
+    nop();
+    disableInterrupts();
+        push(a, bc, de, hl)
+        {
+            hl = &FFC0Table;
+            de = &FFC0_var_0;
+            b = 3;
+            do
+            {
+                a = *de;
+                a++;
+                daa();
+                *de = a;
+                if (a != *hl) break;
+                *de = (a ^= a);
+                hl++;
+                de++;
+            } while (flag_nz b--);
+            hl = FFC0_var_1;
+            a = FFC0_var_0;
+            *0x9000 = a;
+            *0x9001 = hl;
+        }
+    enableInterrupts();
+}
+
+uint8_t FFC0Table[] = { 0x60, 0x60, 0x24 };
+
+// Команда B
+// Вывод информации о времени на светодиодные индикаторы
+// (при одновременной работе МОНИТОРа микроЭВМ минимальной конфигурации)
+
+void cmdB()
+{
+    // Обращение к монитору минимальной конфигурации
+    hl = *0xC3FE;
+    a = *0xC3FD;
+    rst(0x28);
+    rst(0x18);
+
+    // Возврат
+    return monitor();
+    noreturn;
+}
+

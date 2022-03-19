@@ -1,0 +1,43 @@
+Agat 9 (Агат 9)
+
+Year:	1988
+RAM:	128 kB
+ROM:	2 kB
+CPU:	6502 1 MHz
+Text:	64x32x2, 32x32x8, 40x24x2
+Graph:	512x256x2, 256x256x4, 128x128x16, 280x192x2
+
+Computer "Agat 9" is a Soviet school computer. It is partially compatible with
+the "Apple II+" computer. The Agat 9 computer is not a copy of the Apple II+
+computer. Agat was created as an independent computer, if possible, compatible
+with Apple.
+
+The main feature of this computer is that it was supplied to Soviet schools
+with color monitors, disk drives in each computer, foreign games and programs.
+Included with my Agat was an inkjet printer "Electronics MS6312".
+
+My computer has 128 kilobytes of RAM installed, which was not bad for 1988.
+Computer "Agat 9" can display graphics: 512x256 b/w, 280x192 b/w, 256x256 4
+colors, 128x128 16 colors; or text 64x32 b/w, 40x24 b/w, 32x32 8 colors.
+
+There are two significantly different generations of Agate. The first generation
+is Agate 4, 7, 8. Computer "Agat 4" was released in 1984 in the amount of about
+100 pieces. Computers "Agat 7" and "Agat 8" were released in 1985. For the user,
+there are no significant differences between these models. If you want to dig
+deeper, Wikipedia has a lot to say about Agate. The second generation is the
+Agat 9 computer. It was released in 1988. But what about the other numbers?
+Agate 1, 2, 3 these names were given to intermediate models that were shown to
+magazines and high authorities. Models 5, 6 remained on paper.
+
+The Agat keyboard can be inserted into the front panel of the case. These
+stylish but poor quality keyboards were eventually replaced by the boring
+MC7004 keyboards. In the MC7004 keyboards, the microcontroller firmware was
+changed for the Agat computer. Agat keyboards are connected to the computer via
+a serial interface. And without the keyboard, Agate does not turn on.
+
+Agat has a processor compatible with MOS6502. Such a processor was used in the
+Apple II+ computer, the Commodore 64 computer and the NES game console. Apart
+from Agat, no other Soviet home or school computer used such a processor. 
+A redesigned "Apple DOS" was used as the operating system. 140 KB drives
+compatible with Apple and/or 840 KB drives compatible only with Agat were used.
+It is impossible to read or write floppy disks for Agatha on IBM PC.

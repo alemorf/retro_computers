@@ -1,0 +1,34 @@
+Ocean 240 (Океан 240)
+
+Year:	1986
+RAM:	128 kB
+ROM:	16 kB
+CPU:	i8080 2.4 MHz
+Graph:	512x256x2, 256x256x4 palette 8 colors
+
+"Ocean 240" is a rare Soviet computer. I wouldn't be surprised if only two
+computers were released. But at the same time this computer is known. Its
+circuit, PCB and description were published in the magazine MPSS 1986/2. You can
+download the magazine here.
+
+This computer was developed by the Institute of Oceanology of the USSR Academy
+of Sciences. The magazine said that this computer was used on the ship. The
+computer processed data received from underwater sensors. The computer uses the
+CP/M operating system. The processing program was written on Pascal. There is a
+site of the owner of one of the computers. The owner has written several useful
+programs for this computer. In mid-1986, the next version of the 240.2 computer
+was released, with vertical and horizontal hardware screen scrolling.
+
+According to the characteristics, i can assume that computer is designed for
+working in the CP/M operating system. The processor works almost at a maximum
+frequency at 2.4 MHz. A screen resolution 256x256 or 512x256 pixels allows to
+display 32 or 64 characters across the screen width. And there is still a
+margin, the computer can display 80 characters across the screen width using
+6x8 pixel font. There are two video pages. In 256x256 mode, 4 colors are
+displayed from a palette of 8 colors. There are 8 fixed palettes. Hardware
+vertical scrolling allows to work fast in the console. 128 kilobytes of RAM
+allows to organize a RAM disk, since the CP/M operating system cannot use more
+than 64 kilobytes.
+
+I took photos from the site http://azmaster.narod.ru/Ocean-240. I decided to
+duplicate the information about this computer so that it would not disappear.

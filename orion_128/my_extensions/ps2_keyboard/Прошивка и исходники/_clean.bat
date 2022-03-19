@@ -1,0 +1,20 @@
+@echo off
+del orion_keyb.a
+del orion_keyb.asm
+del orion_keyb.cbi
+del orion_keyb.cci
+del orion_keyb.c~
+del orion_keyb.cof
+del orion_keyb.fct
+del orion_keyb.i
+del orion_keyb.lst
+del orion_keyb.map
+del orion_keyb.o
+del orion_keyb.obj
+del orion_keyb.rom
+del orion_keyb.str1
+del orion_keyb.sym1
+del orion_keyb.sym2
+del orion_keyb.sym3
+del orion_keyb.txt
+

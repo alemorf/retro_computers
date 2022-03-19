@@ -1,0 +1,11 @@
+// Сравнение HL и DE
+
+void op_cmp16() {
+  asm {
+    mov a, h
+    cmp d
+    rnz
+    mov a, l
+    cmp e
+  }
+}  

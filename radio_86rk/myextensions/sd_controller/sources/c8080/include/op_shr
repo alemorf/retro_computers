@@ -1,0 +1,13 @@
+// Сдвиг A на D, результат в A. BC портить нельзя
+
+void op_shr() {
+asm {
+  inr d
+op_shr_2:
+  dcr d
+  rz
+  cmp a
+  rar
+  jmp op_shr_2
+}
+}

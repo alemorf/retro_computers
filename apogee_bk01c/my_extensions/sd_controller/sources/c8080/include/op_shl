@@ -1,0 +1,10 @@
+// Сдвиг A на D, результат в A. HL, BC портить нельзя
+
+void op_shl() {
+  inr d
+op_shl_2:
+  dcr d
+  rz
+  add a
+  jmp op_shl_2
+}  

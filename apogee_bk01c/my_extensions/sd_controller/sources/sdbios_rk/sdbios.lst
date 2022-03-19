@@ -1,0 +1,664 @@
+0001   0000             ; SD BIOS for Computer "Radio 86RK" / "Apogee BK01"
+0002   0000             ; (c) 10-05-2014 vinxru (aleksey.f.morozov@gmail.com)
+0003   0000             
+0004   DD55                  .org 0E000h-683 ; Последний байт кода должен быть 0E0FFh
+0005   DD55                                    
+0006   DD55             ;----------------------------------------------------------------------------
+0007   DD55             
+0008   DD55             INIT_VIDEO      = 0FACEh
+0009   DD55             USER_PORT       = 0EE00h    ; Адрес КР580ВВ55
+0010   DD55             INIT_STACK      = 0E1CFh
+0011   DD55             SEND_MODE       = 10000000b ; Режим передачи (1 0 0 A СH 0 B CL)
+0012   DD55             RECV_MODE       = 10010000b ; Режим приема (1 0 0 A СH 0 B CL)
+0013   DD55             
+0014   DD55             ERR_START   	= 040h
+0015   DD55             ERR_WAIT    	= 041h
+0016   DD55             ERR_OK_NEXT 	= 042h
+0017   DD55             ERR_OK          = 043h
+0018   DD55             ERR_OK_READ     = 044h
+0019   DD55             ERR_OK_ENTRY    = 045h
+0020   DD55             ERR_OK_WRITE	= 046h
+0021   DD55             ERR_OK_ADDR  	= 047h
+0022   DD55             ERR_OK_BLOCK    = 04Fh 
+0023   DD55             
+0024   DD55             VER_BUF = 0
+0025   DD55             
+0026   DD55             ;----------------------------------------------------------------------------
+0027   DD55             ; Заголовок RK файла
+0028   DD55             
+0029   DD55 DD 57            .db ($+2)>>8, ($+2)&0FFh
+0030   DD57                  
+0031   DD57             ;----------------------------------------------------------------------------
+0032   DD57             	      
+0033   DD57             Entry:
+0034   DD57                  ; Устанавливаем границу свободной памяти
+0035   DD57 21 F3 DB         LXI	H, SELF_NAME
+0036   DD5A CD 33 F8         CALL	0F833h
+0037   DD5D             
+0038   DD5D                  ; Вывод названия контроллера на экран
+0039   DD5D 21 9F DD         LXI	H, aHello
+0040   DD60 CD 18 F8         CALL	0F818h
+0041   DD63             
+0042   DD63                  ; Вывод версии контроллера
+0043   DD63 CD 84 DD         CALL	PrintVer
+0044   DD66             
+0045   DD66                  ; Перевод строки
+0046   DD66 21 BE DD         lxi	h, aCrLf
+0047   DD69 CD 18 F8         CALL	0F818h
+0048   DD6C             
+0049   DD6C                  ; Запускаем файл SHELL.RK без ком строки
+0050   DD6C 21 D0 DD         LXI	H, aShellRk
+0051   DD6F 11 FD DD         LXI	D, aEmpty
+0052   DD72 CD E5 DE         CALL	CmdExec
+0053   DD75 F5               PUSH	PSW
+0054   DD76             
+0055   DD76                  ; Ошибка - файл не найден
+0056   DD76 FE 04            CPI	04h
+0057   DD78 C2 0A DE         JNZ 	Error2
+0058   DD7B             
+0059   DD7B                  ; Вывод сообщения "ФАЙЛ НЕ НАЙДЕН BOOT/SHELL.RK"
+0060   DD7B 21 C1 DD         LXI	H, aErrorShellRk
+0061   DD7E CD 18 F8         CALL	0F818h
+0062   DD81 C3 81 DD         JMP	$
+0063   DD84             
+0064   DD84             ;----------------------------------------------------------------------------
+0065   DD84             
+0066   DD84             PrintVer:
+0067   DD84                  ; Команда получения версии
+0068   DD84 3E 01            MVI	A, 1
+0069   DD86 CD 29 DF         CALL	StartCommand	; Лишний такт в котором пропустим версию
+0070   DD89 CD 98 DF         CALL	SwitchRecv
+0071   DD8C                  
+0072   DD8C                  ; Получаем версию набора команд и текст
+0073   DD8C 01 00 00         LXI	B, VER_BUF
+0074   DD8F 11 12 00         LXI	D, 18          ; 1 ый байт версия, последний байт - отпускаем шину
+0075   DD92 CD AA DF         CALL	RecvBlock
+0076   DD95                       
+0077   DD95                  ; Вывод версии железа
+0078   DD95 AF               XRA	A
+0079   DD96 32 11 00         STA	VER_BUF+17
+0080   DD99 21 01 00         LXI	H, VER_BUF+1
+0081   DD9C C3 18 F8         JMP 	0F818h
+0082   DD9F             
+0083   DD9F             ;----------------------------------------------------------------------------
+0084   DD9F             
+0085   DD9F 0D 0A 53 44 aHello:         .db 13,10,"SD BIOS V1.0",13,10
+0085   DDA3 20 42 49 4F 
+0085   DDA7 53 20 56 31 
+0085   DDAB 2E 30 0D 0A 
+0086   DDAF 53 44 20 43 aSdController:  .db "SD CONTROLLER ",0
+0086   DDB3 4F 4E 54 52 
+0086   DDB7 4F 4C 4C 45 
+0086   DDBB 52 20 00 
+0087   DDBE 0D 0A 00    aCrLf:          .db 13,10,0
+0088   DDC1 66 61 6A 6C aErrorShellRk:  .db "fajl ne najden "
+0088   DDC5 20 6E 65 20 
+0088   DDC9 6E 61 6A 64 
+0088   DDCD 65 6E 20 
+0089   DDD0 42 4F 4F 54 aShellRk:       .db "BOOT/SHELL.RK",0
+0089   DDD4 2F 53 48 45 
+0089   DDD8 4C 4C 2E 52 
+0089   DDDC 4B 00 
+0090   DDDE 28 63 29 20                 .db "(c) 04-05-2014 vinxru"
+0090   DDE2 30 34 2D 30 
+0090   DDE6 35 2D 32 30 
+0090   DDEA 31 34 20 76 
+0090   DDEE 69 6E 78 72 
+0090   DDF2 75 
+0091   DDF3             
+0092   DDF3             ; Код ниже будет затерт ком строкой и собственым именем
+0093   DDF3             
+0094   DDF3             SELF_NAME    = $-512 ; путь (буфер 256 байт)
+0095   DDF3             CMD_LINE     = $-256 ; команданая строка 256 байт
+0096   DDF3             
+0097   DDF3             ;----------------------------------------------------------------------------
+0098   DDF3             ; РЕЗИДЕНТНАЯ ЧАСТЬ SD BIOS
+0099   DDF3             ;----------------------------------------------------------------------------
+0100   DDF3             
+0101   DDF3 6F 7B 69 62 aError:    .db "o{ibka SD "
+0101   DDF7 6B 61 20 53 
+0101   DDFB 44 20 
+0102   DDFD 00          aEmpty:    .db 0
+0103   DDFE             
+0104   DDFE             ;----------------------------------------------------------------------------
+0105   DDFE             ; Тут восстанавливается то, что можно быть испорчено при сбое
+0106   DDFE             
+0107   DDFE             Error:     
+0108   DDFE                  ; Инициализация стека
+0109   DDFE 31 CF E1         LXI	SP, INIT_STACK
+0110   DE01             
+0111   DE01                  ; Сохраняем код ошибки
+0112   DE01 F5               PUSH	PSW
+0113   DE02             
+0114   DE02                  ; Очистка экрана
+0115   DE02                  ; Сначала надо удалить из области экрана все спец символы, а то синхра сбивается
+0116   DE02 0E 1F            MVI	C, 1Fh
+0117   DE04 CD 09 F8         CALL	0F809h     
+0118   DE07                  ; А теперь перезагрузить видеоконтроллер
+0119   DE07 CD CE FA         CALL       INIT_VIDEO
+0120   DE0A             
+0121   DE0A             Error2:
+0122   DE0A                  ; Вывод текста "ОШИБКА SD "
+0123   DE0A 21 F3 DD         LXI	H, aError
+0124   DE0D CD 18 F8         CALL	0F818h
+0125   DE10             
+0126   DE10                  ; Вывод кода ошибки
+0127   DE10 F1               POP	PSW
+0128   DE11 CD 15 F8         CALL	0F815h
+0129   DE14             
+0130   DE14                  ; Виснем
+0131   DE14 C3 14 DE         JMP	$
+0132   DE17             
+0133   DE17             ;----------------------------------------------------------------------------
+0134   DE17             
+0135   DE17             BiosEntry:
+0136   DE17 E5               PUSH       H
+0137   DE18 21 20 DE         LXI	H, JmpTbl
+0138   DE1B 85               ADD	L
+0139   DE1C 6F               MOV	L, A
+0140   DE1D 6E               MOV	L, M
+0141   DE1E E3               XTHL
+0142   DE1F C9               RET
+0143   DE20             
+0144   DE20             ;----------------------------------------------------------------------------
+0145   DE20             ; Страница 8D00. Все переходы JmpTbl в пределах одной страницы
+0146   DE20             
+0147   DE20             JmpTbl:
+0148   DE20 E5               .db CmdExec           ; 0 HL-имя файла, DE-командная строка  / A-код ошибки
+0149   DE21 27               .db CmdFind           ; 1 HL-имя файла, DE-максимум файлов для загрузки, BC-адрес / HL-сколько загрузили, A-код ошибки
+0150   DE22 50               .db CmdOpenDelete     ; 2 D-режим, HL-имя файла / A-код ошибки
+0151   DE23 67               .db CmdSeekGetSize    ; 3 B-режим, DE:HL-позиция / A-код ошибки, DE:HL-позиция
+0152   DE24 89               .db CmdRead           ; 4 HL-размер, DE-адрес / HL-сколько загрузили, A-код ошибки
+0153   DE25 99               .db CmdWrite          ; 5 HL-размер, DE-адрес / A-код ошибки
+0154   DE26 C3               .db CmdMove           ; 6 HL-из, DE-в / A-код ошибки
+0155   DE27             
+0156   DE27             ;----------------------------------------------------------------------------
+0157   DE27             ; HL-путь, DE-максимум файлов для загрузки, BC-адрес / HL-сколько загрузили, A-код ошибки
+0158   DE27             
+0159   DE27             CmdFind:
+0160   DE27                  ; Код команды
+0161   DE27 3E 03            MVI	A, 3
+0162   DE29 CD 29 DF         CALL	StartCommand
+0163   DE2C             
+0164   DE2C                  ; Путь
+0165   DE2C CD 8C DF         CALL	SendString
+0166   DE2F             
+0167   DE2F                  ; Максимум файлов
+0168   DE2F EB               XCHG
+0169   DE30 CD 84 DF         CALL	SendWord
+0170   DE33             
+0171   DE33                  ; Переключаемся в режим приема
+0172   DE33 CD 98 DF         CALL	SwitchRecv
+0173   DE36             
+0174   DE36                  ; Счетчик
+0175   DE36 21 00 00         LXI	H, 0
+0176   DE39             
+0177   DE39             CmdFindLoop:
+0178   DE39                  ; Ждем пока МК прочитает
+0179   DE39 CD A1 DF         CALL	WaitForReady
+0180   DE3C FE 43            CPI	ERR_OK
+0181   DE3E CA 74 DF         JZ		Ret0
+0182   DE41 FE 45            CPI	ERR_OK_ENTRY
+0183   DE43 C2 75 DF         JNZ	EndCommand
+0184   DE46             
+0185   DE46                  ; Прием блока данных
+0186   DE46 11 14 00         LXI	D, 20	; Длина блока
+0187   DE49 CD AA DF         CALL	RecvBlock
+0188   DE4C             
+0189   DE4C                  ; Увеличиваем счетчик файлов
+0190   DE4C 23               INX	H
+0191   DE4D             
+0192   DE4D                  ; Цикл
+0193   DE4D C3 39 DE         JMP	CmdFindLoop
+0194   DE50             
+0195   DE50             ;----------------------------------------------------------------------------
+0196   DE50             ; D-режим, HL-имя файла / A-код ошибки
+0197   DE50             
+0198   DE50             CmdOpenDelete: 
+0199   DE50                  ; Код команды
+0200   DE50 3E 04            MVI	A, 4
+0201   DE52 CD 29 DF         CALL	StartCommand
+0202   DE55             
+0203   DE55                  ; Режим
+0204   DE55 7A               MOV	A, D
+0205   DE56 CD F0 DF         CALL	Send
+0206   DE59             
+0207   DE59                  ; Имя файла
+0208   DE59 CD 8C DF         CALL	SendString
+0209   DE5C             
+0210   DE5C                  ; Ждем пока МК сообразит
+0211   DE5C CD 9E DF         CALL	SwitchRecvAndWait
+0212   DE5F FE 43            CPI	ERR_OK
+0213   DE61 CA 74 DF         JZ		Ret0
+0214   DE64 C3 75 DF         JMP	EndCommand
+0215   DE67                  
+0216   DE67             ;----------------------------------------------------------------------------
+0217   DE67             ; B-режим, DE:HL-позиция / A-код ошибки, DE:HL-позиция
+0218   DE67             
+0219   DE67             CmdSeekGetSize:
+0220   DE67                  ; Код команды
+0221   DE67 3E 05            MVI 	A, 5
+0222   DE69 CD 29 DF         CALL	StartCommand
+0223   DE6C             
+0224   DE6C                  ; Режим     
+0225   DE6C 78               MOV	A, B
+0226   DE6D CD F0 DF         CALL	Send
+0227   DE70             
+0228   DE70                  ; Позиция     
+0229   DE70 CD 84 DF         CALL	SendWord
+0230   DE73 EB               XCHG
+0231   DE74 CD 84 DF         CALL	SendWord
+0232   DE77             
+0233   DE77                  ; Ждем пока МК сообразит. МК должен ответить кодом ERR_OK
+0234   DE77 CD 9E DF         CALL	SwitchRecvAndWait
+0235   DE7A FE 43            CPI	ERR_OK
+0236   DE7C C2 75 DF         JNZ	EndCommand
+0237   DE7F             
+0238   DE7F                  ; Длина файла
+0239   DE7F CD 7B DF         CALL	RecvWord
+0240   DE82 EB               XCHG
+0241   DE83 CD 7B DF         CALL	RecvWord
+0242   DE86             
+0243   DE86                  ; Результат
+0244   DE86 C3 74 DF         JMP	Ret0
+0245   DE89                  
+0246   DE89             ;----------------------------------------------------------------------------
+0247   DE89             ; HL-размер, DE-адрес / HL-сколько загрузили, A-код ошибки
+0248   DE89             
+0249   DE89             CmdRead:
+0250   DE89                  ; Код команды
+0251   DE89 3E 06            MVI	A, 6
+0252   DE8B CD 29 DF         CALL	StartCommand
+0253   DE8E             
+0254   DE8E                  ; Адрес в BC
+0255   DE8E 42               MOV	B, D
+0256   DE8F 4B               MOV	C, E
+0257   DE90             
+0258   DE90                  ; Размер блока
+0259   DE90 CD 84 DF         CALL	SendWord        ; HL-размер
+0260   DE93             
+0261   DE93                  ; Переключаемся в режим приема
+0262   DE93 CD 98 DF         CALL	SwitchRecv
+0263   DE96             
+0264   DE96                  ; Прием блока. На входе адрес BC, принятая длина в HL
+0265   DE96 C3 C7 DF         JMP	RecvBuf
+0266   DE99             
+0267   DE99             ;----------------------------------------------------------------------------
+0268   DE99             ; HL-размер, DE-адрес / A-код ошибки
+0269   DE99             
+0270   DE99             CmdWrite:
+0271   DE99                  ; Код команды
+0272   DE99 3E 07            MVI	A, 7
+0273   DE9B CD 29 DF         CALL	StartCommand
+0274   DE9E                  
+0275   DE9E                  ; Размер блока
+0276   DE9E CD 84 DF         CALL	SendWord        ; HL-размер
+0277   DEA1             
+0278   DEA1                  ; Теперь адрес в HL
+0279   DEA1 EB               XCHG
+0280   DEA2             
+0281   DEA2             CmdWriteFile2:
+0282   DEA2                  ; Результат выполнения команды
+0283   DEA2 CD 9E DF         CALL	SwitchRecvAndWait
+0284   DEA5 FE 43            CPI  	ERR_OK
+0285   DEA7 CA 74 DF         JZ  	Ret0
+0286   DEAA FE 46            CPI  	ERR_OK_WRITE
+0287   DEAC C2 75 DF         JNZ	EndCommand
+0288   DEAF             
+0289   DEAF                  ; Размер блока, который может принять МК в DE
+0290   DEAF CD 7B DF         CALL	RecvWord
+0291   DEB2             
+0292   DEB2                  ; Переключаемся в режим передачи    
+0293   DEB2 CD 6B DF         CALL	SwitchSend
+0294   DEB5             
+0295   DEB5                  ; Передача блока. Адрес BC длина DE. (Можно оптимизировать цикл)
+0296   DEB5             CmdWriteFile1:
+0297   DEB5 7E               MOV	A, M
+0298   DEB6 23               INX	H
+0299   DEB7 CD F0 DF         CALL	Send
+0300   DEBA 1B               DCX	D
+0301   DEBB 7A               MOV	A, D
+0302   DEBC B3               ORA	E
+0303   DEBD C2 B5 DE         JNZ 	CmdWriteFile1
+0304   DEC0             
+0305   DEC0 C3 A2 DE         JMP	CmdWriteFile2
+0306   DEC3             
+0307   DEC3             ;----------------------------------------------------------------------------
+0308   DEC3             ; HL-из, DE-в / A-код ошибки
+0309   DEC3             
+0310   DEC3             CmdMove:     
+0311   DEC3                  ; Код команды
+0312   DEC3 3E 08            MVI	A, 8
+0313   DEC5 CD 29 DF         CALL	StartCommand
+0314   DEC8             
+0315   DEC8                  ; Имя файла
+0316   DEC8 CD 8C DF         CALL	SendString
+0317   DECB             
+0318   DECB                  ; Ждем пока МК сообразит
+0319   DECB CD 9E DF         CALL	SwitchRecvAndWait
+0320   DECE FE 46            CPI	ERR_OK_WRITE
+0321   DED0 C2 75 DF         JNZ	EndCommand
+0322   DED3             
+0323   DED3                  ; Переключаемся в режим передачи
+0324   DED3 CD 6B DF         CALL	SwitchSend
+0325   DED6             
+0326   DED6                  ; Имя файла
+0327   DED6 EB               XCHG
+0328   DED7 CD 8C DF         CALL	SendString
+0329   DEDA             
+0330   DEDA             WaitEnd:
+0331   DEDA                  ; Ждем пока МК сообразит
+0332   DEDA CD 9E DF         CALL	SwitchRecvAndWait
+0333   DEDD FE 43            CPI	ERR_OK
+0334   DEDF CA 74 DF         JZ		Ret0
+0335   DEE2 C3 75 DF         JMP	EndCommand
+0336   DEE5             
+0337   DEE5             ;----------------------------------------------------------------------------
+0338   DEE5             ; HL-имя файла, DE-командная строка / A-код ошибки
+0339   DEE5             
+0340   DEE5             CmdExec:
+0341   DEE5                  ; Код команды
+0342   DEE5 3E 02            MVI	A, 2
+0343   DEE7 CD 29 DF         CALL	StartCommand
+0344   DEEA             
+0345   DEEA                  ; Имя файла
+0346   DEEA E5               PUSH	H
+0347   DEEB CD 8C DF         CALL	SendString
+0348   DEEE E1               POP	H
+0349   DEEF             
+0350   DEEF                  ; Ждем пока МК прочитает файл
+0351   DEEF                  ; МК должен ответить кодом ERR_OK_ADDR
+0352   DEEF CD 9E DF         CALL	SwitchRecvAndWait
+0353   DEF2 FE 47            CPI	ERR_OK_ADDR
+0354   DEF4 C2 75 DF         JNZ	EndCommand
+0355   DEF7             
+0356   DEF7                  ; Сохраняем имя файла (HL-строка)
+0357   DEF7 D5               PUSH	D
+0358   DEF8 EB               XCHG
+0359   DEF9 21 F3 DB         LXI	H, SELF_NAME
+0360   DEFC CD E1 DF         CALL	strcpy255
+0361   DEFF D1               POP	D
+0362   DF00             
+0363   DF00                  ; Сохраняем командную строку (DE-строка)
+0364   DF00 21 F3 DC         LXI	H, CMD_LINE
+0365   DF03 CD E1 DF         CALL	strcpy255
+0366   DF06             
+0367   DF06                  ; *** Это точка невозврата. Любая ошибка приведет к перезагрузке. ***
+0368   DF06             
+0369   DF06                  ; Инициализация стека (аналогично стандартному монитору
+0370   DF06 31 CF E1         LXI	SP, INIT_STACK
+0371   DF09             
+0372   DF09                  ; Принимаем адрес загрузки в BC и сохраняем его в стек
+0373   DF09 CD 7B DF         CALL	RecvWord
+0374   DF0C D5               PUSH	D
+0375   DF0D 42               MOV 	B, D
+0376   DF0E 4B               MOV 	C, E
+0377   DF0F             
+0378   DF0F                  ; Загружаем файл
+0379   DF0F CD C7 DF         CALL	RecvBuf
+0380   DF12 C2 FE DD         JNZ 	Error
+0381   DF15             
+0382   DF15                  ; Очистка экрана
+0383   DF15                  ; Сначала надо удалить из области экрана все спец символы, а то синхра сбивается
+0384   DF15 0E 1F            MVI	C, 1Fh
+0385   DF17 CD 09 F8         CALL	0F809h     
+0386   DF1A                  ; А теперь перезагрузить видеоконтроллер
+0387   DF1A CD CE FA         CALL       INIT_VIDEO
+0388   DF1D             
+0389   DF1D                  ; Настройки для программы
+0390   DF1D 3E 01            MVI  A, 1		; Версия контроллера
+0391   DF1F 01 17 DE         LXI  B, BiosEntry  ; Точка входа SD BIOS
+0392   DF22 11 F3 DB         LXI  D, SELF_NAME  ; Собственное имя
+0393   DF25 21 F3 DC         LXI  H, CMD_LINE   ; Командная строка
+0394   DF28             
+0395   DF28                  ; Запуск загруженной программы
+0396   DF28 C9               RET
+0397   DF29             
+0398   DF29             ;----------------------------------------------------------------------------
+0399   DF29             ; Это была последняя команда. Дальше страница 8E00.
+0400   DF29             ;----------------------------------------------------------------------------
+0401   DF29             
+0402   DF29             ;----------------------------------------------------------------------------
+0403   DF29             ; Начало любой команды. 
+0404   DF29             ; A - код команды
+0405   DF29             
+0406   DF29             StartCommand:
+0407   DF29                  ; Первым этапом происходит синхронизация с контроллером
+0408   DF29                  ; Принимается 256 попыток, в каждой из которых пропускается 256+ байт
+0409   DF29                  ; То есть это максимальное кол-во данных, которое может передать контроллер
+0410   DF29 C5               PUSH	B
+0411   DF2A E5               PUSH	H
+0412   DF2B F5               PUSH	PSW
+0413   DF2C 0E 00            MVI	C, 0
+0414   DF2E             
+0415   DF2E             StartCommand1:
+0416   DF2E                  ; Режим передачи (освобождаем шину) и инициализируем HL
+0417   DF2E CD 98 DF         CALL       SwitchRecv
+0418   DF31             
+0419   DF31                  ; Начало любой команды (это шина адреса)
+0420   DF31 21 01 EE         LXI	H, USER_PORT+1
+0421   DF34 36 00            MVI        M, 0
+0422   DF36 36 44            MVI        M, 44h
+0423   DF38 36 40            MVI        M, 40h
+0424   DF3A 36 00            MVI        M, 0h
+0425   DF3C             
+0426   DF3C                  ; Если есть синхронизация, то контроллер ответит ERR_START
+0427   DF3C CD F3 DF         CALL	Recv
+0428   DF3F FE 40            CPI	ERR_START
+0429   DF41 CA 5A DF         JZ		StartCommand2
+0430   DF44             
+0431   DF44                  ; Пауза. И за одно пропускаем 256 байт (в сумме будет 
+0432   DF44                  ; пропущено 64 Кб данных, максимальный размер пакета)
+0433   DF44 C5               PUSH	B
+0434   DF45 0E 00            MVI	C, 0
+0435   DF47             StartCommand3:
+0436   DF47 CD F3 DF         CALL	Recv
+0437   DF4A 0D               DCR	C
+0438   DF4B C2 47 DF         JNZ	StartCommand3
+0439   DF4E C1               POP	B
+0440   DF4F                     
+0441   DF4F                  ; Попытки
+0442   DF4F 0D               DCR	C
+0443   DF50 C2 2E DF         JNZ	StartCommand1    
+0444   DF53             
+0445   DF53                  ; Код ошибки
+0446   DF53 3E 40            MVI	A, ERR_START
+0447   DF55             StartCommandErr2:
+0448   DF55 C1               POP	B ; Прошлое значение PSW
+0449   DF56 E1               POP	H ; Прошлое значение H
+0450   DF57 C1               POP	B ; Прошлое значение B     
+0451   DF58 C1               POP	B ; Выходим через функцию.
+0452   DF59 C9               RET
+0453   DF5A             
+0454   DF5A             ;----------------------------------------------------------------------------
+0455   DF5A             ; Синхронизация с контроллером есть. Контроллер должен ответить ERR_OK_NEXT
+0456   DF5A             
+0457   DF5A             StartCommand2:
+0458   DF5A                  ; Ответ         	
+0459   DF5A CD A1 DF         CALL	WaitForReady
+0460   DF5D FE 42            CPI	ERR_OK_NEXT
+0461   DF5F C2 55 DF         JNZ	StartCommandErr2
+0462   DF62             
+0463   DF62                  ; Переключаемся в режим передачи
+0464   DF62 CD 6B DF         CALL       SwitchSend
+0465   DF65             
+0466   DF65 F1               POP        PSW
+0467   DF66 E1               POP        H
+0468   DF67 C1               POP        B
+0469   DF68             
+0470   DF68                  ; Передаем код команды
+0471   DF68 C3 F0 DF         JMP        Send
+0472   DF6B             
+0473   DF6B             ;----------------------------------------------------------------------------
+0474   DF6B             ; Переключиться в режим передачи
+0475   DF6B             
+0476   DF6B             SwitchSend:
+0477   DF6B CD F3 DF         CALL	Recv
+0478   DF6E             SwitchSend0:
+0479   DF6E 3E 80            MVI	A, SEND_MODE
+0480   DF70 32 03 EE         STA	USER_PORT+3
+0481   DF73 C9               RET
+0482   DF74             
+0483   DF74             ;----------------------------------------------------------------------------
+0484   DF74             ; Успешное окончание команды 
+0485   DF74             ; и дополнительный такт, что бы МК отпустил шину
+0486   DF74             
+0487   DF74             Ret0:
+0488   DF74 AF               XRA	A
+0489   DF75             
+0490   DF75             ;----------------------------------------------------------------------------
+0491   DF75             ; Окончание команды с ошибкой в A 
+0492   DF75             ; и дополнительный такт, что бы МК отпустил шину
+0493   DF75             
+0494   DF75             EndCommand:
+0495   DF75 F5               PUSH	PSW
+0496   DF76 CD F3 DF         CALL	Recv
+0497   DF79 F1               POP	PSW
+0498   DF7A C9               RET
+0499   DF7B             
+0500   DF7B             ;----------------------------------------------------------------------------
+0501   DF7B             ; Принять слово в DE 
+0502   DF7B             ; Портим A.
+0503   DF7B             
+0504   DF7B             RecvWord:
+0505   DF7B CD F3 DF        CALL Recv
+0506   DF7E 5F              MOV  E, A
+0507   DF7F CD F3 DF        CALL Recv
+0508   DF82 57              MOV  D, A
+0509   DF83 C9              RET
+0510   DF84                 
+0511   DF84             ;----------------------------------------------------------------------------
+0512   DF84             ; Отправить слово из HL 
+0513   DF84             ; Портим A.
+0514   DF84             
+0515   DF84             SendWord:
+0516   DF84 7D              MOV		A, L
+0517   DF85 CD F0 DF        CALL	Send
+0518   DF88 7C              MOV		A, H
+0519   DF89 C3 F0 DF        JMP		Send
+0520   DF8C                 
+0521   DF8C             ;----------------------------------------------------------------------------
+0522   DF8C             ; Отправка строки
+0523   DF8C             ; HL - строка
+0524   DF8C             ; Портим A.
+0525   DF8C             
+0526   DF8C             SendString:
+0527   DF8C AF               XRA	A
+0528   DF8D B6               ORA	M
+0529   DF8E CA F0 DF         JZ		Send
+0530   DF91 CD F0 DF         CALL	Send
+0531   DF94 23               INX	H
+0532   DF95 C3 8C DF         JMP	SendString
+0533   DF98                  
+0534   DF98             ;----------------------------------------------------------------------------
+0535   DF98             ; Переключиться в режим приема
+0536   DF98             
+0537   DF98             SwitchRecv:
+0538   DF98 3E 90            MVI	A, RECV_MODE
+0539   DF9A 32 03 EE         STA	USER_PORT+3
+0540   DF9D C9               RET
+0541   DF9E             
+0542   DF9E             ;----------------------------------------------------------------------------
+0543   DF9E             ; Переключиться в режим передами и ожидание готовности МК.
+0544   DF9E             
+0545   DF9E             SwitchRecvAndWait:
+0546   DF9E CD 98 DF         CALL SwitchRecv
+0547   DFA1             
+0548   DFA1             ;----------------------------------------------------------------------------
+0549   DFA1             ; Ожидание готовности МК.
+0550   DFA1             
+0551   DFA1             WaitForReady:
+0552   DFA1 CD F3 DF         CALL	Recv
+0553   DFA4 FE 41            CPI	ERR_WAIT
+0554   DFA6 CA A1 DF         JZ		WaitForReady
+0555   DFA9 C9               RET
+0556   DFAA             
+0557   DFAA             ;----------------------------------------------------------------------------
+0558   DFAA             ; Принять DE байт по адресу BC
+0559   DFAA             ; Портим A
+0560   DFAA             
+0561   DFAA             RecvBlock:
+0562   DFAA E5               PUSH	H
+0563   DFAB 21 01 EE         LXI 	H, USER_PORT+1
+0564   DFAE 14               INR 	D
+0565   DFAF AF               XRA 	A
+0566   DFB0 B3               ORA 	E
+0567   DFB1 CA C1 DF         JZ 	RecvBlock2
+0568   DFB4             RecvBlock1:
+0569   DFB4 36 20            MVI        M, 20h			; 7
+0570   DFB6 36 00            MVI        M, 0			; 7
+0571   DFB8 3A 00 EE         LDA	USER_PORT		; 13
+0572   DFBB 02               STAX	B		        ; 7
+0573   DFBC 03               INX	B		        ; 5
+0574   DFBD 1D               DCR	E		        ; 5
+0575   DFBE C2 B4 DF         JNZ	RecvBlock1		; 10 = 54
+0576   DFC1             RecvBlock2:
+0577   DFC1 15               DCR	D
+0578   DFC2 C2 B4 DF         JNZ	RecvBlock1
+0579   DFC5 E1               POP	H
+0580   DFC6 C9               RET
+0581   DFC7             
+0582   DFC7             ;----------------------------------------------------------------------------
+0583   DFC7             ; Загрузка данных по адресу BC. 
+0584   DFC7             ; На выходе HL сколько загрузили
+0585   DFC7             ; Портим A
+0586   DFC7             ; Если загружено без ошибок, на выходе Z=1
+0587   DFC7             
+0588   DFC7             RecvBuf:
+0589   DFC7 21 00 00         LXI	H, 0
+0590   DFCA             RecvBuf0:   
+0591   DFCA                  ; Подождать
+0592   DFCA CD A1 DF         CALL	WaitForReady
+0593   DFCD FE 44            CPI	ERR_OK_READ
+0594   DFCF CA 74 DF         JZ		Ret0		; на выходе Z (нет ошибки)
+0595   DFD2 D6 4F            SUI        ERR_OK_BLOCK
+0596   DFD4 C2 75 DF         JNZ	EndCommand	; на выходе NZ (ошибка)
+0597   DFD7             
+0598   DFD7                  ; Размер загруженных данных в DE
+0599   DFD7 CD 7B DF         CALL	RecvWord
+0600   DFDA             
+0601   DFDA                  ; В HL общий размер
+0602   DFDA 19               DAD D
+0603   DFDB             
+0604   DFDB                  ; Принять DE байт по адресу BC
+0605   DFDB CD AA DF         CALL	RecvBlock
+0606   DFDE             
+0607   DFDE C3 CA DF         JMP	RecvBuf0
+0608   DFE1             
+0609   DFE1             ;----------------------------------------------------------------------------
+0610   DFE1             ; Скопироваьт строку с ограничением 256 символов (включая терминатор)
+0611   DFE1             
+0612   DFE1             strcpy255:
+0613   DFE1 06 FF            MVI  B, 255
+0614   DFE3             strcpy255_1:
+0615   DFE3 1A               LDAX D
+0616   DFE4 13               INX  D
+0617   DFE5 77               MOV  M, A
+0618   DFE6 23               INX  H
+0619   DFE7 B7               ORA  A
+0620   DFE8 C8               RZ
+0621   DFE9 05               DCR  B
+0622   DFEA C2 E3 DF         JNZ  strcpy255_1
+0623   DFED 36 00            MVI  M, 0 ; Терминатор
+0624   DFEF C9               RET
+0625   DFF0             
+0626   DFF0             ;----------------------------------------------------------------------------
+0627   DFF0             ; Отправить байт из A.
+0628   DFF0             
+0629   DFF0             Send:
+0630   DFF0 32 00 EE         STA	USER_PORT
+0631   DFF3             
+0632   DFF3             ;----------------------------------------------------------------------------
+0633   DFF3             ; Принять байт в А
+0634   DFF3             
+0635   DFF3             Recv:
+0636   DFF3 3E 20            MVI	A, 20h
+0637   DFF5 32 01 EE         STA	USER_PORT+1
+0638   DFF8 AF               XRA	A
+0639   DFF9 32 01 EE         STA	USER_PORT+1
+0640   DFFC 3A 00 EE         LDA	USER_PORT
+0641   DFFF C9               RET
+0642   E000             
+0643   E000             ;----------------------------------------------------------------------------
+0644   E000             
+0645   E000             .Endtasm: Number of errors = 0

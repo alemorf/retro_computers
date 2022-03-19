@@ -1,0 +1,42 @@
+Pioneer (Пионер)
+
+Year:	≤1992
+RAM:	48 kB
+ROM:	2-10 kB
+CPU:	i8080 2 MHz
+Video:	384x256x5, 384x256x8
+Group:	Specialist
+
+Pioneer is a regular "Specialist" computer with 5 color graphics. It hasn't a
+parallel port. And it has an incompatible keyboard.
+
+In the factory configuration, computer has only one ROM chip of 2 kilobyte. ROM
+chip contain "Monitor, version 1". In this configuration, the computer cannot
+run most programs. The PCB has places for 4 additional ROM chips. I added 2 more
+ROM chips and flashed "Monitor, version 2 ". For some reason, the CS signal was
+not connected to the additional ROMs, so I added two wires. Aftar the computer
+can run all programs.
+
+In the factory configuration, the keyboard (matrix of keys, key codes) does not
+match the original computer "Specialist". The keyboard normally work only in
+programs uses keyboard by standard ROM functions. In most game programs, the
+functions of the arrow keys performed by other (inconveniently located) keys.
+The buttons are very hard. Perhaps over time, the rubber has changed its
+properties. Now the rubber is as hard as car tires. Buttons swing under the
+finger in all directions like an analog stick. The keyboard uses a thin
+textolite instead of a film membrane.
+
+Otherwise, this is the coolest and most beautiful Specialist that I have seen.
+
+I added one K565RU5 RAM chip (6264 compatible) over installed chips. This made
+it possible to increase the number of colors to 8. I added 2 more wires for
+RAM pins.
+
+I added a parallel port. I soldered new K580VV55 chip (i8255 compatible) over
+factory installed K580VV55 chip. The developers did not provide place on the
+PCB for the second K580BB55 chip, which is a shame. Another wire with a CS
+signal was pulled along the board to this chip. And from the chip there is
+a whole loop of wires to the controller of the SD card. This upgrade does not
+look so beautiful, but it's worth it. Now this is a computer "Specialist" in the
+maximum configuration, which is convenient not only for games, but also for
+development.

@@ -1,0 +1,23 @@
+Delta S 52 chips (Дельта С 52 микросхемы)
+
+Year:	1989
+RAM:	48 kB
+ROM:	16 kB
+CPU:	Z80
+Graph:	256x192x15
+In ROM:	Basic
+Group:	ZX Spectrum 48K
+
+Several ZX Spectrum 48K or ZX Spectrum 128K compatible computers were produced 
+under the name "Delta S". That computers differed in cases, keyboards,
+support for the russian language, speed, compatibility and memory capacity.
+My model is popularly called "Delta C 52 chips". This is a "ZX Spectrum 48K"
+compatible computer.
+
+This Delta is the most beautiful ZX Spectrum compatible computer from the USSR.
+It looks complete. It has the best keyboard among all Soviet spectrums. Its 
+keyboard has become the standard for the rest of computers. With my point of
+view, even the original ZX Spectrum is worse than the Delta.
+
+An external floppy drive controller was produced for the Delta S. It connects 
+to the side extension connector.

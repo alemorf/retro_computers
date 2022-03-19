@@ -1,0 +1,756 @@
+;/*
+;It is an open source software to implement SD routines to
+;small embedded systems. This is a free software and is opened for education,
+;research and commercial developments under license policy of following trems.
+;
+;(C) 2013 vinxru (aleksey.f.morozov@gmail.com)
+;
+;It is a free software and there is NO WARRANTY.
+;No restriction on use. You can use, modify and redistribute it for
+;personal, non-profit or commercial use UNDER YOUR RESPONSIBILITY.
+;Redistributions of source code must retain the above copyright notice.
+;
+;Version 0.99 5-05-2013
+;*/
+;
+;#include "common.h"
+;PCODE: $00000000 VOL: 0
+	#ifndef __SLEEP_DEFINED__
+;PCODE: $00000001 VOL: 0
+	#define __SLEEP_DEFINED__
+;PCODE: $00000002 VOL: 0
+	.EQU __se_bit=0x80
+;PCODE: $00000003 VOL: 0
+	.EQU __sm_mask=0x70
+;PCODE: $00000004 VOL: 0
+	.EQU __sm_powerdown=0x20
+;PCODE: $00000005 VOL: 0
+	.EQU __sm_powersave=0x30
+;PCODE: $00000006 VOL: 0
+	.EQU __sm_standby=0x60
+;PCODE: $00000007 VOL: 0
+	.EQU __sm_ext_standby=0x70
+;PCODE: $00000008 VOL: 0
+	.EQU __sm_adc_noise_red=0x10
+;PCODE: $00000009 VOL: 0
+	.SET power_ctrl_reg=mcucr
+;PCODE: $0000000A VOL: 0
+	#endif
+;PCODE: $0000000B VOL: 0
+;PCODE: $0000000C VOL: 0
+;#include <delay.h>
+;#include "sd.h"
+;#include "fs.h"
+;
+;BYTE sd_sdhc; /* Используется SDHC карта */
+;
+;/**************************************************************************
+;*  Протокол SPI для ATMega8                                               *
+;*  Может отличаться для разных МК.                                        *
+;**************************************************************************/
+;
+;/* Куда подключена линия CS карты */
+;#define SD_CS_ENABLE    PORTB &= ~0x04;
+;#define SD_CS_DISABLE   PORTB |= 0x04;
+;
+;/* Совместимость с разными версиями CodeVisionAVR */
+;#ifndef SPI2X
+;#define SPI2X 0
+;#endif
+;
+;#define SPI_INIT      { SPCR = 0x52; SPSR = 0x00; }
+;#define SPI_HIGHSPEED { SPCR = 0x50; SPSR |= (1<<SPI2X); delay_ms(1); }
+;
+;static void spi_transmit(BYTE data) {
+; 0002 0028 static void spi_transmit(BYTE data) {
+
+	.CSEG
+;PCODE: $0000000D VOL: 0
+;PCODE: $0000000E VOL: 0
+; 0002 0029   SPDR = data;
+;	data -> Y+0
+;PCODE: $0000000F VOL: 0
+;PCODE: $00000010 VOL: 0
+; 0002 002A   while((SPSR & 0x80) == 0);
+;PCODE: $00000011 VOL: 0
+;PCODE: $00000012 VOL: 0
+;PCODE: $00000013 VOL: 0
+;PCODE: $00000014 VOL: 0
+;PCODE: $00000015 VOL: 0
+;PCODE: $00000016 VOL: 0
+; 0002 002B }
+;PCODE: $00000017 VOL: 0
+;PCODE: $00000018 VOL: 0
+;PCODE: $00000019 VOL: 0
+;
+;static BYTE spi_receive() {
+; 0002 002D static BYTE spi_receive() {
+;PCODE: $0000001A VOL: 0
+;PCODE: $0000001B VOL: 0
+; 0002 002E   SPDR = 0xFF;
+;PCODE: $0000001C VOL: 0
+;PCODE: $0000001D VOL: 0
+; 0002 002F   while((SPSR & 0x80) == 0);
+;PCODE: $0000001E VOL: 0
+;PCODE: $0000001F VOL: 0
+;PCODE: $00000020 VOL: 0
+;PCODE: $00000021 VOL: 0
+;PCODE: $00000022 VOL: 0
+;PCODE: $00000023 VOL: 0
+; 0002 0030   return SPDR;
+;PCODE: $00000024 VOL: 0
+;PCODE: $00000025 VOL: 0
+; 0002 0031 }
+;PCODE: $00000026 VOL: 0
+;
+;/**************************************************************************
+;*  Отправка команды                                                       *
+;**************************************************************************/
+;
+;/* Используемые каманды SD карты */
+;
+;#define GO_IDLE_STATE      (0x40 | 0 )
+;#define SEND_IF_COND       (0x40 | 8 )
+;#define READ_SINGLE_BLOCK  (0x40 | 17)
+;#define WRITE_SINGLE_BLOCK (0x40 | 24)
+;#define SD_SEND_OP_COND    (0x40 | 41)
+;#define APP_CMD            (0x40 | 55)
+;#define READ_OCR           (0x40 | 58)
+;
+;static BYTE sd_sendCommand(BYTE cmd, DWORD arg) {
+; 0002 0041 static BYTE sd_sendCommand(BYTE cmd, DWORD arg) {
+;PCODE: $00000027 VOL: 0
+;PCODE: $00000028 VOL: 0
+; 0002 0042   BYTE response, retry;
+; 0002 0043 
+; 0002 0044   /* Размещение этого кода тут -4 команды, хотя вроде лишине проверки */
+; 0002 0045   if(sd_sdhc == 0 && (cmd==READ_SINGLE_BLOCK || cmd==WRITE_SINGLE_BLOCK))
+;PCODE: $00000029 VOL: 0
+;	cmd -> Y+6
+;	arg -> Y+2
+;	response -> R17
+;	retry -> R16
+;PCODE: $0000002A VOL: 0
+;PCODE: $0000002B VOL: 0
+;PCODE: $0000002C VOL: 0
+;PCODE: $0000002D VOL: 0
+;PCODE: $0000002E VOL: 0
+;PCODE: $0000002F VOL: 0
+;PCODE: $00000030 VOL: 0
+;PCODE: $00000031 VOL: 0
+;PCODE: $00000032 VOL: 0
+;PCODE: $00000033 VOL: 0
+;PCODE: $00000034 VOL: 0
+;PCODE: $00000035 VOL: 0
+;PCODE: $00000036 VOL: 0
+;PCODE: $00000037 VOL: 0
+;PCODE: $00000038 VOL: 0
+; 0002 0046     arg <<= 9;
+;PCODE: $00000039 VOL: 0
+;PCODE: $0000003A VOL: 0
+;PCODE: $0000003B VOL: 0
+;PCODE: $0000003C VOL: 0
+; 0002 0047 
+; 0002 0048   /* Выбираем карту */
+; 0002 0049   SD_CS_ENABLE
+;PCODE: $0000003D VOL: 0
+;PCODE: $0000003E VOL: 0
+;PCODE: $0000003F VOL: 0
+; 0002 004A 
+; 0002 004B   /* Заголовок команды */
+; 0002 004C   spi_transmit(cmd);
+;PCODE: $00000040 VOL: 0
+;PCODE: $00000041 VOL: 0
+;PCODE: $00000042 VOL: 0
+; 0002 004D   spi_transmit(((BYTE*)&arg)[3]);
+;PCODE: $00000043 VOL: 0
+;PCODE: $00000044 VOL: 0
+;PCODE: $00000045 VOL: 0
+; 0002 004E   spi_transmit(((BYTE*)&arg)[2]);
+;PCODE: $00000046 VOL: 0
+;PCODE: $00000047 VOL: 0
+;PCODE: $00000048 VOL: 0
+; 0002 004F   spi_transmit(((BYTE*)&arg)[1]);
+;PCODE: $00000049 VOL: 0
+;PCODE: $0000004A VOL: 0
+;PCODE: $0000004B VOL: 0
+; 0002 0050   spi_transmit(((BYTE*)&arg)[0]);
+;PCODE: $0000004C VOL: 0
+;PCODE: $0000004D VOL: 0
+;PCODE: $0000004E VOL: 0
+; 0002 0051 
+; 0002 0052   /* Пару каоманд требуют CRC. Остальные же команды игнорируют его, поэтому упрощаем код */
+; 0002 0053   spi_transmit(cmd == SEND_IF_COND ? 0x87 : 0x95);
+;PCODE: $0000004F VOL: 0
+;PCODE: $00000050 VOL: 0
+;PCODE: $00000051 VOL: 0
+;PCODE: $00000052 VOL: 0
+;PCODE: $00000053 VOL: 0
+;PCODE: $00000054 VOL: 0
+;PCODE: $00000055 VOL: 0
+;PCODE: $00000056 VOL: 0
+;PCODE: $00000057 VOL: 0
+;PCODE: $00000058 VOL: 0
+;PCODE: $00000059 VOL: 0
+; 0002 0054 
+; 0002 0055   /* Ждем подтвреждение (256 тактов) */
+; 0002 0056   retry = 0;
+;PCODE: $0000005A VOL: 0
+;PCODE: $0000005B VOL: 0
+; 0002 0057   while((response = spi_receive()) == 0xFF)
+;PCODE: $0000005C VOL: 0
+;PCODE: $0000005D VOL: 0
+;PCODE: $0000005E VOL: 0
+;PCODE: $0000005F VOL: 0
+;PCODE: $00000060 VOL: 0
+; 0002 0058     if(++retry == 0) break;
+;PCODE: $00000061 VOL: 0
+;PCODE: $00000062 VOL: 0
+;PCODE: $00000063 VOL: 0
+;PCODE: $00000064 VOL: 0
+;PCODE: $00000065 VOL: 0
+; 0002 0059 
+; 0002 005A   /* Результат команды READ_OCR обрабатываем тут, так как в конце этой функции мы снимем CS и пропускаем 1 байт */
+; 0002 005B   if(response == 0 && cmd == READ_OCR) {
+;PCODE: $00000066 VOL: 0
+;PCODE: $00000067 VOL: 0
+;PCODE: $00000068 VOL: 0
+;PCODE: $00000069 VOL: 0
+;PCODE: $0000006A VOL: 0
+;PCODE: $0000006B VOL: 0
+;PCODE: $0000006C VOL: 0
+;PCODE: $0000006D VOL: 0
+;PCODE: $0000006E VOL: 0
+;PCODE: $0000006F VOL: 0
+;PCODE: $00000070 VOL: 0
+;PCODE: $00000071 VOL: 0
+; 0002 005C     /* 32 бита из которых нас интересует один бит */
+; 0002 005D     sd_sdhc = spi_receive() & 0x40;
+;PCODE: $00000072 VOL: 0
+;PCODE: $00000073 VOL: 0
+;PCODE: $00000074 VOL: 0
+; 0002 005E     spi_receive();
+;PCODE: $00000075 VOL: 0
+; 0002 005F     spi_receive();
+;PCODE: $00000076 VOL: 0
+; 0002 0060     spi_receive();
+;PCODE: $00000077 VOL: 0
+; 0002 0061   }
+; 0002 0062 
+; 0002 0063   /* отпускаем CS и пауза в 1 байт*/
+; 0002 0064   SD_CS_DISABLE
+;PCODE: $00000078 VOL: 0
+;PCODE: $00000079 VOL: 0
+;PCODE: $0000007A VOL: 0
+; 0002 0065   spi_receive();
+;PCODE: $0000007B VOL: 0
+; 0002 0066 
+; 0002 0067   return response;
+;PCODE: $0000007C VOL: 0
+;PCODE: $0000007D VOL: 0
+;PCODE: $0000007E VOL: 0
+;PCODE: $0000007F VOL: 0
+; 0002 0068 }
+;PCODE: $00000080 VOL: 0
+;
+;/**************************************************************************
+;*  Проверка готовности/наличия карты                                      *
+;**************************************************************************/
+;
+;BYTE sd_check() {
+; 0002 006E BYTE sd_check() {
+;PCODE: $00000081 VOL: 0
+;PCODE: $00000082 VOL: 0
+; 0002 006F   BYTE i = 0;
+; 0002 0070   do {
+;PCODE: $00000083 VOL: 0
+;	i -> R17
+;PCODE: $00000084 VOL: 0
+;PCODE: $00000085 VOL: 0
+;PCODE: $00000086 VOL: 0
+; 0002 0071     sd_sendCommand(APP_CMD, 0);
+;PCODE: $00000087 VOL: 0
+;PCODE: $00000088 VOL: 0
+;PCODE: $00000089 VOL: 0
+;PCODE: $0000008A VOL: 0
+;PCODE: $0000008B VOL: 0
+; 0002 0072     if(sd_sendCommand(SD_SEND_OP_COND, 0x40000000) == 0) return 0;
+;PCODE: $0000008C VOL: 0
+;PCODE: $0000008D VOL: 0
+;PCODE: $0000008E VOL: 0
+;PCODE: $0000008F VOL: 0
+;PCODE: $00000090 VOL: 0
+;PCODE: $00000091 VOL: 0
+;PCODE: $00000092 VOL: 0
+;PCODE: $00000093 VOL: 0
+;PCODE: $00000094 VOL: 0
+;PCODE: $00000095 VOL: 0
+; 0002 0073   } while(--i);
+;PCODE: $00000096 VOL: 0
+;PCODE: $00000097 VOL: 0
+;PCODE: $00000098 VOL: 0
+;PCODE: $00000099 VOL: 0
+;PCODE: $0000009A VOL: 0
+;PCODE: $0000009B VOL: 0
+;PCODE: $0000009C VOL: 0
+;PCODE: $0000009D VOL: 0
+; 0002 0074   return 1;
+;PCODE: $0000009E VOL: 0
+;PCODE: $0000009F VOL: 0
+;PCODE: $000000A0 VOL: 0
+; 0002 0075 }
+;PCODE: $000000A1 VOL: 0
+;
+;/**************************************************************************
+;*  Инициализация карты (эта функция вызывается функцией sd_init)          *
+;**************************************************************************/
+;
+;static BYTE sd_init_int() {
+; 0002 007B static BYTE sd_init_int() {
+;PCODE: $000000A2 VOL: 0
+;PCODE: $000000A3 VOL: 0
+; 0002 007C   BYTE i;
+; 0002 007D 
+; 0002 007E   /* Сбрасываем SDHC флаг */
+; 0002 007F   sd_sdhc = 0;
+;PCODE: $000000A4 VOL: 0
+;	i -> R17
+;PCODE: $000000A5 VOL: 0
+; 0002 0080 
+; 0002 0081   /* Минимум 80 пустых тактов */
+; 0002 0082   for(i=10; i; --i)
+;PCODE: $000000A6 VOL: 0
+;PCODE: $000000A7 VOL: 0
+;PCODE: $000000A8 VOL: 0
+;PCODE: $000000A9 VOL: 0
+;PCODE: $000000AA VOL: 0
+;PCODE: $000000AB VOL: 0
+;PCODE: $000000AC VOL: 0
+;PCODE: $000000AD VOL: 0
+; 0002 0083     spi_receive();
+;PCODE: $000000AE VOL: 0
+;PCODE: $000000AF VOL: 0
+;PCODE: $000000B0 VOL: 0
+;PCODE: $000000B1 VOL: 0
+;PCODE: $000000B2 VOL: 0
+;PCODE: $000000B3 VOL: 0
+; 0002 0086 if(sd_sendCommand((0x40 | 0 ), 0) != 1) goto abort;
+;PCODE: $000000B4 VOL: 0
+;PCODE: $000000B5 VOL: 0
+;PCODE: $000000B6 VOL: 0
+;PCODE: $000000B7 VOL: 0
+;PCODE: $000000B8 VOL: 0
+;PCODE: $000000B9 VOL: 0
+;PCODE: $000000BA VOL: 0
+;PCODE: $000000BB VOL: 0
+; 0002 0087 
+; 0002 0088   /* CMD8 Узнаем версию карты */
+; 0002 0089   i = 0;
+;PCODE: $000000BC VOL: 0
+;PCODE: $000000BD VOL: 0
+;PCODE: $000000BE VOL: 0
+; 0002 008A   if(sd_sendCommand(SEND_IF_COND, 0x000001AA))
+;PCODE: $000000BF VOL: 0
+;PCODE: $000000C0 VOL: 0
+;PCODE: $000000C1 VOL: 0
+;PCODE: $000000C2 VOL: 0
+;PCODE: $000000C3 VOL: 0
+;PCODE: $000000C4 VOL: 0
+;PCODE: $000000C5 VOL: 0
+; 0002 008B     i = 1;
+;PCODE: $000000C6 VOL: 0
+;PCODE: $000000C7 VOL: 0
+; 0002 008C 
+; 0002 008D   /* CMD41 Ожидание окончания инициализации */
+; 0002 008E   if(sd_check()) goto abort;
+;PCODE: $000000C8 VOL: 0
+;PCODE: $000000C9 VOL: 0
+;PCODE: $000000CA VOL: 0
+;PCODE: $000000CB VOL: 0
+;PCODE: $000000CC VOL: 0
+; 0002 008F 
+; 0002 0090   /* Только для второй версии карты */
+; 0002 0091   if(i) {
+;PCODE: $000000CD VOL: 0
+;PCODE: $000000CE VOL: 0
+;PCODE: $000000CF VOL: 0
+; 0002 0092     /* CMD58 определение SDHC карты. Ответ обрабатывается в функции sd_sendCommand */
+; 0002 0093     if(sd_sendCommand(READ_OCR, 0) != 0) goto abort;
+;PCODE: $000000D0 VOL: 0
+;PCODE: $000000D1 VOL: 0
+;PCODE: $000000D2 VOL: 0
+;PCODE: $000000D3 VOL: 0
+;PCODE: $000000D4 VOL: 0
+;PCODE: $000000D5 VOL: 0
+;PCODE: $000000D6 VOL: 0
+;PCODE: $000000D7 VOL: 0
+; 0002 0094   }
+;PCODE: $000000D8 VOL: 0
+; 0002 0095 
+; 0002 0096   return 0;
+;PCODE: $000000D9 VOL: 0
+;PCODE: $000000DA VOL: 0
+;PCODE: $000000DB VOL: 0
+;PCODE: $000000DC VOL: 0
+; 0002 0097 abort:
+;PCODE: $000000DD VOL: 0
+; 0002 0098   return 1;
+;PCODE: $000000DE VOL: 0
+;PCODE: $000000DF VOL: 0
+;PCODE: $000000E0 VOL: 0
+; 0002 0099 }
+;PCODE: $000000E1 VOL: 0
+;
+;/**************************************************************************
+;*  Инициализация карты                                                    *
+;**************************************************************************/
+;
+;BYTE sd_init() {
+; 0002 009F BYTE sd_init() {
+;PCODE: $000000E2 VOL: 0
+;PCODE: $000000E3 VOL: 0
+; 0002 00A0   BYTE tries;
+; 0002 00A1 
+; 0002 00A2   /* Освобождаем CS на всякий случай */
+; 0002 00A3   SD_CS_DISABLE
+;PCODE: $000000E4 VOL: 0
+;	tries -> R17
+;PCODE: $000000E5 VOL: 0
+;PCODE: $000000E6 VOL: 0
+; 0002 00A4 
+; 0002 00A5   /* Включаем SPI */
+; 0002 00A6   SPI_INIT
+;PCODE: $000000E7 VOL: 0
+;PCODE: $000000E8 VOL: 0
+;PCODE: $000000E9 VOL: 0
+;PCODE: $000000EA VOL: 0
+; 0002 00A7 
+; 0002 00A8   /* Делаем несколько попыток инициализации */
+; 0002 00A9   tries = 10;
+;PCODE: $000000EB VOL: 0
+;PCODE: $000000EC VOL: 0
+; 0002 00AA   while(sd_init_int())
+;PCODE: $000000ED VOL: 0
+;PCODE: $000000EE VOL: 0
+;PCODE: $000000EF VOL: 0
+;PCODE: $000000F0 VOL: 0
+; 0002 00AB     if(--tries == 0) {
+;PCODE: $000000F1 VOL: 0
+;PCODE: $000000F2 VOL: 0
+;PCODE: $000000F3 VOL: 0
+;PCODE: $000000F4 VOL: 0
+; 0002 00AC       lastError = ERR_DISK_ERR;
+;PCODE: $000000F5 VOL: 0
+;PCODE: $000000F6 VOL: 0
+; 0002 00AD       return 1;
+;PCODE: $000000F7 VOL: 0
+;PCODE: $000000F8 VOL: 0
+;PCODE: $000000F9 VOL: 0
+; 0002 00AE     }
+; 0002 00AF 
+; 0002 00B0   /* Вклчюаем максимальную скорость */
+; 0002 00B1   SPI_HIGHSPEED
+;PCODE: $000000FA VOL: 0
+;PCODE: $000000FB VOL: 0
+;PCODE: $000000FC VOL: 0
+;PCODE: $000000FD VOL: 0
+;PCODE: $000000FE VOL: 0
+;PCODE: $000000FF VOL: 0
+;PCODE: $00000100 VOL: 0
+;PCODE: $00000101 VOL: 0
+;PCODE: $00000102 VOL: 0
+;PCODE: $00000103 VOL: 0
+; 0002 00B2 
+; 0002 00B3   return 0;
+;PCODE: $00000104 VOL: 0
+;PCODE: $00000105 VOL: 0
+;PCODE: $00000106 VOL: 0
+; 0002 00B4 }
+;PCODE: $00000107 VOL: 0
+;
+;/**************************************************************************
+;*  Ожидание определенного байта на шине                                   *
+;**************************************************************************/
+;
+;static BYTE sd_waitBus(BYTE byte) {
+; 0002 00BA static BYTE sd_waitBus(BYTE byte) {
+;PCODE: $00000108 VOL: 0
+;PCODE: $00000109 VOL: 0
+; 0002 00BB   WORD retry = 0;
+; 0002 00BC   do {
+;PCODE: $0000010A VOL: 0
+;	byte -> Y+2
+;	retry -> R16,R17
+;PCODE: $0000010B VOL: 0
+;PCODE: $0000010C VOL: 0
+;PCODE: $0000010D VOL: 0
+; 0002 00BD     if(spi_receive() == byte) return 0;
+;PCODE: $0000010E VOL: 0
+;PCODE: $0000010F VOL: 0
+;PCODE: $00000110 VOL: 0
+;PCODE: $00000111 VOL: 0
+;PCODE: $00000112 VOL: 0
+;PCODE: $00000113 VOL: 0
+;PCODE: $00000114 VOL: 0
+;PCODE: $00000115 VOL: 0
+;PCODE: $00000116 VOL: 0
+; 0002 00BE   } while(++retry);
+;PCODE: $00000117 VOL: 0
+;PCODE: $00000118 VOL: 0
+;PCODE: $00000119 VOL: 0
+;PCODE: $0000011A VOL: 0
+;PCODE: $0000011B VOL: 0
+;PCODE: $0000011C VOL: 0
+;PCODE: $0000011D VOL: 0
+;PCODE: $0000011E VOL: 0
+; 0002 00BF   return 1;
+;PCODE: $0000011F VOL: 0
+;PCODE: $00000120 VOL: 0
+;PCODE: $00000121 VOL: 0
+;PCODE: $00000122 VOL: 0
+; 0002 00C0 }
+;PCODE: $00000123 VOL: 0
+;
+;/**************************************************************************
+;*  Чтение произвольного участка сектора                                   *
+;**************************************************************************/
+;
+;BYTE sd_read(BYTE* buffer, DWORD sector, WORD offsetInSector, WORD length) {
+; 0002 00C6 BYTE sd_read(BYTE* buffer, DWORD sector, WORD offsetInSector, WORD length) {
+;PCODE: $00000124 VOL: 0
+;PCODE: $00000125 VOL: 0
+; 0002 00C7   BYTE b;
+; 0002 00C8   WORD i;
+; 0002 00C9 
+; 0002 00CA   /* Посылаем команду */
+; 0002 00CB   if(sd_sendCommand(READ_SINGLE_BLOCK, sector)) goto abort;
+;PCODE: $00000126 VOL: 0
+;	*buffer -> Y+12
+;	sector -> Y+8
+;	offsetInSector -> Y+6
+;	length -> Y+4
+;	b -> R17
+;	i -> R18,R19
+;PCODE: $00000127 VOL: 0
+;PCODE: $00000128 VOL: 0
+;PCODE: $00000129 VOL: 0
+;PCODE: $0000012A VOL: 0
+;PCODE: $0000012B VOL: 0
+;PCODE: $0000012C VOL: 0
+;PCODE: $0000012D VOL: 0
+;PCODE: $0000012E VOL: 0
+; 0002 00CC 
+; 0002 00CD   /* Сразу же возращаем CS, что бы принять ответ команды */
+; 0002 00CE   SD_CS_ENABLE
+;PCODE: $0000012F VOL: 0
+;PCODE: $00000130 VOL: 0
+;PCODE: $00000131 VOL: 0
+; 0002 00CF 
+; 0002 00D0   /* Ждем стартовый байт */
+; 0002 00D1   if(sd_waitBus(0xFE)) goto abort;
+;PCODE: $00000132 VOL: 0
+;PCODE: $00000133 VOL: 0
+;PCODE: $00000134 VOL: 0
+;PCODE: $00000135 VOL: 0
+;PCODE: $00000136 VOL: 0
+;PCODE: $00000137 VOL: 0
+; 0002 00D2 
+; 0002 00D3   /* Принимаем 512 байт */
+; 0002 00D4   for(i=512; i; --i) {
+;PCODE: $00000138 VOL: 0
+;PCODE: $00000139 VOL: 0
+;PCODE: $0000013A VOL: 0
+;PCODE: $0000013B VOL: 0
+;PCODE: $0000013C VOL: 0
+;PCODE: $0000013D VOL: 0
+;PCODE: $0000013E VOL: 0
+;PCODE: $0000013F VOL: 0
+;PCODE: $00000140 VOL: 0
+; 0002 00D5     b = spi_receive();
+;PCODE: $00000141 VOL: 0
+;PCODE: $00000142 VOL: 0
+; 0002 00D6     if(offsetInSector) { offsetInSector--; continue; }
+;PCODE: $00000143 VOL: 0
+;PCODE: $00000144 VOL: 0
+;PCODE: $00000145 VOL: 0
+;PCODE: $00000146 VOL: 0
+;PCODE: $00000147 VOL: 0
+;PCODE: $00000148 VOL: 0
+;PCODE: $00000149 VOL: 0
+; 0002 00D7     if(length == 0) continue;
+;PCODE: $0000014A VOL: 0
+;PCODE: $0000014B VOL: 0
+;PCODE: $0000014C VOL: 0
+;PCODE: $0000014D VOL: 0
+;PCODE: $0000014E VOL: 0
+; 0002 00D8     length--;
+;PCODE: $0000014F VOL: 0
+;PCODE: $00000150 VOL: 0
+;PCODE: $00000151 VOL: 0
+;PCODE: $00000152 VOL: 0
+; 0002 00D9     *buffer++ = b;
+;PCODE: $00000153 VOL: 0
+;PCODE: $00000154 VOL: 0
+;PCODE: $00000155 VOL: 0
+;PCODE: $00000156 VOL: 0
+;PCODE: $00000157 VOL: 0
+; 0002 00DA   }
+;PCODE: $00000158 VOL: 0
+;PCODE: $00000159 VOL: 0
+;PCODE: $0000015A VOL: 0
+;PCODE: $0000015B VOL: 0
+;PCODE: $0000015C VOL: 0
+; 0002 00DB 
+; 0002 00DC   /* CRC игнорируем */
+; 0002 00DD   spi_receive();
+;PCODE: $0000015D VOL: 0
+; 0002 00DE   spi_receive();
+;PCODE: $0000015E VOL: 0
+; 0002 00DF 
+; 0002 00E0   /* отпускаем CS и пауза в 1 байт*/
+; 0002 00E1   SD_CS_DISABLE
+;PCODE: $0000015F VOL: 0
+;PCODE: $00000160 VOL: 0
+; 0002 00E2   spi_receive();
+;PCODE: $00000161 VOL: 0
+; 0002 00E3 
+; 0002 00E4   /* Ок */
+; 0002 00E5   return 0;
+;PCODE: $00000162 VOL: 0
+;PCODE: $00000163 VOL: 0
+;PCODE: $00000164 VOL: 0
+;PCODE: $00000165 VOL: 0
+; 0002 00E6 
+; 0002 00E7   /* Ошибка и отпускаем CS.*/
+; 0002 00E8 abort:
+;PCODE: $00000166 VOL: 0
+; 0002 00E9   SD_CS_DISABLE
+;PCODE: $00000167 VOL: 0
+;PCODE: $00000168 VOL: 0
+; 0002 00EA   lastError = ERR_DISK_ERR;
+;PCODE: $00000169 VOL: 0
+;PCODE: $0000016A VOL: 0
+; 0002 00EB   return 1;
+;PCODE: $0000016B VOL: 0
+;PCODE: $0000016C VOL: 0
+;PCODE: $0000016D VOL: 0
+;PCODE: $0000016E VOL: 0
+; 0002 00EC }
+;PCODE: $0000016F VOL: 0
+;
+;/**************************************************************************
+;*  Запись сектора (512 байт)                                              *
+;**************************************************************************/
+;
+;BYTE sd_write512(BYTE* buffer, DWORD sector) {
+; 0002 00F2 BYTE sd_write512(BYTE* buffer, DWORD sector) {
+;PCODE: $00000170 VOL: 0
+;PCODE: $00000171 VOL: 0
+; 0002 00F3   WORD n;
+; 0002 00F4 
+; 0002 00F5   /* Посылаем команду */
+; 0002 00F6   if(sd_sendCommand(WRITE_SINGLE_BLOCK, sector)) goto abort;
+;PCODE: $00000172 VOL: 0
+;	*buffer -> Y+6
+;	sector -> Y+2
+;	n -> R16,R17
+;PCODE: $00000173 VOL: 0
+;PCODE: $00000174 VOL: 0
+;PCODE: $00000175 VOL: 0
+;PCODE: $00000176 VOL: 0
+;PCODE: $00000177 VOL: 0
+;PCODE: $00000178 VOL: 0
+;PCODE: $00000179 VOL: 0
+;PCODE: $0000017A VOL: 0
+; 0002 00F7 
+; 0002 00F8   /* Сразу же возращаем CS, что бы отправить блок данных */
+; 0002 00F9   SD_CS_ENABLE
+;PCODE: $0000017B VOL: 0
+;PCODE: $0000017C VOL: 0
+;PCODE: $0000017D VOL: 0
+; 0002 00FA 
+; 0002 00FB   /* Посылаем стартовый байт */
+; 0002 00FC   spi_transmit(0xFE);
+;PCODE: $0000017E VOL: 0
+;PCODE: $0000017F VOL: 0
+;PCODE: $00000180 VOL: 0
+; 0002 00FD 
+; 0002 00FE   /* Данные */
+; 0002 00FF   for(n=512; n; --n)
+;PCODE: $00000181 VOL: 0
+;PCODE: $00000182 VOL: 0
+;PCODE: $00000183 VOL: 0
+;PCODE: $00000184 VOL: 0
+;PCODE: $00000185 VOL: 0
+;PCODE: $00000186 VOL: 0
+;PCODE: $00000187 VOL: 0
+;PCODE: $00000188 VOL: 0
+; 0002 0100     spi_transmit(*buffer++);
+;PCODE: $00000189 VOL: 0
+;PCODE: $0000018A VOL: 0
+;PCODE: $0000018B VOL: 0
+;PCODE: $0000018C VOL: 0
+;PCODE: $0000018D VOL: 0
+;PCODE: $0000018E VOL: 0
+;PCODE: $0000018F VOL: 0
+;PCODE: $00000190 VOL: 0
+;PCODE: $00000191 VOL: 0
+;PCODE: $00000192 VOL: 0
+; 0002 0103 spi_transmit(0xFF);
+;PCODE: $00000193 VOL: 0
+;PCODE: $00000194 VOL: 0
+;PCODE: $00000195 VOL: 0
+; 0002 0104   spi_transmit(0xFF);
+;PCODE: $00000196 VOL: 0
+;PCODE: $00000197 VOL: 0
+;PCODE: $00000198 VOL: 0
+; 0002 0105 
+; 0002 0106   /* Ответ МК */
+; 0002 0107   if((spi_receive() & 0x1F) != 0x05) goto abort;
+;PCODE: $00000199 VOL: 0
+;PCODE: $0000019A VOL: 0
+;PCODE: $0000019B VOL: 0
+;PCODE: $0000019C VOL: 0
+;PCODE: $0000019D VOL: 0
+; 0002 0108 
+; 0002 0109   /* Ждем окончания записи, т.е. пока не освободится шина */
+; 0002 010A   if(sd_waitBus(0xFF)) goto abort;
+;PCODE: $0000019E VOL: 0
+;PCODE: $0000019F VOL: 0
+;PCODE: $000001A0 VOL: 0
+;PCODE: $000001A1 VOL: 0
+;PCODE: $000001A2 VOL: 0
+;PCODE: $000001A3 VOL: 0
+;PCODE: $000001A4 VOL: 0
+; 0002 010B 
+; 0002 010C   /* отпускаем CS и пауза в 1 байт*/
+; 0002 010D   SD_CS_DISABLE
+;PCODE: $000001A5 VOL: 0
+;PCODE: $000001A6 VOL: 0
+;PCODE: $000001A7 VOL: 0
+; 0002 010E   spi_receive();
+;PCODE: $000001A8 VOL: 0
+; 0002 010F 
+; 0002 0110   /* Ок */
+; 0002 0111   return 0;
+;PCODE: $000001A9 VOL: 0
+;PCODE: $000001AA VOL: 0
+;PCODE: $000001AB VOL: 0
+;PCODE: $000001AC VOL: 0
+; 0002 0112 
+; 0002 0113   /* Ошибка.*/
+; 0002 0114 abort:
+;PCODE: $000001AD VOL: 0
+; 0002 0115   SD_CS_DISABLE
+;PCODE: $000001AE VOL: 0
+;PCODE: $000001AF VOL: 0
+; 0002 0116   lastError = ERR_DISK_ERR;
+;PCODE: $000001B0 VOL: 0
+;PCODE: $000001B1 VOL: 0
+; 0002 0117   return 1;
+;PCODE: $000001B2 VOL: 0
+;PCODE: $000001B3 VOL: 0
+;PCODE: $000001B4 VOL: 0
+;PCODE: $000001B5 VOL: 0
+; 0002 0118 }
+;PCODE: $000001B6 VOL: 0

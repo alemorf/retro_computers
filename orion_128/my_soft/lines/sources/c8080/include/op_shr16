@@ -1,0 +1,18 @@
+// Сдвиг HL на DE, результат в HL. BC портить нельзя
+
+void op_shr16() {
+asm {
+  inr e
+op_shr16_l:
+  dcr e
+  rz
+  sub a
+  ora h 
+  rar
+  mov h, a
+  mov a, l
+  rar
+  mov l, a
+  jmp op_shr16_l
+}
+}  

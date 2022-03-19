@@ -1,0 +1,1092 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L alt:Transformer_1P_1S L1
+U 1 1 5F47CFDC
+P 3650 950
+F 0 "L1" V 3350 850 50  0000 C CNN
+F 1 "?" V 3350 850 50  0001 C CNN
+F 2 "" H 3650 950 50  0001 C CNN
+F 3 "~" H 3650 950 50  0001 C CNN
+	1    3650 950 
+	0    -1   1    0   
+$EndComp
+Wire Wire Line
+	3450 1000 3450 1050
+Wire Wire Line
+	3450 750  3450 800 
+Wire Wire Line
+	4200 750  4050 750 
+Wire Wire Line
+	4050 750  4050 800 
+Wire Wire Line
+	3850 750  4050 750 
+Wire Wire Line
+	3850 1050 4050 1050
+$Comp
+L alt:R_Varistor RV1
+U 1 1 5F53AC5B
+P 3150 900
+F 0 "RV1" H 3150 1150 50  0000 C CNN
+F 1 "?" H 3150 1150 50  0001 C CNN
+F 2 "" V 3180 860 50  0001 C CNN
+F 3 "~" H 3110 860 50  0001 C CNN
+	1    3150 900 
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	3150 800  3150 750 
+Wire Wire Line
+	3150 1000 3150 1050
+$Comp
+L alt:SW_SPST SA1
+U 1 1 5F54AC17
+P 1450 850
+F 0 "SA1" H 1450 1000 50  0000 C CNN
+F 1 "?" H 1450 999 50  0001 C CNN
+F 2 "" H 1500 825 50  0001 C CNN
+F 3 "~" H 1500 825 50  0001 C CNN
+	1    1450 850 
+	1    0    0    -1  
+$EndComp
+$Comp
+L alt:Fuse FU1
+U 1 1 5F551E62
+P 1750 850
+F 0 "FU1" V 1554 850 50  0000 C CNN
+F 1 "1А" V 1645 850 50  0000 C CNN
+F 2 "" V 1680 850 50  0001 C CNN
+F 3 "~" H 1750 850 50  0001 C CNN
+	1    1750 850 
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1650 850  1600 850 
+Wire Wire Line
+	1300 950  1850 950 
+$Comp
+L alt:Conn_01x02 X1
+U 1 1 5F61D38E
+P 1100 700
+F 0 "X1" H 1200 750 50  0000 C CNN
+F 1 "?" H 1200 750 50  0001 C CNN
+F 2 "" H 1100 650 50  0001 C CNN
+F 3 "~" H 1100 650 50  0001 C CNN
+	1    1100 700 
+	-1   0    0    -1  
+$EndComp
+Text Notes 1095 985  2    47   ~ 0
+~~~220В
+$Comp
+L alt:Conn_01x02 X2
+U 1 1 5F656884
+P 2050 700
+F 0 "X2" H 2150 750 50  0000 C CNN
+F 1 "?" H 2200 750 50  0001 C CNN
+F 2 "" H 2050 650 50  0001 C CNN
+F 3 "~" H 2050 650 50  0001 C CNN
+	1    2050 700 
+	1    0    0    -1  
+$EndComp
+Text Notes 2055 985  0    47   ~ 0
+~~~220В
+Text Notes 4405 985  0    47   ~ 0
+~~~220В
+$Comp
+L alt:Conn_01x02 X4
+U 1 1 5F658CF1
+P 4400 700
+F 0 "X4" H 4500 750 50  0000 C CNN
+F 1 "?" H 4500 750 50  0001 C CNN
+F 2 "" H 4400 650 50  0001 C CNN
+F 3 "~" H 4400 650 50  0001 C CNN
+	1    4400 700 
+	1    0    0    -1  
+$EndComp
+Text Notes 700  600  3    50   ~ 0
+Подключение\nк сети 220В
+Wire Notes Line
+	2500 500  2500 1100
+Wire Notes Line
+	2500 500  4750 500 
+Wire Notes Line
+	750  1100 2500 1100
+Text Notes 1095 885  2    47   ~ 0
+~~220В
+Text Notes 4950 650  3    50   ~ 0
+К транс-\nформатору
+Wire Wire Line
+	3050 850  3050 750 
+Wire Wire Line
+	3050 950  3050 1050
+Wire Wire Line
+	4200 950  4200 1050
+Wire Wire Line
+	4200 850  4200 750 
+$Comp
+L alt:Conn_01x02 X3
+U 1 1 5F65B463
+P 2850 700
+F 0 "X3" H 2950 750 50  0000 C CNN
+F 1 "?" H 2950 750 50  0001 C CNN
+F 2 "" H 2850 650 50  0001 C CNN
+F 3 "~" H 2850 650 50  0001 C CNN
+	1    2850 700 
+	-1   0    0    -1  
+$EndComp
+Text Notes 2845 885  2    47   ~ 0
+~~220В
+Text Notes 2845 985  2    47   ~ 0
+~~~220В
+Text Notes 4405 885  0    47   ~ 0
+~~220В
+Text Notes 2055 885  0    47   ~ 0
+~~220В
+$Comp
+L alt:GND #PWR09
+U 1 1 5F234361
+P 2200 2350
+F 0 "#PWR09" H 2200 2100 50  0001 C CNN
+F 1 "GND" H 2203 2174 50  0001 C CNN
+F 2 "" H 2200 2350 50  0001 C CNN
+F 3 "" H 2200 2350 50  0001 C CNN
+	1    2200 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L alt:GND #PWR010
+U 1 1 5F235691
+P 2500 2350
+F 0 "#PWR010" H 2500 2100 50  0001 C CNN
+F 1 "GND" H 2503 2174 50  0001 C CNN
+F 2 "" H 2500 2350 50  0001 C CNN
+F 3 "" H 2500 2350 50  0001 C CNN
+	1    2500 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2500 2150 2500 2050
+Connection ~ 2500 2050
+Wire Wire Line
+	2200 2150 2200 2050
+Wire Wire Line
+	2050 2050 1700 2050
+Wire Wire Line
+	1700 2250 1500 2250
+$Comp
+L alt:GND #PWR07
+U 1 1 5F23DA6F
+P 1700 2350
+F 0 "#PWR07" H 1700 2100 50  0001 C CNN
+F 1 "GND" H 1703 2174 50  0001 C CNN
+F 2 "" H 1700 2350 50  0001 C CNN
+F 3 "" H 1700 2350 50  0001 C CNN
+	1    1700 2350
+	1    0    0    -1  
+$EndComp
+Connection ~ 1700 2250
+Wire Wire Line
+	3250 2050 3400 2050
+$Comp
+L alt:GND #PWR013
+U 1 1 5F2630F5
+P 3650 2350
+F 0 "#PWR013" H 3650 2100 50  0001 C CNN
+F 1 "GND" H 3653 2174 50  0001 C CNN
+F 2 "" H 3650 2350 50  0001 C CNN
+F 3 "" H 3650 2350 50  0001 C CNN
+	1    3650 2350
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 2050 3650 2050
+Wire Wire Line
+	3650 2150 3650 2050
+Connection ~ 3650 2050
+$Comp
+L alt:GND #PWR011
+U 1 1 5F263D8A
+P 2950 2350
+F 0 "#PWR011" H 2950 2100 50  0001 C CNN
+F 1 "GND" H 2953 2174 50  0001 C CNN
+F 2 "" H 2950 2350 50  0001 C CNN
+F 3 "" H 2950 2350 50  0001 C CNN
+	1    2950 2350
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Regulator_Linear:L7805 DA3
+U 1 1 5F269D04
+P 2950 2750
+F 0 "DA3" H 2950 2992 50  0000 C CNN
+F 1 "К142ЕН8Б" H 2950 2901 50  0000 C CNN
+F 2 "" H 2975 2600 50  0001 L CIN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/41/4f/b3/b0/12/d4/47/88/CD00000444.pdf/files/CD00000444.pdf/jcr:content/translations/en.CD00000444.pdf" H 2950 2700 50  0001 C CNN
+	1    2950 2750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:D_Small VD13
+U 1 1 5F269D17
+P 2000 2850
+F 0 "VD13" V 2000 2600 50  0000 L CNN
+F 1 "?" V 2045 2918 50  0001 L CNN
+F 2 "" V 2000 2850 50  0001 C CNN
+F 3 "~" V 2000 2850 50  0001 C CNN
+	1    2000 2850
+	0    1    1    0   
+$EndComp
+$Comp
+L alt:GND #PWR017
+U 1 1 5F269D23
+P 2500 3050
+F 0 "#PWR017" H 2500 2800 50  0001 C CNN
+F 1 "GND" H 2503 2874 50  0001 C CNN
+F 2 "" H 2500 3050 50  0001 C CNN
+F 3 "" H 2500 3050 50  0001 C CNN
+	1    2500 3050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2500 2850 2500 2750
+Connection ~ 2500 2750
+$Comp
+L alt:GND #PWR015
+U 1 1 5F269D3C
+P 2000 3050
+F 0 "#PWR015" H 2000 2800 50  0001 C CNN
+F 1 "GND" H 2003 2874 50  0001 C CNN
+F 2 "" H 2000 3050 50  0001 C CNN
+F 3 "" H 2000 3050 50  0001 C CNN
+	1    2000 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:D_Small VD16
+U 1 1 5F269D48
+P 2000 3050
+F 0 "VD16" V 2000 2800 50  0000 L CNN
+F 1 "?" V 2045 3118 50  0001 L CNN
+F 2 "" V 2000 3050 50  0001 C CNN
+F 3 "~" V 2000 3050 50  0001 C CNN
+	1    2000 3050
+	0    1    1    0   
+$EndComp
+Connection ~ 2000 2950
+$Comp
+L Device:C_Small C14
+U 1 1 5F269D5B
+P 3400 2950
+F 0 "C14" H 3400 3350 50  0000 C CNN
+F 1 "47н" H 3400 3250 50  0000 C CNN
+F 2 "" H 3400 2950 50  0001 C CNN
+F 3 "~" H 3400 2950 50  0001 C CNN
+	1    3400 2950
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	3250 2750 3400 2750
+$Comp
+L alt:GND #PWR020
+U 1 1 5F269D62
+P 3750 3050
+F 0 "#PWR020" H 3750 2800 50  0001 C CNN
+F 1 "GND" H 3753 2874 50  0001 C CNN
+F 2 "" H 3750 3050 50  0001 C CNN
+F 3 "" H 3750 3050 50  0001 C CNN
+	1    3750 3050
+	-1   0    0    -1  
+$EndComp
+$Comp
+L alt:GND #PWR019
+U 1 1 5F269D68
+P 3400 3050
+F 0 "#PWR019" H 3400 2800 50  0001 C CNN
+F 1 "GND" H 3403 2874 50  0001 C CNN
+F 2 "" H 3400 3050 50  0001 C CNN
+F 3 "" H 3400 3050 50  0001 C CNN
+	1    3400 3050
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 2850 3400 2750
+Connection ~ 3400 2750
+Wire Wire Line
+	3750 2850 3750 2750
+$Comp
+L alt:GND #PWR018
+U 1 1 5F269D74
+P 2950 3050
+F 0 "#PWR018" H 2950 2800 50  0001 C CNN
+F 1 "GND" H 2953 2874 50  0001 C CNN
+F 2 "" H 2950 3050 50  0001 C CNN
+F 3 "" H 2950 3050 50  0001 C CNN
+	1    2950 3050
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:C_Small C5
+U 1 1 5F280746
+P 2500 1550
+F 0 "C5" H 2450 1150 50  0000 L CNN
+F 1 "47н" H 2500 1250 50  0000 C CNN
+F 2 "" H 2500 1550 50  0001 C CNN
+F 3 "~" H 2500 1550 50  0001 C CNN
+	1    2500 1550
+	1    0    0    1   
+$EndComp
+$Comp
+L Device:D_Small VD1
+U 1 1 5F28074D
+P 1950 1450
+F 0 "VD1" V 1950 1250 50  0000 L CNN
+F 1 "?" V 1905 1518 50  0001 L CNN
+F 2 "" V 1950 1450 50  0001 C CNN
+F 3 "~" V 1950 1450 50  0001 C CNN
+	1    1950 1450
+	0    1    -1   0   
+$EndComp
+$Comp
+L alt:GND #PWR01
+U 1 1 5F280753
+P 2150 1650
+F 0 "#PWR01" H 2150 1400 50  0001 C CNN
+F 1 "GND" H 2153 1474 50  0001 C CNN
+F 2 "" H 2150 1650 50  0001 C CNN
+F 3 "" H 2150 1650 50  0001 C CNN
+	1    2150 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L alt:GND #PWR02
+U 1 1 5F280759
+P 2500 1650
+F 0 "#PWR02" H 2500 1400 50  0001 C CNN
+F 1 "GND" H 2503 1474 50  0001 C CNN
+F 2 "" H 2500 1650 50  0001 C CNN
+F 3 "" H 2500 1650 50  0001 C CNN
+	1    2500 1650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2500 1450 2500 1350
+Connection ~ 2500 1350
+Wire Wire Line
+	2150 1450 2150 1350
+$Comp
+L Device:D_Small VD4
+U 1 1 5F28077E
+P 1950 1650
+F 0 "VD4" V 1950 1450 50  0000 L CNN
+F 1 "?" V 1905 1718 50  0001 L CNN
+F 2 "" V 1950 1650 50  0001 C CNN
+F 3 "~" V 1950 1650 50  0001 C CNN
+	1    1950 1650
+	0    1    -1   0   
+$EndComp
+Connection ~ 1950 1550
+$Comp
+L Device:C_Small C6
+U 1 1 5F280791
+P 3400 1550
+F 0 "C6" H 3350 1950 50  0000 L CNN
+F 1 "47н" H 3400 1850 50  0000 C CNN
+F 2 "" H 3400 1550 50  0001 C CNN
+F 3 "~" H 3400 1550 50  0001 C CNN
+	1    3400 1550
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	3250 1350 3400 1350
+$Comp
+L alt:GND #PWR05
+U 1 1 5F280798
+P 3700 1650
+F 0 "#PWR05" H 3700 1400 50  0001 C CNN
+F 1 "GND" H 3703 1474 50  0001 C CNN
+F 2 "" H 3700 1650 50  0001 C CNN
+F 3 "" H 3700 1650 50  0001 C CNN
+	1    3700 1650
+	-1   0    0    -1  
+$EndComp
+$Comp
+L alt:GND #PWR04
+U 1 1 5F28079E
+P 3400 1650
+F 0 "#PWR04" H 3400 1400 50  0001 C CNN
+F 1 "GND" H 3403 1474 50  0001 C CNN
+F 2 "" H 3400 1650 50  0001 C CNN
+F 3 "" H 3400 1650 50  0001 C CNN
+	1    3400 1650
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 1450 3400 1350
+Connection ~ 3400 1350
+Wire Wire Line
+	3700 1450 3700 1350
+$Comp
+L alt:GND #PWR03
+U 1 1 5F2807AA
+P 2950 1650
+F 0 "#PWR03" H 2950 1400 50  0001 C CNN
+F 1 "GND" H 2953 1474 50  0001 C CNN
+F 2 "" H 2950 1650 50  0001 C CNN
+F 3 "" H 2950 1650 50  0001 C CNN
+	1    2950 1650
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	1750 1550 1950 1550
+Wire Wire Line
+	1550 1550 1500 1550
+Wire Wire Line
+	1700 2450 1700 2350
+Wire Wire Line
+	2000 3150 2000 3050
+$Comp
+L Regulator_Linear:L7905 DA1
+U 1 1 5F3A8203
+P 2950 1350
+F 0 "DA1" H 2950 1108 50  0000 C CNN
+F 1 "L7905" H 2950 1199 50  0000 C CNN
+F 2 "" H 2950 1150 50  0001 C CIN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/c9/16/86/41/c7/2b/45/f2/CD00000450.pdf/files/CD00000450.pdf/jcr:content/translations/en.CD00000450.pdf" H 2950 1350 50  0001 C CNN
+	1    2950 1350
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	1500 1650 1500 2250
+Wire Wire Line
+	1500 1550 1500 1650
+Connection ~ 1500 1650
+Wire Wire Line
+	1300 1650 1500 1650
+Wire Wire Line
+	1400 2600 1400 1850
+Wire Wire Line
+	1400 1850 1300 1850
+Wire Wire Line
+	1300 1950 1300 2950
+Connection ~ 2050 2050
+$Comp
+L alt:Conn_01x04 X5
+U 1 1 5F5BCA3F
+P 4300 1700
+F 0 "X5" H 4500 2000 50  0000 C CNN
+F 1 "?" H 4500 2000 50  0001 C CNN
+F 2 "" H 4300 1700 50  0001 C CNN
+F 3 "~" H 4300 1700 50  0001 C CNN
+	1    4300 1700
+	1    0    0    -1  
+$EndComp
+Text Notes 4405 1935 0    50   ~ 0
++12В
+Text Notes 4405 1835 0    50   ~ 0
++5В
+Text Notes 4405 1735 0    50   ~ 0
+Общий
+$Comp
+L alt:Conn_01x04 X6
+U 1 1 5F5E691B
+P 1200 1750
+F 0 "X6" H 1400 2050 50  0000 C CNN
+F 1 "?" H 1400 2050 50  0001 C CNN
+F 2 "" H 1200 1750 50  0001 C CNN
+F 3 "~" H 1200 1750 50  0001 C CNN
+	1    1200 1750
+	-1   0    0    -1  
+$EndComp
+Text Notes 1095 1685 2    50   ~ 0
+~~7,6В
+Wire Wire Line
+	4000 2500 4000 2750
+Wire Wire Line
+	4000 2300 4000 2050
+Wire Notes Line
+	4750 3250 750  3250
+$Comp
+L Device:D_Small VD11
+U 1 1 5F26BEF0
+P 4000 2400
+F 0 "VD11" V 4000 2450 50  0000 L CNN
+F 1 "?" V 4050 2500 50  0001 L CNN
+F 2 "" V 4000 2400 50  0001 C CNN
+F 3 "~" V 4000 2400 50  0001 C CNN
+	1    4000 2400
+	0    -1   -1   0   
+$EndComp
+Text Notes 4405 1635 0    50   ~ 0
+-5В
+Wire Wire Line
+	1950 1750 1800 1750
+Wire Wire Line
+	2000 2950 1700 2950
+Wire Wire Line
+	1400 2600 1700 2600
+Wire Wire Line
+	1700 2600 1700 2950
+$Comp
+L Device:C_Small C13
+U 1 1 5F269D10
+P 2500 2950
+F 0 "C13" H 2500 3350 50  0000 C CNN
+F 1 "47н" H 2500 3250 50  0000 C CNN
+F 2 "" H 2500 2950 50  0001 C CNN
+F 3 "~" H 2500 2950 50  0001 C CNN
+	1    2500 2950
+	1    0    0    -1  
+$EndComp
+$Comp
+L alt:GND #PWR012
+U 1 1 5F2630FB
+P 3400 2350
+F 0 "#PWR012" H 3400 2100 50  0001 C CNN
+F 1 "GND" H 3403 2174 50  0001 C CNN
+F 2 "" H 3400 2350 50  0001 C CNN
+F 3 "" H 3400 2350 50  0001 C CNN
+	1    3400 2350
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 2150 3400 2050
+Connection ~ 3400 2050
+$Comp
+L Device:C_Small C10
+U 1 1 5F2630EE
+P 3400 2250
+F 0 "C10" H 3400 2650 50  0000 C CNN
+F 1 "47н" H 3400 2550 50  0000 C CNN
+F 2 "" H 3400 2250 50  0001 C CNN
+F 3 "~" H 3400 2250 50  0001 C CNN
+	1    3400 2250
+	-1   0    0    -1  
+$EndComp
+$Comp
+L alt:CP_Small C4
+U 1 1 5FA069EA
+P 2150 1550
+F 0 "C4" H 2150 1150 50  0000 C CNN
+F 1 "1000мкX16В" H 2150 1250 50  0000 C CNN
+F 2 "" H 2150 1550 50  0001 C CNN
+F 3 "~" H 2150 1550 50  0001 C CNN
+	1    2150 1550
+	1    0    0    1   
+$EndComp
+$Comp
+L alt:CP_Small C7
+U 1 1 5FA18C0B
+P 3700 1550
+F 0 "C7" H 3700 1150 50  0000 C CNN
+F 1 "100мкX16В" H 3750 1250 50  0000 C CNN
+F 2 "" H 3700 1550 50  0001 C CNN
+F 3 "~" H 3700 1550 50  0001 C CNN
+	1    3700 1550
+	1    0    0    1   
+$EndComp
+$Comp
+L alt:CP_Small C8
+U 1 1 5FA2ECFD
+P 2200 2250
+F 0 "C8" H 2200 2650 50  0000 C CNN
+F 1 "10000мкX16В" H 2150 2550 50  0000 C CNN
+F 2 "" H 2200 2250 50  0001 C CNN
+F 3 "~" H 2200 2250 50  0001 C CNN
+	1    2200 2250
+	1    0    0    -1  
+$EndComp
+$Comp
+L alt:CP_Small C11
+U 1 1 5FA30F40
+P 3650 2250
+F 0 "C11" H 3650 2650 50  0000 C CNN
+F 1 "100мкX16В" H 3750 2550 50  0000 C CNN
+F 2 "" H 3650 2250 50  0001 C CNN
+F 3 "~" H 3650 2250 50  0001 C CNN
+	1    3650 2250
+	1    0    0    -1  
+$EndComp
+$Comp
+L alt:CP_Small C15
+U 1 1 5FA456BB
+P 3750 2950
+F 0 "C15" H 3750 3350 50  0000 C CNN
+F 1 "100мкX16В" H 3750 3250 50  0000 C CNN
+F 2 "" H 3750 2950 50  0001 C CNN
+F 3 "~" H 3750 2950 50  0001 C CNN
+	1    3750 2950
+	1    0    0    -1  
+$EndComp
+Wire Notes Line
+	750  1100 750  3250
+Wire Notes Line
+	4750 500  4750 3250
+Text Notes 4850 1400 3    50   ~ 0
+К потребителям
+Text Notes 700  1550 3    50   ~ 0
+К транс-\nформатору
+Wire Wire Line
+	2500 1350 2650 1350
+Wire Wire Line
+	2650 1450 2650 1350
+Wire Wire Line
+	2650 1650 2650 1700
+Wire Wire Line
+	3250 1700 3250 1350
+Connection ~ 3250 1350
+Connection ~ 2650 1350
+Wire Wire Line
+	2650 1700 3250 1700
+$Comp
+L Device:D_Small VD8
+U 1 1 5F401EA3
+P 2650 2250
+F 0 "VD8" V 2750 2350 50  0000 C CNN
+F 1 "?" V 2350 2250 50  0001 C CNN
+F 2 "" V 2650 2250 50  0001 C CNN
+F 3 "~" V 2650 2250 50  0001 C CNN
+	1    2650 2250
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	2650 2150 2650 2050
+Wire Wire Line
+	2650 2350 2650 2400
+Connection ~ 2650 2050
+Wire Wire Line
+	2500 2050 2650 2050
+$Comp
+L Device:D_Small VD14
+U 1 1 5F413AD9
+P 2650 2950
+F 0 "VD14" V 2750 3050 50  0000 C CNN
+F 1 "?" V 2350 2950 50  0001 C CNN
+F 2 "" V 2650 2950 50  0001 C CNN
+F 3 "~" V 2650 2950 50  0001 C CNN
+	1    2650 2950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	2650 2850 2650 2750
+Wire Wire Line
+	2650 3050 2650 3100
+Connection ~ 2650 2750
+Wire Wire Line
+	2500 2750 2650 2750
+Wire Wire Line
+	2650 2400 3250 2400
+Wire Wire Line
+	3250 2400 3250 2050
+Connection ~ 3250 2050
+Wire Wire Line
+	2650 3100 3250 3100
+Wire Wire Line
+	3250 3100 3250 2750
+Connection ~ 3250 2750
+$Comp
+L Regulator_Linear:L7805 DA2
+U 1 1 5F22865B
+P 2950 2050
+F 0 "DA2" H 2950 2292 50  0000 C CNN
+F 1 "К142ЕН5" H 2950 2200 50  0000 C CNN
+F 2 "" H 2975 1900 50  0001 L CIN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/41/4f/b3/b0/12/d4/47/88/CD00000444.pdf/files/CD00000444.pdf/jcr:content/translations/en.CD00000444.pdf" H 2950 2000 50  0001 C CNN
+	1    2950 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:D_Small VD9
+U 1 1 5F23AD52
+P 1700 2350
+F 0 "VD9" V 1700 2150 50  0000 L CNN
+F 1 "?" V 1745 2418 50  0001 L CNN
+F 2 "" V 1700 2350 50  0001 C CNN
+F 3 "~" V 1700 2350 50  0001 C CNN
+	1    1700 2350
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:D_Small VD6
+U 1 1 5F23B158
+P 1700 2150
+F 0 "VD6" V 1700 1950 50  0000 L CNN
+F 1 "?" V 1745 2218 50  0001 L CNN
+F 2 "" V 1700 2150 50  0001 C CNN
+F 3 "~" V 1700 2150 50  0001 C CNN
+	1    1700 2150
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1300 2950 1600 2950
+$Comp
+L Device:D_Small VD12
+U 1 1 5F269D2F
+P 1600 2850
+F 0 "VD12" V 1600 2600 50  0000 L CNN
+F 1 "?" V 1645 2918 50  0001 L CNN
+F 2 "" V 1600 2850 50  0001 C CNN
+F 3 "~" V 1600 2850 50  0001 C CNN
+	1    1600 2850
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1600 3150 1600 3050
+Connection ~ 1600 2950
+$Comp
+L alt:GND #PWR014
+U 1 1 5F269D36
+P 1600 3050
+F 0 "#PWR014" H 1600 2800 50  0001 C CNN
+F 1 "GND" H 1603 2874 50  0001 C CNN
+F 2 "" H 1600 3050 50  0001 C CNN
+F 3 "" H 1600 3050 50  0001 C CNN
+	1    1600 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:D_Small VD15
+U 1 1 5F269D42
+P 1600 3050
+F 0 "VD15" V 1600 2800 50  0000 L CNN
+F 1 "?" V 1645 3118 50  0001 L CNN
+F 2 "" V 1600 3050 50  0001 C CNN
+F 3 "~" V 1600 3050 50  0001 C CNN
+	1    1600 3050
+	0    1    1    0   
+$EndComp
+Connection ~ 4000 2750
+$Comp
+L Device:C_Small C1
+U 1 1 5F4698AF
+P 3450 900
+F 0 "C1" H 3400 1250 50  0000 L CNN
+F 1 "47нX600В" H 3450 1150 50  0000 C CNN
+F 2 "" H 3450 900 50  0001 C CNN
+F 3 "~" H 3450 900 50  0001 C CNN
+	1    3450 900 
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:D_Small VD2
+U 1 1 5F3CA8F9
+P 2650 1550
+F 0 "VD2" V 2550 1650 50  0000 C CNN
+F 1 "?" V 2950 1550 50  0001 C CNN
+F 2 "" V 2650 1550 50  0001 C CNN
+F 3 "~" V 2650 1550 50  0001 C CNN
+	1    2650 1550
+	0    1    -1   0   
+$EndComp
+Text Notes 1095 1785 2    50   ~ 0
+~~~7,6В
+Text Notes 1095 1885 2    50   ~ 0
+~~12,6В
+Text Notes 1095 1985 2    50   ~ 0
+~~~12,6В
+Connection ~ 2150 1350
+Wire Wire Line
+	2150 1350 1950 1350
+Wire Wire Line
+	2150 1350 2500 1350
+Connection ~ 2200 2050
+$Comp
+L alt:CP_Small C12
+U 1 1 5FA43121
+P 2200 2950
+F 0 "C12" H 2200 3350 50  0000 C CNN
+F 1 "4700мкX25В" H 2150 3250 50  0000 C CNN
+F 2 "" H 2200 2950 50  0001 C CNN
+F 3 "~" H 2200 2950 50  0001 C CNN
+	1    2200 2950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 2850 2200 2750
+$Comp
+L alt:GND #PWR016
+U 1 1 5F269D1D
+P 2200 3050
+F 0 "#PWR016" H 2200 2800 50  0001 C CNN
+F 1 "GND" H 2203 2874 50  0001 C CNN
+F 2 "" H 2200 3050 50  0001 C CNN
+F 3 "" H 2200 3050 50  0001 C CNN
+	1    2200 3050
+	1    0    0    -1  
+$EndComp
+Connection ~ 2200 2750
+Wire Wire Line
+	2200 2750 2000 2750
+Wire Wire Line
+	2200 2750 2500 2750
+Connection ~ 3750 2750
+Wire Wire Line
+	3750 2750 4000 2750
+Wire Wire Line
+	3400 2750 3750 2750
+Connection ~ 3700 1350
+Wire Wire Line
+	3400 1350 3700 1350
+$Comp
+L Device:C_Small C9
+U 1 1 5F22C104
+P 2500 2250
+F 0 "C9" H 2500 2650 50  0000 L CNN
+F 1 "47н" H 2550 2550 50  0000 C CNN
+F 2 "" H 2500 2250 50  0001 C CNN
+F 3 "~" H 2500 2250 50  0001 C CNN
+	1    2500 2250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:D_Small VD5
+U 1 1 5F5DFA07
+P 4000 1850
+F 0 "VD5" V 4000 1900 50  0000 L CNN
+F 1 "?" V 4050 1950 50  0001 L CNN
+F 2 "" V 4000 1850 50  0001 C CNN
+F 3 "~" V 4000 1850 50  0001 C CNN
+	1    4000 1850
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:D_Small VD3
+U 1 1 5F5E332A
+P 4000 1550
+F 0 "VD3" V 4000 1600 50  0000 L CNN
+F 1 "?" V 4050 1650 50  0001 L CNN
+F 2 "" V 4000 1550 50  0001 C CNN
+F 3 "~" V 4000 1550 50  0001 C CNN
+	1    4000 1550
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	3650 2050 4000 2050
+$Comp
+L alt:GND #PWR06
+U 1 1 5F5E99B4
+P 4000 1700
+F 0 "#PWR06" H 4000 1450 50  0001 C CNN
+F 1 "GND" H 4003 1524 50  0001 C CNN
+F 2 "" H 4000 1700 50  0001 C CNN
+F 3 "" H 4000 1700 50  0001 C CNN
+	1    4000 1700
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4000 1650 4000 1700
+Connection ~ 4000 1700
+Wire Wire Line
+	4000 1700 4000 1750
+Wire Wire Line
+	4000 1950 4000 2050
+Connection ~ 4000 2050
+Wire Wire Line
+	4000 1350 4000 1450
+Wire Wire Line
+	3700 1350 4000 1350
+Wire Wire Line
+	4200 1600 4200 1350
+Wire Wire Line
+	4200 1350 4000 1350
+Connection ~ 4000 1350
+Wire Wire Line
+	4100 2050 4000 2050
+Wire Wire Line
+	4200 2750 4000 2750
+Wire Wire Line
+	4200 1900 4200 2750
+Wire Wire Line
+	4100 1800 4100 2050
+$Comp
+L Device:C_Small C2
+U 1 1 5F4E6352
+P 4050 900
+F 0 "C2" H 4000 1250 50  0000 L CNN
+F 1 "47нX600В" H 4050 1150 50  0000 C CNN
+F 2 "" H 4050 900 50  0001 C CNN
+F 3 "~" H 4050 900 50  0001 C CNN
+	1    4050 900 
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	4050 1000 4050 1050
+Connection ~ 4050 750 
+Connection ~ 4050 1050
+Wire Wire Line
+	4050 1050 4200 1050
+Connection ~ 3450 750 
+Connection ~ 3450 1050
+Wire Wire Line
+	3450 750  3650 750 
+Wire Wire Line
+	3450 1050 3650 1050
+Connection ~ 3150 750 
+Connection ~ 3150 1050
+Wire Wire Line
+	3150 750  3450 750 
+Wire Wire Line
+	3150 1050 3450 1050
+Wire Wire Line
+	4200 1700 4000 1700
+Wire Wire Line
+	4200 1800 4100 1800
+Wire Wire Line
+	3050 750  3150 750 
+Wire Wire Line
+	3050 1050 3150 1050
+Connection ~ 2000 2750
+Wire Wire Line
+	1600 2750 2000 2750
+$Comp
+L Device:D_Small VD7
+U 1 1 5F230557
+P 2050 2150
+F 0 "VD7" V 2050 1950 50  0000 L CNN
+F 1 "?" V 2095 2218 50  0001 L CNN
+F 2 "" V 2050 2150 50  0001 C CNN
+F 3 "~" V 2050 2150 50  0001 C CNN
+	1    2050 2150
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:D_Small VD10
+U 1 1 5F23A9FC
+P 2050 2350
+F 0 "VD10" V 2050 2100 50  0000 L CNN
+F 1 "?" V 2095 2418 50  0001 L CNN
+F 2 "" V 2050 2350 50  0001 C CNN
+F 3 "~" V 2050 2350 50  0001 C CNN
+	1    2050 2350
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	2050 2350 2050 2450
+Connection ~ 2050 2250
+$Comp
+L alt:GND #PWR08
+U 1 1 5F23D70D
+P 2050 2350
+F 0 "#PWR08" H 2050 2100 50  0001 C CNN
+F 1 "GND" H 2053 2174 50  0001 C CNN
+F 2 "" H 2050 2350 50  0001 C CNN
+F 3 "" H 2050 2350 50  0001 C CNN
+	1    2050 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 2050 2050 2050
+Wire Wire Line
+	2200 2050 2500 2050
+Wire Wire Line
+	1800 2250 1800 1750
+Connection ~ 1800 1750
+Wire Wire Line
+	1800 1750 1300 1750
+Wire Wire Line
+	1800 2250 2050 2250
+$Comp
+L alt:CP_Small C3
+U 1 1 5F7EFC07
+P 1650 1550
+F 0 "C3" V 1350 1550 50  0000 C CNN
+F 1 "1000мкX25В" V 1450 1550 50  0000 C CNN
+F 2 "" H 1650 1550 50  0001 C CNN
+F 3 "~" H 1650 1550 50  0001 C CNN
+	1    1650 1550
+	0    -1   1    0   
+$EndComp
+$Comp
+L alt:Conn_01x02 X4
+U 1 1 5F702ACC
+P 2050 4000
+F 0 "X4" H 2150 4050 50  0000 C CNN
+F 1 "?" H 2150 4050 50  0001 C CNN
+F 2 "" H 2050 3950 50  0001 C CNN
+F 3 "~" H 2050 3950 50  0001 C CNN
+	1    2050 4000
+	-1   0    0    -1  
+$EndComp
+Text Notes 2045 4285 2    47   ~ 0
+~~~220В
+Text Notes 2045 4185 2    47   ~ 0
+~~220В
+Text Notes 3155 4185 0    50   ~ 0
+~~7,6В
+Text Notes 3155 4285 0    50   ~ 0
+~~~7,6В
+Text Notes 3155 4385 0    50   ~ 0
+~~12,6В
+Text Notes 3155 4485 0    50   ~ 0
+~~~12,6В
+$Comp
+L alt:Conn_01x04 X6
+U 1 1 5F7122E0
+P 3050 4250
+F 0 "X6" H 3250 4550 50  0000 C CNN
+F 1 "?" H 3250 4550 50  0001 C CNN
+F 2 "" H 3050 4250 50  0001 C CNN
+F 3 "~" H 3050 4250 50  0001 C CNN
+	1    3050 4250
+	1    0    0    -1  
+$EndComp
+$Comp
+L alt:TN32-220 T1
+U 1 1 5F7A2E66
+P 2550 3350
+F 0 "T1" H 2250 3300 50  0000 C CNN
+F 1 "ТН32-220" H 2250 3200 50  0000 C CNN
+F 2 "" H 2575 2750 50  0001 C CNN
+F 3 "~" H 2575 2750 50  0001 C CNN
+	1    2550 3350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2650 3750 2750 3750
+Wire Wire Line
+	2750 3750 2750 4050
+Wire Wire Line
+	2750 4050 2650 4050
+Wire Wire Line
+	2650 4250 2950 4250
+Wire Wire Line
+	2950 4150 2850 4150
+Wire Wire Line
+	2850 4150 2850 3350
+Wire Wire Line
+	2850 3350 2650 3350
+Wire Wire Line
+	2950 4350 2650 4350
+Wire Wire Line
+	2650 4650 2750 4650
+Wire Wire Line
+	2750 4650 2750 4550
+Wire Wire Line
+	2750 4550 2650 4550
+Wire Wire Line
+	2650 4850 2850 4850
+Wire Wire Line
+	2850 4850 2850 4450
+Wire Wire Line
+	2850 4450 2950 4450
+Wire Wire Line
+	2250 4150 2300 4150
+Wire Wire Line
+	2300 4150 2300 3850
+Wire Wire Line
+	2300 3850 2350 3850
+Wire Wire Line
+	2250 4250 2350 4250
+$EndSCHEMATC

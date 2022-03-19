@@ -1,0 +1,18 @@
+UT-88 (ЮТ-88)
+
+Year:	1988
+RAM:	64 kB
+ROM:	2 kB
+CPU:	i8080 1.7 MHz
+Graph:	128x50x2
+Text:	64x25x2
+
+"UT-88" is a self-assembly computer. In the 80s in the USSR in some magazines
+published a circuits of computers for self-assembly. These were very simple
+computers. First of all, they were not intended for playing or work, but
+for teaching digital circuitry.
+
+and Circuits description of the computer "UT-88" were published in 1989 in the
+magazine "UT for skillful hands" ("Lefty", supplement to the magazine "Young
+Technician", 1989, No. 2-8). And later in several more books. Based on one of
+these books, I built this computer.

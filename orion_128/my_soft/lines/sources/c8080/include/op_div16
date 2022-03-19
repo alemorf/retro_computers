@@ -1,0 +1,50 @@
+// HL делится на DE, результат в HL, остаток в DE
+
+uint op_div16_mod;
+
+void op_div16() {
+  asm {
+        PUSH B
+        XCHG
+        CALL _DIV0
+        XCHG
+        SHLD op_div16_mod
+        XCHG
+        POP B
+        RET
+
+_DIV0:
+_DIV:	MOV A,H
+	ORA L
+	RZ
+	LXI B,0000
+	PUSH B
+_DIV1:	MOV A,E
+	SUB L
+	MOV A,D
+	SBB H
+	JC _DIV2
+	PUSH H
+	DAD H
+	JNC _DIV1
+_DIV2:	LXI H,0000
+_DIV3:	POP B
+	MOV A,B
+	ORA C
+	RZ
+	DAD H
+	PUSH D
+	MOV A,E
+	SUB C
+	MOV E,A
+	MOV A,D
+	SBB B
+	MOV D,A
+	JC _DIV4
+	INX H
+	POP B
+	JMP _DIV3
+_DIV4:	POP D
+	JMP _DIV3  
+  }
+}  

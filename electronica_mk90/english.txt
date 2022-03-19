@@ -1,0 +1,38 @@
+Electronica MK-90 (Электроника МК-90)
+
+Year:	1988
+RAM:	16 kB
+ROM:	32 kB
+CPU:	KA588
+Graph:	120x64x2
+In ROM:	Basic
+
+Electronica MK-90 is a Soviet portable computer. The computer contains 
+monochrome LCD display with a resolution of 120x64 pixels. Contains 
+16 bit processor. More precisely, the multi-chip sectional microprocessor KA588.
+The processor is a several chips. The computer contains 16 kilobytes of RAM 
+and 32 kilobytes of ROM.
+
+When you turn on the power, the computer prompts you to select:
+
+1. BASIC - Run the programming language BASIC, which is in ROM computer.
+
+2. SMP0 - Run the program from the memory module 1.
+
+3. SMP1 - Run the program from the memory module 2.
+
+Two memory modules can be installed in the computer. Memory module store 
+a programs and data. My computer contains 1 module.
+
+The memory module contains the same memory chips as the computer itself.
+The memory module contains 5x A573RU10 chips (analog 6216) with a total 
+capacity of 10 kilobytes. This is static memory. It needs electricity to 
+store data. Therefore, a battery is installed in the memory module. Batteries 
+last for half a year. The large chip in the memory module is the controller 
+that communicates with computer over a serial data bus, much like I2C. 
+Chipselect, clock, data lines.
+
+The computer is powered by 4 AA batteries or a power supply. Charger for 
+4x AA batteries and power supply included with a computer.
+
+For this computer, a color portable printer Electronica MK-92 was produced.
