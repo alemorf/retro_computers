@@ -1,0 +1,21 @@
+// Умножение A на D, результат в HL. BC портить нельзя
+
+void op_mul() {
+asm {
+  push b
+  lxi h, 0
+  mov e, d  ; de=d
+  mov d, l  
+  mvi c, 8
+op_mul1:
+  dad h
+  add a
+  jnc op_mul2
+    dad d
+op_mul2:
+  dcr c
+  jnz op_mul1
+pop_bc_ret:
+  pop b
+}
+}  
