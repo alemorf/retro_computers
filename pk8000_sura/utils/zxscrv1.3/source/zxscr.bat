@@ -1,0 +1,1 @@
+tasm -85 -b zxscr.asm zxscr.bin

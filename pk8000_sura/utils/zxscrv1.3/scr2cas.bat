@@ -1,0 +1,1 @@
+copy /B zxscr.bin+%1 ZXSCR.CAS

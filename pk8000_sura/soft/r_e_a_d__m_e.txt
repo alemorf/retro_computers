@@ -1,0 +1,26 @@
+Additional programs for Xobbi PK8000
+
+Examples of usage for Emulator (http://bashkiria-2m.narod.ru/ | Vesta):
+1. Normal loading - MSX-Basic format compatible
+EMU01_bas_SLALOM.cas
+To run: LOAD"SLALOM",R
+
+2. Fastest loading - Internal PK8000-Basic format
+EMU01_bas_SLALOM_csave.cas
+To run: CLOAD"SLALOM",R
+
+3. Internal PK8000-Assembler (Binary) format
+EMU01_hex_FIRE.cas
+To run: BLOAD"FIRE",R
+
+Notes 1:
+	These files are not the games, but they are libraries of words
+	for game EMU12_bas_FIELD_csave.cas :
+	EMU12_hex_LB1.cas
+	EMU12_hex_LB2.cas
+	EMU12_hex_LB3.cas
+	a) load game FIELD
+	b) load one of the libraries, for example: BLOAD"LB1"
+	c) F5 or type "RUN" to run Games FIELD
+
+More information: http://pk8000.narod.ru

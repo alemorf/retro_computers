@@ -1,0 +1,1 @@
+RMPLinker l@dance1.rmp ladanc >example2.log

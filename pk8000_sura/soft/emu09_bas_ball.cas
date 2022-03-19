@@ -1,0 +1,253 @@
+¦ÞºÌ}têêêêêêêêêêBALL  ¦ÞºÌ}t
+1 SCREEN1:COLOR 15,1,1:KEYOFF:UR=1:DIMN(50),R(50)
+3 DATA -32,-31,1,33,32,31,-1,-33
+4 FORT=1TO8:READDK(T):NEXT  
+5 DATA06,0A,16,17,C3,12,91,06,1B,16,0C,C3,12,91,16,03,06,03,F3,4A,DB,82,EE,80,D3,82,0D,C2,1A,91,05,C2,13,91,00,C9,F3,CD,89,91,3E,FF,D3,80,2¦ÞºÌ}t1,08,0E,0E,08,7E,0F,77,23,0D,C2,31,91,3E,FC,D3,80,00,00
+7 DATAF3,2A,10,90,23,22,10,90,7D,2F,C6,01,6F,7C,2F,CE,00,67,EB,21,DC,05,19,0E,06,7C,37,3F,1F,67,7D,1F,6F,0D,C2,58,91,EB,21,C2,02,19,3A,12,90,77,23,36,00,3C,FE,B0,C2,78,91,3E,AC,32,12,90,FB,C9,2A,10,9¦ÞºÌ}t0,EB,21,B0,FF,19,22,10,90,C9
+8 DATA2A,10,90,3E,05,BC,C0,3E,DC,BD,C0,3E,88,32,CC,43,C9
+9 FORI=0TO&H99:READA$:POKE&H9100+I,VAL("&H"+A$):NEXT
+10 D=1:PD=1:FORT=1TO10:MA(T)=&H0225:DX(T)=-&H01:DY(T)=-&H20:A(T)=0:NEXT:S=&H20
+11 NO=&H0C:DL=&H0A:AB=0:LA=&H02D8:¦ÞºÌ}tZA=&H02D8:L=0:PR=0
+12 POKE&H9010,0:POKE&H9011,0:POKE&H9012,172:POKE&H43CC,&H8E
+15 GOSUB 1600
+45 IFUR=1THEN GOSUB2000:GOSUB10750
+50 GOSUB3000:ONURGOSUB10050,10250,10400,10600,10700
+60 GOSUB 100:GOSUB 300
+70 IFLZ=1THENGOSUB400
+71 IFPR=1THENGOSUB2350
+¦ÞºÌ}t72 IFSK=1THENGOSUB300
+90 GOTO 60
+100 MM=USR(&H9124)
+103 IFVPEEK(MA(D))<>&HBBTHENPOKEMA(D),&HB8
+105 REM 1200
+110 N(D)=MA(D)+DX(D):IFVPEEK(N(D))<>&H20THENDX(D)=DX(D)*(-1):A(D)=1:NO=&H16:DL=&H0A:MM=USR(&H9100):GOSUB1000
+120 N(D)=MA(D)+DY(D):IFVPEEK(N(D)¦ÞºÌ}t)<>&H20THENDY(D)=DY(D)*(-1):A(D)=1:NO=&H16:DL=&H08:MM=USR(&H9100):GOSUB1000
+130 N(D)=MA(D)+DX(D)+DY(D):IFVPEEK(N(D))<>&H20ANDA(D)=0THENDX(D)=DX(D)*(-1):DY(D)=DY(D)*(-1):A(D)=1:NO=&H0C:DL=&H1C:MM=USR(&H9107):GOSUB1000
+140 IFVPEEK(MA(D)+DX(D)+DY(D))<>&H20T¦ÞºÌ}tHEN160
+150 POKE MA(D),&H20:MA(D)=MA(D)+DX(D)+DY(D):POKE MA(D),&HB8
+160 A(D)=0:D=D+1:IFD>PDTHEND=1
+170 RETURN
+300 A=STICK(0):IFA=0THEN360
+305 W=VPEEK(RA+DK(A)):IFW<>&H20ANDW<>KBANDW<>&HB3THEN350
+307 IFSTRIG(0)=1THENPOKEZA,&H20:S=&HBE:ZA=RA:GOTO 310
+3¦ÞºÌ}t08 S=&H20
+310 POKERA,S:RA=RA+DK(A):POKERA,&HA6
+350 RETURN
+360 IFSTRIG(0)=1ANDAB>0THENAB=AB-1:GOSUB1300:LZ=1:POKELA,&H20:LA=RA:G=0:RETURN
+365 GOTO 350
+400 POKELA,&H20:LA=LA-&H20:MZ=VPEEK(LA):POKERA,&HA6
+410 IFMZ=&HB9THENPOKERA,&HA6:LZ=0:LA=LA+&H20:RET¦ÞºÌ}tURN
+411 IFMZ=&H97THENKI=KI-1:IFKI=0THEN1055
+420 POKE LA,&HAB
+430 RETURN
+1000 Q=VPEEK(N(D))
+1010 IFQ=&H97THENKI=KI-1:WZ=N(D):GOSUB2200:GOSUB2300:IFKI=0THEN1055
+1011 IFQ=&HB3THENWZ=N(D):GOSUB2200:GOSUB2300
+1020 IFQ=&HC1THEN1200
+1050 RETURN
+1055 UR=U¦ÞºÌ}tR+1:L=0:BEEP:RESTORE10000:IFUR<=5THEN10 
+1056 CLS:BEEP:LOCATE3,11:PRINT"÷ïúøíé ó ðïìëé ðéòïöïë"
+1057 FORT=1TO3000:NEXT:RUN
+1200 FORT=1TO30:PRINT"ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ":NEXT:CLS:LOCATE5,5:COLOR 15,4,4:LOCATE4,10:PRINT"   éçòá ïëïîþåîá ":FORRR=0TO60¦ÞºÌ}t0:NEXT
+1220 RUN
+1300 FORRR=1TOAB
+1305 IF RR>ABTHEN GOTO 1330
+1310 POKERR*&H20+1,&HAB
+1320 NEXT
+1330 POKERR*&H20+1,0
+1500 RETURN
+1600 POKE&H400+21,&H13
+1610 POKE&H400+22,&H18
+1620 POKE&H400+23,&H1A
+1630 POKE&H400+20,&H12
+1640 POKE&H400+24,&H4F
+¦ÞºÌ}t1645 POKE&H400+18,&HF9
+1650 RETURN
+2000 FORL=1TO25
+2001 READN
+2002 FORT=&H800+N*8TO&H800+N*8+7
+2005 READA
+2006 POKET,A
+2007 NEXT:NEXT:RETURN
+2100 POKE&H910F,NO:POKE&H9111,DL:X=USR(&H910E):RETURN
+2200 FORT=&HB4TO&HB7:POKEWZ,T:POKE&H910F,(T-&H90):PO¦ÞºÌ}tKE&H9111,(T-&H70):X=USR(&H910E):NEXT:POKEWZ,&H20:RETURN
+2300 IFPR=1ORRND(1)<0.2THEN2320
+2310 KB=INT(6*RND(1)+&H41):ST=&H20:LE=N(D):PR=1:POKELE,KB
+2320 RETURN
+2350 IFVPEEK(LE)<>KBTHEN2410
+2360 POKELE,ST:ST=VPEEK(LE+&H20):IFST=&HB9ORST=&HC1THENPR=0:GOTO¦ÞºÌ}t2400
+2361 IFST=&HA6THEN2410
+2380 LE=LE+&H20:POKELE,KB
+2400 RETURN
+2410 IFST=&H97THENKI=KI-1:IFKI=0THEN1055
+2411 FORT=2TOPD:POKEMA(T),&H20:NO=T+&HA6:DL=&H30:GOSUB2100:NEXT:PD=1:D=1:PR=0:SK=0:LOCATE1,17:PRINTPE$(2):ON(KB-&H40)GOTO2420,2440,2460,2480,250¦ÞºÌ}t0,2520
+2420 AB=AB+1:GOSUB1300:RETURN
+2440 MM=USR(&H917D):RETURN
+2460 LOCATE1,17:PRINTPE$(1):RETURN
+2480 PD=PD+1:RETURN
+2500 T=&H0263
+2505 IFVPEEK(T)=&HB9THEN2515
+2506 IFVPEEK(T)=&H20THENPOKET,&HB3:GOTO 2515
+2510 T=T+1:GOTO 2505
+2515 RETURN
+2520 S¦ÞºÌ}tK=1:RETURN
+3000 CLS:SL$="óôáäéñ"+STR$(UR):LOCATE20,10:PRINT"±"
+3010 FORT=1TOLEN(SL$):BK$(T)=MID$(SL$,T,1):NEXT
+3020 FORI=1TOLEN(SL$):FORP=1TO2:NO=P+3:DL=12+P*5:GOSUB2100:NEXT:WZ=341:GOSUB2200
+3030 FORT=18TO(5+I)STEP-1:LOCATET,10:PRINTBK$(I)+" ":POKE&H9¦ÞºÌ}t10F,T*2:POKE&H9111,T:X=USR(&H910E)
+3050 NEXT:NEXT:LOCATE0,20:RETURN
+10000 DATA168,12,12,122,222,56,236,4,6
+10005 DATA169,12,12,56,94,88,28,20,32
+10010 DATA170,24,24,60,90,153,36,36,102
+10017 DATA172,96,96,188,246,56,110,64,192
+10018 DATA173,96,96,56,¦ÞºÌ}t244,52,112,80,8
+10020 DATA174,96,96,48,56,48,96,120,48
+10021 DATA175,96,96,56,244,52,112,80,40
+10030 DATA176,96,112,64,231,252,64,112,200
+10031 DATA177,6,14,2,231,63,2,14,19
+10032 DATA178,16,80,216,232,120,96,88,204
+10035 DATA 154,255,129,129,129,129¦ÞºÌ}t,129,129,255
+10036 DATA185,255,255,255,255,255,255,255,255
+10037 DATA160,198,214,238,108,124,170,170,255
+10038 DATA179,126,255,255,255,102,102,126,231
+10039 DATA180,29,38,73,109,89,34,28,0,181,73,42,0,107,0,42,73,0,182,73,0,0,73,0,0,73,0,183,8,0,0,65,0¦ÞºÌ}t,0,8,0
+10040 DATA166,126,153,153,255,255,153,153,126
+10041 DATA151,0,127,127,127,0,239,239,239
+10042 DATA187,24,102,66,129,129,66,102,24
+10043 DATA171,8,8,28,20,20,28,42,42
+10044 DATA190,102,255,255,102,102,255,255,102
+10050 PRINT"¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¦ÞºÌ}t¹¹¹¹¹¹¹¹"
+10055 PRINT"¹                      ¹  ¹"
+10060 PRINT"¹                      ¹  ¹"
+10065 PRINT"¹—————————————————————————¹"
+10070 PRINT"¹                         ¹"
+10075 PRINT"¹—————————————————————————¹"
+10080 PRINT"¹                      ¦ÞºÌ}t   ¹"
+10085 PRINT"¹                         ¹"
+10090 PRINT"¹————————¹¹¹¹¹¹¹¹¹————————¹"
+10095 PRINT"¹        ¹       ¹        ¹"
+10100 PRINT"¹        ¹       ¹        ¹"          
+10105 PRINT"¹        ¹  ¹¹¹  ¹        ¹"             
+10110 PRINT"¹   ¦ÞºÌ}t     ¹  ¹ ¹  ¹        ¹"              
+10115 PRINT"¹        ¹  ¹ ¹  ¹        ¹"
+10120 PRINT"¹        ¹¹¹¹ ¹¹¹¹        ¹"
+10125 PRINT"¹        ¹———————         ¹"
+10130 PRINT"¹        ¹———————         ¹"
+10135 PRINT"¹        ¹———————         ¹"
+10150 ¦ÞºÌ}tPRINT"¹    ¦   ¹———————       ¹¹¹"
+10155 PRINT"¹³ ³ ³ ³ ¹———————         ¹"
+10160 PRINT"¹ÁÁÁÁÁÁÁÁ¹———————         ¹"
+10165 PRINT"¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹"
+10166 PRINT"0..1..2..3..4..5..6..7..":KI=108
+10167 M$(1)=STRING$(8,192):M$(2)=STRING$(8,&HC1)¦ÞºÌ}t:AB=0:RA=&H0247:PE$(1)=STRING$(8,&HB3):PE$(2)=STRING$(8,&H20):WR=1500    
+10168 RETURN
+10170 DATA192,102,153,0,102,153,0,102,153,193,32,64,197,131,179,159,222,252
+10197 RETURN
+10250 PRINT"¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹"
+10255 PRINT"¹          —————      ¦ÞºÌ}t    ¹"
+10260 PRINT"¹          —————          ¹"
+10265 PRINT"¹  —————————————————————  ¹"
+10270 PRINT"¹  —       —————       —  ¹"
+10275 PRINT"¹  —       —————       —  ¹"
+10280 PRINT"¹  —  ¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹  —  ¹"
+10285 PRINT"¹  —  ¹       —     ¹  —  ¦ÞºÌ}t¹"
+10290 PRINT"¹  —  ¹       —     ¹—————¹"
+10295 PRINT"¹—————¹  ——————     ¹—————¹"
+10300 PRINT"¹—————¹  —    —     ¹—————¹"          
+10305 PRINT"¹—————¹  —    —     ¹—————¹"             
+10310 PRINT"¹—————¹  —  ¹¹¹¹    ¹  —  ¹"              
+10315¦ÞºÌ}t PRINT"¹     ¹—————¹——     ¹  —  ¹"
+10320 PRINT"¹     ¹  —  ¹       ¹  —  ¹"
+10325 PRINT"¹     ¹  —  ¹¹¹¹¹¹¹¹¹  —  ¹"
+10330 PRINT"¹     ¹  —     ———     —  ¹"
+10335 PRINT"¹     ¹  —     ———     —  ¹"          
+10350 PRINT"¹  ¦  ¹  ———————————————  ¹"¦ÞºÌ}t
+10355 PRINT"¹³ ³ ³¹        ———        ¹"
+10360 PRINT"¹ÁÁÁÁÁ¹        ———        ¹"
+10365 PRINT"¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹"
+10366 PRINT"0..1..2..3..4..5..6..7..":KI=147
+10367 M$(1)=STRING$(5,192):M$(2)=STRING$(5,&HC1):AB=0:RA=&H0245:PE$(1)=STRING$(5,&H¦ÞºÌ}tB3):PE$(2)=STRING$(5,&H20):WR=1500    
+10368 RETURN
+10390 RETURN
+10395 PRINT"0..1..2..3..4..5..6..7..":KI=152
+10400 PRINT"¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹"
+10405 PRINT"¹         ¹         ¹—   —¹"
+10410 PRINT"¹         ¹         ¹     ¹"    
+10415 PRINT"¦ÞºÌ}t¹ ——————  ¹ ——————  ¹     ¹"
+10420 PRINT"¹ —    —  ¹ —    —  ¹—   —¹"
+10425 PRINT"¹ —  ¹ —  ¹ —  ¹ —  ¹  ¹¹¹¹"
+10430 PRINT"¹ —  ¹ —  ¹ —  ¹ —  ¹     ¹"
+10435 PRINT"¹ —  ¹ —  ¹ —  ¹ —  ¹     ¹"
+10440 PRINT"¹————¹————¹————¹————¹—————¹"
+10445 PRINT"¹———¦ÞºÌ}t—¹————¹————¹————¹—————¹"
+10450 PRINT"¹————¹————¹————¹————¹—————¹"
+10455 PRINT"¹————¹————¹————¹————¹—————¹"
+10460 PRINT"¹    ¹ —  ¹ —  ¹ —  ¹ —   ¹"
+10465 PRINT"¹    ¹ —  ¹ —  ¹ —  ¹ —   ¹"
+10470 PRINT"¹    ¹ —  ¹ —  ¹ —  ¹ —   ¹"
+10475 PRINT"¹    ¹ —¦ÞºÌ}t  ¹ —  ¹ —  ¹ —   ¹"
+10480 PRINT"¹    ¹ —  ¹ —  ¹ —  ¹ —   ¹"
+10485 PRINT"¹    ¹ —    —  ¹ —    —   ¹"          
+10490 PRINT"¹  ¦ ¹ ——————  ¹ ——————   ¹"
+10495 PRINT"¹³ ³ ¹         ¹          ¹"
+10500 PRINT"¹ÁÁÁÁ¹         ¹          ¹"
+10505 PRINT"¹¹¦ÞºÌ}t¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹"
+10510 PRINT"0..1..2..3..4..5..6..7..":KI=152
+10515 M$(1)=STRING$(4,192):M$(2)=STRING$(4,193):AB=0:RA=&H0245:PE$(1)=STRING$(4,&HB3):PE$(2)=STRING$(4,&H20):WR=1500    
+10520 RETURN
+10600 PRINT"¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹"
+1060¦ÞºÌ}t2 PRINT"¹                         ¹"
+10603 PRINT"¹                         ¹"
+10604 PRINT"¹  ———¹  ¹———————¹  ¹———  ¹"    
+10606 PRINT"¹  ———¹  ¹———————¹  ¹———  ¹"
+10608 PRINT"¹  ———¹  ¹———————¹  ¹———  ¹"
+10609 PRINT"¹  ¹¹¹¹  ¹¹¹¹¹¹¹¹¹  ¹¹¹¹  ¹"      ¦ÞºÌ}t   
+10610 PRINT"¹        —————————        ¹"
+10612 PRINT"¹        —————————        ¹"
+10614 PRINT"¹        —————————        ¹"
+10616 PRINT"¹        —————————        ¹"
+10618 PRINT"¹        —————————        ¹"
+10620 PRINT"¹  ¹¹¹¹  ¹¹¹¹¹¹¹¹¹  ¹¹¹¹  ¹" ¦ÞºÌ}t           
+10622 PRINT"¹     ¹  ¹       ¹  ¹     ¹"
+10624 PRINT"¹     ¹  ¹       ¹  ¹     ¹"
+10626 PRINT"¹     ¹  ¹       ¹  ¹     ¹"
+10628 PRINT"¹                         ¹"
+10634 PRINT"¹                         ¹"          
+10636 PRINT"¹  ¦       ¦ÞºÌ}t               ¹"
+10638 PRINT"¹³ ³ ³ ³ ³ ³ ³ ³ ³ ³ ³ ³ ³¹"
+10640 PRINT"¹ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ¹"
+10642 PRINT"¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹"
+10644 PRINT"0..1..2..3..4..5..6..7..":KI=84
+10646 M$(1)=STRING$(25,192):M$(2)=STRING$(25,193):AB=0:RA=&H0245:P¦ÞºÌ}tE$(1)=STRING$(25,&HB3):PE$(2)=STRING$(25,&H20):WR=1500
+10648 RETURN
+10700 PRINT"¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹"
+10702 PRINT"¹      —            —     ¹"
+10703 PRINT"¹      —            —     ¹"
+10704 PRINT"¹      —            —     ¹"    
+10706 PRINT"¹ ¦ÞºÌ}t  ¹——¹——¹¹¹  ¹¹¹——¹——¹  ¹"
+10708 PRINT"¹———¹——¹——¹      ¹——¹——¹——¹"
+10709 PRINT"¹   ¹——¹——¹ ———— ¹——¹——¹  ¹"         
+10710 PRINT"¹           ————          ¹"
+10712 PRINT"¹           ————          ¹"
+10714 PRINT"¹   ¹—————¹ ———— ¹—————¹  ¹"
+10716 PRI¦ÞºÌ}tNT"¹   ¹—————¹      ¹—————¹  ¹"
+10718 PRINT"¹———¹—————¹¹¹  ¹¹¹—————¹——¹"
+10720 PRINT"¹   ¹————————  ————————¹  ¹"            
+10722 PRINT"¹   ¹————————  ————————¹  ¹"
+10724 PRINT"¹   ¹¹¹¹¹¹¹¹¹  ¹¹¹¹¹¹¹¹¹  ¹"
+10726 PRINT"¹                         ¹"
+1¦ÞºÌ}t0728 PRINT"¹                         ¹"
+10734 PRINT"¹                         ¹"          
+10736 PRINT"¹  ¦                      ¹"
+10738 PRINT"¹³ ³ ³ ³ ³ ³ ³ ³ ³ ³ ³ ³ ³¹"
+10740 PRINT"¹ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ¹"
+10742 PRINT"¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¹¦ÞºÌ}t¹¹"
+10744 PRINT"0..1..2..3..4..5..6..7..":KI=118
+10746 M$(1)=STRING$(25,192):M$(2)=STRING$(25,193):AB=0:RX=&H0245:PE$(1)=STRING$(25,&HB3):PE$(2)=STRING$(25,&H20):WR=1500
+10748 RETURN
+10750 CLS:FORT=1TO22:PRINT"———————————————————————————":NEXT:LOCATE8,¦ÞºÌ}t9:PRINT"           ":LOCATE8,11:PRINT"           ":GOSUB10800:FORRR=0TO500:NEXT:RETURN
+10800 QJ$="  í ñ þ é ë  ":FORQJ=1TOLEN(QJ$):LOCATE6+QJ,10:PRINT"*";CHR$(29);:GOSUB10820:PRINT"A"CHR$(29);:GOSUB10820:PRINT"B"CHR$(29);MID$(QJ$,QJ,1);:BEEP:GOSUB10820:¦ÞºÌ}tNEXT
+10810 RETURN
+10820 FORQD=0TO10:NEXT:RETURN
+50000 ENDR080RLOCATERQR0:c:1RHEX$ENDR080RR0RR
+

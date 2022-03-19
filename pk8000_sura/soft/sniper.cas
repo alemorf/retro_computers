@@ -1,0 +1,122 @@
+¦ήΊΜ}tκκκκκκκκκκSNIPER¦ήΊΜ}t
+80 SCREEN1:COLOR 15,1,1:KEY OFF:WIDTH25
+90 GOSUB 2000
+100 GOSUB 3000
+110 BM=69:SC=0:X=14:DX=1:ST=1:GL=0
+150 GOSUB 4000
+160 GOSUB 5000
+1000 'SHIP MOVE
+1005 LOCATE X,20:PRINT "   "
+1010 X=X+DX
+1015 IF X=0 THEN DX=1
+1020 IF X=21 THEN DX=-1
+1050 L¦ήΊΜ}tOCATE X,20:PRINT"abc"
+1055 'MASSIVE MOVE
+1060 IF FL<>0 THEN L=L+1:VPOKEFL+4,104+L:IF L=3 THENVPOKEFL+4,32:FL=0
+1065 'BOMB MOVE
+1070 IF FB=0 THEN GOTO 1130
+1075 LOCATE CX,Y:PRINT " "
+1080 Y=Y-1
+1085 IF Y<4 THEN GOSUB 1500:FB=0:GOTO 1105 
+1095 IF VPE¦ήΊΜ}tEK((32*Y)+CX+4)=112 THEN GL=GL+1:FB=0:SC=SC+10:FL=(32*Y)+CX:L=-1:LOCATE6,0:PRINT STR$(SC):GOSUB 1500:GOTO 1105
+1100 LOCATE CX,Y:PRINT"x"
+1105 IF HI<SC THEN FH=1:HI=SC:LOCATE15,0:PRINT HI
+1110 GOTO 1170
+1130 IF STRIG(0)=0 THEN GOTO 1170
+1135 'υσταξοχλα¦ήΊΜ}t
+1140 CX=X+1:Y=19:LOCATE CX,Y:PRINT "x"
+1145 FB=1:BM=BM-1:LOCATE6,1:PRINT "   ":LOCATE 6,1:PRINT STR$(BM)
+1170 GOTO 1000
+1500 IF BM<>0 THEN1590
+1505 IF GL>65 THEN ST=ST+1:LOCATE 16,1:PRINT STR$(ST):LOCATE CX,Y:PRINT " ":FB=0:FL=0:BM=69:GL=0:GOSUB 6000¦ήΊΜ}t:ON ST GOSUB 1520,1520,1520,1530,1540,1550:GOTO 1590                    
+1510 GOTO 1570
+1520 'LP]ͺX
+1521 LOCATE 0,4         
+1522 PRINT" p p p p p p p p p p p   ";                
+1523 PRINT"  p p p p p p p p p p p  ";
+1524 PRINT" p p p p p p p p p p¦ήΊΜ}t p   ";
+1525 PRINT"  p p p p p p p p p p p  ";
+1526 PRINT" p p p p p p p p p p p   ";
+1527 PRINT"  p p p p p p p p p p p  ";
+1528 PRINT"                         ";
+1529 RETURN
+1530 'LP]ͺX
+1531 LOCATE 0,4         
+1532 PRINT" ppp  pp  pp  pp  ppppp ¦ήΊΜ}t ";                
+1533 PRINT" ppp    ppppp     p ppp  ";
+1534 PRINT" ppp p   p   p     ppp   ";
+1535 PRINT" ppp                ppp  ";
+1536 PRINT" ppp  pppp ppp    pppp   ";
+1537 PRINT" ppp    ppppp ppp        ";
+1538 PRINT" ppp                    ¦ήΊΜ}t ";
+1539 RETURN
+1540 CLS:LOCATE1,11:PRINT"   νομοδεγ,λυπι σεβε    ";
+1541 PRINT:PRINT"       λοξζετλυ !!";:FOR I=0 TO 3000:NEXT:GOTO 100
+1570 CLS:LOCATE7,11:PRINT"GAME  OVER"
+1580 FOR I=0 TO 2000:NEXT:GOTO 100
+1590 RETURN
+2000 DATA 97,0,0,63,125,62,¦ήΊΜ}t3,0,0
+2005 DATA 98,28,62,255,255,255,255,126,255
+2010 DATA 99,0,0,252,190,126,192,0,0
+2015 DATA 120,0,0,8,28,28,8,0,0
+2020 DATA 112,28,42,65,127,65,42,28,0
+2025 DATA 105,73,42,0,107,0,42,73,0
+2030 DATA 104,29,38,73,109,89,34,28,0
+2035 DATA 106,73,0,¦ήΊΜ}t0,73,0,0,73,0
+2040 DATA 107,8,0,0,65,0,0,8,0
+2045 DATA 108,60,66,153,161,161,153,66,60
+2050 DATA 100,126,255,191,191,191,191,255,126
+2054 RESTORE 2000
+2055 FOR I=0 TO 10
+2065 READ N
+2070 FOR J=0 TO 7
+2075 READ M:VPOKE 2048+N*8+J,M
+2080 NEXT:NEXT
+¦ήΊΜ}t2085 FOR I=65 TO 65+26:FOR J=0 TO 7:X=VPEEK(I*8+J+2048):X=X OR X/2:VPOKEI*8+J+2048,X:NEXT:NEXT
+2087 FOR I=48 TO 57:FOR J=0 TO 7:X=VPEEK(I*8+J+2048):X=X OR X/2:VPOKEI*8+J+2048,X:NEXT:NEXT
+2150 VPOKE1024+12,&H18
+2155 VPOKE1024+13,&H1F
+2160 VPOKE1024+15,&¦ήΊΜ}tH12
+2165 VPOKE1024+14,&H14
+2166 PRINT"ξαφνιτε F3 ι χχοδ":RETURN
+3000 CLS:PRINT"                         ";
+3001 PRINT"         THE             ";
+3002 PRINT"                         ";
+3005 PRINT"ddd d  d ddd ddd ddd ddd ";
+3006 PRINT"d   dd d  d  d¦ήΊΜ}t d d   d d ";
+3007 PRINT"ddd dddd  d  ddd dd  d d ";
+3008 PRINT"  d d dd  d  d   d   dd  ";
+3010 PRINT"ddd d  d ddd d   ddd d d ";
+3011 PRINT"                         ";
+3012 PRINT"      COPYRIGHT  BY      ";
+3013 PRINT"                         ";
+3¦ήΊΜ}t014 PRINT"        l CONCORD        ";
+3015 PRINT"                         ";
+3016 PRINT"       CORPORATION       ";
+3017 PRINT"                         ";
+3018 PRINT"           1988          ";
+3019 PRINT"                         ";
+3020 PRINT"      ¦ήΊΜ}t                   ";
+3021 PRINT"                         ";
+3022 PRINT"                         ";
+3023 PRINT"     PUSH SPACE KEY      ";
+3030 IF STRIG(0)=0 THEN GOTO 3030
+3040 CLS:RETURN
+4000 CLS
+4005 PRINT" SCORE 0     HI 0        ";
+4006 PRINT"¦ήΊΜ}t BOMBS 69 STAGE 1        ";
+4007 PRINT"      l CONCORD 88       ";
+4008 LOCATE 0,21
+4009 PRINT                            
+4012 PRINT
+4015 LOCATE 16,0:PRINT STR$(HI)
+4017 RETURN
+5000 LOCATE0,4              
+5005 PRINT" pppppppppppppppppppppp  ";
+5¦ήΊΜ}t010 PRINT"                         ";
+5020 PRINT" pppppppppppppppppppppp  ";
+5025 PRINT"                         ";
+5030 PRINT" pppppppppppppppppppppp  ";
+5040 RETURN
+6000 LOCATE9,6:PRINT"STAGE";STR$(ST):FOR I=0 TO 1300:NEXT:RETURN
+

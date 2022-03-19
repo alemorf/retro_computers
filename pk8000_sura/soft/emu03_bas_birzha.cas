@@ -1,0 +1,212 @@
+¦ήΊΜ}tκκκκκκκκκκBIRZHA¦ήΊΜ}t
+40 WIDTH(40)
+50 KEY OFF
+60 COLOR 9,4,4
+70 CLS
+71 PRINT:PRINT:PRINT:PRINT:PRINT" ΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏΏ":PRINT" Ώ":PRINT" Ώ"  
+72 PRINT" Ώ   ΏΏΏΏ Ώ   Ώ ΏΏΏ  Ώ Ώ Ώ   ΏΏ";SPC(6);"Ώ"
+73 PRINT" Ώ   Ώ    Ώ   Ώ Ώ  Ώ Ώ Ώ Ώ  Ώ  Ώ";SPC(5);"Ώ"¦ήΊΜ}t
+74 PRINT" Ώ   ΏΏΏΏ Ώ  ΏΏ Ώ  Ώ  ΏΏΏ   Ώ  Ώ ";SPC(4);"Ώ"
+75 PRINT" Ώ   Ώ  Ώ Ώ Ώ Ώ ΏΏΏ  Ώ   Ώ  Ώ  Ώ ";SPC(4);"Ώ"
+76 PRINT" Ώ   Ώ  Ώ ΏΏ  Ώ Ώ    Ώ   Ώ  ΏΏΏΏ ";SPC(4);"Ώ"
+77 PRINT" Ώ   ΏΏΏΏ Ώ   Ώ Ώ    Ώ   Ώ  Ώ  Ώ "SPC(4);"Ώ":PRINT" Ώ";SPC(35);"Ώ":PRINT" Ώ";S¦ήΊΜ}tPC(35);"Ώ":PRINT" Ώ";SPC(35);"Ώ":PRINT" Ώ":PRINT" ";:FOR I=1 TO 36 :PRINT"Ώ";:NEXT:PRINT:PRINT:PRINTSPC(10);"χόν ,οασυ 1988Η."
+78 FOR I=1 TO 2000 :NEXT
+80 CLS:PRINT:PRINT:PRINT:COLOR 3,4,4
+95 DIM T1 (20)
+110 DIM S(5)
+111 DIM P(5)
+112 DIM Z(5)
+113 DI¦ήΊΜ}tM C(5)
+125 X=0
+126 Z5=0
+130 A=INT((RND(X)/10)*100+.5)/100
+140 T5=0
+150 X9=0
+160 N1=0
+170 N2=0
+180 E1=0
+190 E2=0
+210 PRINT "θοτιτε ιξστςυλγιΰ?(δα- 1,ξετ-0)";
+220 INPUT Z9
+230 PRINT
+240 PRINT
+250 IF Z9=1 GOTO  260
+252 IF Z9=0 GOTO450
+260 PRIN¦ήΊΜ}tT"ότο πςοηςαννα ιηςω χ βιςφυ."
+265 PRINT"χαν βυδετ χωδαξο 10000 ι χω "
+270 PRINT"νοφετε πολυπατψ ιμι πςοδαχατψ αλγιι."
+275 PRINT"γεξα αλγικ βυδετ ηεξεςιςοχατψσρ "
+280 PRINT"σμυώακξο ι ποτονυ δαξξαρ νοδεμψ"
+285 PRINT"ξε οτςαφαετ ςεαμψξοκ οβσταξοχλι"
+2¦ήΊΜ}t90 PRINT"ξα βιςφε.ταβμιγα ινεΰύιθσρ αλγικ,ιθ"  
+295 PRINT"γεξα  ι ώισμο δεξεη πο 10.000"
+300 PRINT"χ χαϋεν ποςτζεμε βυδετ πεώατατψσρ"
+305 PRINT"δαμεε σμεδυετ νετλα,ηδε χω"
+310 PRINT"ιξδιγιςυετε σδεμλυ.πολυπαετε"
+315 PRINT"αλγιι-ξαπεώατακτε +NNN,πςοδαε¦ήΊΜ}tτε"
+320 PRINT":-NNN,ηδε NNN ότο συννα."
+325 PRINT"υσμυηι ναλμεςα -βεσπματξωε ξα"
+330 PRINT"χσε σδεμλι.ϊανετιν ώτο εσμι"
+335 PRINT"λυςσ αλγικ υπαμ δο ξυμρ ,οξ"
+340 PRINT"νοφετ σξοχα στατψ πομοφιτεμψξων"
+350 PRINT:PRINT
+410 PRINT"      ----υδαώι !!!--¦ήΊΜ}t--"
+415 IF INKEY$="" THEN 415
+450 S(2)=85
+460 S(3)=150
+470 S(4)=140
+480 S(5)=110
+500 T8=INT (4.99*RND (1)+1)
+520 IF RND (1)>.5 GOTO 550
+530 A=-A
+550 GOSUB 1760
+570 FOR I=1 TO 5
+580 P(I)=0
+590 Z(I)=0
+600 NEXT I
+605 CLS
+610 PRINT
+620 PRINT
+6¦ήΊΜ}t40 C=10000
+660 PRINT"     αλγιρ";"                  ";"ξαιν.";" ";"γεξα"
+670 PRINT "INT.BALLISTIC MISSILES-     ";"IBM  ";S(1)
+680 PRINT"RED CROSS OF AMERICA-       ";"RCA  ";S(2)
+690 PRINT"LICNTENSTEIN,BUMRAP & JOKE- ";"LBJ  ";S(3)
+700 PRINT"AMERICAN¦ήΊΜ}t BANKRUPT CO.-      ";"ABC  ";S(4)
+710 PRINT"CENSURED BOOKS STORE-       ";"CBS  ";S(5)
+720 PRINT
+740 Z4=Z5                        
+750 Z5=0
+760 T=0
+770 FOR I=1 TO 5
+780 Z5=Z5+S(I)
+790 T=T+S(I)*P(I)
+800 NEXT I
+810 Z5= INT (100*(Z5/5)+.5)/100
+820¦ήΊΜ}t Z6= INT (Z5*(Z6/100)+.5)/100
+840 D=T+C
+850 IF X9>0 THEN 880
+860 PRINT"σςεδξικ λυςσ βιςφι ξψΰ-κοςλα:"Z5
+870 GOTO 890
+880 PRINT"σςεδξρρ στοινοστψ αλγικ:"Z5
+881 PRINT"σςεδξεε ιϊνεξεξιε λυςσα:"Z6
+890 PRINT
+900 T= INT (100*T+.5)/100
+910 PRINT"οβύαρ στ¦ήΊΜ}tοινοστψ χαϋιθ αλγικ $";T
+920 C= INT (100*C+.5)/100
+930 PRINT"ξαμιώξωε δεξψηι             $";C
+940 D= INT (100*D+.5)/100
+950 PRINT"χαϋ οβύικ λαπιταμ           $";D
+960 PRINT
+970 IF X9=0 THEN 1020
+980 PRINT
+1020 REM INPUT TRANSACTIONS
+1030 PRINT"λαλ¦ήΊΜ}tοχω χαϋι σδεμλι σ"
+1040 PRINT"IBM";
+1050 INPUT Z(1)
+1060 PRINT
+1070 PRINT"RCA";
+1080 INPUT Z(2)
+1090 PRINT
+1100 PRINT"LBJ";
+1110 INPUT Z(3)
+1120 PRINT
+1130 PRINT"ABC";
+1140 INPUT Z(4)
+1150 PRINT
+1160 PRINT"CBS";
+1170 INPUT Z(5)
+1180 PRINT
+1¦ήΊΜ}t200 P5=0
+1220 S5=0
+1230 FOR I=1TO 5
+1240 Z(I)= INT (Z(I)+.5)
+1250 IF Z(I)<=0 THEN 1280
+1260 P5=P5+Z(I)*S(I)
+1270 GOTO 1320
+1280 S5=S5-Z(I)*S(I)
+1290 IF -Z(I)<=P(I) THEN 1320
+1300 PRINT"χω πωταετεσψ πεςεπςοδατψ αλγιι ποπςο-":PRINT"βυκτε σξοχα."
+13¦ήΊΜ}t10 GOTO 1030
+1320 NEXT I
+1340 T5=P5+S5
+1360 B5=INT (.01*T5*100+.5)/100
+1390 C5=C-P5-B5+S5
+1400 IF C5>=0 THEN 1430
+1410 PRINT"χω τςατιτε $";-C5;" ";"βομψϋε,ώεν ποϊχομρΰτ χαϋι ξαμιώξωε σςεδστχα."
+1420 GOTO 1030
+1430 C=C5
+1450 FOR I=1 TO 5
+1460 P(I)¦ήΊΜ}t=P(I)+Z(I)
+1470 NEXT I
+1490 GOSUB 1760
+1520 FOR I=1 TO 20
+1530 NEXT I
+1540 CLS
+1550 PRINT T1(10);"*** Kοξεγ δξρ τοςηοχμι ***"       
+1560 PRINT
+1570 PRINT
+1580 IF X9<1 THEN 1590
+1590 PRINT"αλγιρ  ";"γεξα/ώ.  ";"λομ.  ";"λυςσ  ";"ιϊν.λυςσα "
+1595¦ήΊΜ}t LOCATE 0,5
+1600 PRINT"IBM   ";S(1):LOCATE 16,5:PRINTP(1):LOCATE 21,5:PRINTS(1)*P(1):LOCATE 30,5:PRINTC(1)
+1610 PRINT"RCA   ";S(2):LOCATE 16,6:PRINTP(2):LOCATE 21,6:PRINTS(2)*P(2):LOCATE 30,6:PRINTC(2)
+1620 PRINT"LBJ   ";S(3):LOCATE 16,7:PRINTP(3):LOCAT¦ήΊΜ}tE 21,7:PRINTS(3)*P(3):LOCATE 30,7:PRINTC(3)
+1630 PRINT"ABC   ";S(4):LOCATE 16,8:PRINTP(4):LOCATE 21,8:PRINTS(4)*P(4):LOCATE 30,8:PRINTC(4)
+1640 PRINT"CBS   ";S(5):LOCATE 16,9:PRINTP(5):LOCATE 21,9:PRINTS(5)*P(5):LOCATE 30,9:PRINTC(5)
+1650 X9=1
+1660 PRI¦ήΊΜ}tNT
+1670 PRINT 
+1680 GOTO 720
+1760 IF N1> 0 THEN 1810
+1770 I1=INT (4.99*RND (1)+1)
+1780 N1=INT (4.99*RND (1)+1)
+1790 E1=1
+1810 IF N2> 0 THEN 1860
+1820 I2=INT (4.99*RND (1)+1)
+1830 N2=INT (4.99*RND (1)+1)
+1840 E2=1
+1860 N1=N1-1
+1870 N2=N2-1
+1890¦ήΊΜ}t FOR I=1 TO 5
+1900 X1=RND (1)
+1910 IF X1>.25 THEN 1940
+1920 X1=.25
+1930 GOTO 2020 
+1940 IF X1>.5 THEN 1970 
+1950 X1=.5
+1960 GOTO 2020 
+1970 IF X1>.75 THEN 2000
+1980 X1=.75
+1990 GOTO 2020
+2000 X1=0
+2020 W3=0
+2030 IF E1<1 THEN  2080
+2040 IF INT¦ήΊΜ}t (I1+.5)<> INT (I+.5) GOTO  2080
+2060 W3=10
+2070 E1=0
+2080 IF E2<1 THEN 2140 
+2090 IF INT (I2+.5)<> INT (I+.5) THEN  2140
+2110 W3=W3-10
+2120 E2=0
+2140 C(I)=INT (A*S(I))+X1+INT (3-6*RND (1)+.5)+W3
+2150 C(I)=INT(100*C(I)+.5)/100
+2160 S(I)=S(I)+C(I)¦ήΊΜ}t
+2170 IF S(I)> 0 THEN 2210
+2180 C(I)=0
+2190 S(I)=0
+2200 GOTO 2220
+2210 S(I)=INT (100*S(I)+.5)/100
+2220 NEXT I
+2240 T8=T8-1
+2250 IF T8<1 THEN 2290
+2260 RETURN
+2290 T8=INT (4.99*RND (1)+1)
+2300 A= INT (( RND (1)/10)*100+.5)/100
+2310 S4= RND (1)
+2¦ήΊΜ}t320 IF S4<=.5 THEN 2340
+2330 A=-A
+2340 RETURN
+2350 PRINT"ξαδεΰσψ,χω ποχεσεμιμισψ!!"
+2360 END
+

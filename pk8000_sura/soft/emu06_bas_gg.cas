@@ -1,0 +1,118 @@
+¦ÞºÌ}têêêêêêêêêêGG    ¦ÞºÌ}t
+0 CLEAR300:KEYOFF:GOSUB10000:GOSUB9000
+1 LO=-1:CL=0:C1=0:XU=5:YU=8:XD=250:YD=190:Q=1:RC=12
+2 X=100:Y=100:X1=-1:Y1=-1:INK$=" "
+3 N$=CHR$(&H0B):FL$=CHR$(&H02)
+4 Y$=CHR$(&H19):FR$=CHR$(&H06)
+5 M$=CHR$(&H18):FB$=CHR$(08)
+6 R$=CHR$(&H0E):FF$=CHR$(13)
+7¦ÞºÌ}t DL$=CHR$(&H7F)
+8 IS$=CHR$(&H12)
+9 CS$=CHR$(&H0C)
+10 L$=CHR$(&H0F)
+11 DIM GR(53),V(3070),W(3070),Y(3070)
+12 COLOR 0,12,0
+13 SCREEN2:COLOR 15,0,0
+14 GET-(90,7),GR(0)
+20 PSET(X,Y),CL:IF STRIG(0) THEN LO=-LO:COLOR 15,0,0
+21 ST=STICK(0)
+22 IF ST>0 AN¦ÞºÌ}tD LO=1 THEN PRESET (X,Y)
+25 ON ST GOTO 100,200,300,400,500,600,700,800
+26 INK$=INKEY$:IF INK$="" THEN 21
+27 IF INK$=Y$ THEN LO=0:COLOR 0,15,0:GOTO 21
+28 IF INK$=N$ THEN LO=1:COLOR 0,15,7:GOTO 21
+29 IF INK$=M$ THEN PUT(0,0),GR(0):PSET(0,0),C1:INPUT " C¦ÞºÌ}tolor";CL:X1=-1:GOTO 39 
+30 IF INK$=DL$ THEN XU=X:YU=Y:X=X+1:X1=-1:GOTO 39
+31 IF INK$=L$ THEN GOSUB 1000:X1=-1:GOTO 39
+32 IF INK$=R$ THEN GOSUB 2000:X1=-1:GOTO 39
+33 IF INK$=FL$ THEN RC=(RC+15) AND 15:GOSUB 5000:GOTO 39
+34 IF INK$=FR$ THEN RC=(RC+1) AN¦ÞºÌ}tD 15:GOSUB 5000:GOTO 39
+35 IF INK$=FB$ THEN LINE(XU,YU)-(X,Y),CL,B:GOTO 39
+36 IF INK$=FF$ THEN LINE(XU,YU)-(X,Y),CL,BF:GOTO 39
+37 IF INK$=IS$ THEN XD=X:YD=Y:X=X-1:X1=-1:GOTO 39
+38 IF NOT INK$="" THEN PRINT INK$;
+39 IF X1<>X OR Y1<>Y THEN PUT(0,0),GR(0¦ÞºÌ}t):PSET(0,0),C1:PRINT " ";X;Y:X1=X:Y1=Y:PSET(X,Y),CL
+90 GOTO 21
+100 Y=Y-1:GOTO 20
+200 X=X+1:Y=Y-1:GOTO 20
+300 X=X+1:GOTO 20
+400 X=X+1:Y=Y+1:GOTO 20
+500 Y=Y+1:GOTO 20
+600 X=X-1:Y=Y+1:GOTO 20
+700 X=X-1:GOTO 20
+800 X=X-1:Y=Y-1:GOTO 20
+1000 PUT(0,0),G¦ÞºÌ}tR(0):PSET(0,0),C1:PRINT" In?";:GOSUB 3000:PRINT Q
+1001 XS(Q)=X
+1002 YS(Q)=Y
+1003 R(Q)=RC
+1005 PUT(0,0),GR(0):PSET(0,0),C1:PRINT" Do"
+1010 ON Q GOTO 1100,1200,1300
+1100 GET(5,0)-(250,190),V(0)
+1110 RETURN
+1200 GET(5,0)-(250,190),W(0)
+1210 RETURN
+1¦ÞºÌ}t300 GET(5,0)-(250,190),Y(0)
+1310 RETURN
+2000 PUT(0,0),GR(0):PSET(0,0),C1:PRINT" Out?";:GOSUB 3000:PRINTQ:X=XS(Q):Y=YS(Q):CL=C(Q):COLOR CL,R(Q),0:C1=(R(Q)+7) AND 15:SCREEN2
+2005 PUT(0,0),GR(0):PSET(0,0),C1:PRINT" Do"
+2010 ON Q GOTO 2100,2200,2300
+2100 ¦ÞºÌ}tPUT(0,0),V(0)
+2110 RETURN
+2200 PUT(0,0),W(0)
+2210 RETURN
+2300 PUT(0,0),Y(0)
+2310 RETURN
+3000 INK$=INKEY$:IF INK$="" THEN 3000
+3010 IF INK$=DL$ THEN Q=1:RETURN
+3020 IF INK$=IS$ THEN Q=2:RETURN
+3030 IF INK$=CS$ THEN Q=3:RETURN
+3040 GOTO3000
+5000 C¦ÞºÌ}tL=(RC+7) AND 15:C1=CL:COLOR CL,RC,0:SCREEN2:X1=-1
+5020 PUT(0,0),GR(0):PSET(0,0),C1:PRINT " FC:";RC:FOR I=1 TO 200
+5030 RETURN
+9000 CLS:PRINT"     XWWWWWWY   XWWWWWWY   XWWWWWWY"
+9010 PRINT"     VôÏÞËÁ1V   VôÏÞËÁ2V   V óls  ¦ÞºÌ}tV"
+9020 PRINT"     TWWWWWWS   TWWWWWWS   TWWWWWWS"
+9030 PRINT"     V òÉÓ1 V   V òÉÓ2 V   V òÉÓ3 V"
+9040 PRINT"     ZWWWWWW[   ZWWWWWW[   ZWWWWWW[":PRINT
+9050 PRINT"     XWWWWWWY   XWWW¦ÞºÌ}tWWWY   XWWWWWWY"
+9060 PRINT"     V ðÅÒÏ V   V ÷×ÅÒÈV   V ðÅÒÏ V"
+9070 PRINT"     V ÓÔÉÒ.V   V      V   V ÒÉÓ. V"
+9080 PRINT"     ZWWWWWW[   ZWWWWWW[   ZWWWWWW["
+9090 PRINT"     XWWWWWWY   XWWW¦ÞºÌ}tWWWY   XWWWWWWY"
+9100 PRINT"     V ÷ÌÅ×ÏV   V ã×ÅÔ V   V÷ÐÒÁ×ÏV"
+9110 PRINT"     V      V   V ÐÅÒÁ V   V      V"
+9120 PRINT"     ZWWWWWW[   ZWWWWWW[   ZWWWWWW["
+9130 PRINT"     XWWWWWWY   XWWW¦ÞºÌ}tWWWY   XWWWWWWY"
+9140 PRINT"     V  æÏÎ V   V ÷ÎÉÚ V   V  æÏÎ V"
+9150 PRINT"     V   -  V   V      V   V   +  V"
+9160 PRINT"     ZWWWWWW[   ZWWWWWW[   ZWWWWWW["
+9190 PRINT"     XWWWWWWWWWWWY  ¦ÞºÌ}t  XWWWWWWWWWWWY"
+9200 PRINT"     V ÷×ÏÄ (IN) V    V÷Ù×Ï× (OUT)V"
+9210 PRINT"     V  ÒÉÓÕÎËÁ  V    V  ÒÉÓÕÎËÁ  V"
+9220 PRINT"     ZWWWWWWWWWWW[    ZWWWWWWWWWWW["
+9250 PRINT"       << îÁÖÍÉÔÅ ÌÀÂÕÀ ËÌÁ×ÉÛÕ >¦ÞºÌ}t>"
+9300 IF INKEY$="" THEN 9300
+9310 CLS:BEEP:LOCATE15,10:PRINT"öÄÉÔÅ !"
+9400 RETURN
+10000 CLS
+10010 PRINT"      ››››››"
+10020 PRINT"      ››   ›"
+10030 PRINT"      ›    ›"
+10040 PRINT"      ›"
+10050 PRINT"      ›"
+10060 PRINT"      ›"
+10070 PRIN¦ÞºÌ}tT"      ›"
+10080 PRINT"      ›"
+10090 PRINT"      ›"                   
+10100 PRINT"      ›"
+10110 PRINT"      ›  ›››  › ››  ››      ›"
+10120 PRINT"      ›    ›  ››      ›    › ›"
+10130 PRINT"      ›    ›  ›    ››››    ›  "
+10140 PRINT"      ›   ›› ¦ÞºÌ}t ›    ›  ›  ›››››"
+10150 PRINT"      ››››››  ›    ›››››   ›"
+10160 PRINT"                           ›"
+10170 PRINT"                           ›"
+10180 PRINT:PRINT:PRINT:PRINT"          èÁÒØËÏ× - 1989"
+10200 FOR I=1 TO 600:NEXT:RETURN
+

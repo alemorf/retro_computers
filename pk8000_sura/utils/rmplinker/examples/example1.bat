@@ -1,0 +1,1 @@
+RMPLinker e-type.rmp >example1.log

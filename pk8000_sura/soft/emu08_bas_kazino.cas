@@ -1,0 +1,232 @@
+╕ч╨л}tЙЙЙЙЙЙЙЙЙЙKAZINO╕ч╨л}t
+5 CLEAR:DIM K$(36,8):DIM N(36),K(35)
+10 SCREEN1:COLOR 15,1,3:KEYOFF:WIDTH31:GOTO 590
+20 FOR I=1 TO 8:READ K,L:POKE &H400+K,L:NEXT
+30 DATA 0,248,2,9,8,248,9,248,16,48,17,48,18,51,19,57
+50 A=&H800+8:GOSUB 290
+60 A=&H800+16:GOSUB 290
+80 A=&H800+48:GOS╕ч╨л}tUB 290
+90 A=&H800+56:GOSUB 290
+100 A=&H800+64:GOSUB 290
+110 A=&H800+72:GOSUB 290
+120 A=&H800+80:GOSUB 290
+130 A=&H800+88:GOSUB 290
+140 A=&H800+96:GOSUB 290
+150 A=&H800+104:GOSUB 290
+160 A=&H800+112:GOSUB 290
+170 A=&H800+120:GOSUB 290
+180 A=&H800+╕ч╨л}t128:GOSUB 290
+190 A=&H800+136:GOSUB 290
+200 A=&H800+144:GOSUB 290
+210 A=&H800+152:GOSUB 290
+220 A=&H800+160:GOSUB 290
+222 A=&H800+168:GOSUB 290
+224 A=&H800+176:GOSUB 290
+230 A=&H800+192:GOSUB 290
+240 A=&H800+200:GOSUB 290
+250 A=&H800+208:GOSUB 290╕ч╨л}t
+260 A=&H800+216:GOSUB 290
+270 A=&H800+528:GOSUB 290
+280 A=&H800+536:GOSUB 290:RETURN
+290 FOR I=A TO A+7:READ B:POKE I,B:NEXT:RETURN
+300 DATA 32,96,160,32,32,32,248,0
+310 DATA 112,136,152,168,200,136,112,0
+320 DATA 48,64,128,240,136,136,112,0
+330 D╕ч╨л}tATA 248,136,16,32,32,32,32,0
+340 DATA 239,199,171,1,171,239,199,255
+350 DATA 239,199,131,1,131,239,199,255
+360 DATA 207,191,127,15,119,119,143,255
+370 DATA 7,119,239,223,223,223,223,255
+380 DATA 143,119,119,143,119,119,143,255
+390 DATA 143,119,119,13╕ч╨л}t5,247,239,159,255
+400 DATA 223,159,95,223,223,223,7,255
+410 DATA 143,119,103,87,55,119,143,255
+420 DATA 255,255,255,255,255,255,255,255
+430 DATA 255,254,252,248,240,224,192,128
+440 DATA 128,192,224,240,248,252,254,255
+450 DATA 255,127,63,31,15,7,3,1╕ч╨л}t
+460 DATA 1,3,7,15,31,63,127,255
+462 DATA 255,255,255,255,0,0,0,0
+464 DATA 0,0,0,0,255,255,255,255
+470 DATA 199,239,239,239,111,111,159,255
+480 DATA 31,175,183,183,183,175,31,255
+490 DATA 119,111,95,63,95,111,119,255
+500 DATA 223,143,119,119,7,119,11╕ч╨л}t9,255
+510 DATA 112,136,136,112,136,136,112,0
+520 DATA 112,136,136,120,8,16,96,0
+530 RESTORE 2100:FOR N=1 TO 36:FOR Y=1 TO 8:READ K$(N,Y):NEXT:NEXT:RETURN
+540 FOR Y=1 TO 8:LOCATE X+2,Y:PRINT K$(N,Y):NEXT:X=X+7:RETURN
+590 GOSUB 20
+600 GOSUB 530:LOCATE ╕ч╨л}t0,23:FOR I=1 TO 31:PRINT"\";:NEXT:PRINT"\";:FOR I=1 TO 28:PRINT" ";:NEXT:PRINT "\"
+610 PRINT "\ P  P  TPP PPPP P P  P TPPR \"
+620 PRINT "\ P TQ TQ P    P P PR P P  P \"
+630 PRINT "\ PTQ  P  P   TQ P PSRP ╕ч╨л}tP  P \"
+640 PRINT "\ PSR  PPPP  TQ  P P SP P  P \"
+650 PRINT "\ P SR P  P TQ   P P  P P  P \"
+660 PRINT "\ P  P P  P PPPP P P  P SPPQ \"
+670 PRINT "\";:FOR  I=1 TO 28:PRINT " ";:NEXT:PRINT "\":FOR I=╕ч╨л}t1 TO 31:PRINT "\";:NEXT:PRINT:PRINTTAB(2)"         1990г.            ":GOSUB 1390
+680 FOR I=1 TO 4:GOSUB 1300:NEXT:RESTORE 690:FOR J=1 TO 8:READ N:POKE &H400+2,N:FOR K=1 TO 10:BEEP:NEXT:FOR K=1 TO 200:NEXT:NEXT:FOR I=1 TO 1000:NEXT
+690 DATA 12,4,5,7,2,1╕ч╨л}t0,8,9
+695 IF INKEY$="" THEN 695
+700 C=25000:GOSUB 1380:U=0:ER=0:O=0
+710 BN=INT(RND(1)*2*C)+2*C
+720 PRINT:PRINT TAB(2)"В БАНКЕ";BN:PRINT:PRINT TAB(2)"У ВАС";C:X=0:WW=0:SS=0
+770 PRINT:PRINT TAB(2)"ВАША СТАВКА";:GOSUB 1410:PRINT:PRINT:PRINTTAB(2)"(число+╕ч╨л}tВВОД)":LOCATE T,Y:INPUT S
+780 IF S>C THEN PRINT:PRINT TAB(2) "У Вас нет таких денег!!":GOTO 770
+790 IF S<100THEN PRINT TAB(2)"С такими ставками играют":PRINT TAB(2)"в подворотне,а не у нас!":GOTO 770
+800 FOR I=1 TO 500:NEXT:GOSUB 1380:W=0:FOR I=1 TO 200╕ч╨л}t:NEXT:LOCATE 0,12:PRINT TAB(4)"СДАЮ  ВАМ":FOR I=1 TO 500:NEXT
+810 WW=WW+1:IF WW=5 THEN GOSUB 1390:X=0
+820 GOSUB 1300:W=W+V:W$=STR$(W)
+830 A$="0":A$=RIGHT$(W$,1):IF W=11 OR W= 12  OR W= 13  OR W= 14 THEN 850                     
+835 IF A$="1" THEN PRINT╕ч╨л}t:PRINT:PRINT:PRINT TAB(2)"У Вас";W;"очко  ":GOTO 870
+840 IF A$="2" OR A$="3" OR A$="4" THEN PRINT:PRINT:PRINT:PRINTTAB(2)"У Вас";W;"очка  ":GOTO 870
+850 PRINT:PRINT:PRINT:PRINT TAB(2)"У Вас";W;"очков"
+870 IF W>21 THEN 1000
+880 PRINT:PRINT TAB(2)"ЕЩЕ КА╕ч╨л}tРТУ?";:GOSUB 1410
+885 G$=INKEY$:IF G$="" THEN 885
+890 IF G$="n" OR G$="N" OR G$="н" OR G$="Н" THEN GOSUB 1430:GOTO 920
+900 IF G$="d" OR G$="D" OR G$="д" OR G$="Д" THEN GOSUB1420:GOTO 810
+910 GOSUB 1310:FOR I=1 TO 1000:NEXT:ER=ER+1:Y=CSRLIN::LOCATE 0,Y-╕ч╨л}t1:FOR I=1 TO 31:PRINT" ";:NEXT:LOCATE 0,Y-3:IF ER<2 THEN 880
+915 CLS:PRINT:PRINT:PRINT:PRINT TAB(4)"С Вами невозможно играть!":PRINT:PRINT TAB(4)"Вы жмете не те клавиши!":FOR I=1 TO 2000:NEXT
+916 RESTORE 30:GOTO 5
+920 FOR I=1 TO 500:NEXT:GOSUB 1390:M=0:╕ч╨л}tX=0:FOR I=1 TO 200:NEXT:LOCATE 0,12:PRINT TAB(18)"СДАЮ  СЕБЕ":FOR I=1 TO 500:NEXT
+930 SS=SS+1:IF SS=5 THEN GOSUB 1390:X=0
+940 FOR I=1 TO 700:NEXT:GOSUB 1300:M=M+V:M$=STR$(M):IF M= 11 OR M= 12  OR M= 13  OR M= 14 THEN 970
+950 A$=RIGHT$(M$,1):IF A$="1" TH╕ч╨л}tEN PRINT:PRINT:PRINT:PRINT:PRINT:PRINT TAB(14)"У меня";M;"очко  ":GOTO 980             
+960 IF A$="2" OR A$="3" OR A$="4" THEN PRINT:PRINT:PRINT:PRINT:PRINT:PRINTTAB(14)"У меня";M;"очка  ":GOTO 980
+970 PRINT:PRINT:PRINT:PRINT:PRINT:PRINT TAB(14)"У меня";╕ч╨л}tM;"очков"
+975 IF M=W THEN 1000
+980 IF M<18 THEN 930
+990 IF M>21 OR M<W THEN 1010
+1000 PRINT:PRINT TAB(10) "ВЫ ПРОИГРАЛИ";S:P=P+S:C=C-S:BN=BN+S:U=U+1:GOTO 1020
+1010 PRINT:PRINT TAB(10)"ВЫ ВЫИГРАЛИ";S:Q=Q+S:C=C+S:BN=BN-S:O=O+1
+1020 PRINT:PRINT TAB(4) "╕ч╨л}tСыграем еще?";:GOSUB 1410
+1025 G$=INKEY$:IF G$="" THEN 1025
+1030 IF G$="n" OR G$="N" OR G$="н" OR G$="Н" THEN GOSUB 1430::GOTO 1290
+1040 IF G$="d" OR G$="D" OR G$="д" OR G$="Д" THEN GOSUB 1420:FOR I=1 TO 500:NEXT:GOTO 1060
+1050 GOSUB 1310:GOTO 1020
+10╕ч╨л}t60 IF BN<=0 THEN GOSUB 1380:GOTO 710
+1070 IF C<=0 THEN PRINT:PRINT TAB(1)"Сожалею,но Ваш счет исчерпан.":GOTO 1290
+1080 T=INT(RND(1)*4):IF T=2 THEN GOSUB 1380:GOTO 720
+1090 CLS:COLOR 15,8,5:POKE &H400+2,132:FOR I=1 TO 40:BEEP:NEXT
+1092 LOCATE 0,5:PRINT╕ч╨л}t TAB(6)"В казино нагрянула":LOCATE 0,7:PRINT"  PPP PPP TPP P P P P P P PUP  ":LOCATE 0,8:PRINT"  P P P P P P PTP P P PTP PVP  ":LOCATE 0,9:PRINT"  P P PPP P P PQP PPP PQP T P  ":LOCATE 0,10:PRINT"       ╕ч╨л}t             Q          
+1094 FOR I=1 TO 3:POKE &H400+2,138:FOR J=1 TO10:BEEP:NEXT:FOR K=1 TO100:NEXT:POKE &H400+2,132:FOR K=1 TO100:NEXT:NEXT
+1120 LOCATE 0,12:PRINT TAB(4)"Вы обвиняетесь в торговле":PRINT TAB(4)"наркотиками." 
+1125 PRINT:PRINT TAB(4)"╕ч╨л}tДадите шерифу взятку?";:GOSUB 1410
+1126 G$=INKEY$:IF G$="" THEN 1126
+1130 IF G$="n" OR G$="N" OR G$="н" OR G$="Н" THEN GOSUB 1430:Z=0:GOTO 1190
+1140 IF G$="d" OR G$="D" OR G$="д" OR G$="Д" THEN GOSUB 1420:GOTO 1160
+1150 GOSUB 1310:GOTO 1125
+1160 PRINT╕ч╨л}t:PRINT TAB(4)"Сколько";:INPUT Z
+1165 C=C-Z
+1170 IF Z<C/10 THEN PRINT:PRINT TAB(4)"Шериф остался недоволен.":PRINT TAB(4)"ЭТО ОПАСНО!":FOR I=1 TO 1000:NEXT:GOTO 1250
+1180 PRINT:PRINT TAB(4) "Шериф удовлетворен.":GOTO 1260
+1190 PRINT:PRINT TAB(4)"Подадит╕ч╨л}tе в суд?";:GOSUB 1410
+1195 G$=INKEY$:IF G$="" THEN 1195
+1200 IF G$="n" OR G$="N" OR G$="н" OR G$="Н" THEN GOSUB 1430:GOTO 1225
+1210 IF G$="d" OR G$="D" OR G$="д" OR G$="Д"THEN GOSUB 1420:GOTO 1225
+1220 GOSUB 1310:GOTO 1190
+1225 IF Z=0 THEN 1250
+1230 ╕ч╨л}tT=RND(1):IF T<0.5 THEN 1250
+1240 FOR I=1 TO 500:NEXT:GOSUB 1400:PRINT:PRINT TAB(4)"Суд Вас оправдал.":PRINT TAB(4)"Вам выплачивается";H:C=C+H:GOTO 1260
+1250 FOR I=1 TO 500:NEXT:GOSUB 1400:PRINT:PRINT TAB(4)"Суд признал Вас виновным.":PRINT TAB(4)"Судебны╕ч╨л}tе издержки -";H:C=C-H
+1255 GOSUB 1400:PRINT TAB(4)"Штраф -";H:C=C-H
+1260 PRINT:PRINT TAB(2)"Нажмите любую клавишу"
+1270 IF INKEY$=""THEN 1270
+1280 IF C>0 THEN CLS:COLOR 15,1,3:RESTORE 30:GOSUB 20:GOSUB 1380:GOTO 720
+1285 CLS:COLOR 15,1,1:LOCATE 0,7:PR╕ч╨л}tINT TAB(4)"Вы признаны":PRINT TAB(4)"неплатежеспособным.":PRINT:PRINT TAB(2)"Ваше имущество пойдет":PRINT:PRINT TAB(2)"с молотка,а Вы лишены права":PRINT:PRINT TAB(2)"посещения игорных заведений.":FOR I=1 TO 6000:NEXT:RESTORE 30:GOTO 5
+1290 FOR I=1 TO 200╕ч╨л}t0:NEXT: GOSUB 1320:PRINT:PRINT TAB(2)"Нажмите любую клавишу"
+1292 IF INKEY$="" THEN 1292
+1295 GOTO 5
+1300 K=INT(RND(1)*36)+1
+1301 FOR J=1TOD:IF K(J)=K THEN1300
+1302 NEXT:D=D+1:IF D=36THEND=1
+1303 K(D)=K
+1304 ON K GOSUB 2000,2001,2002,2003,2004,2005,╕ч╨л}t2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026,2027,2028,2029,2030,2031,2032,2033,2034,2035
+1305 RETURN
+1310 PRINT:PRINT TAB(2)"Вы нажали не ту клавишу":RETURN
+1320 CLS:R=U+O:R$=STR$(R):U$=STR$(U╕ч╨л}t):O$=STR$(O):A$=RIGHT$(R$,1):IF A$="2" OR A$="3" OR A$="4" THEN PRINT:PRINT TAB(3) "Мы сыграли";R;"раза":GOTO 1340
+1330 PRINT:PRINT TAB(3)"Мы сыграли";R;"раз"
+1340 A$=RIGHT$(O$,1):IF A$="2" OR A$="3" OR A$="4" THEN PRINT:PRINT TAB(2)"Вы выиграли";O;"раза╕ч╨л}t -";Q:GOTO 1360
+1350 PRINT:PRINT TAB(2)"Вы выиграли";O;"раз -";Q
+1360 A$=RIGHT$(U$,1):IF A$="2" OR A$="3" OR A$="4" THEN PRINT TAB(2)"Вы проиграли";U;"раза -";P:RETURN
+1370 PRINT TAB(2)"Вы проиграли";U;"раз -";P:RETURN
+1380 CLS
+1390 LOCATE 0,0:FOR I=1╕ч╨л}t TO 310:PRINT"≈";:NEXT:FOR I=1 TO 31:PRINT"°";:NEXT:RETURN
+1400 H=INT(RND(1)*5000+1):RETURN
+1410 T=POS(0):Y=CSRLIN:PRINT"     ":LOCATE T,Y:RETURN
+1420 LOCATE T+2,Y:PRINT"да":RETURN
+1430 LOCATE T+2,Y:PRINT"нет":RETURN
+2000 N=1:GOSUB 540:V=6:RETURN
+200╕ч╨л}t1 N=2:GOSUB 540:V=6:RETURN
+2002 N=3:GOSUB 540:V=6:RETURN
+2003 N=4:GOSUB 540:V=6:RETURN
+2004 N=5:GOSUB 540:V=7:RETURN
+2005 N=6:GOSUB 540:V=7:RETURN
+2006 N=7:GOSUB 540:V=7:RETURN
+2007 N=8:GOSUB 540:V=7:RETURN
+2008 N=9:GOSUB 540:V=8:RETURN
+2009 N=10:G╕ч╨л}tOSUB 540:V=8:RETURN
+2010 N=11:GOSUB 540:V=8:RETURN
+2011 N=12:GOSUB 540:V=8:RETURN
+2012 N=13:GOSUB 540:V=9:RETURN
+2013 N=14:GOSUB 540:V=9:RETURN
+2014 N=15:GOSUB 540:V=9:RETURN
+2015 N=16:GOSUB 540:V=9:RETURN
+2016 N=17:GOSUB 540:V=10:RETURN
+2017 N=18:╕ч╨л}tGOSUB 540:V=10:RETURN
+2018 N=19:GOSUB 540:V=10:RETURN
+2019 N=20:GOSUB 540:V=10:RETURN
+2020 N=21:GOSUB 540:V=2:RETURN
+2021 N=22:GOSUB 540:V=2:RETURN
+2022 N=23:GOSUB 540:V=2:RETURN
+2023 N=24:GOSUB 540:V=2:RETURN
+2024 N=25:GOSUB 540:V=3:RETURN
+2025 N=╕ч╨л}t26:GOSUB 540:V=3:RETURN
+2026 N=27:GOSUB 540:V=3:RETURN
+2027 N=28:GOSUB 540:V=3:RETURN
+2028 N=29:GOSUB 540:V=4:RETURN
+2029 N=30:GOSUB 540:V=4:RETURN
+2030 N=31:GOSUB 540:V=4:RETURN
+2031 N=32:GOSUB 540:V=4:RETURN
+2032 N=33:GOSUB 540:V=11:RETURN
+2033 N╕ч╨л}t=34:GOSUB 540:V=11:RETURN
+2034 N=35:GOSUB 540:V=11:RETURN
+2035 N=36:GOSUB 540:V=11:RETURN
+2100 DATA "@@@@@","FD@D@","@@@@@","@D@D@","@@@@@","@D@D@","@@@@F","@@@@@"
+2101 DATA "@@@@@","FC@C@","@@@@@"╕ч╨л}t,"@C@C@","@@@@@","@C@C@","@@@@F","@@@@@"
+2102 DATA "@@@@@","JH@H@","@@@@@","@H@H@","@@@@@","@H@H@","@@@@J","@@@@@"
+2103 DATA "@@@@@","JI@I@","@@@@@","@I@I@","@@@@@"╕ч╨л}t,"@I@I@","@@@@J","@@@@@"
+2104 DATA "@@@@@","GD@D@","@@D@@","@D@D@","@@@@@","@D@D@","@@@@G","@@@@@"
+2105 DATA "@@@@@","GC@C@","@@C@@","@C@C@","@@@@@","@C@C@","@@@@G"╕ч╨л}t,"@@@@@"
+2106 DATA "@@@@@","KH@H@","@@H@@","@H@H@","@@@@@","@H@H@","@@@@K","@@@@@"
+2107 DATA "@@@@@","KI@I@","@@I@@","@I@I@","@@@@@","@I@I@","@@@@K","@@@@@"
+2108 DATA "╕ч╨л}t@@@@@","BD@D@","@@D@@","@D@D@","@@@@@","@@D@@","@D@DB","@@@@@"
+2109 DATA "@@@@@","BC@C@","@@C@@","@C@C@","@@@@@","@@C@@","@C@CB","@@@@@"
+2110 DATA "@@@@@","LH@H@","@@╕ч╨л}tH@@","@H@H@","@@@@@","@@H@@","@H@HL","@@@@@"
+2111 DATA "@@@@@","LI@I@","@@I@@","@I@I@","@@@@@","@@I@@","@I@IL","@@@@@"
+2112 DATA "@@@@@","CD@D@","@@D@@","@D@D@","@D╕ч╨л}t@D@","@@@@@","@D@DC","@@@@@"
+2113 DATA "@@@@@","CC@C@","@@C@@","@C@C@","@C@C@","@@@@@","@C@CC","@@@@@"
+2114 DATA "@@@@@","MH@H@","@@H@@","@H@H@","@H@H@","@@@@@","@H@H╕ч╨л}tM","@@@@@"
+2115 DATA "@@@@@","MI@I@","@@I@@","@I@I@","@I@I@","@@@@@","@I@IM","@@@@@"
+2116 DATA "@@@@@","AB@D@","@@D@@","@D@D@","@D@D@","@@D@@","@D@D@","@@@@@"
+2117 DAT╕ч╨л}tA "@@@@@","AB@C@","@@C@@","@C@C@","@C@C@","@@C@@","@C@C@","@@@@@"   
+2118 DATA "@@@@@","NO@H@","@@H@@","@H@H@","@H@H@","@@H@@","@H@H@","@@@@@"
+2119 DATA "@@@@@","NO@╕ч╨л}tI@","@@I@@","@I@I@","@I@I@","@@I@@","@I@I@","@@@@@"
+2120 DATA "@@@@@","J@@@J","D@@@D","@@J@@","@@D@@","J@@@J","D@@@D","@@@@@"
+2121 DATA "@@@@@","J@@@J","C@@@C","@@J@@","@╕ч╨л}t@C@@","J@@@J","C@@@C","@@@@@"
+2122 DATA "@@@@@","X@@@X","H@@@H","@@X@@","@@H@@","X@@@X","H@@@H","@@@@@"
+2123 DATA "@@@@@","X@@@X","I@@@I","@@X@@","@@I@@","X@@@X","I@╕ч╨л}t@@I","@@@@@"
+2124 DATA "@@@@@","D@@@D","D@@@D","@@D@@","@@D@@","D@@@D","D@@@D","@@@@@"
+2125 DATA "@@@@@","D@@@D","C@@@C","@@D@@","@@C@@","D@@@D","C@@@C","@@@@@"
+2126 DATA "@╕ч╨л}t@@@@","Y@@@Y","H@@@H","@@Y@@","@@H@@","Y@@@Y","H@@@H","@@@@@"
+2127 DATA "@@@@@","Y@@@Y","I@@@I","@@Y@@","@@I@@","Y@@@Y","I@@@I","@@@@@"
+2128 DATA "@@@@@","K@@@K","D@╕ч╨л}t@@D","@@K@@","@@D@@","K@@@K","D@@@D","@@@@@"
+2129 DATA "@@@@@","K@@@K","C@@@C","@@K@@","@@C@@","K@@@K","C@@@C","@@@@@"
+2130 DATA "@@@@@","Z@@@Z","I@@@I","@@Z@@","@@I@@","╕ч╨л}tZ@@@Z","I@@@I","@@@@@"
+2131 DATA "@@@@@","Z@@@Z","H@@@H","@@Z@@","@@H@@","Z@@@Z","H@@@H","@@@@@"
+2132 DATA "@@@@@","A@@@A","D@@@D","@@A@@","@@D@@","A@@@A","D@@@D","@@╕ч╨л}t@@@"
+2133 DATA "@@@@@","A@@@A","C@@@C","@@A@@","@@C@@","A@@@A","C@@@C","@@@@@"
+2134 DATA "@@@@@","[@@@[","H@@@H","@@[@@","@@H@@","[@@@[","H@@@H","@@@@@"   
+2135 DATA "@@@@╕ч╨л}t@","[@@@[","I@@@I","@@[@@","@@I@@","[@@@[","I@@@I","@@@@@"
+
