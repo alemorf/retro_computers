@@ -1,0 +1,53 @@
+Этот файл записан на кассете Computer Elektronika MS1502 "Program Games#3" 1992. Кассета Orwo 60.
+
+Содержание кассеты:
+
+Сторона А:		Сторона Б:
+Arknow			CrDig
+N.Presid.b		книга.b
+N_Presid.b		saper.b
+Goody			MoonBugs
+Conquest		Пирамида.b
+Blaster			Пирамида.b
+Frogger			CopyS.b
+Flight			Arkanoid.b
+			Arkanoid.b
+			Piton_2.b
+			Piton_3.b
+			Piton_3.b
+
+Файлы проверены на считывание и запуск.
+На сайт выкладываются только файлы представляющие интерес. Программные заготовки, учебные программки и прочее в таком роде, оставлю при себе :)
+
+________________________________________________________________________
+
+Дамп кассеты, последующая обработка и разбивка на файлы, - Александр Болтаевский, 2012 г. 
+http://pk-info.ru
+
+Замечания и предложения можно писать на E-Mail: boltaevsky@inbox.ru, либо на форумы http://www.phantom.sannata.ru, http://zx.pk.ru, http://www.old-games.ru, - в соответствующих темах и в личные сообщения.
+
+
+Информация о ПК и эмуляция.
+---------------------------
+
+Прогресс эмуляции в MESS, сообщения об ошибках, ссылки на новые билды и т.д.:
+
+http://www.phantom.sannata.ru/forum/index.php?t=5830 
+http://zx.pk.ru/showthread.php?t=13908 
+http://www.old-games.ru/forum/showthread.php?t=46612
+http://forums.bannister.org/ubbthreads.php?ubb=showflat&Number=79866#Post79866
+
+Документация на МС1502:
+http://comp.disneyjazz.net/index.html?action=w_podrazdela&id_podrazdel=138&id_soderjanie=74
+
+Эмуляция МС1502 в MESS с поддержкой магнитофона и клавиатуры, начиная с билда 0.146 r15633 (http://mess.dorando.at/svn/?rev=15633). 
+
+Авторы эмуляции: shattered и SoftCat.
+
+Релизы MESS 0.146u2 и 0.146u3 - ещё не поддерживают [полноценно] МС1502. /27.04.12/
+
+Скачать новые билды - MESS SVN:
+http://bobz38.free.fr/mess_autobuild/index.php
+http://www.emucr.com/search/label/MESS?&max-results=12
+http://mess.dorando.at/svn/ (информация по билдам)
+http://www.mess.org/ (основной сайт)

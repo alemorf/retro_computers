@@ -1,0 +1,12 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : Project [Connecting.PrjPCB]
+   Generated File[Connecting.TXT]
+   Generated File[Connecting.LDP]
+   Generated File[Connecting.DRR]
+
+
+Files Generated   : 3
+Documents Printed : 0
+
+Finished Output Generation At 22:15:21 On 04.12.2017

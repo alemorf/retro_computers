@@ -1,0 +1,15 @@
+CAMtasticDXP Drill Report
+Serial Number:0000-00-00000
+Drill File: D:\Project\Electro\Переходник\Project Outputs for Connecting\cam.drl
+Format: 4.4
+Units: Metric (mm.)
+Step & Repeat Codes Used: NO
+
+
+TOOL		SIZE		COUNT
+====		======		=====
+
+ 1 		0.7112		45
+ 2 		0.9000		14
+ 3 		1.0000		126
+ 4 		2.8000		2
