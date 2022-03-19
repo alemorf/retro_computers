@@ -1,0 +1,26 @@
+Electronica NC-8010 (Электроника НЦ-8010)
+
+Year:	≤1981
+RAM:	32 kB
+CPU:	K1801VE1
+Graph:	512x256x2
+
+"Electronica NT-8010" is a prototype of the BK0010 computer. A computer 
+"Electronica NT-8010" was produced in only a few copies. You can look at this
+computer in the museums of Angstrem or Sitronics.
+
+Until ~1980, NII TT processors and microcontrollers had their own command set. 
+Probably the computer "Electronica NT-8010" uses a microcontroller K1801VE1 as
+a central processor. The K1801VE1 microcontroller has a command set ENC-80T.
+The microcontroller has 2 kilobytes ROM and 256 bytes RAM. It is interesting
+that microcontroller has a 16 bit multiplication command.
+
+After ~1980, the "Research Institute of Precision Technologies" switched to
+the PDP-11 command set. Ordered or on their own initiative, this history is
+silent. They redid 16 bit microcontroller K1801VE1 with the ENC-80T command set
+to 16 bit microprocessor K1801VM1 with PDP-11 command set. They removed ROM and
+RAM. But in the K1801VM1 microprocessor left programmable timer, similar in
+function to timers of any microcontroller. For example, it can count the
+pulses coming to the processor pin.
+
+The BK0010 computer uses the new K1801VM1 microprocessor.
