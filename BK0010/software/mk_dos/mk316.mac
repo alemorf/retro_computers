@@ -1,0 +1,1248 @@
+;<MKDOS	v3.15> Last correction : Date 06/03/95 Time 03:00:44
+;Corrected by ED & BD
+
+	.LINK	120000
+
+VERS=100000+315.
+LOAD=126000
+LENDIR=4300
+BLOK=LOAD+11000-66
+STEK2=BLOK
+NAM=306
+BL=314
+SZ=316
+
+START:	BR	ST1
+	BR	E36
+	.WORD	VERS
+BLK:	.WORD	BLOK
+SUBTEK:	.BYTE	0	;текущий подкаталог
+SUBOLD:	.BYTE	0	;подк.в	другой панели
+DEV:	.BYTE	0	;текущее устройство
+SUBDIR:	.BYTE	0	;временный подкаталог
+DIR:	.WORD	LOAD
+	.WORD	INIDRV,EMT6
+RWBLK:	.WORD	INOUT
+RDDIR:	.WORD	RDDIR2,DIRFIN,DIRPRI
+	.WORD	FRFIN,CREAT,DELETE,DIRF
+SAVDIR:	.WORD	SAVDI2,EMT20,PRINAM,TXT1
+	.WORD	STROKA,SOUND,OCTOUT,DECOUT
+	.WORD	TST,TST2,ERROR
+TSTEP:	.WORD	1000
+PANEL:	.BYTE	2,3
+SCREEN:	.WORD	0		;перехват  EMT16
+STEK:	.WORD	STEK2
+DRIVER:	.BLKW	6
+USER:	.WORD	STARTS
+NONDOS:	.WORD	0		;Перехват  "Non	Dos Disk"
+	.WORD	FRFIN2
+	.WORD	CREAT2
+OVERWR:	.BYTE	1		;AutoOverwrite,	1-off
+PRED:	.BYTE	0		;Predelete 1-off
+FLOP:	.BYTE	1		;1 - 80	tracks flop
+PALET:	.BLKB	1		;Резервный байт
+SY:	.BYTE	0		;Диск загрузки системы	 @:
+DK:	.BYTE	0		;привод	для оверлеев	 !:
+SORTIR:	.BYTE	0,0		;типы сортировки в панелях
+	.EVEN
+LD0:	.WORD	0		;смещение (для LD)
+LD1:	.WORD	0		;смещ. для операции (временное)
+LD2:	.WORD	0
+
+ST1:	CLR	SCREEN
+	CMP	@#100036,#120002
+	BEQ	1
+	MOV	#TRAP,@#30
+	BR	1$
+1:	MOV	#E14,@#100014
+1$:	MOV	@PC,R1
+5$:	CALL	BIT100
+	BNE	2$
+	SOB	R1,5$
+SITO:	CLR	@#177130
+	MOV	#LOAD,DIR
+	EMT	14
+	JSR	R1,TXT1
+	.ASCIZ	<234>/MKDOS v3.15/<234><12>
+	.EVEN
+	HALT
+2$:	CALL	USER2
+	MOV	USER,R5
+	BEQ	4$
+	CALL	@R5
+4$:	JMP	ZP
+
+TRAP:	MOV	R5,-(SP)
+	MOV	2(SP),R5
+	MOV	-(R5),R5
+	CMP	R5,#104036
+	BEQ	1$
+	CMP	R5,#104014
+	BEQ	2$
+	CALL	@174000(R5)
+	BR	3$
+1$:	CALL	E36
+	BR	3$
+2$:	CALL	E14
+	MOV	#TRAP,@#30
+3$:	MOV	(SP)+,R5
+	RTI
+
+E36:	MOV	R5,-(SP)
+	MOV	SP,R5
+	MOV	STEK,SP
+	MOV	R5,-(SP)
+	MOV	@#4,-(SP)
+	JSR	R4,@#110346
+	MOV	R1,@#NAM
+	MOV	#TR4,@#4
+	CALL	IO
+	CLR	@BLK
+	CLR	@#177130
+	TST	@#177662
+	JSR	R4,@#110362
+	MOV	(SP)+,@#4
+	MOV	(SP)+,SP
+	MOV	(SP)+,R5
+	RETURN
+
+E14:	CALL	@#100140
+USER2:	MOV	#DRIVER,R5
+	MOV	(R5)+,@(R5)+
+	MOV	(R5)+,@(R5)+
+	MOV	(R5)+,@(R5)+
+RTS:	RTS	PC
+
+TR4:	MOV	STEK,SP
+	SUB	#20,SP
+	BR	12$
+
+DDEV:	.BYTE	4,204
+	.ASCII/:-?@!/		;.ASCII/:-QN?@!/
+	.EVEN
+
+IO:	CLRB	1(R1)
+	CLRB	@#52
+	MOVB	SUBTEK,SUBDIR
+	MOV	LD0,LD1
+	MOV	BLK,R3
+	MOVB	DEV,R4
+	MOV	#DDEV,R5
+	CMPB	(R1),(R5)+	;4
+	BEQ	1$
+	CMPB	(R1),(R5)+	;204
+	BEQ	1$
+	CMPB	7(R1),(R5)+	;#':
+	BNE	2$
+	MOVB	6(R1),R0
+	CALL	TST2
+	CMPB	R0,(R5)+	;-
+	BEQ	3$
+	;	CMPB	R0,(R5)+	;Q
+	;	BEQ	4$
+	;CMPB	R0,(R5)+	;N
+	;BEQ	RTS
+	CMPB	R0,(R5)+	;?
+	BEQ	5$
+	CMPB	R0,(R5)+	;+	SY:
+	BEQ	6$
+	CMPB	R0,(R5)+	;!	DK:
+	BNE	7$
+	MOVB	DK,R0
+	BNE	8$
+6$:	MOVB	SY,R0
+	BR	8$
+3$:	MOVB	#200,(R1)
+	BR	9$
+5$:	BR	MENU		;JMP	MENU
+				;4$:	JMP	@#100000
+
+7$:	CLRB	SUBDIR
+	SUB	#'A,R0
+8$:	MOVB	R0,R4
+	CLR	LD1
+9$:	MOV	R1,R2
+	ADD	#6,R2
+	MOV	#7,R5
+	MOV	2(R2),(R2)+
+	SOB	R5,.-4
+	MOV	#20040,(R2)
+	CMP	(R2),6(R1)
+	BNE	2$
+	CLR	LD0
+	CLRB	SUBTEK
+	MOVB	R4,DEV
+	BR	12$
+
+2$:	CMP	#"  ,6(R1)	;остальные имена
+	BEQ	1$
+	CMP	#". ,6(R1)
+	BNE	10$
+1$:	MOVB	#204,(R1)
+10$:	MOVB	R4,34(R3)
+	BITB	#10,@R1
+	BEQ	11$
+	ADD	#10,@SP
+	BR	RERDIR
+11$:	CALL	INIDRV
+RERDIR:	CALL	RDDIR1
+	BCS	12$
+	CMP	400(R3),#123456
+	BEQ	2$
+	MOV	NONDOS,R0
+	BEQ	4$
+	JMP	@R0
+4$:	;CLR	 LD0 CLR LD1	;??
+	JSR	R5,TXT
+	.ASCIZ /Non DOS	disk/
+	.EVEN
+12$:	BR	ER
+2$:	MOVB	@NAM,R0
+	BEQ	12$
+	BIC	#177770,R0
+	CMP	R0,#4
+	BLOS	3$
+	MOV	#4,R0
+3$:	ASL	R0
+	JMP	@TRUN(R0)
+TRUN:	.WORD	DEL,CAT,SAV,LOA,CAT
+
+MENU:	CALL	ERROR2
+	JSR	R5,TXT
+	.ASCIZ/Overwrite/
+	.EVEN
+	MOV	#OVERWR,R3
+	CALL	PRIZN
+	JSR	R5,TXT
+	.ASCIZ/Predelete/
+	.EVEN
+
+PRIZN:	CLRB	@R3
+	CALL	WOPROS
+	ADCB	(R3)+
+	RET
+
+SAV:	CALL	DIRFIN
+	BCS	SAVE
+	TSTB	OVERWR
+	BEQ	1$
+	JSR	R5,TXT
+	.ASCIZ /Overwrite, Rename or Abort?/
+	.EVEN
+;╙				  ё
+; ?MKDOS - Overwrite,Ren or Abort?
+;╕				  ╧
+5$:	CALL	KEY1	
+	CMPB	R0,#'A
+	BEQ	ER
+
+3$:	CMPB	R0,#'R
+	BNE	4$
+	CALL	EMT16
+	CALL	PRNAM
+	JSR	R1,TXT1
+	.ASCIZ /Rename to /
+	.EVEN
+	MOV	@#NAM,R3
+	ADD	#6,R3
+	MOV	#16.,R2
+	CALL	STROKA
+	MOV	DIR,R3
+	BR	SAV
+
+4$:	CMPB	R0,#'O
+	BNE	5$
+	CALL	EMT16
+1$:	TSTB	PRED
+	BNE	SAVE
+	CALL	ERASE
+	CALL	SAVDI1
+	BCS	ER
+SAVE:	MOV	DIR,R3
+	CALL	FRFIN
+	MOV	R1,@#SZ		;MOV	 R0,@#SZ
+				;MOV	 20(R3),R0
+	BCC	1$
+	JSR	R5,TXT
+	.ASCIZ /Disk full/
+	.EVEN
+ER:	BR	6$
+1$:	MOV	R3,-(SP)
+	MOV	R0,@#BL
+	MOV	@#NAM,R1
+	TST	(R1)+
+	MOV	(R1)+,R2
+	MOV	(R1),R1
+	INC	R1
+	ASR	R1
+	NEG	R1
+	CALL	@RWBLK
+	MOV	(SP)+,R3
+	BCS	6$
+	MOV	R3,-(SP)
+	MOV	DIR,R4
+	CALL	CREAT
+	MOV	R4,R3
+	CALL	DIRFIN
+	BCC	5$
+4$:	CALL	DIRF
+	BCS	3$
+5$:	CMP	R3,@SP
+	BEQ	4$
+	CALL	ERASE
+3$:	TST	(SP)+
+	CALL	SAVDI1
+	BCC	2$
+6$:	JMP	ERROR2
+2$:	RTS	PC
+
+DEL:	MOV	@#NAM,R1
+	BIT	#200,@R1
+	BEQ	ER
+	CALL	DIRFIN
+	BCS	NOT
+	CALL	DELETE
+SV:	CALL	SAVDI1
+	BR	ER
+
+LOA:	CALL	DIRFIN	;чтение, (R3=DIR)
+	BCC	LO
+
+NOT:	CALL	INF
+	MOV	@#NAM,R3
+	CMP	(R3)+,(R3)+
+	CALL	PRINAM
+	JSR	R1,TXT1
+	.ASCIZ/not found/
+	.EVEN
+ER2:	BR	ER
+
+LO:	MOV	22(R3),@#SZ
+	MOV	20(R3),R0
+	MOV	R0,@#BL
+	CMPB	(R3),#2		;LD?
+	BNE	1$
+	ADD	R0,LD0
+	MOV	BLK,R3
+	MOVB	34(R3),DEV
+	BR	ER
+1$:	MOV	@#NAM,R1
+	MOV	24(R3),26(R1)	;адрес - 346
+	MOV	26(R3),30(R1)	;длина - 350
+	TST	(R1)+
+	TST	(R1)
+	BNE	4$
+	MOV	24(R1),(R1)
+4$:	MOV	(R1)+,@#264
+	MOV	24(R1),(R1)
+	MOV	(R1)+,@#266
+	BEQ	6$		;чтобы длина 0 не портила диск
+	MOV	#16.,R2
+5$:	MOVB	(R1)+,23(R1)
+	SOB	R2,5$
+	MOV	@#266,R1
+	MOV	@#264,R2
+	MOV	R2,R3
+	BMI	12$
+	ADD	R1,R3
+	DEC	R3
+	BPL	12$
+	MOV	#100000,R1
+	SUB	R2,R1
+	MOV	@#NAM,R3
+	MOVB	#4,1(R3)	
+12$:	INC	R1
+	ASR	R1
+	CALL	@RWBLK
+	BCS	ER2
+6$:	RTS	PC
+
+INIDRV:	MOV	BLK,R3
+	CALL	@#160010	;BLK =>	R3
+	MOV	#400,64(R3)	;DEV =>	34(R3)
+	MOV	TSTEP,12(R3)
+	MOV	TSTEP,10(R3)
+	RTS	PC
+
+RDDIR1:	CLC
+	MOV	@#NAM,R1
+	BITB	#20,@R1
+	BNE	RDEX
+	JMP	@RDDIR
+	BNE	RDEX
+RDDIR2:	MOV	#LENDIR,R1
+	CLR	R0
+	MOV	DIR,R2
+	CALL	@RWBLK
+RDEX:	MOV	BLK,R1
+	MOV	DIR,R3
+	BCS	1$
+	TST	LD1		;уж не LD ли? тогда если
+	BNE	2$		;нужен SKIP - уже включен
+	MOVB	34(R1),R2
+	CMPB	R2,#4
+	BHIS	2$
+	ADD	#22,R1
+	ADD	R2,R1
+	CLRB	@R1
+	CMP	400(R3),#123456
+	BNE	2$
+	CMP	466(R3),#1500
+	BHI	1$
+	MOVB	FLOP,@R1
+2$:	CLC
+1$:	RTS	PC
+
+SAVDI1:	CLC
+	MOV	@#NAM,R1
+	BITB	#40,@R1
+	BNE	RDEX
+	JMP	@SAVDIR
+SAVDI2:	MOV	DIR,R2
+	MOV	R2,R1
+	ADD	#500-30,R1
+	MOV	30(R2),R0
+	BEQ	2$
+1$:	ADD	#30,R1
+	CMPB	@R1,#377
+	BEQ	1$
+	SOB	R0,1$
+2$:	ADD	#60,R1
+	SUB	R2,R1
+	ASR	R1
+	NEG	R1
+	CLR	R0
+	CALL	@RWBLK
+	MOV	DIR,R3
+	RTS	PC
+
+INOUT:	;@#160004
+	;MFPS	 -(SP)
+	;MTPS	 #340
+	MOV	BLK,R3
+	ADD	LD1,R0
+	MOV	R0,-(SP)
+	MOV	R1,-(SP)
+	MOV	R2,-(SP)
+	MOV	@#100054,-(SP)
+	CALL	@(SP)+
+	MOV	(SP)+,R2
+	MOV	(SP)+,R1
+	MOV	(SP)+,R0
+	BCC	1$
+	MOV	#52,R5
+	CMPB	@R5,#5
+	BEQ	2$
+	CMPB	@R5,#3
+	BLO	2$
+	CMPB	@R5,#11
+	BLO	1$		;BLO=BCS
+2$:	CMPB	#1,34(R3)	;MOVB #-1,@2(R3)
+	BLO	1$$
+
+	BIS	#300,(R3)
+4$:	MOV	@R3,@R4
+	MOV	12(R3),R5
+	SOB	R5,.
+	BIC	#100,@R3
+	INC	PC
+	BR	4$
+
+;	BIS	#100,(R3)
+;4$:	 MOV	 @R3,@R4
+;	MOV	#310,R5
+;	SOB	R5,.
+;	BIS	#200,(R3)
+;	MOV	@R3,@R4
+;	MOV	12(R3),R5
+;	SOB	R5,.
+;	BIC	#300,@R3
+;	INC	PC
+;	BR	4$
+
+1$$:	MOV	@#100054,-(SP)
+	CALL	@(SP)+
+1$:	;ADC	 @SP
+	;MTPS	 (SP)+
+	RTS	PC
+
+LEGHT$:	MOV	@#NAM,R1
+	MOV	4(R1),R1
+	ADD	#777,R1
+	CLRB	R1
+	SWAB	R1
+	ASR	R1
+	RET
+
+FRFIN:	CALL	LEGHT$		;поиск свободного места
+
+;R5 - Счетчик файлов
+;R4 - Конец каталога
+;R3 - Адрес текущей записи
+;R2 - Реальный адрес дырки
+;R1 - Длина в блоках (-1 - поиск наибольшей области на диске)
+;Выход:
+;R3 - Адрес свободной записи в каталоге
+;R1 - Длина свободной области в	блоках
+;R0 - Номер первого блока свободной области
+
+FRFIN2:	MOV	R3,R4
+	MOV	466(R3),FR$BUF
+	ADD	#10600-30,R4	;LENDIR
+	ADD	#500,R3
+	
+	MOV	R1,-(SP)
+	BPL	7$
+	CLR	@SP
+    7$:	MOV	-450(R3),R5
+	BEQ	1$
+
+    3$:	CLR	R0
+	TST	R1
+	BMI	2$
+	MOV	R3,R2
+    2$:	CMPB	#377,@R3
+	BNE	5$
+	ADD	22(R3),R0
+	CMP	R1,R0
+	BLOS	10$
+	TST	R1
+	BPL	6$
+	CMP	@SP,R0
+	BHIS	6$
+	MOV	R0,@SP
+	MOV	R3,R2
+    6$:	ADD	#30,R3
+	BR	2$
+    5$:	ADD	#30,R3
+	SOB	R5,3$
+
+    1$:	MOV	20(R3),R0
+	SUB	(PC)+,R0
+FR$BUF:	.WORD	0
+	NEG	R0
+	CMP	R1,R0
+	BLOS	8$
+	TST	R1
+	BPL	101$
+	CMP	@SP,R0
+	BHIS	9$
+
+    8$:	MOV	R3,R2
+   10$:	MOV	R0,@SP
+
+    9$:	MOV	R2,R3
+	CMP	R3,R4
+	BHIS	102$
+
+	MOV	20(R3),R0
+  100$:	TST	(PC)+
+  101$:	SEC
+	MOV	(SP)+,R1
+	RTS	PC
+  102$:	CLR	R3
+	BR	101$
+
+
+CREAT:	CALL	LEGHT$
+
+CREAT2:	CLRB	(R3)+		;Создание записи о файле
+	MOVB	SUBDIR,R2
+	MOV	R4,R5
+	MOV	30(R5),R0
+	BEQ	11$
+	ADD	#500-30,R5
+4$:	ADD	#30,R5
+	CMPB	(R5),#377
+	BEQ	4$
+	CMPB	2(R5),#177
+	BNE	10$
+	CMPB	R2,(R5)
+	BEQ	9$
+10$:	SOB	R0,4$
+11$:	CLR	R2
+9$:	MOVB	R2,(R3)+
+
+	MOV	R1,R5
+	MOV	@#NAM,R1	;вход: R3-adr записи,R4-adrDir
+	MOV	R1,-(SP)
+	ADD	#6,R1
+	MOV	#14.,R2
+8$:	MOVB	(R1)+,R0
+	CALL	TST
+	MOVB	R0,(R3)+
+	SOB	R2,8$
+	TST	(R3)+
+	MOV	(R3),R2
+	MOV	R5,(R3)+
+	MOV	(SP)+,R1
+	MOV	2(R1),R0	;R1=@#NAM
+	BITB	#200,@R1	;R2=кол-во блоков в дырке
+	BEQ	2$		;R4=DIR
+	MOV	26(R1),R0	;R3=TEK	ADDR, R5=дл.в блоках
+2$:	MOV	R0,(R3)+	;кладем	адрес,
+	MOV	4(R1),(R3)+	;длину
+	INC	30(R4)
+	ADD	R5,32(R4)	;!!
+	MOV	R4,R1
+	ADD	#500,R1
+	MOV	30(R4),R0
+5$:	ADD	#30,R1
+	CMPB	-30(R1),#377
+	BEQ	5$
+	SOB	R0,5$
+	;MOV	20(R1),32(R4)
+	CMP	R3,R1		;если конец каталога
+	BLO	6$
+	MOV	-10(R3),R0
+	ADD	R5,R0
+	MOV	R0,20(R3)
+	MOV	466(R4),22(R3)
+	SUB	R0,22(R3)
+3$:	RTS	PC
+6$:	CMP	R5,R2		;если дырка=длине
+	BHIS	3$
+	ADD	#32,R1		;BY ALTEC
+	BR	1$
+7$:	MOV	-(R1),30(R1)
+1$:	CMP	R3,R1
+	BLOS	7$
+
+	MOV	#-1,(R3)
+	MOV	-10(R3),20(R3)
+	ADD	R5,20(R3)
+	SUB	R5,R2
+	MOV	R2,22(R3)
+	RTS	PC
+
+DIRPRI:	CLR	@#177130	;MV - достал!
+	ADD	#30,R3		;!!!
+	MOV	(R3)+,R5	;MOV	 R3,-(SP)
+	MOV	R3,-(SP)
+	ADD	#450-32,R3	;ADD	 #500-30,R3
+	TST	R5		;MOV  -420(R3),R5;500-30-30=420
+	BEQ	6$
+
+1$:	ADD	#30,R3
+				;CMPB	 @R3,#200
+				;BEQ	 5$
+3$:	CALL	BIT100
+	BNE	2$		;BNE	 7$
+	CMPB	#40,R0
+	BEQ	3$
+				;7$:	 CMPB	 #377,@R3
+				;	 BNE	 2$
+				;	 CALL	 UNUSED
+				;	 BR	 1$
+2$:	MOV	R3,R1
+	TST	(R1)+
+	CMPB	#177,@R1	;CMPB	 (R1),#177
+	BEQ	5$
+	TSTB	@R3		;!!!
+	BPL	7$
+	CMPB	#200,@R3
+	BEQ	5$
+	CALL	UNUSED
+10$:	BR	1$
+
+7$:	CALL	BIT100
+	BNE	4$
+	CALL	TST2
+	MOVB	R0,R4
+	MOVB	(R1),R0
+	CALL	TST2
+	CMPB	R0,R4
+	BNE	5$
+4$:	CALL	LF
+	MOV	#14.,R2
+	CALL	EMT20
+	CMPB	@R3,#2
+	BNE	9$
+	JSR	R1,TXT1
+	.ASCIZ/	 Disk /
+	.EVEN
+	CALL	SIZE
+	BR	50$		;BR	 5$
+
+9$:	CMP	(R1)+,(R1)+
+	MOV	(R1)+,R2
+	CALL	OCTOUT
+	MOV	(R1)+,R2
+	CALL	OCTOUT
+50$:	BITB	#1,@R3		;CMPB	 (R3),#1
+	BEQ	5$		;BNE	 5$
+	JSR	R1,TXT1
+	.WORD	'P
+5$:	SOB	R5,10$		;DEC	 R5
+				;BNE	 1$
+6$:	ADD	#30,R3
+	TST	22(R3)
+	BLE	8$		;BLOS?
+	CALL	UNUSED
+8$:	CALL	LF
+	MOV	(SP)+,R3
+	MOV	@R3,R0		;MOV	 32(R3),R0
+	CALL	DECOUT
+	JSR	R1,TXT1
+	.ASCIZ / Blocks,/
+	.EVEN
+	MOV	466-32(R3),R0	;MOV	466(R3),R0
+	SUB	@R3,R0		;SUB	 32(R3),R0
+	CALL	DECOUT
+	JSR	R1,TXT1
+	.ASCIZ / Free/<12>
+	.EVEN
+	MOV	(PC),R0
+	SOB	R0,.
+A:	CALL	BIT100
+	BEQ	A
+	RTS	PC
+
+BIT100:	MOV	@#177662,R0
+	BIT	#100,@#177716
+	RET
+
+UNUSED:	JSR	R1,TXT1
+	.BYTE	12
+	.ASCIZ /<Unused>       //      /
+	.EVEN
+
+SIZE:	MOV	22(R3),R0
+	CALL	DECOUT
+	JSR	R1,TXT1
+	.WORD	'.
+	RET
+
+DIRFIN:	ADD	#500-30,R3	 ;поиск	файла
+	MOV	60-500(R3),-(SP) ;вход:	R3 - ADR 0 блока
+	BEQ	6$		 ;@#NAM	- блок парам. EMT36
+				 ;выход: R3 или	бит C
+4$:	ADD	#30,R3
+	CMPB	(R3),#377
+	BEQ	4$
+2$:	CMPB	(R3),#200
+	BEQ	1$
+	MOV	R3,R1
+	TST	(R1)+
+	MOV	#14.,R2
+	MOV	@#NAM,R4
+	ADD	#6,R4
+3$:	MOVB	(R4)+,R0
+	CALL	TST$12
+	MOV	R0,R5
+	MOVB	(R1)+,R0
+	CALL	TST$12
+	CMPB	R0,R5
+	BNE	1$
+	SOB	R2,3$
+	CLC
+	BR	5$
+DIRF:	MOV	R0,-(SP)
+1$:	;ADD	 #30,R3
+	DEC	@SP
+	BNE	DIRFIN+12	;4$
+6$:	SEC
+5$:	MOV	(SP)+,R0
+	RTS	PC
+	
+DELETE:	BCS	ERASE		;вход: R3-адр.записи,
+	CALL	PRNAM		;бит C - без подтверждения;
+	;TSTB	 (R3)		;выход:	 бит C - файл защищен
+	;BEQ	 2$
+	BIT	#1,@R3
+	BEQ	2$
+	JSR	R1,TXT1
+	.ASCIZ /Protect/
+	.EVEN
+	BR	7$
+2$:	JSR	R1,TXT1
+	.ASCIZ /Delete/
+	.EVEN
+	CALL	WOPROS
+	BCS	7$
+
+ERASE:	;CMPB	 @R3,#200
+	;BEQ	 7$
+	MOV	#-1,(R3)
+	MOV	DIR,R1
+	MOV	R1,R4
+	ADD	#30,R1
+	TST	(R1)
+	BEQ	3$
+	DEC	(R1)+
+	SUB	22(R3),(R1)
+	ADD	#500-32,R1
+	MOV	30(R4),R0
+	BEQ	4$
+5$:	ADD	#30,R1
+	CMPB	-30(R1),#377
+	BEQ	5$
+	SOB	R0,5$
+
+4$:	MOV	466(R4),22(R1)
+	SUB	20(R1),22(R1)
+	CMP	R3,R1		;если конец каталога
+	BHIS	3$
+	CMPB	30(R3),#377
+	BNE	6$
+	CALL	DEL1
+6$:	ADD	#500,R4
+	CMP	R3,R4
+	BLOS	3$
+	SUB	#30,R3
+	CMPB	(R3),#377
+	BEQ	DEL1
+3$:	TST	(PC)+
+7$:	SEC
+	RTS	PC
+DEL1:	MOV	R3,R2		;сдв.кат: R3 - adr del записи,
+	ADD	#30,R2		;R1 - adr зап.сл.за последней
+	ADD	22(R2),22-30(R2)
+7$:	MOV	30(R2),(R2)+
+	CMP	R2,R1
+	BLO	7$	;BLO=BCS
+	RTS	PC
+
+PRNAM:	CALL	INF
+PRINAM:	MOV	R3,R1	;Вывод имени, по адресу	записи в R3
+	TST	(R1)+	;с игнорированием пробелов в конце
+	MOV	#14.,R2
+	ADD	R2,R1
+
+    1$:	DEC	R2
+	BMI	3$
+	CMPB	#40,-(R1)
+	BHIS	1$
+
+	SUB	R2,R1
+	INC	R2
+    2$:	MOVB	(R1)+,R0
+	CALL	TST	;Это говно можно убрать
+	CALL	EMT16
+	SOB	R2,2$
+    3$:	MOV	#40,R0
+	BR	EMT16
+
+WOPROS:	MOV	#'?,R0
+	CALL	EMT16
+	CALL	KEY	;обработка вопроса, "No"= бит C
+	CMPB	R0,#'Y
+	BEQ	1$
+	CMPB	R0,#'D
+	BEQ	1$
+	MOVB	#'N,R0
+	BR	2$
+1$:	TST	(PC)+
+2$:	SEC
+	CALL	EMT16
+
+LF:	MOV	#12,R0
+
+EMT16:	MFPS	-(SP)
+	TST	SCREEN
+	BEQ	1$
+	CALL	@SCREEN
+	BR	.+4
+1$:	EMT	16
+	MTPS	(SP)+
+	RTS	PC
+
+KEY:	CALL	A
+KEY1:	CALL	BIT100
+	BNE	KEY1
+
+TST2:	CMP	R0,#100
+	BLO	.+6
+	BICB	#240,R0
+	RETURN
+
+TST$12:	MOV	#TST2,-(SP)
+TST:	BITB	#140,R0
+	BNE	.+6
+	MOV	#40,R0
+	RETURN
+
+STROKA:	MOV	@#177660,-(SP)
+	CLR	@#177660
+	MOV	R3,R1
+	ADD	R3,R2
+1$:	CALL	EMT6
+	CMP	R1,R2
+	BHIS	9$
+2$:	CMPB	R0,#40
+	BHIS	5$
+9$:	CMPB	R0,#12
+	BEQ	8$
+	CMPB	R0,#10
+	BEQ	4$
+	CMPB	R0,#31
+	BNE	3$
+	MOVB	(R1),R0
+	CMP	R1,R2
+	BHIS	1$
+	BR	2$
+3$:	CMPB	#30,R0
+	BNE	1$
+4$:	MOVB	#30,R0
+	CMP	R1,R3
+	BEQ	7$
+	DEC	R1
+	BR	6$
+5$:	CALL	TST
+	MOVB	R0,(R1)+
+6$:	CALL	EMT16
+7$:	BR	1$
+8$:	CALL	EMT16
+11$:	CMP	R1,R2
+	BHIS	10$
+	MOVB	#40,(R1)+
+	BR	11$
+10$:	MOV	(SP)+,@#177660
+	RTS	PC
+
+EMT6:	MOV	#15000,R0
+	SOB	R0,.
+2$:	CALL	BIT100
+	BEQ	1$
+	MOV	#4,REPEAT
+	EMT	6		;JMP @#101010
+	RET
+1$:	DEC	(PC)+
+REPEAT:	.WORD	4
+	BPL	EMT6
+	CALL	SOUND
+	JMP	@#101122
+
+SOUND:	MOV	R2,-(SP)
+	MOV	R3,-(SP)
+	MOV	#4,R2
+	CALL	@#102056
+	MOV	(SP)+,R3
+	MOV	(SP)+,R2
+	RTS	PC
+
+OCTOUT:	MOV	R1,-(SP)	;Вход R2
+	MOVB	#40,R0
+	CALL	EMT16
+	CLR	R0
+	MOV	#6,R1
+	BR	2$
+1$:	CLR	R0
+	ROL	R2
+	ROL	R0
+	ROL	R2
+	ROL	R0
+2$:	ROL	R2
+	ROL	R0
+	ADD	#60,R0
+	CALL	EMT16
+	SOB	R1,1$
+	MOV	(SP)+,R1
+	RTS	PC
+
+DECOUT:	MOV	#10.,R4		;порч. R4,R2,R0,
+	CLR	R2
+3$:	CLR	R1
+2$:	SUB	R4,R0
+	BCS	1$
+	INC	R1
+	BR	2$
+1$:	ADD	R4,R0
+	ADD	#60,R0
+	INC	R2
+	MOVB	R0,-(SP)
+	MOV	R1,R0
+	BNE	3$
+	INC	R2
+	MOVB	#40,-(SP)
+4$:	MOVB	(SP)+,R0
+	CALL	EMT16
+	SOB	R2,4$
+	RTS	PC
+
+   CAT:	CALL	DIRPRI
+ERROR2:	MOV	@#NAM,R1
+	MOVB	#4,1(R1)
+ERROR:	TSTB	@#52
+	BEQ	3$
+    	JSR	R5,TXT
+	.ASCIZ"I/O error #"	.EVEN
+	MOVB	@#52,R0
+	JMP	DECOUT
+
+EMT20$:	CLR	R2
+EMT20:	MOV	R3,-(SP)
+	MOV	R2,R3
+	SWAB	R3
+	BIC	#177400,R2
+2$:	MOVB	(R1)+,R0
+	CALL	EMT16
+	CMPB	R0,R3
+	BEQ	1$
+	SOB	R2,2$
+1$:	MOV	(SP)+,R3
+3$:	RETURN
+
+INF:	JSR	R1,TXT1
+	.ASCIZ	<12>/?MKDOS - /
+	.EVEN
+	RETURN
+
+TXT:	CALL	INF
+	MOV	R5,R1
+TXT1:	CALL	EMT20$
+	INC	R1
+	BIC	#1,R1
+	RTS	R1
+;++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+NAMMOV:	MOV	#346,R1
+	MOV	#13,R0
+	CLR	-(R1)
+	SOB	R0,.-2
+	MOV	#13,(R1)+
+	CMP	(R1)+,(R1)+
+	MOVB	(R2)+,(R1)+
+	BNE	.-2
+	INC	R2
+	BIC	#1,R2
+	MOV	#320,R1
+	RTS	R2
+
+ZP:	MOV	#SIT1,@#4
+	MOV	#LOAD,DIR
+PAGE:	MOV	#56000,@#177716
+ADR:	MOV	#56000,R1
+LENC:	MOV	#20000,R3
+	MOV	R1,R5
+	MOV	R3,R4
+	CALL	@#116622
+CONTR:	CMP	R0,#1
+	BNE	SIT1
+	MOV	#1000,R5
+CONT:	MOVB	(R1)+,(R5)+
+	SOB	R3,.-2
+PAGE1:	MOV	#16000,@#177716
+	JMP	@#1000
+SIT1:	JSR	R2,NAMMOV
+	.ASCIZ/@:MC/	.EVEN
+	EMT	36
+	TSTB	1(R1)
+	BEQ	3
+	EMT	36
+	TSTB	1(R1)
+	BNE	2
+3:	MOV	#1000,R1
+	MOV	R1,R5
+	MOV	@#266,R4
+	MOV	R4,LENC+2
+	CALL	@#116622
+	MOV	R0,CONTR+2
+	MOV	ADR+2,R5
+	MOV	LENC+2,R3
+	MOV	#PAGE1,@#4
+	BR	CONT
+2:	MOV	PAGE1+2,@#177716
+	JMP	SITO
+
+PRERAR:	.BLKB	20
+
+PARAM:	.BLKB	10
+
+CALCA:	BR	0
+DVTK:	.BYTE	0
+DRTK:	.BYTE	0
+LDTK:	.WORD	0
+0:	EMT	36
+	MOV	#126000,@#DIR
+	MOVB	DVTK,@#DEV
+	MOVB	DRTK,@#SUBTEK
+	MOV	LDTK,@#LD0
+	CLR	@#177130
+	MOV	@#BLK,R0
+	CLR	@R0
+	TSTB	1(R1)
+	BNE	WSE
+	MOV	#766,SP
+	MOV	@#264,R0
+	CMP	R0,#1000
+	BLO	2
+	MOV	#100000,-(SP)
+	JMP	@R0
+2:	CMP	R0,SP
+	BLOS	3
+	MOV	#776,SP
+3:	RET
+WSE:	MOV	#100000,@#4
+	MTPS	#340
+	TST	@#177662
+	TSTB	@#177660
+	BPL	.-4
+	TST	@#177662
+	HALT
+
+
+STARTS:	MOV	#1000,SP
+	MOV	#HLT10,@#4
+	MOVB	PALET,R0
+	SWAB	R0
+	BIS	#40000,R0
+	MOV	R0,@#177662
+	MOV	#56000,@#177716
+	MOV	#123456,@#56000
+	MOV	#16000,@#177716
+	BR	1
+HLT10:	CMP	(SP)+,(SP)+
+	MOV	#220,PAGE+2
+	MOV	#220,PAGE1+2
+	MOV	#140000,ADR+2
+	MOV	#120000,@#4
+1:	CLR	USER
+	MOV	#232,R0
+	EMT	16
+	MOV	#END,R1
+	MOV	#1000,R3
+	MOV	#3000,R2
+	MOV	(R1)+,(R3)+
+	SOB	R2,.-2
+	CALL	@#1000
+	MOV	#21,R2
+	CLR	R1
+	EMT	24
+	JSR	R1,TXT1
+.ASCIZ/MK-DOS v3.15 (C)1992-95 Michael Korolev/
+.EVEN
+
+2:	MOV	#VINT1,@#4
+	MOV	#177640,R4
+	TST	@R4
+	JSR	R1,TXT1
+.ASCIZ<12>/IDE-adapter "Samara" - detected.../
+	.EVEN
+	BR	0STMC
+VINT1:	CMP	(SP)+,(SP)+
+	MOV	#STVD,@#4
+	MOV	#177740,R4
+	TST	@R4
+	JSR	R1,TXT1
+.ASCIZ<12>/IDE-adapter "AltPro" - detected.../
+	.EVEN
+0STMC:	CALL	RDPASP
+	BCS	STMC
+	CMPB	SY,#1
+	BLOS	STMC
+	MOV	#30,R0
+	MOV	#HDDINF,R1
+	MOV	#END,R2
+1:	CMP	(R1)+,(R2)+
+	BEQ	2
+	JSR	R1,TXT1
+.ASCII<12><12>/  Устанавка на винчестер - дело серьезное!/<12>
+.ASCIZ/ тел.375-76-96 (Дмитрий,звонить после 18ч)./
+.EVEN
+	MOV	#120000,R1
+	MOV	#2000,R2
+	CLR	(R1)+
+	SOB	R2,.-2
+	WAIT
+	BR	STMC
+2:	SOB	R0,1
+	BR	STMC
+STVD:	CMP	#220,PAGE1+2
+	BEQ	STMC
+	MOV	#120000,@#4
+	MOV	#27200,DIR
+	JSR	R1,TXT1
+.ASCIZ<12>/VD driver (C)1992-95 Michael Korolev/	.EVEN
+	JSR	R2,NAMMOV
+	.ASCIZ/@:VD.SYS/	.EVEN
+	EMT	36
+	TSTB	1(R1)
+	BNE	STMC
+	MOV	#STMC,@#4
+	CALL	@#1000
+	MOVB	#'E-101,DK
+
+STMC:	CLR	SCREEN
+	JSR	R1,TXT1
+.ASCII<12>/MicroCommander v3.00 (C)1994-95 Dmitry Butyrsky/
+.ASCIZ<12>/Wait.../	.EVEN
+1:	BIT	#100,@#177716
+	BEQ	1
+	MOV	#51414,@#400
+	JMP	ZP
+
+RDPASP:	MOVB	#123,12(R4)
+	CMPB	12(R4),#123
+	BEQ	0OK
+	JSR	R1,TXT1
+.ASCIZ<12>/HDD не подключен.../	.EVEN
+	SEC
+	RET
+0OK:	TSTB	@R4
+	BPL	.-2
+	MOV	#23,@R4
+	TSTB	@R4
+	BPL	.-2
+	BIT	#10,@R4
+	BNE	.-4
+	MOV	#60,R0
+	MOV	#END,R2
+2$:	TSTB	@R4
+	BPL	.-2
+	MOV	16(R4),@R2
+	SWAB	@R2
+	COM	(R2)+
+	SOB	R0,2$
+	MOV	#320,R0
+1$:	TSTB	@R4
+	BPL	.-2
+	TST	16(R4)
+	SOB	R0,1$
+
+	JSR	R1,TXT1
+.ASCIZ<12>/HDD Model: /	.EVEN
+
+	MOV	#END+66,R1
+	MOV	#135-66,R2
+	CALL	EMT20
+	JSR	R1,TXT1
+.ASCIZ<12>/HDD Config.: Cyl.:/	.EVEN
+	MOV	END+2,R0
+	SWAB	R0
+	CALL	DECOUT
+	JSR	R1,TXT1
+.ASCIZ/  Head:/	.EVEN
+	MOV	END+6,R0
+	SWAB	R0
+	CALL	DECOUT
+	JSR	R1,TXT1
+.ASCIZ/  Sec.:/	.EVEN
+	MOV	END+14,R0
+	SWAB	R0
+	CALL	DECOUT
+	CLC
+RETS:	RET
+
+HDDINF:.ASCII/MAMA/
+.BLKW	51
+
+END:	.END MKDOS
+
+;***
+ФОРМАТ ДИСКА:
+30  - КОЛ. ФАЙЛОВ
+32  - КОЛ. БЛОКОВ
+466 - ОБЩ. КОЛ.	БЛОКОВ
+470 - КОЛ. ЗАРЕЗЕРВИР. БЛОКОВ (СТАРТ.БЛОК 1-ГО ФАЙЛА)
+500 - ПЕРВАЯ ЗАПИСЬ О ФАЙЛЕ
+
+ЗАПИСЬ О ФАЙЛЕ (длина 30):
+
+0  - СТАТУС (0-NORM 1-PROT 2-LD	200 - BAD 377-DEL)
+1  - НОМЕР ПОДКАТАЛОГА
+2  - ИМЯ
+20 - НОМЕР БЛОКА
+22 - ДЛИНА В БЛОКАХ
+24 - АДРЕС
+26 - ДЛИНА

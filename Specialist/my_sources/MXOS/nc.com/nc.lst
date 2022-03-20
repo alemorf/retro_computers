@@ -1,0 +1,2896 @@
+0001   0000             ;----------------------------------------------------------------------------
+0002   0000             ; MXOS NC.COM
+0003   0000             ;
+0004   0000             ; 2013-12-18 „Ё§ ббҐ¬Ў«Ёа®ў ­® Ё ¤®а Ў®в ­® vinxru
+0005   0000             ;----------------------------------------------------------------------------
+0006   0000             
+0007   D000             .org 0D000h
+0008   D000             
+0009   D000             ENABLE_COLOR		= 1	; ‚Є«озЁвм жўҐв
+0010   D000             BIG_MEM			= 1	; ‡ ЇгбЄ ­  Є®¬ЇмоҐваҐ, Ј¤Ґ „Ћ‡“ Ў®«миҐ, зҐ¬ 64 ЉЎ
+0011   D000             DISABLE_FREE_SPACE_BUG	= 1	; €бЇа ўЁвм ®иЁЎЄг ®ЇаҐ¤Ґ«Ґ­Ёп бў®Ў®¤­®Ј® ®ЎкҐ¬ 
+0012   D000             
+0013   D000             ; –ўҐв 
+0014   D000             COLOR_CMDLINE		= 070h	; –ўҐв Є®¬ бва®ЄЁ
+0015   D000             COLOR_BORDER		= 0F1h	; –ўҐв а ¬ЄЁ
+0016   D000             COLOR_PANELNAME		= 0A1h	; –ўҐв § Ј®«®ўЄ  Ї ­Ґ«Ё (NAME)
+0017   D000             COLOR_FILE		= 0B1h	; –ўҐв д ©«®ў
+0018   D000             COLOR_INFOLINE		= 0B1h	; –ўҐв бва®ЄЁ Ё­д®а¬ жЁЁ ® вҐЄгйҐ¬ д ©«Ґ
+0019   D000             COLOR_CURSOR            = 0B0h  ; –ўҐв Єгаб®а  (Ё­ўҐаб­л©)
+0020   D000             COLOR_DIALOG		= 007h	; –ўҐв ¤Ё «®Ј®ў F1-F9
+0021   D000             COLOR_INFOHEADER	= 0A1h	; ‡ Ј®«®ў®Є Ё­д®а¬ жЁ®­­®© Ї ­Ґ«Ё
+0022   D000             COLOR_INFONUMBER	= 0E1h	; –Ёдал ­  Ё­д®а¬ жЁ®­­®© Ї ­Ґ«Ё
+0023   D000             COLOR_INFOTEXT		= 0F1h	; ’ҐЄбв ­  Ё­д®а¬ жЁ®­­®© Ї ­Ґ«Ё
+0024   D000             COLOR_HELP_F		= 040h  ; –ўҐв дг­ЄжЁ®­ «м­ле Є« ўЁи ў бва®ЄҐ Ї®¤бЄ §ЄЁ
+0025   D000             COLOR_HELP_TEXT		= 071h	; –ўҐв вҐЄбв  ў бва®ЄҐ Ї®¤бЄ §ЄЁ
+0026   D000             
+0027   D000             ; …б«Ё жўҐв ўЄ«озҐ­, в® ўбв ў«пҐ¬ Є®¤ MVI A, # / STA IO_COLOR
+0028   D000             #if ENABLE_COLOR
+0029   D000             #define COLOR(C) .db 3Eh, C, 32h, IO_COLOR&0FFh, IO_COLOR>>8
+0030   D000~            #else
+0031   D000~            #define COLOR(C)
+0032   D000             #endif
+0033   D000             
+0034   D000             .include "mxos.inc"
+0001+  D000             ;----------------------------------------------------------------------------
+0002+  D000             ; MXOS NC.COM
+0003+  D000             ; Функции MXOS
+0004+  D000             ;
+0005+  D000             ; 2013-12-18 Дизассемблировано и доработано vinxru
+0006+  D000             ;----------------------------------------------------------------------------
+0007+  D000             
+0008+  D000             ; Переменные ОС
+0009+  D000             
+0010+  D000             v_cursorCfg	= 8FE9h
+0011+  D000             v_inverse	= 8FFAh
+0012+  D000             v_tapeError	= 8FE1h
+0013+  D000             v_cursorY	= 8FFCh
+0014+  D000             v_cursorX	= 8FFDh
+0015+  D000             
+0016+  D000             ; Оборудование
+0017+  D000             
+0018+  D000             IO_KEYB_A	= 0FFE0h
+0019+  D000             IO_KEYB_B	= 0FFE1h
+0020+  D000             IO_KEYB_C	= 0FFE2h
+0021+  D000             IO_KEYB_MODE	= 0FFE3h
+0022+  D000             IO_EXT_A	= 0FFE4h
+0023+  D000             IO_EXT_B	= 0FFE5h
+0024+  D000             IO_EXT_C	= 0FFE6h
+0025+  D000             IO_EXT_MODE	= 0FFE7h
+0026+  D000             IO_COLOR	= 0FFF8h
+0027+  D000             IO_PAGE_RAM	= 0FFFCh
+0028+  D000             IO_PAGE_ARAM	= 0FFFDh
+0029+  D000             IO_PAGE_ROM	= 0FFFEh
+0030+  D000             IO_PAGE_STR	= 0FFFFh
+0031+  D000             
+0032+  D000             ; Функции ОС
+0033+  D000             
+0034+  D000             getch		= 0C803h
+0035+  D000             tapeRead	= 0C806h
+0036+  D000             printChar	= 0C809h
+0037+  D000             tapeWrite	= 0C80Ch
+0038+  D000             printHexByte	= 0C815h
+0039+  D000             printString	= 0C818h
+0040+  D000             keyScan		= 0C81Bh
+0041+  D000             calcCS		= 0C82Ah
+0042+  D000             fileList	= 0C83Fh
+0043+  D000             fileCreate	= 0C845h
+0044+  D000             diskDriver	= 0C863h
+0045+  D000             fileGetSetDrive	= 0C842h
+0046+  D000             fileDelete	= 0C84Bh
+0047+  D000             fileRename	= 0C84Eh
+0048+  D000             fileGetSetAddr	= 0C854h
+0049+  D000             fileGetSetAttr	= 0C857h
+0050+  D000             fileNamePrepare	= 0C85Ah
+0051+  D000             fileExec	= 0C85Dh
+0052+  D000             fileLoad2	= 0C866h
+0035   D000             .include "start.inc"	; Їа®¤®«¦Ґ­ЁҐ ў main
+0001+  D000             ;----------------------------------------------------------------------------
+0002+  D000             ; MXOS NC.COM
+0003+  D000             ; Запуск
+0004+  D000             ;
+0005+  D000             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D000             ;----------------------------------------------------------------------------
+0007+  D000             
+0008+  D000             Start:		; Отключаем инверсию
+0009+  D000 21 00 00    		lxi	h, 0
+0010+  D003 22 FA 8F    		shld	v_inverse
+0011+  D006             
+0012+  D006             		; *** Однократно вызываем FORMAT ***
+0013+  D006             
+0014+  D006             		; Устанавливаем свой драйвер
+0015+  D006 CD BF DB    		call	swapDriver
+0016+  D009 21 00 FF    		lxi	h, 0FF00h
+0017+  D00C             
+0018+  D00C             		; Если в памяти есть специальная метка, значит уже запускали
+0019+  D00C CD C0 FF    		call	0FFC0h
+0020+  D00F FE 5A       		cpi	5Ah
+0021+  D011 CA 20 D0    		jz	formatCalled
+0022+  D014             
+0023+  D014             		; Восстанавливаем драйвер
+0024+  D014 CD BF DB    		call	swapDriver
+0025+  D017             
+0026+  D017             		; Сохраняем состояние
+0027+  D017 CD 09 D2    		call	saveState
+0028+  D01A             
+0029+  D01A             		; Запуск A:FORMAT.COM B:
+0030+  D01A 21 20 DE    		lxi	h, aFormatB
+0031+  D01D C3 5D C8    		jmp	fileExec
+0032+  D020             
+0033+  D020             ; ---------------------------------------------------------------------------
+0034+  D020             
+0035+  D020             formatCalled:	; Копируем состояние из ДОЗУ в ОЗУ
+0036+  D020 23          		inx	h
+0037+  D021 11 FF DD    		lxi	d, activePanel
+0038+  D024 0E 09       		mvi	c, 9
+0039+  D026 CD C0 FF    loc_D026:	 call	0FFC0h
+0040+  D029 12          		 stax	d
+0041+  D02A 23          		 inx	h
+0042+  D02B 13          		 inx	d
+0043+  D02C 0D          		 dcr	c
+0044+  D02D C2 26 D0    		jnz	loc_D026
+0045+  D030             
+0046+  D030             		; Восстанавливаем драйвер
+0047+  D030 CD BF DB    		call	swapDriver
+0048+  D033 0E 1F       		mvi	c, 1Fh		; Очистка экрана
+0049+  D035             
+0050+  D035             		; Вывод	подсказки
+0051+  D035 3E 40 32 F8 		COLOR(COLOR_HELP_F)
+0051+  D039 FF 
+0052+  D03A CD 09 C8    		call	printChar
+0053+  D03D 21 FF 01    		lxi	h, 1FFh
+0054+  D040 22 FC 8F    		shld	v_cursorY
+0055+  D043 21 FD DB    		lxi	h, aF1LeftF2RighF3		
+0056+  D046 CD 18 C8    		call	printString
+0057+  D049             
+0058+  D049             		; Раскрашиваем подсказку
+0059+  D049 3E 71 32 F8 		COLOR(COLOR_HELP_TEXT)
+0059+  D04D FF 
+0060+  D04E 21 F7 92    		lxi	h, 92F7h
+0061+  D051 16 08       		mvi	d, 8		
+0062+  D053 06 04       loc_D049:	 mvi	b, 4
+0063+  D055 CD 2C D8    		 call	inverseRect	; hl - адрес, b	- ширина, высота 9
+0064+  D058 24          		 inr	h
+0065+  D059 24          		 inr	h
+0066+  D05A 15          		 dcr	d
+0067+  D05B C2 53 D0    		jnz	loc_D049
+0068+  D05E             
+0069+  D05E             		; Очищаем ком строку
+0070+  D05E CD 9B D7    		call	clearCmdLine0036   D061             .include "main.inc"
+0001+  D061             ;----------------------------------------------------------------------------
+0002+  D061             ; MXOS NC.COM
+0003+  D061             ; Основной цикл
+0004+  D061             ;
+0005+  D061             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D061             ;----------------------------------------------------------------------------
+0007+  D061             
+0008+  D061             mainReload:	; Перерисовываем обе панели
+0009+  D061 3A FF DD    		lda	activePanel
+0010+  D064 A7          		ana	a
+0011+  D065 C2 71 D0    		jnz	mainReload_0
+0012+  D068 CD 61 D8    		call	loadAndPrintA
+0013+  D06B CD 52 D8    		call	loadAndPrintB
+0014+  D06E C3 77 D0    		jmp	mainDriveChanged
+0015+  D071 CD 52 D8    mainReload_0:	call	loadAndPrintB
+0016+  D074 CD 61 D8    		call	loadAndPrintA
+0017+  D077             		
+0018+  D077             mainDriveChanged:
+0019+  D077             		; Вывод накопителя в ком строку
+0020+  D077 3E 70 32 F8 		COLOR(COLOR_CMDLINE)
+0020+  D07B FF 
+0021+  D07C 21 F3 01    		lxi	h, 1F3h
+0022+  D07F 22 FC 8F    		shld	v_cursorY
+0023+  D082 21 02 DE    		lxi	h, panelA_drive
+0024+  D085 CD 17 DA    		call	readBytePanel
+0025+  D088 CD FB D9    		call	printDrive
+0026+  D08B             
+0027+  D08B             		; Вывод информации о файле
+0028+  D08B CD F4 D7    		call	printInfoLine
+0029+  D08E             
+0030+  D08E             mainLoop:	; Рисуем курсор выбранного файла
+0031+  D08E 3E B0 32 F8 		COLOR(COLOR_CURSOR)
+0031+  D092 FF 
+0032+  D093 CD C2 D7    		call	drawCursor
+0033+  D096             
+0034+  D096             		; Положение курсора в ком строке
+0035+  D096 2A 30 DE    		lhld	v_cmdLinePos
+0036+  D099 22 FC 8F    		shld	v_cursorY
+0037+  D09C             
+0038+  D09C             		; Ждем нажатия клавиши
+0039+  D09C 3E 70 32 F8 		COLOR(COLOR_CMDLINE)
+0039+  D0A0 FF 
+0040+  D0A1 CD 03 C8    		call	getch
+0041+  D0A4             
+0042+  D0A4             		; Стираем курсор выбранного файла
+0043+  D0A4 F5          		push	psw
+0044+  D0A5 3E B1 32 F8 		COLOR(COLOR_FILE)
+0044+  D0A9 FF 
+0045+  D0AA CD C2 D7    		call	drawCursor
+0046+  D0AD F1          		pop	psw
+0047+  D0AE             
+0048+  D0AE             		; Анализ нажатий клавиши
+0049+  D0AE 4F          		mov	c, a
+0050+  D0AF DA 31 D2    		jc	mainLoop_ctrl
+0051+  D0B2 A7          		ana	a
+0052+  D0B3 CA 0E D6    		jz	F1
+0053+  D0B6 3D          		dcr	a
+0054+  D0B7 CA DF D5    		jz	F2
+0055+  D0BA 3D          		dcr	a
+0056+  D0BB CA 1B D7    		jz	F3
+0057+  D0BE 3D          		dcr	a
+0058+  D0BF CA 86 D1    		jz	F4
+0059+  D0C2 3D          		dcr	a
+0060+  D0C3 CA DE D4    		jz	F5
+0061+  D0C6 3D          		dcr	a
+0062+  D0C7 CA 73 D4    		jz	F6
+0063+  D0CA 3D          		dcr	a
+0064+  D0CB CA CC D2    		jz	F7
+0065+  D0CE 3D          		dcr	a
+0066+  D0CF CA 6E D5    		jz	F8
+0067+  D0D2 3D          		dcr	a
+0068+  D0D3 CA 6B D7    		jz	Left
+0069+  D0D6 3D          		dcr	a
+0070+  D0D7 CA F8 D6    		jz	Tab
+0071+  D0DA D6 04       		sui	4
+0072+  D0DC CA 96 D1    		jz	Enter
+0073+  D0DF D6 0B       		sui	0Bh
+0074+  D0E1 CA 7D D7    		jz	Right
+0075+  D0E4 3D          		dcr	a
+0076+  D0E5 CA 5B D7    		jz	Up
+0077+  D0E8 3D          		dcr	a
+0078+  D0E9 CA 43 D7    		jz	Down
+0079+  D0EC 3D          		dcr	a
+0080+  D0ED CA 3C D1    		jz	Esc
+0081+  D0F0 C6 1B       		adi	1Bh
+0082+  D0F2 FE 7F       		cpi	7Fh
+0083+  D0F4 CA 21 D1    		jz	Bkspc
+0084+  D0F7 FE 8A       		cpi	8Ah
+0085+  D0F9 CA BE D3    		jz	f9
+0086+  D0FC FE 20       mainLoop_e:	cpi	' '
+0087+  D0FE DA 8E D0    		jc	mainLoop
+0088+  D101             
+0089+  D101             		; Вывод символов в ком строку
+0090+  D101 2A 32 DE    		lhld	v_cmdLineEnd
+0091+  D104 4F          		mov	c, a
+0092+  D105 77          		mov	m, a
+0093+  D106             
+0094+  D106             		; Если ком строка переполнена, выходим
+0095+  D106 3E 76       		mvi	a, (v_cmdLine+59 & 0FFh)
+0096+  D108 BD          		cmp	l
+0097+  D109 CA 8E D0    		jz	mainLoop
+0098+  D10C             
+0099+  D10C             		; Увеличиваем длину
+0100+  D10C 23          		inx	h
+0101+  D10D 22 32 DE    		shld	v_cmdLineEnd
+0102+  D110             
+0103+  D110             		; Выводим символ на экран
+0104+  D110 3E 70 32 F8 		COLOR(070h)
+0104+  D114 FF 
+0105+  D115 CD 09 C8    		call	printChar
+0106+  D118             
+0107+  D118             mainLoop_savePos:	; ?
+0108+  D118 2A FC 8F    		lhld	v_cursorY
+0109+  D11B 22 30 DE    		shld	v_cmdLinePos
+0110+  D11E             
+0111+  D11E C3 8E D0    		jmp	mainLoop
+0112+  D121             
+0113+  D121             ; ---------------------------------------------------------------------------
+0114+  D121             
+0115+  D121             Bkspc:		; Если ком строка пустая, выходим
+0116+  D121 2A 32 DE    		lhld	v_cmdLineEnd
+0117+  D124 3E 3B       		mvi	a, v_cmdLine & 0FFh
+0118+  D126 BD          		cmp	l
+0119+  D127 CA 8E D0    		jz	mainLoop
+0120+  D12A             
+0121+  D12A             		; Удаляем один символ
+0122+  D12A 2B          		dcx	h
+0123+  D12B 22 32 DE    		shld	v_cmdLineEnd
+0124+  D12E             		
+0125+  D12E             		; Стираем символ на экране
+0126+  D12E 3E 70 32 F8 		COLOR(070h)
+0126+  D132 FF 
+0127+  D133 21 B0 DC    		lxi	h, asc_DC17
+0128+  D136 CD 18 C8    		call	printString
+0129+  D139             
+0130+  D139 C3 18 D1    		jmp	mainLoop_savePos
+0131+  D13C             
+0132+  D13C             ; ---------------------------------------------------------------------------
+0133+  D13C             
+0134+  D13C CD 9B D7    Esc:		call	clearCmdLine
+0135+  D13F C3 8E D0    		jmp	mainLoop
+0136+  D142             
+0137+  D142             ; ---------------------------------------------------------------------------
+0138+  D142             
+0139+  D142             ctrlEnter:	; Если файл не выбран, выход
+0140+  D142 CD 3E D8    		call	getSelectedFile
+0141+  D145 7E          		mov	a, m
+0142+  D146 FE FF       		cpi	0FFh
+0143+  D148 CA 8E D0    		jz	mainLoop
+0144+  D14B             
+0145+  D14B CD 51 D1    		call	selFileToCmdLine
+0146+  D14E C3 8E D0    		jmp	mainLoop
+0037   D151             .include "selFileToCmdLine.inc"
+0001+  D151             ;----------------------------------------------------------------------------
+0002+  D151             ; MXOS NC.COM
+0003+  D151             ; Поместить выбранный файл в ком строку
+0004+  D151             ;
+0005+  D151             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D151             ;----------------------------------------------------------------------------
+0007+  D151             
+0008+  D151             selFileToCmdLine:
+0009+  D151 EB          		xchg
+0010+  D152             
+0011+  D152             		; Получаем текущий накопитель
+0012+  D152 21 02 DE    		lxi	h, panelA_drive
+0013+  D155 CD 17 DA    		call	readBytePanel
+0014+  D158 C6 41       		adi	'A'
+0015+  D15A             
+0016+  D15A             		; Выводим его в ком строку
+0017+  D15A 2A 32 DE    		lhld	v_cmdLineEnd
+0018+  D15D 77          		mov	m, a
+0019+  D15E 23          		inx	h
+0020+  D15F             
+0021+  D15F             		; Выводим двоеточние
+0022+  D15F 36 3A       		mvi	m, ':'
+0023+  D161 23          		inx	h
+0024+  D162             
+0025+  D162             		; Выводим имя файла
+0026+  D162 EB          		xchg
+0027+  D163 CD EC DA    		call	compactName
+0028+  D166             
+0029+  D166             		; Ограничение длины
+0030+  D166 1B          		dcx	d
+0031+  D167 3E 76       		mvi	a, (v_cmdLine+59 & 0FFh)
+0032+  D169 BB          		cmp	e
+0033+  D16A D2 6E D1    		jnc	loc_D146
+0034+  D16D 5F          		 mov	e, a		 
+0035+  D16E             loc_D146:	
+0036+  D16E             		; Терминатор
+0037+  D16E AF          		xra	a
+0038+  D16F 12          		stax	d
+0039+  D170             
+0040+  D170             		; Вывод
+0041+  D170 3E 70 32 F8 		COLOR(COLOR_CMDLINE)
+0041+  D174 FF 
+0042+  D175 2A 32 DE    		lhld	v_cmdLineEnd
+0043+  D178 CD 18 C8    		call	printString
+0044+  D17B             
+0045+  D17B             		; Дописываем имя файла
+0046+  D17B EB          		xchg
+0047+  D17C 22 32 DE    		shld	v_cmdLineEnd
+0048+  D17F             
+0049+  D17F             		; Сохраняем новое положение
+0050+  D17F 2A FC 8F    		lhld	v_cursorY
+0051+  D182 22 30 DE    		shld	v_cmdLinePos
+0052+  D185 C9          		ret0038   D186             .include "f4.inc"
+0001+  D186             ;----------------------------------------------------------------------------
+0002+  D186             ; MXOS NC.COM
+0003+  D186             ; Клавиша F4 - запуск редактора
+0004+  D186             ;
+0005+  D186             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D186             ;----------------------------------------------------------------------------
+0007+  D186             
+0008+  D186             F4:		; Получение кол-ва файлов
+0009+  D186 21 04 DE    		lxi	h, panelA_filesCnt
+0010+  D189 CD 17 DA    		call	readBytePanel
+0011+  D18C             
+0012+  D18C             		; Если файлов нет, выходим
+0013+  D18C A7          		ana	a
+0014+  D18D CA 8E D0    		jz	mainLoop
+0015+  D190             
+0016+  D190             		; Запуск редактора
+0017+  D190 11 18 DE    		lxi	d, aEditor	; "A:E.COM\r"
+0018+  D193 C3 CA D1    		jmp	Enter_50039   D196             .include "enter.inc"
+0001+  D196             ;----------------------------------------------------------------------------
+0002+  D196             ; MXOS NC.COM
+0003+  D196             ; Клавиша ENTER
+0004+  D196             ;
+0005+  D196             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D196             ;----------------------------------------------------------------------------
+0007+  D196             
+0008+  D196             Enter:		; Если ком строка не пустая
+0009+  D196 2A 32 DE    		lhld	v_cmdLineEnd
+0010+  D199 3E 3B       		mvi	a, v_cmdLine & 0FFh
+0011+  D19B BD          		cmp	l
+0012+  D19C C2 F6 D1    		jnz	EnterCmdLine
+0013+  D19F             
+0014+  D19F             		; Загрузка файла NC.EXT по адресу 0
+0015+  D19F 11 00 00    		lxi	d, 0
+0016+  D1A2 21 08 DE    		lxi	h, aNcExt
+0017+  D1A5 CD 66 C8    		call	fileLoad2
+0018+  D1A8 DA EB D1    		jc	Enter_stdExec
+0019+  D1AB             
+0020+  D1AB             		; Получить имя выбранного файла
+0021+  D1AB CD 3E D8    		call	getSelectedFile
+0022+  D1AE 7E          		mov	a, m
+0023+  D1AF 3C          		inr	a
+0024+  D1B0 CA 8E D0    		jz	mainLoop ; Ничего не выбрано
+0025+  D1B3             
+0026+  D1B3             		; hl - расширение файла
+0027+  D1B3 11 06 00    		lxi	d, 6
+0028+  D1B6 19          		dad	d
+0029+  D1B7             
+0030+  D1B7             		; hl - расширение файла
+0031+  D1B7 11 00 00    		lxi	d, 0
+0032+  D1BA             
+0033+  D1BA             		; Сравниваем расширение из файла
+0034+  D1BA 0E 03       Enter_extLoop:	mvi	c, 3
+0035+  D1BC E5          		push	h
+0036+  D1BD 1A          Enter_1:	ldax	d
+0037+  D1BE BE          		cmp	m
+0038+  D1BF C2 22 D2    		jnz	Enter_nextExt
+0039+  D1C2 23          		inx	h
+0040+  D1C3 13          		inx	d
+0041+  D1C4 0D          		dcr	c
+0042+  D1C5 C2 BD D1    		jnz	Enter_1
+0043+  D1C8 E1          		pop	h
+0044+  D1C9 13          		inx	d
+0045+  D1CA             
+0046+  D1CA             		; Найдено расширение
+0047+  D1CA             
+0048+  D1CA             		; Копирование имени выбранного файла в ком строку
+0049+  D1CA 21 3B DE    Enter_5:	lxi	h, v_cmdLine
+0050+  D1CD 1A          Enter_4:	ldax	d
+0051+  D1CE 77          		mov	m, a
+0052+  D1CF FE 0D       		cpi	0Dh
+0053+  D1D1 CA DD D1    		jz	Enter_3
+0054+  D1D4 3C          		inr	a
+0055+  D1D5 CA DD D1    		jz	Enter_3
+0056+  D1D8 23          		inx	h
+0057+  D1D9 13          		inx	d
+0058+  D1DA C3 CD D1    		jmp	Enter_4
+0059+  D1DD             
+0060+  D1DD             ; ---------------------------------------------------------------------------
+0061+  D1DD             
+0062+  D1DD 36 20       Enter_3:	mvi	m, ' '
+0063+  D1DF 23          		inx	h
+0064+  D1E0 36 00       		mvi	m, 0
+0065+  D1E2 22 32 DE    		shld	v_cmdLineEnd
+0066+  D1E5             
+0067+  D1E5             		; Вывод ком строки на экран
+0068+  D1E5 21 3B DE    		lxi	h, v_cmdLine
+0069+  D1E8 CD 18 C8    		call	printString
+0070+  D1EB             
+0071+  D1EB             Enter_stdExec:	; Получить выбранный файл
+0072+  D1EB CD 3E D8    		call	getSelectedFile
+0073+  D1EE             
+0074+  D1EE             		; Ничего не выбрано
+0075+  D1EE 7E          		mov	a, m
+0076+  D1EF 3C          		inr	a
+0077+  D1F0 CA 8E D0    		jz	mainLoop
+0078+  D1F3             
+0079+  D1F3             		; ?
+0080+  D1F3 CD 51 D1    		call	selFileToCmdLine
+0081+  D1F6             
+0082+  D1F6             EnterCmdLine:	; Очистка экрана
+0083+  D1F6 0E 1F       		mvi	c, 1Fh
+0084+  D1F8 CD 09 C8    		call	printChar
+0085+  D1FB             
+0086+  D1FB             		; Помещаем в конец ком строки 0Dh
+0087+  D1FB 2A 32 DE    		lhld	v_cmdLineEnd
+0088+  D1FE 36 0D       		mvi	m, 0Dh
+0089+  D200             
+0090+  D200             		; Сохраняем состояние
+0091+  D200 CD 09 D2    		call	saveState
+0092+  D203             
+0093+  D203             		; Запускаем файл
+0094+  D203 21 3B DE    		lxi	h, v_cmdLine
+0095+  D206 C3 5D C8    		jmp	fileExec0040   D209             .include "saveState.inc"
+0001+  D209             ;----------------------------------------------------------------------------
+0002+  D209             ; MXOS NC.COM
+0003+  D209             ; Сохранение состояния в ДОЗУ
+0004+  D209             ;
+0005+  D209             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D209             ;----------------------------------------------------------------------------
+0007+  D209             
+0008+  D209 CD BF DB    saveState:	call	swapDriver
+0009+  D20C 21 00 FF    		lxi	h, 0FF00h
+0010+  D20F 11 FE DD    		lxi	d, initState
+0011+  D212 0E 0A       		mvi	c, 10
+0012+  D214             
+0013+  D214 1A          saveState_1:	ldax	d
+0014+  D215 CD C9 FF    		call	0FFC0h+DriverW-Driver
+0015+  D218 23          		inx	h
+0016+  D219 13          		inx	d
+0017+  D21A 0D          		dcr	c
+0018+  D21B C2 14 D2    		jnz	saveState_1
+0019+  D21E CD BF DB    		call	swapDriver
+0020+  D221 C9          		ret0041   D222             .include "enter2.inc"
+0001+  D222             ;----------------------------------------------------------------------------
+0002+  D222             ; MXOS NC.COM
+0003+  D222             ; Клавиша ENTER (продолжение)
+0004+  D222             ;
+0005+  D222             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D222             ;----------------------------------------------------------------------------
+0007+  D222             
+0008+  D222 E1          Enter_nextExt:	pop	h
+0009+  D223 1A          Enter_2:	ldax	d
+0010+  D224 13          		inx	d
+0011+  D225 FE 0D       		cpi	0Dh
+0012+  D227 CA BA D1    		jz	Enter_extLoop
+0013+  D22A 3C          		inr	a
+0014+  D22B C2 23 D2    		jnz	Enter_2
+0015+  D22E C3 EB D1    		jmp	Enter_stdExec0042   D231             .include "main2.inc"
+0001+  D231             ;----------------------------------------------------------------------------
+0002+  D231             ; MXOS NC.COM
+0003+  D231             ; Основной цикл (продолжение)
+0004+  D231             ;
+0005+  D231             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D231             ;----------------------------------------------------------------------------
+0007+  D231             
+0008+  D231 FE 0D       mainLoop_ctrl:	cpi	0Dh
+0009+  D233 CA 42 D1    		jz	ctrlEnter
+0010+  D236 C3 FC D0    		jmp	mainLoop_e0043   D239             .include "drawWindow.inc"
+0001+  D239             ;----------------------------------------------------------------------------
+0002+  D239             ; MXOS NC.COM
+0003+  D239             ; Рисование окошек
+0004+  D239             ;
+0005+  D239             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D239             ;----------------------------------------------------------------------------
+0007+  D239             
+0008+  D239             drawWindowIfSel:; Получить кол-во файлов
+0009+  D239 21 04 DE    		lxi	h, panelA_filesCnt
+0010+  D23C CD 17 DA    		call	readBytePanel
+0011+  D23F             
+0012+  D23F             		; Если файлов нет, выходим
+0013+  D23F A7          		ana	a
+0014+  D240 E1          		pop	h ; Адрес возврата
+0015+  D241 CA 77 D0    		jz	mainDriveChanged
+0016+  D244 E5          		push	h
+0017+  D245             		
+0018+  D245             
+0019+  D245             ; ---------------------------------------------------------------------------
+0020+  D245             
+0021+  D245 3E 07 32 F8 drawWindow1:	COLOR(COLOR_DIALOG)
+0021+  D249 FF 
+0022+  D24A             
+0023+  D24A             		; Рисуем окно
+0024+  D24A 21 E6 DD    		lxi	h, g_window1
+0025+  D24D CD 56 DA    		call	draw
+0026+  D250             	
+0027+  D250             		; Рисуем прямоугольник
+0028+  D250 21 66 9F    		lxi	h, 9F66h	; x=120 y=102
+0029+  D253 06 12       		mvi	b, 18		; w=144 h=9
+0030+  D255 C3 2C D8    		jmp	inverseRect
+0031+  D258             
+0032+  D258             ; ---------------------------------------------------------------------------
+0033+  D258             
+0034+  D258 3E 07 32 F8 drawWindow2:	COLOR(COLOR_DIALOG)
+0034+  D25C FF 
+0035+  D25D             
+0036+  D25D             		; Рисуем окно
+0037+  D25D 21 F2 DD    		lxi	h, g_window2
+0038+  D260 CD 56 DA    		call	draw
+0039+  D263             
+0040+  D263             		; Рисуем прямоугольник
+0041+  D263 21 88 9E    		lxi	h, 9E88h	; x=112 y=136
+0042+  D266 06 14       		mvi	b, 20		; w=160 h=9
+0043+  D268 C3 2C D8    		jmp	inverseRect
+0044+  D26B             
+0044   D26B             .include "printStringInv.inc"
+0001+  D26B             ;----------------------------------------------------------------------------
+0002+  D26B             ; MXOS NC.COM
+0003+  D26B             ; Вывод инверсной строки
+0004+  D26B             ;
+0005+  D26B             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D26B             ;----------------------------------------------------------------------------
+0007+  D26B             
+0008+  D26B 3E 01       printStringInv:	mvi	a, 1
+0009+  D26D 32 FA 8F    		sta	v_inverse
+0010+  D270 CD 18 C8    		call	printString
+0011+  D273 AF          		xra	a
+0012+  D274 32 FA 8F    		sta	v_inverse
+0013+  D277 C9          		ret
+0045   D278             .include "inputForCopyMove.inc"
+0001+  D278             ;----------------------------------------------------------------------------
+0002+  D278             ; MXOS NC.COM
+0003+  D278             ; Ввод строки в которой изначально содержится имя выбранного файла
+0004+  D278             ;
+0005+  D278             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D278             ;----------------------------------------------------------------------------
+0007+  D278             
+0008+  D278             inputForCopyMove:
+0009+  D278             		; Положение курсора
+0010+  D278 21 6E 3D    		lxi	h, 3D6Eh
+0011+  D27B 22 FC 8F    		shld	v_cursorY
+0012+  D27E             
+0013+  D27E             		; Строка для редактирования	
+0014+  D27E 11 84 DE    		lxi	d, v_input
+0015+  D281             
+0016+  D281             		; Отображается ли панель?
+0017+  D281 21 00 DE    		lxi	h, panelA_info
+0018+  D284 3A FF DD    		lda	activePanel
+0019+  D287 A7          		ana	a
+0020+  D288 C2 8C D2    		jnz	loc_D255
+0021+  D28B 23          		inx	h
+0022+  D28C 7E          loc_D255:	mov	a, m
+0023+  D28D             
+0024+  D28D             		; Если не отображается, то накопитель в стркоу не помещать
+0025+  D28D A7          		ana	a
+0026+  D28E C2 9C D2    		jnz	loc_D265
+0027+  D291             
+0028+  D291             		; Записываем букву накопителя
+0029+  D291 23          		inx	h
+0030+  D292 23          		inx	h
+0031+  D293 7E          		mov	a, m
+0032+  D294 C6 41       		adi	'A'
+0033+  D296 12          		stax	d
+0034+  D297 13          		inx	d
+0035+  D298             
+0036+  D298             		; Записываем ':'
+0037+  D298 3E 3A       		mvi	a, ':'
+0038+  D29A 12          		stax	d
+0039+  D29B 13          		inx	d
+0040+  D29C             
+0041+  D29C             loc_D265:	; Записать выбранный файл
+0042+  D29C CD 3E D8    		call	getSelectedFile
+0043+  D29F CD EC DA    		call	compactName
+0044+  D2A2             
+0045+  D2A2             		; Записать 0
+0046+  D2A2 1B          		dcx	d
+0047+  D2A3 1B          		dcx	d
+0048+  D2A4 AF          		xra	a
+0049+  D2A5 12          		stax	d
+0050+  D2A6             
+0051+  D2A6             		; Перейти к редакированию
+0052+  D2A6 C3 29 DB    		jmp	input0046   D2A9             .include "printSelDrive.inc"
+0001+  D2A9             ;----------------------------------------------------------------------------
+0002+  D2A9             ; MXOS NC.COM
+0003+  D2A9             ; Вывод текущего накопителя
+0004+  D2A9             ;
+0005+  D2A9             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D2A9             ;----------------------------------------------------------------------------
+0007+  D2A9             
+0008+  D2A9             ; Печать буквы активного диска
+0009+  D2A9             
+0010+  D2A9 21 02 DE    printSelDrive:	lxi	h, panelA_drive
+0011+  D2AC CD 17 DA    		call	readBytePanel
+0012+  D2AF C3 FB D9    		jmp	printDrive
+0013+  D2B2             
+0047   D2B2             .include "f7.inc"
+0001+  D2B2             ;----------------------------------------------------------------------------
+0002+  D2B2             ; MXOS NC.COM
+0003+  D2B2             ; Клавиша F7. Загрузка файла с ленты на накопитель
+0004+  D2B2             ;
+0005+  D2B2             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D2B2             ;----------------------------------------------------------------------------
+0007+  D2B2             
+0008+  D2B2             ; Сохранение SP	и установка обр	ошибок.
+0009+  D2B2             
+0010+  D2B2 21 00 00    prepareTapeLoad:lxi	h, 0
+0011+  D2B5 39          		dad	sp
+0012+  D2B6 23          		inx	h
+0013+  D2B7 23          		inx	h
+0014+  D2B8 22 37 DE    		shld	v_savedSP
+0015+  D2BB             
+0016+  D2BB 21 B1 D3    		lxi	h, tapeErrorHandler
+0017+  D2BE 22 E1 8F    		shld	v_tapeError
+0018+  D2C1             
+0019+  D2C1 3E 0F       		mvi	a, 0Fh
+0020+  D2C3 32 E2 FF    		sta	IO_KEYB_C
+0021+  D2C6 3E FE       		mvi	a, 0FEh
+0022+  D2C8 32 E0 FF    		sta	IO_KEYB_A
+0023+  D2CB C9          		ret
+0024+  D2CC             
+0025+  D2CC             ; ---------------------------------------------------------------------------
+0026+  D2CC             
+0027+  D2CC             F7:		; Рисуем окно
+0028+  D2CC CD 45 D2    		call	drawWindow1
+0029+  D2CF             
+0030+  D2CF             		; Выводим "LOADING TAPE TO A:"
+0031+  D2CF 21 5E 44    		lxi	h, 445Eh
+0032+  D2D2 22 FC 8F    		shld	v_cursorY
+0033+  D2D5 21 7D DD    		lxi	h, aLoadingTapeTo
+0034+  D2D8 CD 18 C8    		call	printString		
+0035+  D2DB CD A9 D2    		call	printSelDrive
+0036+  D2DE             		
+0037+  D2DE             		; Сохранение SP	и установка обр	ошибок.
+0038+  D2DE CD B2 D2    		call	prepareTapeLoad	
+0039+  D2E1             
+0040+  D2E1             loc_D2AA:	; Ждем пилот и D9 D9 D9
+0041+  D2E1 3E FF       		mvi	a, 0FFh		
+0042+  D2E3 0E 03       		mvi	c, 3
+0043+  D2E5 C3 EA D2    		jmp	loc_D2B3
+0044+  D2E8 3E 08       loc_D2B1:	 mvi	a, 8
+0045+  D2EA CD 06 C8    loc_D2B3:	 call	tapeRead
+0046+  D2ED FE D9       		 cpi	0D9h 
+0047+  D2EF C2 E1 D2    		 jnz	loc_D2AA
+0048+  D2F2 0D          		 dcr	c
+0049+  D2F3 C2 E8 D2    		jnz	loc_D2B1
+0050+  D2F6             
+0051+  D2F6             		; Читаем имя
+0052+  D2F6 21 A4 DE    		lxi	h, files2
+0053+  D2F9 54          		mov	d, h
+0054+  D2FA 5D          		mov	e, l
+0055+  D2FB 0E 09       		mvi	c, 9		
+0056+  D2FD 3E 08       loc_D2C6:	 mvi	a, 8
+0057+  D2FF CD 06 C8    		 call	tapeRead
+0058+  D302 FE 20       		 cpi	' '
+0059+  D304 DA A7 D3    		 jc	loc_D370
+0060+  D307 77          		 mov	m, a
+0061+  D308 23          		 inx	h
+0062+  D309 0D          		 dcr	c
+0063+  D30A C2 FD D2    		jnz	loc_D2C6
+0064+  D30D             
+0065+  D30D 36 00       loc_D2D6:	mvi	m, 0
+0066+  D30F             
+0067+  D30F CD 5B D5    		call	printInvFile
+0068+  D312             
+0069+  D312             		; Ждем пилот и читаем слово
+0070+  D312 3E FF       		mvi	a, 0FFh
+0071+  D314 CD 9C D3    		call	tapeReadWord2		
+0072+  D317 22 39 DE    		shld	word_DDA0
+0073+  D31A             
+0074+  D31A             		; Еще одно слово
+0075+  D31A EB          		xchg
+0076+  D31B CD 9A D3    		call	tapeReadWord
+0077+  D31E             
+0078+  D31E             		; Сохраняем разность
+0079+  D31E 7D          		mov	a, l
+0080+  D31F 93          		sub	e
+0081+  D320 6F          		mov	l, a
+0082+  D321 7C          		mov	a, h
+0083+  D322 9A          		sbb	d
+0084+  D323 67          		mov	h, a
+0085+  D324 22 B0 DE    		shld	v_file_length
+0086+  D327             
+0087+  D327             		; Читаем данные по адресу 0000
+0088+  D327 23          		inx	h
+0089+  D328 EB          		xchg
+0090+  D329 21 00 00    		lxi	h, 0
+0091+  D32C 22 AE DE    		shld	v_file_addr		
+0092+  D32F 3E 08       loc_D2F8:	mvi	a, 8
+0093+  D331 CD 06 C8    		call	tapeRead
+0094+  D334 77          		mov	m, a
+0095+  D335 23          		inx	h
+0096+  D336 1B          		dcx	d
+0097+  D337 7A          		mov	a, d
+0098+  D338 B3          		ora	e
+0099+  D339 C2 2F D3    		jnz	loc_D2F8
+0100+  D33C             
+0101+  D33C             		; Чиаем CRC
+0102+  D33C CD 9A D3    		call	tapeReadWord
+0103+  D33F 22 35 DE    		shld	v_tapeSaveCRC
+0104+  D342             
+0105+  D342             		; Считаем CRC
+0106+  D342 2A B0 DE    		lhld	v_file_length
+0107+  D345 EB          		xchg
+0108+  D346 21 00 00    		lxi	h, 0
+0109+  D349 19          		dad	d
+0110+  D34A EB          		xchg
+0111+  D34B 21 00 00    		lxi	h, 0
+0112+  D34E CD 2A C8    		call	calcCS
+0113+  D351 2A 35 DE    		lhld	v_tapeSaveCRC
+0114+  D354             
+0115+  D354             		; Если расчетный CRC не равен реальному, выходим
+0116+  D354 78          		mov	a, b
+0117+  D355 BC          		cmp	h
+0118+  D356 C2 74 D3    		jnz	F7_crcError
+0119+  D359 79          		mov	a, c
+0120+  D35A BD          		cmp	l
+0121+  D35B C2 74 D3    		jnz	F7_crcError
+0122+  D35E             
+0123+  D35E CD 6A D3    		call	sub_D333
+0124+  D361             
+0125+  D361             		; Перерисовываем экран и продолжаем загрузку
+0126+  D361 CD 61 D8    		call	loadAndPrintA
+0127+  D364 CD 52 D8    		call	loadAndPrintB
+0128+  D367 C3 CC D2    		jmp	F7
+0129+  D36A             
+0130+  D36A             ; ---------------------------------------------------------------------------
+0131+  D36A             
+0132+  D36A 2A 39 DE    sub_D333:	lhld	word_DDA0
+0133+  D36D E5          		push	h
+0134+  D36E 21 A4 DE    		lxi	h, files2
+0135+  D371 C3 1B D5    		jmp	loc_D4E4
+0136+  D374             
+0137+  D374             ; ---------------------------------------------------------------------------
+0138+  D374             
+0139+  D374 CD 58 D2    F7_crcError:	call	drawWindow2
+0140+  D377             
+0141+  D377             		; Вывод "ERROR LOADING TAPE"
+0142+  D377 21 80 46    		lxi	h, 4680h
+0143+  D37A 22 FC 8F    		shld	v_cursorY
+0144+  D37D 21 8F DD    		lxi	h, aErrorLoadingTa
+0145+  D380 CD 18 C8    		call	printString
+0146+  D383             
+0147+  D383             		; Вывод строки из v_input
+0148+  D383 21 90 50    		lxi	h, 5090h
+0149+  D386 22 FC 8F    		shld	v_cursorY
+0150+  D389 21 84 DE    		lxi	h, v_input
+0151+  D38C CD 6B D2    		call	printStringInv
+0152+  D38F             
+0153+  D38F             loc_D358:	; Ждем нажатия ESC
+0154+  D38F CD 1B C8    		call	keyScan
+0155+  D392 FE 1B       		cpi	1Bh
+0156+  D394 C2 8F D3    		jnz	loc_D358
+0157+  D397             
+0158+  D397 C3 61 D0    		jmp	mainReload
+0159+  D39A             
+0160+  D39A             ;----------------------------------------------------------------------------
+0161+  D39A             ; Чтение слова с ленты
+0162+  D39A             ;----------------------------------------------------------------------------
+0163+  D39A             
+0164+  D39A 3E 08       tapeReadWord:	mvi	a, 8
+0165+  D39C CD 06 C8    tapeReadWord2:	call	tapeRead
+0166+  D39F 6F          		mov	l, a
+0167+  D3A0 3E 08       		mvi	a, 8
+0168+  D3A2 CD 06 C8    		call	tapeRead
+0169+  D3A5 67          		mov	h, a
+0170+  D3A6 C9          		ret
+0171+  D3A7             
+0172+  D3A7             
+0173+  D3A7             ; ---------------------------------------------------------------------------
+0174+  D3A7             
+0175+  D3A7 36 20       loc_D370:	mvi	m, ' '
+0176+  D3A9 23          		inx	h
+0177+  D3AA 0D          		dcr	c
+0178+  D3AB C2 A7 D3    		jnz	loc_D370
+0179+  D3AE C3 0D D3    		jmp	loc_D2D6
+0048   D3B1             .include "tapeErrorHandler.inc"
+0001+  D3B1             ;----------------------------------------------------------------------------
+0002+  D3B1             ; MXOS NC.COM
+0003+  D3B1             ; Вызывается при ошибке загрузки с ленты
+0004+  D3B1             ;
+0005+  D3B1             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D3B1             ;----------------------------------------------------------------------------
+0007+  D3B1             
+0008+  D3B1             tapeErrorHandler:
+0009+  D3B1             		; Восстановление обработчика
+0010+  D3B1 21 00 C8    		lxi	h, 0C800h
+0011+  D3B4 22 E1 8F    		shld	v_tapeError
+0012+  D3B7             
+0013+  D3B7             		; Восстановление стека
+0014+  D3B7 2A 37 DE    		lhld	v_savedSP
+0015+  D3BA F9          		sphl
+0016+  D3BB             
+0017+  D3BB             		; Перезагрузка файлов и продолжение работы
+0018+  D3BB C3 61 D0    		jmp	mainReload
+0049   D3BE             .include "f9.inc"
+0001+  D3BE             ;----------------------------------------------------------------------------
+0002+  D3BE             ; MXOS NC.COM
+0003+  D3BE             ; Клавиша F9 - Сохранение файла на магнитофон
+0004+  D3BE             ;
+0005+  D3BE             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D3BE             ;----------------------------------------------------------------------------
+0007+  D3BE             
+0008+  D3BE             f9:		; Рисуем окно
+0009+  D3BE CD 39 D2    		call	drawWindowIfSel
+0010+  D3C1             
+0011+  D3C1             		; Выводим SAVE FROM A: TO TAPE
+0012+  D3C1 21 5E 40    		lxi	h, 405Eh
+0013+  D3C4 22 FC 8F    		shld	v_cursorY
+0014+  D3C7 21 47 DD    		lxi	h, aSaveFromToTape
+0015+  D3CA CD 18 C8    		call	printString
+0016+  D3CD CD A9 D2    		call	printSelDrive
+0017+  D3D0             
+0018+  D3D0             		; ?
+0019+  D3D0 CD 57 D5    		call	printInvSelFile
+0020+  D3D3             
+0021+  D3D3             		; Ждем нажатия Enter или ESC.
+0022+  D3D3 CD 1B C8    loc_D39C:	call	keyScan
+0023+  D3D6 FE 1B       		cpi	1Bh
+0024+  D3D8 CA 61 D0    		jz	mainReload
+0025+  D3DB FE 0D       		cpi	0Dh
+0026+  D3DD C2 D3 D3    		jnz	loc_D39C
+0027+  D3E0             
+0028+  D3E0             		; Сохранение SP	и установка обр	ошибок.
+0029+  D3E0 CD B2 D2    		call	prepareTapeLoad
+0030+  D3E3             
+0031+  D3E3             		; Вывод SAVING TAPE
+0032+  D3E3 21 5E 40    		lxi	h, 405Eh
+0033+  D3E6 22 FC 8F    		shld	v_cursorY
+0034+  D3E9 21 67 DD    		lxi	h, aSavingTape	
+0035+  D3EC CD 18 C8    		call	printString
+0036+  D3EF             
+0037+  D3EF             		; Загрузка файла
+0038+  D3EF CD FE D4    		call	loadSelFileAt0
+0039+  D3F2             
+0040+  D3F2             		; Получение адреса загрузки и длины
+0041+  D3F2 D5          		push	d
+0042+  D3F3 E5          		push	h
+0043+  D3F4 11 0C 00    		lxi	d, 0Ch
+0044+  D3F7 19          		dad	d
+0045+  D3F8 5E          		mov	e, m
+0046+  D3F9 23          		inx	h
+0047+  D3FA 56          		mov	d, m
+0048+  D3FB E1          		pop	h
+0049+  D3FC D5          		push	d
+0050+  D3FD E5          		push	h
+0051+  D3FE 21 00 00    		lxi	h, 0
+0052+  D401 19          		dad	d
+0053+  D402 EB          		xchg
+0054+  D403 21 00 00    		lxi	h, 0
+0055+  D406             
+0056+  D406             		; Расчет контрольной суммы
+0057+  D406 CD 2A C8    		call	calcCS
+0058+  D409 60          		mov	h, b
+0059+  D40A 69          		mov	l, c
+0060+  D40B 22 35 DE    		shld	v_tapeSaveCRC
+0061+  D40E             
+0062+  D40E             		; Пилот-тон
+0063+  D40E CD 56 D4    		call	tapeWritePilot
+0064+  D411             
+0065+  D411             		; Начало файла
+0066+  D411 3E D9       		mvi	a, 0D9h
+0067+  D413 CD 0C C8    		call	tapeWrite
+0068+  D416 CD 0C C8    		call	tapeWrite
+0069+  D419 CD 0C C8    		call	tapeWrite
+0070+  D41C             
+0071+  D41C E1          		pop	h ; откуда
+0072+  D41D 01 08 00    		lxi	b, 8 ; длина
+0073+  D420 CD 46 D4    		call	tapeWriteBlock
+0074+  D423             
+0075+  D423             		; Пилот-тон
+0076+  D423 CD 56 D4    		call	tapeWritePilot
+0077+  D426             
+0078+  D426 C1          		pop	b ; Длина
+0079+  D427 E1          		pop	h ; Начальный адрес
+0080+  D428 CD 3E D4    		call	tapeWriteWord
+0081+  D42B             
+0082+  D42B 09          		dad	b ; Конечный адрес		
+0083+  D42C CD 3E D4    		call	tapeWriteWord
+0084+  D42F             
+0085+  D42F             		; Запись файла
+0086+  D42F 21 00 00    		lxi	h, 0
+0087+  D432 CD 46 D4    		call	tapeWriteBlock	; hl-адрес, bc-длина-1
+0088+  D435             
+0089+  D435             		; Запись контрольной суммы
+0090+  D435 2A 35 DE    		lhld	v_tapeSaveCRC
+0091+  D438 CD 3E D4    		call	tapeWriteWord
+0092+  D43B             
+0093+  D43B C3 61 D0    		jmp	mainReload0050   D43E             .include "tapeWrite.inc"
+0001+  D43E             ;----------------------------------------------------------------------------
+0002+  D43E             ; MXOS NC.COM
+0003+  D43E             ; Запись слова на ленту
+0004+  D43E             ;
+0005+  D43E             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D43E             ;----------------------------------------------------------------------------
+0007+  D43E             
+0008+  D43E 7D          tapeWriteWord:	mov	a, l
+0009+  D43F CD 0C C8    		call	tapeWrite
+0010+  D442 7C          		mov	a, h
+0011+  D443 C3 0C C8    		jmp	tapeWrite
+0012+  D446             
+0013+  D446             ;----------------------------------------------------------------------------
+0014+  D446             ; Запись блока данных по адресу HL длиной BC+1 на ленту
+0015+  D446             ;----------------------------------------------------------------------------
+0016+  D446             
+0017+  D446 03          tapeWriteBlock:	inx	b
+0018+  D447 CD 6B D4    loc_D410:	 call	checkBreak
+0019+  D44A 7E          		 mov	a, m
+0020+  D44B CD 0C C8    		 call	tapeWrite
+0021+  D44E 23          		 inx	h
+0022+  D44F 0B          		 dcx	b
+0023+  D450 78          		 mov	a, b
+0024+  D451 B1          		 ora	c
+0025+  D452 C2 47 D4    		jnz	loc_D410
+0026+  D455 C9          		ret
+0027+  D456             
+0028+  D456             ;----------------------------------------------------------------------------
+0029+  D456             ; Запись пилот тона на ленту
+0030+  D456             ;----------------------------------------------------------------------------
+0031+  D456             
+0032+  D456 01 00 02    tapeWritePilot:	lxi	b, 200h
+0033+  D459 CD 6B D4    loc_D422:	 call	checkBreak
+0034+  D45C AF          		 xra	a
+0035+  D45D CD 0C C8    		 call	tapeWrite
+0036+  D460 0B          		 dcx	b
+0037+  D461 78          		 mov	a, b
+0038+  D462 B1          		 ora	c
+0039+  D463 C2 59 D4    		jnz	loc_D422
+0040+  D466             
+0041+  D466 3E E6       		mvi	a, 0E6h
+0042+  D468 C3 0C C8    		jmp	tapeWrite
+0043+  D46B             
+0044+  D46B             ; ---------------------------------------------------------------------------
+0045+  D46B             
+0046+  D46B 3A E1 FF    checkBreak:	lda	IO_KEYB_B
+0047+  D46E A7          		ana	a
+0048+  D46F F2 B1 D3    		jp	tapeErrorHandler
+0049+  D472 C9          		ret0051   D473             .include "F6.inc"
+0001+  D473             ;----------------------------------------------------------------------------
+0002+  D473             ; MXOS NC.COM
+0003+  D473             ; Клавиша F6 - переименование
+0004+  D473             ;
+0005+  D473             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D473             ;----------------------------------------------------------------------------
+0007+  D473             
+0008+  D473             F6:		; Рисуем окно
+0009+  D473 CD 39 D2    		call	drawWindowIfSel
+0010+  D476             
+0011+  D476             		; Выводим текст "REMOVE FROM DISK A: TO"
+0012+  D476 21 5E 3E    		lxi	h, 3E5Eh
+0013+  D479 22 FC 8F    		shld	v_cursorY
+0014+  D47C 21 E1 DC    		lxi	h, aRemoveFromDisk
+0015+  D47F CD 18 C8    		call	printString
+0016+  D482 CD A9 D2    		call	printSelDrive
+0017+  D485             
+0018+  D485 CD 78 D2    		call	inputForCopyMove
+0019+  D488 FE 1B       		cpi	1Bh
+0020+  D48A CA 61 D0    		jz	mainReload
+0021+  D48D             
+0022+  D48D 21 84 DE    		lxi	h, v_input
+0023+  D490 11 A4 DE    		lxi	d, files2
+0024+  D493 CD 5A C8    		call	fileNamePrepare
+0025+  D496             
+0026+  D496 1E 02       		mvi	e, 2
+0027+  D498 CD 42 C8    		call	fileGetSetDrive
+0028+  D49B 4F          		mov	c, a
+0029+  D49C 21 02 DE    		lxi	h, panelA_drive
+0030+  D49F CD 17 DA    		call	readBytePanel
+0031+  D4A2 B9          		cmp	c
+0032+  D4A3 C2 B2 D4    		jnz	loc_D47B
+0033+  D4A6 CD 3E D8    		call	getSelectedFile
+0034+  D4A9 11 A4 DE    		lxi	d, files2
+0035+  D4AC CD 4E C8    		call	fileRename
+0036+  D4AF C3 61 D0    		jmp	mainReload
+0037+  D4B2             ; ---------------------------------------------------------------------------
+0038+  D4B2             
+0039+  D4B2 1E 01       loc_D47B:	mvi	e, 1
+0040+  D4B4 CD 42 C8    		call	fileGetSetDrive
+0041+  D4B7 CD 3E D8    		call	getSelectedFile
+0042+  D4BA 11 A4 DE    		lxi	d, files2
+0043+  D4BD 0E 09       		mvi	c, 9
+0044+  D4BF             
+0045+  D4BF 7E          loc_D488:	mov	a, m
+0046+  D4C0 12          		stax	d
+0047+  D4C1 23          		inx	h
+0048+  D4C2 13          		inx	d
+0049+  D4C3 0D          		dcr	c
+0050+  D4C4 C2 BF D4    		jnz	loc_D488
+0051+  D4C7 CD 0F D5    		call	copyFileInt
+0052+  D4CA 21 02 DE    		lxi	h, panelA_drive
+0053+  D4CD CD 17 DA    		call	readBytePanel
+0054+  D4D0 1E 01       		mvi	e, 1
+0055+  D4D2 CD 42 C8    		call	fileGetSetDrive
+0056+  D4D5 21 A4 DE    		lxi	h, files2
+0057+  D4D8 CD 4B C8    		call	fileDelete
+0058+  D4DB C3 61 D0    		jmp	mainReload
+0052   D4DE             .include "F5.inc"
+0001+  D4DE             ;----------------------------------------------------------------------------
+0002+  D4DE             ; MXOS NC.COM
+0003+  D4DE             ; Клавиша F5 - копирование
+0004+  D4DE             ;
+0005+  D4DE             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D4DE             ;----------------------------------------------------------------------------
+0007+  D4DE             
+0008+  D4DE             F5:		; Рисуем окно
+0009+  D4DE CD 39 D2    		call	drawWindowIfSel
+0010+  D4E1             
+0011+  D4E1             		; Рисуем надпись "COPY FROM DISK A: TO"
+0012+  D4E1 21 5E 40    		lxi	h, 405Eh
+0013+  D4E4 22 FC 8F    		shld	v_cursorY
+0014+  D4E7 21 B4 DC    		lxi	h, aCopyFromDiskTo 
+0015+  D4EA CD 18 C8    		call	printString
+0016+  D4ED CD A9 D2    		call	printSelDrive
+0017+  D4F0             
+0018+  D4F0 CD 78 D2    		call	inputForCopyMove
+0019+  D4F3 FE 1B       		cpi	1Bh
+0020+  D4F5 CA 61 D0    		jz	mainReload
+0021+  D4F8             
+0022+  D4F8 CD 0F D5    		call	copyFileInt
+0023+  D4FB C3 61 D0    		jmp	mainReload
+0053   D4FE             .include "loadSelFileAt0.inc"
+0001+  D4FE             ;----------------------------------------------------------------------------
+0002+  D4FE             ; MXOS NC.COM
+0003+  D4FE             ; Загрузить выбранный файл по адресу 0
+0004+  D4FE             ;
+0005+  D4FE             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D4FE             ;----------------------------------------------------------------------------
+0007+  D4FE             
+0008+  D4FE CD 3E D8    loadSelFileAt0:	call	getSelectedFile
+0009+  D501             
+0010+  D501             		; Получаем адрес загрузки файла
+0011+  D501 0E 02       		mvi	c, 2
+0012+  D503 CD 54 C8    		call	fileGetSetAddr
+0013+  D506 D5          		push	d
+0014+  D507             
+0015+  D507             		; Загружаем файл в начало памяти
+0016+  D507 11 00 00    		lxi	d, 0
+0017+  D50A CD 66 C8    		call	fileLoad2
+0018+  D50D             
+0019+  D50D D1          		pop	d
+0020+  D50E C9          		ret
+0054   D50F             .include "copyFileInt.inc"
+0001+  D50F             ;----------------------------------------------------------------------------
+0002+  D50F             ; MXOS NC.COM
+0003+  D50F             ; Общая функция для копирования и переноса файла
+0004+  D50F             ;
+0005+  D50F             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D50F             ;----------------------------------------------------------------------------
+0007+  D50F             
+0008+  D50F             copyFileInt:	; Загрузка выбранного файла в память
+0009+  D50F CD FE D4    		call	loadSelFileAt0
+0010+  D512 D5          		push	d	; Тут реальный адрес
+0011+  D513             
+0012+  D513             		; Подготавливаем имя	
+0013+  D513 EB          		xchg
+0014+  D514 21 84 DE    		lxi	h, v_input
+0015+  D517 CD 5A C8    		call	fileNamePrepare
+0016+  D51A EB          		xchg
+0017+  D51B             
+0018+  D51B             loc_D4E4:	; Сохраняем имя
+0019+  D51B E5          		push	h
+0020+  D51C             
+0021+  D51C             		; Устанавливаем адрес сохраняемого файла
+0022+  D51C 11 0A 00    		lxi	d, 10
+0023+  D51F 19          		dad	d
+0024+  D520 11 00 00    		lxi	d, 0
+0025+  D523 73          		mov	m, e
+0026+  D524 23          		inx	h
+0027+  D525 72          		mov	m, d
+0028+  D526             
+0029+  D526             		; Сохраняем файл
+0030+  D526 E1          		pop	h
+0031+  D527 CD 45 C8    		call	fileCreate
+0032+  D52A             
+0033+  D52A             		; Изменяем адрес загрузки файла
+0034+  D52A D1          		pop	d
+0035+  D52B 0E 01       		mvi	c, 1
+0036+  D52D CD 54 C8    		call	fileGetSetAddr
+0037+  D530             
+0038+  D530             		; Выходим, если нет ошибки
+0039+  D530 D0          		rnc
+0040+  D531             
+0041+  D531             		; Рисуем окно
+0042+  D531 CD 58 D2    		call	drawWindow2
+0043+  D534             
+0044+  D534             		; Вывод "CAN'T CREATY FILE"
+0045+  D534 21 80 45    		lxi	h, 4580h
+0046+  D537 22 FC 8F    		shld	v_cursorY
+0047+  D53A 21 CF DC    		lxi	h, aCanTCreatyFile
+0048+  D53D CD 18 C8    		call	printString
+0049+  D540             
+0050+  D540             		; Вывод имени
+0051+  D540 21 90 50    		lxi	h, 5090h
+0052+  D543 22 FC 8F    		shld	v_cursorY
+0053+  D546 21 84 DE    		lxi	h, v_input
+0054+  D549 CD 6B D2    		call	printStringInv
+0055+  D54C             
+0056+  D54C             anyKey:		; Ждем нажатия любой клавиши
+0057+  D54C CD 1B C8    		call	keyScan
+0058+  D54F 3C          		inr	a
+0059+  D550 CA 4C D5    		jz	anyKey
+0060+  D553             
+0061+  D553             		; Выход
+0062+  D553 E1          		pop	h
+0063+  D554 C3 61 D0    		jmp	mainReload0055   D557             .include "printInvSelFile.inc"
+0001+  D557             ;----------------------------------------------------------------------------
+0002+  D557             ; MXOS NC.COM
+0003+  D557             ; Инверсный вывод имени выбранного файла
+0004+  D557             ;
+0005+  D557             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D557             ;----------------------------------------------------------------------------
+0007+  D557             
+0008+  D557             printInvSelFile:
+0009+  D557 CD 3E D8    		call	getSelectedFile
+0010+  D55A EB          		xchg
+0011+  D55B 21 6E 50    printInvFile:	lxi	h, 506Eh
+0012+  D55E 22 FC 8F    		shld	v_cursorY
+0013+  D561 EB          		xchg
+0014+  D562 11 84 DE    		lxi	d, v_input
+0015+  D565 CD EC DA    		call	compactName
+0016+  D568 21 84 DE    		lxi	h, v_input
+0017+  D56B C3 6B D2    		jmp	printStringInv
+0056   D56E             .include "f8.inc"
+0001+  D56E             ;----------------------------------------------------------------------------
+0002+  D56E             ; MXOS NC.COM
+0003+  D56E             ; Клавиша F8 - удаление файла
+0004+  D56E             ;
+0005+  D56E             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D56E             ;----------------------------------------------------------------------------
+0007+  D56E             
+0008+  D56E             F8:		; Рисуем окно
+0009+  D56E CD 39 D2    		call	drawWindowIfSel
+0010+  D571             
+0011+  D571             		; Выводим надпись "DELETE FROM DISK A:"
+0012+  D571 21 5E 42    		lxi	h, 425Eh
+0013+  D574 22 FC 8F    		shld	v_cursorY
+0014+  D577 21 9D DC    		lxi	h, aDeleteFromDisk
+0015+  D57A CD 18 C8    		call	printString
+0016+  D57D CD A9 D2    		call	printSelDrive
+0017+  D580             
+0018+  D580 CD 57 D5    		call	printInvSelFile
+0019+  D583             
+0020+  D583             loc_D54C:	; Ждем нажатия Enter или ESC
+0021+  D583 CD 1B C8    		call	keyScan
+0022+  D586 FE 1B       		cpi	1Bh
+0023+  D588 CA 61 D0    		jz	mainReload
+0024+  D58B FE 0D       		cpi	0Dh
+0025+  D58D C2 83 D5    		jnz	loc_D54C
+0026+  D590             
+0027+  D590             		; Если файл только для чтения
+0028+  D590 CD 3E D8    		call	getSelectedFile		
+0029+  D593 11 09 00    		lxi	d, 9
+0030+  D596 19          		dad	d
+0031+  D597 7E          		mov	a, m
+0032+  D598 E6 01       		ani	1
+0033+  D59A CA CC D5    		jz	loc_D595
+0034+  D59D             
+0035+  D59D CD 58 D2    		call	drawWindow2
+0036+  D5A0             
+0037+  D5A0             		; Выводим текст "FILE IS PROTECTION"
+0038+  D5A0 21 80 46    		lxi	h, 4680h
+0039+  D5A3 22 FC 8F    		shld	v_cursorY
+0040+  D5A6 21 60 DC    		lxi	h, aFileIsProtecti
+0041+  D5A9 CD 18 C8    		call	printString
+0042+  D5AC             
+0043+  D5AC             		; Выводим v_input
+0044+  D5AC 21 90 50    		lxi	h, 5090h
+0045+  D5AF 22 FC 8F    		shld	v_cursorY		
+0046+  D5B2 21 84 DE    		lxi	h, v_input
+0047+  D5B5 CD 6B D2    		call	printStringInv
+0048+  D5B8             
+0049+  D5B8             loc_D581:				; CODE XREF: drawWindowIfSel+379j
+0050+  D5B8 CD 1B C8    		call	keyScan
+0051+  D5BB 3C          		inr	a
+0052+  D5BC C2 B8 D5    		jnz	loc_D581
+0053+  D5BF             
+0054+  D5BF             loc_D588:				; CODE XREF: drawWindowIfSel+386j
+0055+  D5BF CD 1B C8    		call	keyScan
+0056+  D5C2 FE 1B       		cpi	1Bh
+0057+  D5C4 CA 61 D0    		jz	mainReload
+0058+  D5C7 FE 0D       		cpi	0Dh
+0059+  D5C9 C2 BF D5    		jnz	loc_D588
+0060+  D5CC             
+0061+  D5CC             loc_D595:	; Удаляем текущий файл
+0062+  D5CC CD 3E D8    		call	getSelectedFile
+0063+  D5CF CD 4B C8    		call	fileDelete
+0064+  D5D2             
+0065+  D5D2             		; Уменьшаем счетчик файлов
+0066+  D5D2 21 04 DE    		lxi	h, panelA_filesCnt
+0067+  D5D5 CD 17 DA    		call	readBytePanel
+0068+  D5D8 3D          		dcr	a
+0069+  D5D9 CD 06 DA    		call	writeBytePanel
+0070+  D5DC             
+0071+  D5DC C3 61 D0    		jmp	mainReload
+0057   D5DF             .include "f2.inc"
+0001+  D5DF             ;----------------------------------------------------------------------------
+0002+  D5DF             ; MXOS NC.COM
+0003+  D5DF             ; Клавиши F1, F2. Выбор накопителя для панели
+0004+  D5DF             ;
+0005+  D5DF             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D5DF             ;----------------------------------------------------------------------------
+0007+  D5DF             
+0008+  D5DF             F2:		; Временно устанавливаем activePanel=1
+0009+  D5DF 3A FF DD    		lda	activePanel
+0010+  D5E2 F5          		push	psw
+0011+  D5E3 3E 01       		mvi	a, 1
+0012+  D5E5 32 FF DD    		sta	activePanel
+0013+  D5E8             
+0014+  D5E8             		; Диалог
+0015+  D5E8 CD 40 D6    		call	chooseDrive
+0016+  D5EB             
+0017+  D5EB             		; Если выбрали устройство, то сохраняем его.
+0018+  D5EB FE FF       		cpi	0FFh
+0019+  D5ED CA FA D5    		jz	loc_D5C3		
+0020+  D5F0 32 03 DE    		sta	panelB_drive
+0021+  D5F3             
+0022+  D5F3             		; А так же делаем панель видимой и переиещаем курсор в начало
+0023+  D5F3 AF          		xra	a
+0024+  D5F4 32 01 DE    		sta	panelB_info
+0025+  D5F7 32 07 DE    		sta	panelB_curFile
+0026+  D5FA             
+0027+  D5FA             loc_D5C3:	; Восстанавливаем activePanel
+0028+  D5FA F1          		pop	psw
+0029+  D5FB 32 FF DD    		sta	activePanel
+0030+  D5FE             
+0031+  D5FE             		; Перезагружаем и перерисовываем вторую панель
+0032+  D5FE CD 52 D8    		call	loadAndPrintB
+0033+  D601             
+0034+  D601             		; Перезагружаем и перерисовываем первую панель, только если она отображается
+0035+  D601 3A 00 DE    		lda	panelA_info
+0036+  D604 A7          		ana	a
+0037+  D605 CA 3A D6    		jz	loc_D603
+0038+  D608 CD 61 D8    		call	loadAndPrintA
+0039+  D60B             
+0040+  D60B             		; Сохраняем состояние и выходим
+0041+  D60B C3 3A D6    		jmp	loc_D603
+0042+  D60E             
+0043+  D60E             ; ---------------------------------------------------------------------------
+0044+  D60E             
+0045+  D60E             F1:		; Временно устанавливаем activePanel=02
+0046+  D60E 3A FF DD    		lda	activePanel
+0047+  D611 F5          		push	psw
+0048+  D612 3E 00       		mvi	a, 0
+0049+  D614 32 FF DD    		sta	activePanel
+0050+  D617             
+0051+  D617             		; Диалог
+0052+  D617 CD 40 D6    		call	chooseDrive
+0053+  D61A             
+0054+  D61A             		; Если выбрали устройство, то сохраняем его.
+0055+  D61A FE FF       		cpi	0FFh
+0056+  D61C CA 29 D6    		jz	loc_D5F2
+0057+  D61F 32 02 DE    		sta	panelA_drive
+0058+  D622             
+0059+  D622             		; А так же делаем панель видимой и переиещаем курсор в начало
+0060+  D622 AF          		xra	a
+0061+  D623 32 00 DE    		sta	panelA_info
+0062+  D626 32 06 DE    		sta	panelA_curFile
+0063+  D629             
+0064+  D629             loc_D5F2:	; Восстанавливаем activePanel
+0065+  D629 F1          		pop	psw
+0066+  D62A 32 FF DD    		sta	activePanel
+0067+  D62D             
+0068+  D62D             		; Перезагружаем и перерисовываем первую панель
+0069+  D62D CD 61 D8    		call	loadAndPrintA
+0070+  D630             
+0071+  D630             		; Перезагружаем и перерисовываем вторую панель, только если она отображается
+0072+  D630 3A 01 DE    		lda	panelB_info
+0073+  D633 A7          		ana	a
+0074+  D634 CA 3A D6    		jz	loc_D603
+0075+  D637 CD 52 D8    		call	loadAndPrintB
+0076+  D63A             		
+0077+  D63A             loc_D603:	; Сохраняем состояние и выходим
+0078+  D63A CD 09 D2    		call	saveState
+0079+  D63D C3 77 D0    		jmp	mainDriveChanged
+0080+  D640             
+0081+  D640             ; ---------------------------------------------------------------------------
+0082+  D640             
+0083+  D640 3E 07 32 F8 chooseDrive:	COLOR(COLOR_DIALOG)
+0083+  D644 FF 
+0084+  D645             
+0085+  D645 21 DA DD    		lxi	h, g_chooseDrive
+0086+  D648 CD 56 DA    		call	draw
+0087+  D64B             
+0088+  D64B             		; Выводим текст "CHOOSE DRIVE:"
+0089+  D64B 21 63 1E    		lxi	h, 1E63h
+0090+  D64E CD 43 DA    		call	setCursorPosPanel
+0091+  D651 21 8F DC    		lxi	h, aChooseDrive
+0092+  D654 CD 18 C8    		call	printString
+0093+  D657             
+0094+  D657             		; Выводим текст "A   B   C   D"
+0095+  D657 21 74 1C    		lxi	h, 1C74h
+0096+  D65A CD 43 DA    		call	setCursorPosPanel
+0097+  D65D 21 73 DC    		lxi	h, aABCD
+0098+  D660 CD 18 C8    		call	printString
+0099+  D663             
+0100+  D663             		; Выводим текст "E   F   G   H"
+0101+  D663 21 7F 1C    		lxi	h, 1C7Fh
+0102+  D666 CD 43 DA    		call	setCursorPosPanel
+0103+  D669 21 81 DC    		lxi	h, aEFGH	
+0104+  D66C CD 18 C8    		call	printString
+0105+  D66F             
+0106+  D66F             		; Меняем вид курсора
+0107+  D66F 3A E9 8F    		lda	v_cursorCfg
+0108+  D672 F5          		push	psw
+0109+  D673 AF          		xra	a
+0110+  D674 32 E9 8F    		sta	v_cursorCfg
+0111+  D677             
+0112+  D677             		; Сохраняем текущее устройство
+0113+  D677 21 02 DE    		lxi	h, panelA_drive
+0114+  D67A CD 17 DA    		call	readBytePanel
+0115+  D67D 32 34 DE    		sta	v_chooseDrive
+0116+  D680             
+0117+  D680             loc_D644:	; Рисуем курсор
+0118+  D680 CD D8 D6    		call	chooseDrive_draw
+0119+  D683             
+0120+  D683             		; Ждем нажатия клавиши
+0121+  D683 CD 03 C8    		call	getch
+0122+  D686             
+0123+  D686             		; Стираем курсор
+0124+  D686 F5          		push	psw
+0125+  D687 CD D8 D6    		call	chooseDrive_draw
+0126+  D68A F1          		pop	psw
+0127+  D68B             
+0128+  D68B 0E 01       		mvi	c, 1
+0129+  D68D FE 18       		cpi	18h
+0130+  D68F CA CC D6    		jz	loc_D690
+0131+  D692 0E 07       		mvi	c, 7
+0132+  D694 FE 08       		cpi	8
+0133+  D696 CA CC D6    		jz	loc_D690
+0134+  D699 0E 04       		mvi	c, 4
+0135+  D69B FE 1A       		cpi	1Ah
+0136+  D69D CA CC D6    		jz	loc_D690
+0137+  D6A0 FE 19       		cpi	19h
+0138+  D6A2 CA CC D6    		jz	loc_D690
+0139+  D6A5 FE 0D       		cpi	0Dh
+0140+  D6A7 CA C4 D6    		jz	loc_D688
+0141+  D6AA FE 1B       		cpi	1Bh
+0142+  D6AC CA BD D6    		jz	loc_D681
+0143+  D6AF             
+0144+  D6AF             		; Выбор диска нажатием на A-H
+0145+  D6AF D6 41       		sui	41h
+0146+  D6B1 FE 08       		cpi	8
+0147+  D6B3 D2 80 D6    		jnc	loc_D644
+0148+  D6B6 4F          		mov	c, a
+0149+  D6B7             
+0150+  D6B7             		; Восстанавливаем вид курсора
+0151+  D6B7 F1          		pop	psw
+0152+  D6B8 32 E9 8F    		sta	v_cursorCfg
+0153+  D6BB 79          		mov	a, c
+0154+  D6BC C9          		ret
+0155+  D6BD             
+0156+  D6BD             ; ---------------------------------------------------------------------------
+0157+  D6BD             
+0158+  D6BD             loc_D681:	; Восстанавливаем вид курсора
+0159+  D6BD F1          		pop	psw
+0160+  D6BE 32 E9 8F    		sta	v_cursorCfg
+0161+  D6C1             
+0162+  D6C1             		; Ничего не выбрано
+0163+  D6C1 3E FF       		mvi	a, 0FFh
+0164+  D6C3 C9          		ret
+0165+  D6C4             
+0166+  D6C4             ; ---------------------------------------------------------------------------
+0167+  D6C4             
+0168+  D6C4             loc_D688:	; Восстанавливаем вид курсора
+0169+  D6C4 F1          		pop	psw
+0170+  D6C5 32 E9 8F    		sta	v_cursorCfg
+0171+  D6C8             		; Выбрали
+0172+  D6C8 3A 34 DE    		lda	v_chooseDrive
+0173+  D6CB C9          		ret
+0174+  D6CC             
+0175+  D6CC             ; ---------------------------------------------------------------------------
+0176+  D6CC             
+0177+  D6CC 3A 34 DE    loc_D690:	lda	v_chooseDrive
+0178+  D6CF 81          		add	c
+0179+  D6D0 E6 07       		ani	7
+0180+  D6D2 32 34 DE    		sta	v_chooseDrive
+0181+  D6D5 C3 80 D6    		jmp	loc_D644
+0182+  D6D8             
+0183+  D6D8             ; ---------------------------------------------------------------------------
+0184+  D6D8             
+0185+  D6D8             chooseDrive_draw:
+0186+  D6D8             		; Выбранное устройство
+0187+  D6D8 3A 34 DE    		lda	v_chooseDrive
+0188+  D6DB             
+0189+  D6DB             		; Координаты курсора
+0190+  D6DB 21 6C 97    		lxi	h, 976Ch
+0191+  D6DE             
+0192+  D6DE             		; Вторая строка
+0193+  D6DE FE 04       		cpi	4
+0194+  D6E0 DA EB D6    		jc	chooseDrive_draw2
+0195+  D6E3 D6 04       		 sui	4
+0196+  D6E5 4F          		 mov	c, a
+0197+  D6E6 7D          		 mov	a, l
+0198+  D6E7 C6 0B       		 adi	0Bh
+0199+  D6E9 6F          		 mov	l, a
+0200+  D6EA 79          		 mov	a, c
+0201+  D6EB             chooseDrive_draw2:	
+0202+  D6EB                             ; Рисуем
+0203+  D6EB 4F          		mov	c, a
+0204+  D6EC 87          		add	a
+0205+  D6ED 81          		add	c
+0206+  D6EE 84          		add	h
+0207+  D6EF 67          		mov	h, a
+0208+  D6F0 CD 95 DA    		call	activePanelPos
+0209+  D6F3 06 01       		mvi	b, 1		; ширина 8 пикселей
+0210+  D6F5 C3 2C D8    		jmp	inverseRect	; hl - адрес
+0211+  D6F8             		0058   D6F8             .include "tab.inc"
+0001+  D6F8             ;----------------------------------------------------------------------------
+0002+  D6F8             ; MXOS NC.COM
+0003+  D6F8             ; Клавиша TAB - Смена активной панели
+0004+  D6F8             ;
+0005+  D6F8             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D6F8             ;----------------------------------------------------------------------------
+0007+  D6F8             
+0008+  D6F8             Tab:		; Получаем видимость панели
+0009+  D6F8 21 00 DE    		lxi	h, panelA_info
+0010+  D6FB 3A FF DD    		lda	activePanel
+0011+  D6FE A7          		ana	a
+0012+  D6FF C2 03 D7    		jnz	loc_D6C7
+0013+  D702 23          		inx	h
+0014+  D703 4F          loc_D6C7:	mov	c, a
+0015+  D704 7E          		mov	a, m
+0016+  D705             
+0017+  D705             		; Панель не видима, выходим
+0018+  D705 A7          		ana	a
+0019+  D706 C2 77 D0    		jnz	mainDriveChanged
+0020+  D709             
+0021+  D709             		; Меняем активную панель на противоположную
+0022+  D709 79          		mov	a, c
+0023+  D70A EE 01       		xri	1                   	
+0024+  D70C 32 FF DD    		sta	activePanel
+0025+  D70F             
+0026+  D70F             		; Перезагружаем списк файлов
+0027+  D70F 21 02 DE    		lxi	h, panelA_drive
+0028+  D712 CD 17 DA    		call	readBytePanel
+0029+  D715 CD 91 D8    		call	loadFiles	; На входе нужен a=накопитель
+0030+  D718             
+0031+  D718 C3 3A D6    		jmp	loc_D6030059   D71B             .include "f3.inc"
+0001+  D71B             ;----------------------------------------------------------------------------
+0002+  D71B             ; MXOS NC.COM
+0003+  D71B             ; Клавиша F3 - отобразить информацию о накопителе
+0004+  D71B             ;
+0005+  D71B             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D71B             ;----------------------------------------------------------------------------
+0007+  D71B             
+0008+  D71B             F3:		; Временный выбор противоположной панели
+0009+  D71B 3A FF DD    		lda	activePanel
+0010+  D71E F5          		push	psw
+0011+  D71F EE 01       		xri	1
+0012+  D721 32 FF DD    		sta	activePanel
+0013+  D724             
+0014+  D724             		; Меняем видимость панели
+0015+  D724 21 00 DE    		lxi	h, panelA_info
+0016+  D727 CD 17 DA    		call	readBytePanel
+0017+  D72A EE 01       		xri	1
+0018+  D72C CD 06 DA    		call	writeBytePanel
+0019+  D72F             
+0020+  D72F             		; Восстанавлаием активную панель
+0021+  D72F F1          		pop	psw
+0022+  D730 32 FF DD    		sta	activePanel
+0023+  D733 A7          		ana	a
+0024+  D734 CA 3D D7    		jz	loc_D701
+0025+  D737             
+0026+  D737             		; Перерисовываем панель
+0027+  D737 CD 61 D8    		call	loadAndPrintA
+0028+  D73A             
+0029+  D73A C3 3A D6    		jmp	loc_D603
+0030+  D73D             
+0031+  D73D             ; ---------------------------------------------------------------------------
+0032+  D73D             
+0033+  D73D CD 52 D8    loc_D701:	call	loadAndPrintB
+0034+  D740 C3 3A D6    		jmp	loc_D603		        0060   D743             .include "upDownLeftRight.inc"
+0001+  D743             ;----------------------------------------------------------------------------
+0002+  D743             ; MXOS NC.COM
+0003+  D743             ; Клавиши перемещения курсора
+0004+  D743             ;
+0005+  D743             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D743             ;----------------------------------------------------------------------------
+0007+  D743             
+0008+  D743             Down:		; Если curFile+1 < filesCnt, то curFile = curFile+1
+0009+  D743 21 04 DE    		lxi	h, panelA_filesCnt
+0010+  D746 CD 17 DA    		call	readBytePanel
+0011+  D749 4F          		mov	c, a
+0012+  D74A 21 06 DE    		lxi	h, panelA_curFile
+0013+  D74D CD 17 DA    		call	readBytePanel
+0014+  D750 3C          		inr	a
+0015+  D751 B9          		cmp	c
+0016+  D752 CA 77 D0    		jz	mainDriveChanged
+0017+  D755 CD 06 DA    		call	writeBytePanel
+0018+  D758 C3 77 D0    		jmp	mainDriveChanged
+0019+  D75B             
+0020+  D75B             ; ---------------------------------------------------------------------------
+0021+  D75B             
+0022+  D75B             Up:		; Если curFile > 0, то curFile = curFile-1
+0023+  D75B 21 06 DE    		lxi	h, panelA_curFile
+0024+  D75E CD 17 DA    		call	readBytePanel
+0025+  D761 3D          		dcr	a
+0026+  D762 FA 77 D0    		jm	mainDriveChanged
+0027+  D765 CD 06 DA    		call	writeBytePanel
+0028+  D768 C3 77 D0    		jmp	mainDriveChanged
+0029+  D76B             
+0030+  D76B             ; ---------------------------------------------------------------------------
+0031+  D76B             
+0032+  D76B             Left:		; Если curFile > 18, то curFile = curFile-18, иначе curFile = 0
+0033+  D76B 21 06 DE    		lxi	h, panelA_curFile
+0034+  D76E CD 17 DA    		call	readBytePanel
+0035+  D771 D6 12       		sui	18
+0036+  D773 F2 77 D7    		jp	Left_1
+0037+  D776 AF          		xra	a		
+0038+  D777 CD 06 DA    Left_1:		call	writeBytePanel
+0039+  D77A C3 77 D0    		jmp	mainDriveChanged
+0040+  D77D             
+0041+  D77D             ; ---------------------------------------------------------------------------
+0042+  D77D             
+0043+  D77D 21 04 DE    Right:		lxi	h, panelA_filesCnt
+0044+  D780 CD 17 DA    		call	readBytePanel
+0045+  D783 4F          		mov	c, a
+0046+  D784 0D          		dcr	c
+0047+  D785 CA 77 D0    		jz	mainDriveChanged
+0048+  D788 21 06 DE    		lxi	h, panelA_curFile
+0049+  D78B CD 17 DA    		call	readBytePanel
+0050+  D78E C6 12       		adi	18
+0051+  D790 B9          		cmp	c
+0052+  D791 DA 95 D7    		jc	Right_1
+0053+  D794 79          		mov	a, c
+0054+  D795 CD 06 DA    Right_1:	call	writeBytePanel
+0055+  D798 C3 77 D0    		jmp	mainDriveChanged0061   D79B             .include "clearCmdLine.inc"	; Џа®¤®«¦Ґ­ЁҐ ­  printSpaces
+0001+  D79B             ;----------------------------------------------------------------------------
+0002+  D79B             ; MXOS NC.COM
+0003+  D79B             ; Очистка ком строки
+0004+  D79B             ;
+0005+  D79B             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D79B             ;----------------------------------------------------------------------------
+0007+  D79B             
+0008+  D79B 21 F3 07    clearCmdLine:	lxi	h, 7F3h
+0009+  D79E 22 FC 8F    		shld	v_cursorY
+0010+  D7A1             	
+0011+  D7A1 26 0A       		mvi	h, 10
+0012+  D7A3 22 30 DE    		shld	v_cmdLinePos
+0013+  D7A6             
+0014+  D7A6 3E 70 32 F8 		COLOR(COLOR_CMDLINE)
+0014+  D7AA FF 
+0015+  D7AB             		
+0016+  D7AB 0E 5C       		mvi	c, 92 ; '\'
+0017+  D7AD CD 09 C8    		call	printChar
+0018+  D7B0             
+0019+  D7B0 21 3B DE    		lxi	h, v_cmdLine
+0020+  D7B3 22 32 DE    		shld	v_cmdLineEnd
+0021+  D7B6             		                   
+0022+  D7B6 06 3C       		mvi	b, 60
+0023+  D7B8             
+0024+  D7B8             		; Продолжение на printSpaces0062   D7B8             .include "printSpaces.inc"
+0001+  D7B8             ;----------------------------------------------------------------------------
+0002+  D7B8             ; MXOS NC.COM
+0003+  D7B8             ; Вывод пробелов
+0004+  D7B8             ;
+0005+  D7B8             ; b - кол-во пробелов
+0006+  D7B8             ;
+0007+  D7B8             ; 2013-12-18 Дизассемблировано vinxru
+0008+  D7B8             ;----------------------------------------------------------------------------
+0009+  D7B8             
+0010+  D7B8 0E 20       printSpaces:	mvi	c, ' '
+0011+  D7BA CD 09 C8    printSpaces_1:	call	printChar
+0012+  D7BD 05          		dcr	b
+0013+  D7BE C2 BA D7    		jnz	printSpaces_1
+0014+  D7C1 C9          		ret
+0063   D7C2             .include "drawCursor.inc"
+0001+  D7C2             ;----------------------------------------------------------------------------
+0002+  D7C2             ; MXOS NC.COM
+0003+  D7C2             ; Рисование курсора
+0004+  D7C2             ;
+0005+  D7C2             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D7C2             ;----------------------------------------------------------------------------
+0007+  D7C2             
+0008+  D7C2             drawCursor:	; Цвет устаналвиается перед выводом
+0009+  D7C2             
+0010+  D7C2             		; Если файлов нет, выходим
+0011+  D7C2 21 04 DE    		lxi	h, panelA_filesCnt
+0012+  D7C5 CD 17 DA    		call	readBytePanel
+0013+  D7C8 A7          		ana	a
+0014+  D7C9             #if ENABLE_COLOR
+0015+  D7C9 C8          		rz
+0016+  D7CA~            #else
+0017+  D7CA~            		jz	drawCursor_0
+0018+  D7CA             #endif
+0019+  D7CA             		; Номер выбранного файла
+0020+  D7CA 21 06 DE    		lxi	h, panelA_curFile
+0021+  D7CD CD 17 DA    		call	readBytePanel
+0022+  D7D0             
+0023+  D7D0             		; Рассчиытваем координату X (h = a < 18 ? 0x91 : 0x9D)
+0024+  D7D0 26 91       		mvi	h, 91h
+0025+  D7D2 FE 12       		cpi	18
+0026+  D7D4 DA DB D7    		jc	drawCursor_1
+0027+  D7D7 D6 12       		sui	18
+0028+  D7D9 26 9D       		mvi	h, 9Dh
+0029+  D7DB             
+0030+  D7DB             drawCursor_1:	; Рассчиытваем координату Y (l = a * 10 + 18h)
+0031+  D7DB 87          		add	a
+0032+  D7DC 4F          		mov	c, a
+0033+  D7DD 87          		add	a
+0034+  D7DE 87          		add	a
+0035+  D7DF 81          		add	c
+0036+  D7E0 C6 18       		adi	24
+0037+  D7E2 6F          		mov	l, a
+0038+  D7E3             
+0039+  D7E3             		; Ширина
+0040+  D7E3 06 0A       		mvi	b, 10
+0041+  D7E5             
+0042+  D7E5             		; Если правая панель, сдвигаем курсор на пол экрана
+0043+  D7E5 3A FF DD    drawCursor_2:	lda	activePanel
+0044+  D7E8 A7          		ana	a
+0045+  D7E9 CA EE D7    		jz	drawCursor_3
+0046+  D7EC 3E 18       		mvi	a, 18h
+0047+  D7EE 84          drawCursor_3:	add	h
+0048+  D7EF 67          		mov	h, a
+0049+  D7F0             
+0050+  D7F0             		; Рисуем курсор (hl - адрес, b - ширина, высота 9)
+0051+  D7F0 CD 2C D8    		call	inverseRect
+0052+  D7F3 C9          		ret
+0053+  D7F4             
+0054+  D7F4             ; ---------------------------------------------------------------------------
+0055+  D7F4             
+0056+  D7F4~            #if ENABLE_COLOR==0
+0057+  D7F4~            drawCursor_0:	lxi	h, 92D6h
+0058+  D7F4~            		mvi	b, 2
+0059+  D7F4~            		jmp	drawCursor_2
+0060+  D7F4             #endif0064   D7F4             .include "printInfoLine.inc"
+0001+  D7F4             ;----------------------------------------------------------------------------
+0002+  D7F4             ; MXOS NC.COM
+0003+  D7F4             ; Вывод инфомарции о файле внизу окна
+0004+  D7F4             ;
+0005+  D7F4             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D7F4             ;----------------------------------------------------------------------------
+0007+  D7F4             
+0008+  D7F4             printInfoLine:	; Если файлов нет, выходим
+0009+  D7F4 21 04 DE    		lxi	h, panelA_filesCnt
+0010+  D7F7 CD 17 DA    		call	readBytePanel
+0011+  D7FA A7          		ana	a
+0012+  D7FB C8          		rz
+0013+  D7FC             
+0014+  D7FC 3E B1 32 F8 		COLOR(COLOR_INFOLINE)		
+0014+  D800 FF 
+0015+  D801             
+0016+  D801 21 DE 12    		lxi	h, 12DEh
+0017+  D804 CD 43 DA    		call	setCursorPosPanel
+0018+  D807             
+0019+  D807 CD 3E D8    		call	getSelectedFile
+0020+  D80A CD 23 DA    		call	printFileName
+0021+  D80D 06 03       		mvi	b, 3
+0022+  D80F CD B8 D7    		call	printSpaces	; b - кол-во пробелов
+0023+  D812             
+0024+  D812 2B          		dcx	h
+0025+  D813 2B          		dcx	h
+0026+  D814 2B          		dcx	h
+0027+  D815 56          		mov	d, m
+0028+  D816 2B          		dcx	h
+0029+  D817 5E          		mov	e, m
+0030+  D818             
+0031+  D818 D5          		push	d
+0032+  D819             
+0033+  D819 2B          		dcx	h
+0034+  D81A 7E          		mov	a, m
+0035+  D81B CD 15 C8    		call	printHexByte
+0036+  D81E 2B          		dcx	h
+0037+  D81F 7E          		mov	a, m
+0038+  D820 CD 15 C8    		call	printHexByte
+0039+  D823             
+0040+  D823 0E 20       		mvi	c, ' '
+0041+  D825 CD 09 C8    		call	printChar
+0042+  D828             
+0043+  D828 D1          		pop	d
+0044+  D829             
+0045+  D829 C3 7A DB    		jmp	printDec
+0065   D82C             .include "inverseRect.inc"
+0001+  D82C             ;----------------------------------------------------------------------------
+0002+  D82C             ; MXOS NC.COM
+0003+  D82C             ; Инвертирвоание прямоугольной области на экране
+0004+  D82C             ;
+0005+  D82C             ; hl - адрес, b	- ширина в байтах, высота всегда 9 пикселей
+0006+  D82C             ;
+0007+  D82C             ; 2013-12-18 Дизассемблировано vinxru
+0008+  D82C             ;----------------------------------------------------------------------------
+0009+  D82C             
+0010+  D82C 0E 09       inverseRect:	 mvi	c, 9
+0011+  D82E E5          		 push	h		
+0012+  D82F 7E          loc_D7F3:	  mov	a, m
+0013+  D830 2F          		  cma
+0014+  D831 77          		  mov	m, a
+0015+  D832 23          		  inx	h
+0016+  D833 0D          		  dcr	c
+0017+  D834 C2 2F D8    		 jnz	loc_D7F3
+0018+  D837 E1          		 pop	h
+0019+  D838 24          		 inr	h
+0020+  D839 05          		 dcr	b
+0021+  D83A C2 2C D8    		jnz	inverseRect
+0022+  D83D C9          		ret
+0023+  D83E             
+0066   D83E             .include "getSelectedFile.inc"
+0001+  D83E             ;----------------------------------------------------------------------------
+0002+  D83E             ; MXOS NC.COM
+0003+  D83E             ; Получить имя выбранного файла
+0004+  D83E             ;
+0005+  D83E             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D83E             ;----------------------------------------------------------------------------
+0007+  D83E             
+0008+  D83E D5          getSelectedFile:push	d
+0009+  D83F             
+0010+  D83F             		; Получить номер текущего файла
+0011+  D83F 21 06 DE    		lxi	h, panelA_curFile
+0012+  D842 CD 17 DA    		call	readBytePanel
+0013+  D845             
+0014+  D845             		; Получить имя (адрес) текущего файла
+0015+  D845             		; files2 += 16*curFile[activePanel];
+0016+  D845 21 A4 DE    		lxi	h, files2	
+0017+  D848 11 10 00    		lxi	d, 16
+0018+  D84B 19          loc_D80F:	 dad	d
+0019+  D84C 3D          		 dcr	a
+0020+  D84D F2 4B D8    		jp	loc_D80F
+0021+  D850             
+0022+  D850 D1          		pop	d
+0023+  D851 C9          		ret0067   D852             .include "loadAndPrint.inc"
+0001+  D852             ;----------------------------------------------------------------------------
+0002+  D852             ; MXOS NC.COM
+0003+  D852             ; Загрузить файлы и нарисовать
+0004+  D852             ;
+0005+  D852             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D852             ;----------------------------------------------------------------------------
+0007+  D852             
+0008+  D852             loadAndPrintB:	; Времено меняем активную панель на правую
+0009+  D852 3A FF DD    		lda	activePanel
+0010+  D855 F5          		push	psw
+0011+  D856 3E 01       		mvi	a, 1
+0012+  D858 32 FF DD    		sta	activePanel
+0013+  D85B             
+0014+  D85B             		; Переходим к общему коду
+0015+  D85B 3A 01 DE    		lda	panelB_info
+0016+  D85E C3 6D D8    		jmp	loadAndPrint
+0017+  D861             
+0018+  D861             ; ---------------------------------------------------------------------------
+0019+  D861             
+0020+  D861             loadAndPrintA:	; Времено меняем активную панель на левую
+0021+  D861 3A FF DD    		lda	activePanel
+0022+  D864 F5          		push	psw
+0023+  D865 3E 00       		mvi	a, 0
+0024+  D867 32 FF DD    		sta	activePanel
+0025+  D86A             
+0026+  D86A             		; Панель видима?
+0027+  D86A 3A 00 DE    		lda	panelA_info
+0028+  D86D A7          loadAndPrint:	ana	a
+0029+  D86E C2 80 D8    		jnz	loadAndPrint_2
+0030+  D871             
+0031+  D871             		; Загружаем список файлов
+0032+  D871 21 02 DE    		lxi	h, panelA_drive
+0033+  D874 CD 17 DA    		call	readBytePanel
+0034+  D877 CD 91 D8    		call	loadFiles	; На входе a должен содержать номер накопителя
+0035+  D87A             
+0036+  D87A             		; Выводим список файлов
+0037+  D87A CD 85 D9    		call	printFilePanel
+0038+  D87D             
+0039+  D87D C3 83 D8    		jmp	loadAndPrint_3
+0040+  D880             
+0041+  D880             ; ---------------------------------------------------------------------------
+0042+  D880             
+0043+  D880             loadAndPrint_2:	; Рисуем панельинформации
+0044+  D880 CD 9C D8    		call	printInfoPanel
+0045+  D883             
+0046+  D883             loadAndPrint_3:	; Восстанавливаем активную панель
+0047+  D883 F1          		pop	psw
+0048+  D884 32 FF DD    		sta	activePanel
+0049+  D887             
+0050+  D887             		; Загружаем список файлов
+0051+  D887 21 02 DE    		lxi	h, panelA_drive
+0052+  D88A CD 17 DA    		call	readBytePanel
+0053+  D88D CD 91 D8    		call	loadFiles	; На входе a должен содержать номер накопителя
+0054+  D890 C9          		ret
+0055+  D891             
+0068   D891             .include "loadFiles.inc"
+0001+  D891             ;----------------------------------------------------------------------------
+0002+  D891             ; MXOS NC.COM
+0003+  D891             ; Загрузить файлы
+0004+  D891             ;
+0005+  D891             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D891             ;----------------------------------------------------------------------------
+0007+  D891             
+0008+  D891 1E 01       loadFiles:	mvi	e, 1
+0009+  D893 CD 42 C8    		call	fileGetSetDrive
+0010+  D896 21 B4 DE    		lxi	h, files
+0011+  D899 C3 3F C8    		jmp	fileList
+0069   D89C             .include "printInfoPanel.inc"
+0001+  D89C             ;----------------------------------------------------------------------------
+0002+  D89C             ; MXOS NC.COM
+0003+  D89C             ; Рисование информационной панели
+0004+  D89C             ;
+0005+  D89C             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D89C             ;----------------------------------------------------------------------------
+0007+  D89C             
+0008+  D89C 3E F1 32 F8 printInfoPanel:	COLOR(COLOR_BORDER)
+0008+  D8A0 FF 
+0009+  D8A1             
+0010+  D8A1             		; Рисуем панель
+0011+  D8A1 21 C8 DD    		lxi	h, g_infoPanel
+0012+  D8A4 CD 56 DA    		call	draw
+0013+  D8A7             
+0014+  D8A7 3E A1 32 F8                 COLOR(COLOR_INFOHEADER)
+0014+  D8AB FF 
+0015+  D8AC             
+0016+  D8AC             		; COMMANDER VERSION 1.4
+0017+  D8AC 21 10 11    		lxi	h, 1110h
+0018+  D8AF CD 43 DA    		call	setCursorPosPanel
+0019+  D8B2 21 3C DC    		lxi	h, aCommanderVersi
+0020+  D8B5 CD 18 C8    		call	printString
+0021+  D8B8             
+0022+  D8B8             		; (C) OMSK 1992
+0023+  D8B8 21 1A 1D    		lxi	h, 1D1Ah
+0024+  D8BB CD 43 DA    		call	setCursorPosPanel
+0025+  D8BE 21 52 DC    		lxi	h, aCOmsk1992	
+0026+  D8C1 CD 18 C8    		call	printString
+0027+  D8C4             
+0028+  D8C4             		; Положение курсора
+0029+  D8C4 21 30 16    		lxi	h, 1630h
+0030+  D8C7 CD 43 DA    		call	setCursorPosPanel
+0031+  D8CA             
+0032+  D8CA             		; Получить размер диска
+0033+  D8CA 1E 03       		mvi	e, 3		
+0034+  D8CC CD 63 C8    		call	diskDriver
+0035+  D8CF             #if DISABLE_FREE_SPACE_BUG
+0036+  D8CF DE 04       		sbi	4
+0037+  D8D1             #endif
+0038+  D8D1 57          		mov	d, a
+0039+  D8D2 1E 00       		mvi	e, 0
+0040+  D8D4 D5          		push	d
+0041+  D8D5             
+0042+  D8D5             		; ##### TOTAL BYTES
+0043+  D8D5 3E E1 32 F8                 COLOR(COLOR_INFONUMBERS)
+0043+  D8D9 FF 
+0044+  D8DA CD 7A DB    		call	printDec
+0045+  D8DD 3E F1 32 F8                 COLOR(COLOR_INFOTEXT)
+0045+  D8E1 FF 
+0046+  D8E2 21 2A DD    		lxi	h, aTotalBytes	
+0047+  D8E5 CD 18 C8    		call	printString
+0048+  D8E8             
+0049+  D8E8             		; ON DRIVE A:
+0050+  D8E8 21 3C 1F    		lxi	h, 1F3Ch
+0051+  D8EB CD 43 DA    		call	setCursorPosPanel
+0052+  D8EE 21 37 DD    		lxi	h, aOnDrive	
+0053+  D8F1 CD 18 C8    		call	printString		
+0054+  D8F4 3E E1 32 F8                 COLOR(COLOR_INFONUMBERS)
+0054+  D8F8 FF 
+0055+  D8F9 CD F6 D9    		call	printCurDrive
+0056+  D8FC 3E F1 32 F8                 COLOR(COLOR_INFOTEXT)
+0056+  D900 FF 
+0057+  D901             
+0058+  D901             		; Положение курсора
+0059+  D901 21 48 05    		lxi	h, 548h
+0060+  D904 CD 43 DA    		call	setCursorPosPanel
+0061+  D907             		
+0062+  D907             		; Подсчет свободного места на диске
+0063+  D907             
+0064+  D907             		; Читаем FAT
+0065+  D907 21 00 FE    		lxi	h, 0FE00h
+0066+  D90A 11 02 00    		lxi	d, 2
+0067+  D90D CD 63 C8    		call	diskDriver
+0068+  D910             
+0069+  D910             		; Считаем не занятые кластеры с 4-ого
+0070+  D910 5D          		mov	e, l
+0071+  D911 2E 04       		mvi	l, 4
+0072+  D913             #if DISABLE_FREE_SPACE_BUG
+0073+  D913 AF          		xra	a
+0074+  D914 57          		mov	d, a
+0075+  D915~            #else
+0076+  D915~            		mov	d, l
+0077+  D915             #endif
+0078+  D915 7E          loc_D8B8:	 mov	a, m
+0079+  D916 A7          		 ana	a
+0080+  D917 C2 1B D9    		 jnz	loc_D8BE
+0081+  D91A 14          		  inr	d
+0082+  D91B 2C          loc_D8BE:	 inr	l
+0083+  D91C C2 15 D9    		jnz	loc_D8B8
+0084+  D91F             
+0085+  D91F D5          		push	d
+0086+  D920             
+0087+  D920             		; ##### BYTES FREE ON DRIVE #:
+0088+  D920 3E E1 32 F8                 COLOR(COLOR_INFONUMBERS)
+0088+  D924 FF 
+0089+  D925 CD 7A DB    		call	printDec
+0090+  D928 3E F1 32 F8                 COLOR(COLOR_INFOTEXT)
+0090+  D92C FF 
+0091+  D92D 21 FE DC    		lxi	h, aBytesFreeOnDri
+0092+  D930 CD 18 C8    		call	printString
+0093+  D933 CD F6 D9    		call	printCurDrive
+0094+  D936             
+0095+  D936             		; Положение курсора
+0096+  D936 21 54 0D    		lxi	h, 0D54h
+0097+  D939 CD 43 DA    		call	setCursorPosPanel
+0098+  D93C             
+0099+  D93C             		; DE = кол-во файлов		
+0100+  D93C 21 04 DE    		lxi	h, panelA_filesCnt
+0101+  D93F 3A FF DD    		lda	activePanel
+0102+  D942 A7          		ana	a
+0103+  D943 C2 47 D9    		jnz	loc_D8E0
+0104+  D946 23          		inx	h
+0105+  D947 5E          loc_D8E0:	mov	e, m
+0106+  D948 16 00       		mvi	d, 0
+0107+  D94A             
+0108+  D94A             		; ##### FILES USE #####
+0109+  D94A 3E E1 32 F8                 COLOR(COLOR_INFONUMBERS)
+0109+  D94E FF 
+0110+  D94F CD 7A DB    		call	printDec
+0111+  D952 3E F1 32 F8                 COLOR(COLOR_INFOTEXT)
+0111+  D956 FF 
+0112+  D957 21 14 DD    		lxi	h, aFilesUse
+0113+  D95A CD 18 C8    		call	printString
+0114+  D95D E1          		pop	h
+0115+  D95E D1          		pop	d
+0116+  D95F 7A          		mov	a, d
+0117+  D960 94          		sub	h
+0118+  D961 57          		mov	d, a
+0119+  D962 1E 00       		mvi	e, 0
+0120+  D964 3E E1 32 F8                 COLOR(COLOR_INFONUMBERS)
+0120+  D968 FF 
+0121+  D969 CD 7A DB    		call	printDec
+0122+  D96C 3E F1 32 F8                 COLOR(COLOR_INFOTEXT)
+0122+  D970 FF 
+0123+  D971             
+0124+  D971             		; BYTES IN A:
+0125+  D971 21 60 1F    		lxi	h, 1F60h
+0126+  D974 CD 43 DA    		call	setCursorPosPanel
+0127+  D977 21 20 DD    		lxi	h, aBytesIn
+0128+  D97A CD 18 C8    		call	printString		
+0129+  D97D             
+0130+  D97D 3E E1 32 F8                 COLOR(COLOR_INFONUMBERS)
+0130+  D981 FF 
+0131+  D982 C3 F6 D9    		jmp	printCurDrive
+0132+  D985             		0070   D985             .include "printFilePanel.inc"
+0001+  D985             ;----------------------------------------------------------------------------
+0002+  D985             ; MXOS NC.COM
+0003+  D985             ; Вывод списка файлов на панель
+0004+  D985             ;
+0005+  D985             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D985             ;----------------------------------------------------------------------------
+0007+  D985             
+0008+  D985 3E F1 32 F8 printFilePanel:	COLOR(COLOR_BORDER)
+0008+  D989 FF 
+0009+  D98A             
+0010+  D98A 21 B7 DD    		lxi	h, g_filePanel
+0011+  D98D CD 56 DA    		call	draw
+0012+  D990             
+0013+  D990 3E A1 32 F8 		COLOR(COLOR_PANELNAME)
+0013+  D994 FF 
+0014+  D995             
+0015+  D995             		; Вывод NAME
+0016+  D995 21 10 11    		lxi	h, 1110h
+0017+  D998 CD 43 DA    		call	setCursorPosPanel
+0018+  D99B 21 E8 DB    		lxi	h, aNameName
+0019+  D99E CD 18 C8    		call	printString
+0020+  D9A1             
+0021+  D9A1 3E B1 32 F8 		COLOR(COLOR_INFOLINE)
+0021+  D9A5 FF 
+0022+  D9A6             
+0023+  D9A6             		; Вывод буквы диска
+0024+  D9A6 21 02 DE    		lxi	h, panelA_drive
+0025+  D9A9 CD 17 DA    		call	readBytePanel
+0026+  D9AC 21 DE 09    		lxi	h, 9DEh
+0027+  D9AF CD 43 DA    		call	setCursorPosPanel
+0028+  D9B2 CD FB D9    		call	printDrive
+0029+  D9B5             
+0030+  D9B5 3E B1 32 F8 		COLOR(COLOR_FILE)
+0030+  D9B9 FF 
+0031+  D9BA             
+0032+  D9BA             		; Вывод всех файлов
+0033+  D9BA 21 B4 DE    		lxi	h, files
+0034+  D9BD 11 20 0A    		lxi	d, 0A20h
+0035+  D9C0 0E 00       		mvi	c, 0		
+0036+  D9C2             
+0037+  D9C2             		
+0038+  D9C2             loc_D92E:	; Установка положения курсора
+0039+  D9C2 EB          		xchg
+0040+  D9C3 CD 43 DA    		call	setCursorPosPanel
+0041+  D9C6 EB          		xchg
+0042+  D9C7             
+0043+  D9C7             		; Файл существует?
+0044+  D9C7 7E          		mov	a, m
+0045+  D9C8 3C          		inr	a
+0046+  D9C9 CA E2 D9    		jz	loc_D94E
+0047+  D9CC             
+0048+  D9CC             		; Вывод имени
+0049+  D9CC CD 23 DA    		call	printFileName
+0050+  D9CF             
+0051+  D9CF             		; Счетчик
+0052+  D9CF 0C          		inr	c
+0053+  D9D0             
+0054+  D9D0             		; Положение курсора
+0055+  D9D0 7B          		mov	a, e
+0056+  D9D1 C6 0A       		adi	10
+0057+  D9D3 5F          		mov	e, a
+0058+  D9D4             
+0059+  D9D4             		; Следующая колонка
+0060+  D9D4 FE D0       		cpi	0D0h
+0061+  D9D6 DA C2 D9    		jc	loc_D92E
+0062+  D9D9 7A          		mov	a, d
+0063+  D9DA 11 20 39    		lxi	d, 3920h
+0064+  D9DD FE 14       		cpi	14h
+0065+  D9DF DA C2 D9    		jc	loc_D92E
+0066+  D9E2             
+0067+  D9E2             loc_D94E:	; Сохранение кол-ва файлов
+0068+  D9E2 21 04 DE    		lxi	h, panelA_filesCnt
+0069+  D9E5 79          		mov	a, c
+0070+  D9E6 CD 06 DA    		call	writeBytePanel
+0071+  D9E9             
+0072+  D9E9             		; Если курсор больше максимума
+0073+  D9E9 21 06 DE    		lxi	h, panelA_curFile
+0074+  D9EC CD 17 DA    		call	readBytePanel
+0075+  D9EF B9          		cmp	c
+0076+  D9F0 D8          		rc
+0077+  D9F1             
+0078+  D9F1             		; То изменить на максимум
+0079+  D9F1 3D          		dcr	a
+0080+  D9F2 F8          		rm
+0081+  D9F3 C3 06 DA    		jmp	writeBytePanel
+0071   D9F6             .include "printCurDrive.inc"
+0001+  D9F6             ;----------------------------------------------------------------------------
+0002+  D9F6             ; MXOS NC.COM
+0003+  D9F6             ; Вывод текущего накопителя
+0004+  D9F6             ;
+0005+  D9F6             ; 2013-12-18 Дизассемблировано vinxru
+0006+  D9F6             ;----------------------------------------------------------------------------
+0007+  D9F6             
+0008+  D9F6             printCurDrive:	; Узнаем активное устройство
+0009+  D9F6 1E 02       		mvi	e, 2
+0010+  D9F8 CD 42 C8    		call	fileGetSetDrive
+0011+  D9FB             
+0012+  D9FB             printDrive:	; Выводим его букву на экран
+0013+  D9FB C6 41       		adi	'A'
+0014+  D9FD 4F          		mov	c, a
+0015+  D9FE CD 09 C8    		call	printChar
+0016+  DA01             
+0017+  DA01             		; Выводим ':'
+0018+  DA01 0E 3A       		mvi	c, ':'
+0019+  DA03 C3 09 C8    		jmp	printChar
+0020+  DA06             
+0072   DA06             .include "rwBytePanel.inc"
+0001+  DA06             ;----------------------------------------------------------------------------
+0002+  DA06             ; MXOS NC.COM
+0003+  DA06             ; Реализация индексной адресации
+0004+  DA06             ;
+0005+  DA06             ; 2013-12-18 Дизассемблировано vinxru
+0006+  DA06             ;----------------------------------------------------------------------------
+0007+  DA06             
+0008+  DA06             ; [hl + activePanel] = a
+0009+  DA06             
+0010+  DA06 C5          writeBytePanel:	push	b
+0011+  DA07 E5          		push	h
+0012+  DA08 F5          		push	psw
+0013+  DA09 4F          		mov	c, a
+0014+  DA0A 3A FF DD    		lda	activePanel
+0015+  DA0D A7          		ana	a
+0016+  DA0E CA 12 DA    		jz	loc_D97E
+0017+  DA11 23          		inx	h
+0018+  DA12 71          loc_D97E:	mov	m, c
+0019+  DA13 F1          		pop	psw
+0020+  DA14 E1          		pop	h
+0021+  DA15 C1          		pop	b
+0022+  DA16 C9          		ret
+0023+  DA17             
+0024+  DA17             ; a = [hl + activePanel]
+0025+  DA17             
+0026+  DA17 E5          readBytePanel:	push	h
+0027+  DA18 3A FF DD    		lda	activePanel
+0028+  DA1B A7          		ana	a
+0029+  DA1C CA 20 DA    		jz	loc_D98C
+0030+  DA1F 23          		inx	h
+0031+  DA20 7E          loc_D98C:	mov	a, m
+0032+  DA21 E1          		pop	h
+0033+  DA22 C9          		ret
+0073   DA23             .include "printFileName.inc"
+0001+  DA23             ;----------------------------------------------------------------------------
+0002+  DA23             ; MXOS NC.COM
+0003+  DA23             ; Вывод имени файла
+0004+  DA23             ;
+0005+  DA23             ; 2013-12-18 Дизассемблировано vinxru
+0006+  DA23             ;----------------------------------------------------------------------------
+0007+  DA23             
+0008+  DA23 C5          printFileName:	push	b
+0009+  DA24 06 06       		mvi	b, 6
+0010+  DA26 CD 39 DA    		call	printString2
+0011+  DA29 0E 20       		mvi	c, 20h ; ' '
+0012+  DA2B CD 09 C8    		call	printChar
+0013+  DA2E 06 03       		mvi	b, 3
+0014+  DA30 CD 39 DA    		call	printString2
+0015+  DA33 01 07 00    		lxi	b, 7
+0016+  DA36 09          		dad	b
+0017+  DA37 C1          		pop	b
+0018+  DA38 C9          		ret
+0074   DA39             .include "printString2.inc"
+0001+  DA39             ;----------------------------------------------------------------------------
+0002+  DA39             ; MXOS NC.COM
+0003+  DA39             ; Вывод строки по адресу HL длиной B
+0004+  DA39             ;
+0005+  DA39             ; 2013-12-18 Дизассемблировано vinxru
+0006+  DA39             ;----------------------------------------------------------------------------
+0007+  DA39             
+0008+  DA39 4E          printString2:	mov	c, m
+0009+  DA3A CD 09 C8    		call	printChar
+0010+  DA3D 23          		inx	h
+0011+  DA3E 05          		dcr	b
+0012+  DA3F C2 39 DA    		jnz	printString2
+0013+  DA42 C9          		ret
+0075   DA43             .include "setCursorPosPanel.inc"
+0001+  DA43             ;----------------------------------------------------------------------------
+0002+  DA43             ; MXOS NC.COM
+0003+  DA43             ; Установка положения курсора с учетом активной панели
+0004+  DA43             ;
+0005+  DA43             ; 2013-12-18 Дизассемблировано vinxru
+0006+  DA43             ;----------------------------------------------------------------------------
+0007+  DA43             
+0008+  DA43             setCursorPosPanel:
+0009+  DA43             		; Сохраняем регистры
+0010+  DA43 E5          		push	h
+0011+  DA44 F5          		push	psw
+0012+  DA45 3A FF DD    		lda	activePanel
+0013+  DA48 A7          		ana	a
+0014+  DA49 CA 4E DA    		jz	loc_D9BA
+0015+  DA4C 3E 60       		mvi	a, 96		; Половина экрана
+0016+  DA4E 84          loc_D9BA:	add	h
+0017+  DA4F 67          		mov	h, a
+0018+  DA50 22 FC 8F    		shld	v_cursorY
+0019+  DA53             
+0020+  DA53             		; Восстанавливаем регистры
+0021+  DA53 F1          		pop	psw
+0022+  DA54 E1          		pop	h
+0023+  DA55 C9          		ret
+0076   DA56             .include "draw.inc"
+0001+  DA56             ;----------------------------------------------------------------------------
+0002+  DA56             ; MXOS NC.COM
+0003+  DA56             ; Рисование окошек
+0004+  DA56             ;
+0005+  DA56             ; 2013-12-18 Дизассемблировано vinxru
+0006+  DA56             ;----------------------------------------------------------------------------
+0007+  DA56             
+0008+  DA56             draw:		; Читаем 5 байт из HL в A, HL, C, B. 
+0009+  DA56             		; При этом DE = HL+5
+0010+  DA56 7E          		mov	a, m
+0011+  DA57 23          		inx	h
+0012+  DA58 5E          		mov	e, m
+0013+  DA59 23          		inx	h
+0014+  DA5A 56          		mov	d, m
+0015+  DA5B 23          		inx	h
+0016+  DA5C 4E          		mov	c, m
+0017+  DA5D 23          		inx	h
+0018+  DA5E 46          		mov	b, m
+0019+  DA5F 23          		inx	h		
+0020+  DA60 EB          		xchg
+0021+  DA61             
+0022+  DA61             		; Если a=0 (первый байт), то выйти
+0023+  DA61 A7          		ana	a
+0024+  DA62 C8          		rz
+0025+  DA63             
+0026+  DA63             		; Если не установлен 7-ой бит и активная панель правая, то X += 192
+0027+  DA63 FA 69 DA    		jm	draw_0
+0028+  DA66 CD 95 DA    		call	activePanelPos
+0029+  DA69             draw_0:	
+0030+  DA69             
+0031+  DA69             		; Если A&0xF==3, то заполнить C байт памяти байтом B
+0032+  DA69 E6 0F       		ani	0Fh
+0033+  DA6B FE 03       		cpi	3
+0034+  DA6D CA 7C DA    		jz	draw3
+0035+  DA70             
+0036+  DA70             		; Если A&0xF==1, то нарисовать веритикальную линию
+0037+  DA70             		; B-первый байт, C-средняя длина, *DE++ - последний байт 
+0038+  DA70 FE 01       		cpi	1
+0039+  DA72 CA 83 DA    		jz	draw1
+0040+  DA75             
+0041+  DA75             		; Нарисовать окно
+0042+  DA75 CD A3 DA    		call	draw_window
+0043+  DA78             
+0044+  DA78             draw_next:	; HL=DE и следующий цикл
+0045+  DA78 EB          		xchg
+0046+  DA79 C3 56 DA    		jmp	draw
+0047+  DA7C             
+0048+  DA7C             ; ---------------------------------------------------------------------------
+0049+  DA7C             ; Заполнить C байт памяти байтом B
+0050+  DA7C             
+0051+  DA7C 78          draw3:		mov	a, b
+0052+  DA7D CD D8 DA    		call	memset_hl_a_c
+0053+  DA80 C3 78 DA    		jmp	draw_next
+0054+  DA83             
+0055+  DA83             ; ---------------------------------------------------------------------------
+0056+  DA83             ; Линия HL-адрес, B-первый байт, C-средняя длина, *DE++ - последний байт 
+0057+  DA83             
+0058+  DA83             draw1:		; *hl++ |= b
+0059+  DA83 78          		mov	a, b
+0060+  DA84 B6          		ora	m
+0061+  DA85 77          		mov	m, a
+0062+  DA86 24          		inr	h
+0063+  DA87             		
+0064+  DA87 36 FF       loc_D9F3:       mvi	m, 0FFh
+0065+  DA89 24          		inr	h
+0066+  DA8A 0D          		dcr	c
+0067+  DA8B C2 87 DA    		jnz	loc_D9F3
+0068+  DA8E             
+0069+  DA8E             		; hl |= *de++
+0070+  DA8E 1A          		ldax	d
+0071+  DA8F 13          		inx	d
+0072+  DA90 B6          		ora	m
+0073+  DA91 77          		mov	m, a
+0074+  DA92             
+0075+  DA92 C3 78 DA    		jmp	draw_next
+0076+  DA95             
+0077+  DA95             ; ---------------------------------------------------------------------------
+0078+  DA95             ; Если активная правая панель, сдвинуть адрес на пол экрана
+0079+  DA95             
+0080+  DA95 F5          activePanelPos:	push	psw
+0081+  DA96 3A FF DD    		lda	activePanel
+0082+  DA99 A7          		ana	a
+0083+  DA9A CA 9F DA    		jz	loc_DA0B
+0084+  DA9D 3E 18       		mvi	a, 24
+0085+  DA9F 84          loc_DA0B:	add	h
+0086+  DAA0 67          		mov	h, a
+0087+  DAA1 F1          		pop	psw
+0088+  DAA2 C9          		ret
+0089+  DAA3             
+0090+  DAA3             ; ---------------------------------------------------------------------------
+0091+  DAA3             ; Рисуем окно (b=ширина-2, с=высота-6)
+0092+  DAA3             
+0093+  DAA3             draw_window:	; Если h - 90h + b >= 0x2F, то есть X + B + 2 > ширина экрана, то выйти
+0094+  DAA3 7C          		mov	a, h
+0095+  DAA4 D6 90       		sui	90h
+0096+  DAA6 80          		add	b
+0097+  DAA7 FE 2F       		cpi	2Fh
+0098+  DAA9 D0          		rnc
+0099+  DAAA             
+0100+  DAAA             		; Сохранить регистры
+0101+  DAAA E5          		push	h
+0102+  DAAB C5          		push	b
+0103+  DAAC D5          		push	d
+0104+  DAAD             
+0105+  DAAD             		; Линия
+0106+  DAAD 11 A2 DD    		lxi	d, v_window
+0107+  DAB0 CD C7 DA    		call	line313
+0108+  DAB3             
+0109+  DAB3             		; Повтор B раз
+0110+  DAB3 D5          draw_window_2:	push	d
+0111+  DAB4 CD C7 DA    		call	line313
+0112+  DAB7 05          		dcr	b
+0113+  DAB8 CA BF DA    		jz	draw_window_3
+0114+  DABB D1          		pop	d		
+0115+  DABC C3 B3 DA    		jmp	draw_window_2
+0116+  DABF             
+0117+  DABF             ; ---------------------------------------------------------------------------
+0118+  DABF             
+0119+  DABF F1          draw_window_3:	pop	psw
+0120+  DAC0             
+0121+  DAC0             		; Линия
+0122+  DAC0 CD C7 DA    		call	line313
+0123+  DAC3             
+0124+  DAC3             		; Восстановить регистры и выйти
+0125+  DAC3 D1          		pop	d
+0126+  DAC4 C1          		pop	b
+0127+  DAC5 E1          		pop	h
+0128+  DAC6 C9          		ret
+0129+  DAC7             
+0130+  DAC7             ; ---------------------------------------------------------------------------
+0131+  DAC7             ; Вертикальная линия. Задается три верхних байта, заполнитель и три нижних
+0132+  DAC7             
+0133+  DAC7             line313:	; Сохраняем регистры
+0134+  DAC7 C5          		push	b
+0135+  DAC8 E5          		push	h
+0136+  DAC9             
+0137+  DAC9             		; Копируем 3 байта (сверху-вниз)
+0138+  DAC9 CD DF DA    		call	memcpy_hl_de_3
+0139+  DACC             
+0140+  DACC             		; 4 ый байт повторяем С-раз (сверху-вниз)
+0141+  DACC 1A          		ldax	d
+0142+  DACD CD D8 DA    		call	memset_hl_a_c
+0143+  DAD0 13          		inx	d
+0144+  DAD1             
+0145+  DAD1             		; Копируем 3 байта (сверху-вниз)
+0146+  DAD1 CD DF DA    		call	memcpy_hl_de_3
+0147+  DAD4             		 	
+0148+  DAD4             		; Восстаналиваем регистры
+0149+  DAD4 E1          		pop	h
+0150+  DAD5 C1          		pop	b
+0151+  DAD6             
+0152+  DAD6             		; Вправо
+0153+  DAD6 24          		inr	h
+0154+  DAD7 C9          		ret0077   DAD8             .include "memset_hl_a_c.inc"
+0001+  DAD8             ;----------------------------------------------------------------------------
+0002+  DAD8             ; MXOS NC.COM
+0003+  DAD8             ; Заполнение памяти по адресу HL байтом A длинной C
+0004+  DAD8             ;
+0005+  DAD8             ; 2013-12-18 Дизассемблировано vinxru
+0006+  DAD8             ;----------------------------------------------------------------------------
+0007+  DAD8             
+0008+  DAD8 77          memset_hl_a_c:	mov	m, a
+0009+  DAD9 23          		inx	h
+0010+  DADA 0D          		dcr	c
+0011+  DADB C2 D8 DA    		jnz	memset_hl_a_c
+0012+  DADE C9          		ret
+0078   DADF             .include "memcpy_hl_de_3.inc"
+0001+  DADF             ;----------------------------------------------------------------------------
+0002+  DADF             ; MXOS NC.COM
+0003+  DADF             ; Копирвоание 3-х байт из адреса DE в адрес HL
+0004+  DADF             ;
+0005+  DADF             ; 2013-12-18 Дизассемблировано vinxru
+0006+  DADF             ;----------------------------------------------------------------------------
+0007+  DADF             
+0008+  DADF 1A          memcpy_hl_de_3:	ldax	d
+0009+  DAE0 77          		mov	m, a
+0010+  DAE1 23          		inx	h
+0011+  DAE2 13          		inx	d
+0012+  DAE3             
+0013+  DAE3 1A          		ldax	d
+0014+  DAE4 77          		mov	m, a
+0015+  DAE5 23          		inx	h
+0016+  DAE6 13          		inx	d
+0017+  DAE7             
+0018+  DAE7 1A          		ldax	d
+0019+  DAE8 77          		mov	m, a
+0020+  DAE9 23          		inx	h
+0021+  DAEA 13          		inx	d
+0022+  DAEB             
+0023+  DAEB C9          		ret
+0079   DAEC             .include "compactName.inc"
+0001+  DAEC             ;----------------------------------------------------------------------------
+0002+  DAEC             ; MXOS NC.COM
+0003+  DAEC             ; Убрать их имени пробелы
+0004+  DAEC             ;
+0005+  DAEC             ; hl - откуда
+0006+  DAEC             ; de - куда
+0007+  DAEC             ;
+0008+  DAEC             ; 2013-12-18 Дизассемблировано vinxru
+0009+  DAEC             ;----------------------------------------------------------------------------
+0010+  DAEC             
+0011+  DAEC             compactName:	; Сохраняем регистры
+0012+  DAEC E5          		push	h
+0013+  DAED C5          		push	b
+0014+  DAEE             
+0015+  DAEE             		; Копируем до пробела, но не более 6 букв
+0016+  DAEE 01 06 00    		lxi	b, 6		
+0017+  DAF1 7E          compactName_1:	mov	a, m
+0018+  DAF2 FE 20       		cpi	' '
+0019+  DAF4 CA FE DA    		jz	compactName_2		
+0020+  DAF7 12          		stax	d
+0021+  DAF8 23          		inx	h
+0022+  DAF9 13          		inx	d
+0023+  DAFA 0D          		dcr	c
+0024+  DAFB C2 F1 DA    		jnz	compactName_1
+0025+  DAFE             
+0026+  DAFE             compactName_2:	; Пропущенные символы исходной строки
+0027+  DAFE 09          		dad	b
+0028+  DAFF             
+0029+  DAFF             		; Точка
+0030+  DAFF 3E 2E       		mvi	a, '.'
+0031+  DB01 12          		stax	d
+0032+  DB02 13          		inx	d
+0033+  DB03             
+0034+  DB03             		; Копируем 3 буквы
+0035+  DB03 0E 03       		mvi	c, 3
+0036+  DB05 7E          compactName_3:	mov	a, m
+0037+  DB06 FE 20       		cpi	' '
+0038+  DB08 CA 12 DB    		jz	compactName_4
+0039+  DB0B 12          		stax	d
+0040+  DB0C 23          		inx	h
+0041+  DB0D 13          		inx	d
+0042+  DB0E 0D          		dcr	c
+0043+  DB0F C2 05 DB    		jnz	compactName_3
+0044+  DB12             
+0045+  DB12 EB          compactName_4:	xchg
+0046+  DB13 F5          		push	psw
+0047+  DB14             
+0048+  DB14             		; Если последний символ '.', то удаляем его
+0049+  DB14 2B          		dcx	h
+0050+  DB15 7E          		mov	a, m
+0051+  DB16 FE 2E       		cpi	'.'
+0052+  DB18 CA 1C DB    		jz	compactName_5
+0053+  DB1B 23          		inx	h
+0054+  DB1C             compactName_5:	
+0055+  DB1C             
+0056+  DB1C             		; Добавляем пробел и конец строки
+0057+  DB1C 36 20       		mvi	m, ' '
+0058+  DB1E 23          		inx	h
+0059+  DB1F 36 0D       		mvi	m, 0Dh
+0060+  DB21 23          		inx	h
+0061+  DB22 36 00       		mvi	m, 0
+0062+  DB24             
+0063+  DB24             		; Результат в DE
+0064+  DB24 EB          		xchg
+0065+  DB25             
+0066+  DB25             		; Восстаналиваем регистры и выходим
+0067+  DB25 F1          		pop	psw
+0068+  DB26 C1          		pop	b
+0069+  DB27 E1          		pop	h
+0070+  DB28 C9          		ret0080   DB29             .include "input.inc"
+0001+  DB29             ;----------------------------------------------------------------------------
+0002+  DB29             ; MXOS NC.COM
+0003+  DB29             ; Ввод строки
+0004+  DB29             ;
+0005+  DB29             ; 2013-12-18 Дизассемблировано vinxru
+0006+  DB29             ;----------------------------------------------------------------------------
+0007+  DB29             
+0008+  DB29             input:		; Вывод строки
+0009+  DB29 E5          		push	h
+0010+  DB2A 21 84 DE    		lxi	h, v_input
+0011+  DB2D CD 6B D2    		call	printStringInv
+0012+  DB30 E1          		pop	h
+0013+  DB31             
+0014+  DB31             		; Включаем инверсию
+0015+  DB31 3E 01       		mvi	a, 1
+0016+  DB33 32 FA 8F    		sta	v_inverse
+0017+  DB36             
+0018+  DB36             input_loop:	; Ввод символа
+0019+  DB36 CD 03 C8    		call	getch
+0020+  DB39             
+0021+  DB39             		; Enter или ESC
+0022+  DB39 FE 0D       		cpi	0Dh
+0023+  DB3B CA 6E DB    		jz	input_exit
+0024+  DB3E FE 1B       		cpi	1Bh
+0025+  DB40 CA 6E DB    		jz	input_exit
+0026+  DB43             
+0027+  DB43             		; Если служебная клавиша или пробел, то пропускаем
+0028+  DB43 FE 21       		cpi	21h
+0029+  DB45 DA 36 DB    		jc	input_loop
+0030+  DB48             
+0031+  DB48             		; Сохраняем для вывода
+0032+  DB48 4F          		mov	c, a
+0033+  DB49             
+0034+  DB49             		; Помещаем символ в буфер
+0035+  DB49 12          		stax	d
+0036+  DB4A             
+0037+  DB4A             		; Удаление
+0038+  DB4A FE 7F       		cpi	7Fh
+0039+  DB4C CA 5C DB    		jz	input_bkspc
+0040+  DB4F             
+0041+  DB4F             		; Если переполнение
+0042+  DB4F 3E 9B       		mvi	a, (v_input+23) & 0FFh
+0043+  DB51 BB          		cmp	e
+0044+  DB52 CA 36 DB    		jz	input_loop
+0045+  DB55             
+0046+  DB55             		; Вывод символа на экран		
+0047+  DB55 CD 09 C8    		call	printChar
+0048+  DB58             
+0049+  DB58             		; Увеличение длины строки
+0050+  DB58 13          		inx	d
+0051+  DB59             
+0052+  DB59 C3 36 DB    		jmp	input_loop
+0053+  DB5C             
+0054+  DB5C             ; ---------------------------------------------------------------------------
+0055+  DB5C             
+0056+  DB5C             input_bkspc:	; Если это начало строки, выходим
+0057+  DB5C 3E 84       		mvi	a, v_input & 0FFh
+0058+  DB5E BB          		cmp	e
+0059+  DB5F CA 36 DB    		jz	input_loop
+0060+  DB62             
+0061+  DB62             		; Уменьшаем длину строки
+0062+  DB62 1D          		dcr	e
+0063+  DB63             
+0064+  DB63             		; Стираем символ с экрана
+0065+  DB63 E5          		push	h
+0066+  DB64 21 B0 DC    		lxi	h, asc_DC17
+0067+  DB67 CD 18 C8    		call	printString
+0068+  DB6A E1          		pop	h
+0069+  DB6B             
+0070+  DB6B C3 36 DB    		jmp	input_loop
+0071+  DB6E             
+0072+  DB6E             ; ---------------------------------------------------------------------------
+0073+  DB6E             
+0074+  DB6E             input_exit:	; Сохраняем ESC или Enter для выхода 
+0075+  DB6E 4F          		mov	c, a
+0076+  DB6F             
+0077+  DB6F             		; Записываем в конец строки 0Dh, 0
+0078+  DB6F EB          		xchg
+0079+  DB70 36 0D       		mvi	m, 0Dh
+0080+  DB72 23          		inx	h
+0081+  DB73 AF          		xra	a
+0082+  DB74 77          		mov	m, a
+0083+  DB75             
+0084+  DB75             		; Восстанавливаем инверсию
+0085+  DB75 32 FA 8F    		sta	v_inverse
+0086+  DB78             
+0087+  DB78             		; Выход		
+0088+  DB78 79          		mov	a, c
+0089+  DB79 C9          		ret0081   DB7A             .include "printDec.inc"
+0001+  DB7A             ;----------------------------------------------------------------------------
+0002+  DB7A             ; MXOS NC.COM
+0003+  DB7A             ; Вывод десятичного числа из HL
+0004+  DB7A             ;
+0005+  DB7A             ; 2013-12-18 Дизассемблировано vinxru
+0006+  DB7A             ;----------------------------------------------------------------------------
+0007+  DB7A             
+0008+  DB7A D5          printDec:	push	d
+0009+  DB7B C5          		push	b
+0010+  DB7C E5          		push	h
+0011+  DB7D EB          		xchg
+0012+  DB7E 06 20       		mvi	b, 20h
+0013+  DB80 11 F0 D8    		lxi	d, -10000
+0014+  DB83 CD A3 DB    		call	printDec1
+0015+  DB86 11 18 FC    		lxi	d, -1000
+0016+  DB89 CD A3 DB    		call	printDec1
+0017+  DB8C 11 9C FF    		lxi	d, -100
+0018+  DB8F CD A3 DB    		call	printDec1
+0019+  DB92 11 F6 FF    		lxi	d, -10
+0020+  DB95 CD A3 DB    		call	printDec1
+0021+  DB98 7D          		mov	a, l
+0022+  DB99 C6 30       		adi	'0'
+0023+  DB9B 4F          		mov	c, a
+0024+  DB9C CD 09 C8    		call	printChar
+0025+  DB9F E1          		pop	h
+0026+  DBA0 C1          		pop	b
+0027+  DBA1 D1          		pop	d
+0028+  DBA2 C9          		ret
+0029+  DBA3             
+0030+  DBA3             ; ---------------------------------------------------------------------------
+0031+  DBA3             
+0032+  DBA3             
+0033+  DBA3             printDec1:	; c = '0' + (hl / de), hl /= de;
+0034+  DBA3 0E 2F       		mvi	c, '0'-1
+0035+  DBA5             
+0036+  DBA5 0C          loc_DB11:	inr	c
+0037+  DBA6 19          		dad	d
+0038+  DBA7 DA A5 DB    		jc	loc_DB11
+0039+  DBAA             
+0040+  DBAA 7A          		mov	a, d		; hl -=	de;
+0041+  DBAB 2F          		cma
+0042+  DBAC 57          		mov	d, a
+0043+  DBAD 7B          		mov	a, e
+0044+  DBAE 2F          		cma
+0045+  DBAF 5F          		mov	e, a
+0046+  DBB0 13          		inx	d
+0047+  DBB1 19          		dad	d
+0048+  DBB2 79          		mov	a, c
+0049+  DBB3             
+0050+  DBB3             		; if(c!='0') b=0xFF; c&=b;		
+0051+  DBB3 FE 30       		cpi	'0'
+0052+  DBB5 CA BA DB    		jz	loc_DB26
+0053+  DBB8 06 FF       		mvi	b, 0FFh		
+0054+  DBBA A0          loc_DB26:	ana	b
+0055+  DBBB 4F          		mov	c, a
+0056+  DBBC             
+0057+  DBBC C3 09 C8    		jmp	printChar
+0082   DBBF             .include "driver.inc"
+0001+  DBBF             ;----------------------------------------------------------------------------
+0002+  DBBF             ; MXOS NC.COM
+0003+  DBBF             ; Драйвер для доступа к ДОЗУ
+0004+  DBBF             ;
+0005+  DBBF             ; 2013-12-18 Дизассемблировано и доработано vinxru
+0006+  DBBF             ;----------------------------------------------------------------------------
+0007+  DBBF             
+0008+  DBBF 21 C0 FF    swapDriver:	lxi	h, 0FFC0h
+0009+  DBC2 11 D3 DB    		lxi	d, Driver
+0010+  DBC5 06 15       		mvi	b, DriverEnd-Driver
+0011+  DBC7 4E          swapDriver_1:	 mov	c, m
+0012+  DBC8 1A          		 ldax	d
+0013+  DBC9 77          		 mov	m, a
+0014+  DBCA 79          		 mov	a, c
+0015+  DBCB 12          		 stax	d
+0016+  DBCC 23          		 inx	h
+0017+  DBCD 13          		 inx	d
+0018+  DBCE 05          		 dcr	b
+0019+  DBCF C2 C7 DB    		jnz	swapDriver_1
+0020+  DBD2 C9          		ret
+0021+  DBD3             
+0022+  DBD3             ; ---------------------------------------------------------------------------
+0023+  DBD3             
+0024+  DBD3             Driver:		
+0025+  DBD3             #if BIG_MEM
+0026+  DBD3 AF          		xra	a
+0027+  DBD4             #endif
+0028+  DBD4 32 FD FF    		sta     IO_PAGE_ARAM
+0029+  DBD7 7E          		mov     a, m
+0030+  DBD8 32 FC FF    		sta     IO_PAGE_RAM
+0031+  DBDB C9          		ret
+0032+  DBDC             DriverW:	
+0033+  DBDC             #if BIG_MEM
+0034+  DBDC C5          		push	b
+0035+  DBDD 47          		mov	b, a
+0036+  DBDE AF          		xra	a
+0037+  DBDF 32 FD FF    		sta     IO_PAGE_ARAM
+0038+  DBE2 70          		mov     m, b
+0039+  DBE3 32 FC FF    		sta     IO_PAGE_RAM
+0040+  DBE6 C1          		pop	b
+0041+  DBE7~            #else
+0042+  DBE7~            		sta     IO_PAGE_ARAM
+0043+  DBE7~            		mov     m, a
+0044+  DBE7~            		sta     IO_PAGE_RAM
+0045+  DBE7             #endif
+0046+  DBE7 C9          		ret
+0047+  DBE8             DriverEnd:0083   DBE8             
+0084   DBE8             ; ---------------------------------------------------------------------------
+0085   DBE8             
+0086   DBE8 4E 41 4D 45 aNameName:	.db "NAME",18h,18h,18h,18h,18h,18h,18h,18h,18h,18h,18h,18h,"NAME",0
+0086   DBEC 18 18 18 18 
+0086   DBF0 18 18 18 18 
+0086   DBF4 18 18 18 18 
+0086   DBF8 4E 41 4D 45 
+0086   DBFC 00 
+0087   DBFD 46 31 20 4C aF1LeftF2RighF3:.db "F1 LEFT F2 RIGH F3 INFO F4 EDIT F5 COPY F6 RMOV F7 LOAD F8 DEL",0
+0087   DC01 45 46 54 20 
+0087   DC05 46 32 20 52 
+0087   DC09 49 47 48 20 
+0087   DC0D 46 33 20 49 
+0087   DC11 4E 46 4F 20 
+0087   DC15 46 34 20 45 
+0087   DC19 44 49 54 20 
+0087   DC1D 46 35 20 43 
+0087   DC21 4F 50 59 20 
+0087   DC25 46 36 20 52 
+0087   DC29 4D 4F 56 20 
+0087   DC2D 46 37 20 4C 
+0087   DC31 4F 41 44 20 
+0087   DC35 46 38 20 44 
+0087   DC39 45 4C 00 
+0088   DC3C 43 4F 4D 4D aCommanderVersi:.db "COMMANDER VERSION 1.4",0
+0088   DC40 41 4E 44 45 
+0088   DC44 52 20 56 45 
+0088   DC48 52 53 49 4F 
+0088   DC4C 4E 20 31 2E 
+0088   DC50 34 00 
+0089   DC52 28 43 29 20 aCOmsk1992:	.db "(C) OMSK 1992",0
+0089   DC56 4F 4D 53 4B 
+0089   DC5A 20 31 39 39 
+0089   DC5E 32 00 
+0090   DC60 46 49 4C 45 aFileIsProtecti:.db "FILE IS PROTECTION",0
+0090   DC64 20 49 53 20 
+0090   DC68 50 52 4F 54 
+0090   DC6C 45 43 54 49 
+0090   DC70 4F 4E 00 
+0091   DC73 41 20 20 20 aABCD:		.db "A   B   C   D",0
+0091   DC77 42 20 20 20 
+0091   DC7B 43 20 20 20 
+0091   DC7F 44 00 
+0092   DC81 45 20 20 20 aEFGH:		.db "E   F   G   H",0
+0092   DC85 46 20 20 20 
+0092   DC89 47 20 20 20 
+0092   DC8D 48 00 
+0093   DC8F 43 48 4F 4F aChooseDrive:	.db "CHOOSE DRIVE:",0
+0093   DC93 53 45 20 44 
+0093   DC97 52 49 56 45 
+0093   DC9B 3A 00 
+0094   DC9D 44 45 4C 45 aDeleteFromDisk:.db "DELETE FROM DISK  ",0
+0094   DCA1 54 45 20 46 
+0094   DCA5 52 4F 4D 20 
+0094   DCA9 44 49 53 4B 
+0094   DCAD 20 20 00 
+0095   DCB0 08 20 08 00 asc_DC17:	.db 8,' ',8,0
+0096   DCB4 43 4F 50 59 aCopyFromDiskTo:.db "COPY FROM DISK     TO",8,8,8,8,8,0
+0096   DCB8 20 46 52 4F 
+0096   DCBC 4D 20 44 49 
+0096   DCC0 53 4B 20 20 
+0096   DCC4 20 20 20 54 
+0096   DCC8 4F 08 08 08 
+0096   DCCC 08 08 00 
+0097   DCCF 43 41 4E 27 aCanTCreatyFile:.db "CAN",39,"T CREATY FILE",0 
+0097   DCD3 54 20 43 52 
+0097   DCD7 45 41 54 59 
+0097   DCDB 20 46 49 4C 
+0097   DCDF 45 00 
+0098   DCE1 52 45 4D 4F aRemoveFromDisk:.db "REMOVE FROM DISK     TO",8,8,8,8,8,0
+0098   DCE5 56 45 20 46 
+0098   DCE9 52 4F 4D 20 
+0098   DCED 44 49 53 4B 
+0098   DCF1 20 20 20 20 
+0098   DCF5 20 54 4F 08 
+0098   DCF9 08 08 08 08 
+0098   DCFD 00 
+0099   DCFE 20 42 59 54 aBytesFreeOnDri:.db " BYTES FREE ON DRIVE ",0
+0099   DD02 45 53 20 46 
+0099   DD06 52 45 45 20 
+0099   DD0A 4F 4E 20 44 
+0099   DD0E 52 49 56 45 
+0099   DD12 20 00 
+0100   DD14 20 46 49 4C aFilesUse:	.db " FILES USE ",0
+0100   DD18 45 53 20 55 
+0100   DD1C 53 45 20 00 
+0101   DD20 42 59 54 45 aBytesIn:	.db "BYTES IN ",0
+0101   DD24 53 20 49 4E 
+0101   DD28 20 00 
+0102   DD2A 20 54 4F 54 aTotalBytes:	.db " TOTAL BYTES",0
+0102   DD2E 41 4C 20 42 
+0102   DD32 59 54 45 53 
+0102   DD36 00 
+0103   DD37 4F 4E 20 44 aOnDrive:	.db "ON DRIVE ",0
+0103   DD3B 52 49 56 45 
+0103   DD3F 20 00 
+0104   DD41 20 20 20 20 		.db "    0",0	; ЌҐ ЁбЇ®«м§гҐвбп
+0104   DD45 30 00 
+0105   DD47 53 41 56 45 aSaveFromToTape:.db "SAVE FROM     TO TAPE",8,8,8,8,8,8,8,8,8,8,0
+0105   DD4B 20 46 52 4F 
+0105   DD4F 4D 20 20 20 
+0105   DD53 20 20 54 4F 
+0105   DD57 20 54 41 50 
+0105   DD5B 45 08 08 08 
+0105   DD5F 08 08 08 08 
+0105   DD63 08 08 08 00 
+0106   DD67 20 20 20 20 aSavingTape:	.db "     SAVING TAPE     ",0
+0106   DD6B 20 53 41 56 
+0106   DD6F 49 4E 47 20 
+0106   DD73 54 41 50 45 
+0106   DD77 20 20 20 20 
+0106   DD7B 20 00 
+0107   DD7D 4C 4F 41 44 aLoadingTapeTo:	.db "LOADING TAPE TO  ",0
+0107   DD81 49 4E 47 20 
+0107   DD85 54 41 50 45 
+0107   DD89 20 54 4F 20 
+0107   DD8D 20 00 
+0108   DD8F 45 52 52 4F aErrorLoadingTa:.db "ERROR LOADING TAPE",0
+0108   DD93 52 20 4C 4F 
+0108   DD97 41 44 49 4E 
+0108   DD9B 47 20 54 41 
+0108   DD9F 50 45 00 
+0109   DDA2             
+0110   DDA2             ; €бЇ®«мг§Ґвбп дг­ЄжЁҐ© draw_window
+0111   DDA2             
+0112   DDA2 7F          v_window:	.db 01111111b		; ‚Ґае­Ё© «Ґўл© гЈ®«
+0113   DDA3 40          		.db 01000000b
+0114   DDA4 5F          		.db 01011111b
+0115   DDA5 50          		.db 01010000b		; ‹Ґўл© Єа ©
+0116   DDA6 5F          		.db 01011111b		; ЌЁ¦­Ё© «Ґўл© гЈ®«
+0117   DDA7 40          		.db 01000000b
+0118   DDA8 7F          		.db 01111111b
+0119   DDA9             
+0120   DDA9 FF          		.db 11111111b		; ‚Ґае ®Є­ 
+0121   DDAA 00          		.db 00000000b
+0122   DDAB FF          		.db 11111111b
+0123   DDAC             
+0124   DDAC 00          		.db 00000000b		; ‘®¤Ґа¦Ё¬®Ґ ®Є­ 
+0125   DDAD             
+0126   DDAD FF          		.db 11111111b		; ЌЁ§ ®Є­ 
+0127   DDAE 00          		.db 00000000b
+0128   DDAF FF          		.db 11111111b
+0129   DDB0             
+0130   DDB0 FE          		.db 11111110b		; Џа ўл© ўҐае­Ё© гЈ®«
+0131   DDB1 02          		.db 00000010b
+0132   DDB2 FA          		.db 11111010b
+0133   DDB3 0A          		.db 00001010b		; Џа ў п Ја ­Ёж 
+0134   DDB4 FA          		.db 11111010b		; Џа ўл© ­Ё¦­Ё© гЈ®«
+0135   DDB5 02          		.db 00000010b
+0136   DDB6 FE          		.db 11111110b
+0137   DDB7             
+0138   DDB7             #define G_WINDOW(A,X,Y,W,H) .db A|2, Y, 90h+(X>>3), H-6, (W>>3)-2
+0139   DDB7             #define G_LINE(A,X,Y,W) .db A|1, Y, 90h+(X>>3), (((X&7)+W+7)>>3)-2, 0FFh>>(X&7), (0FF00h>>((W+X)&7)) & 0FFh
+0140   DDB7             #define G_VLINE(A,X,Y,H) .db A|3, Y, 90h+(X>>3), H, 80h>>(X&7)
+0141   DDB7             
+0142   DDB7 02 00 90 E0 g_filePanel:	G_WINDOW(0, 0, 0, 192, 230)		; 2, 0, 90h, 0E0h, 16h
+0142   DDBB 16 
+0143   DDBC 01 D0 90 16 		G_LINE(0, 4, 208, 184)			; 1, 0D0h, 90h, 16h, 0Fh, 0F0h
+0143   DDC0 0F F0 
+0144   DDC2 03 03 9C CD 		G_VLINE(0, 96, 3, 205)			; 3, ?, 9Ch, 0CDh, 80h
+0144   DDC6 80 
+0145   DDC7 00          		.db 0
+0146   DDC8             
+0147   DDC8 02 00 90 E0 g_infoPanel:	G_WINDOW(0, 0, 0, 192, 230)		; 2, 0, 90h, 0E0h, 16h
+0147   DDCC 16 
+0148   DDCD 01 1F 90 16 		G_LINE(0, 4, 31, 184)			; 1, 1Fh, 90h, 16h, 0Fh, 0F0h
+0148   DDD1 0F F0 
+0149   DDD3 01 70 90 16 		G_LINE(0, 4, 112, 184)			; 1, 70h, 90h, 16h, 0Fh, 0F0h
+0149   DDD7 0F F0 
+0150   DDD9 00          		.db 0
+0151   DDDA             
+0152   DDDA 02 55 95 2C g_chooseDrive:	G_WINDOW(0, 40, 85, 112, 50)		; 2, 55h, 95h, 02Ch, 0Ch
+0152   DDDE 0C 
+0153   DDDF 01 67 95 0C 		G_LINE(0, 44, 103, 104)			; 1, 67h, 95h, 0Ch, 0Fh, 0F0h
+0153   DDE3 0F F0 
+0154   DDE5 00          		.db 0
+0155   DDE6             
+0156   DDE6 82 50 9E 1F g_window1:	G_WINDOW(80h, 112, 80, 160, 37)		; 82h, 50h, 9Eh, 1Fh, 12h
+0156   DDEA 12 
+0157   DDEB 81 62 9E 12 		G_LINE(80h, 116, 98, 152)		; 81h, 62h, 9Eh, 12h, 0Fh, 0F0h
+0157   DDEF 0F F0 
+0158   DDF1 00          		.db 0
+0159   DDF2             
+0160   DDF2 82 72 9D 1F g_window2:	G_WINDOW(80h, 104, 114, 176, 37)	; 82h, 72h, 9Dh, 1Fh, 14h
+0160   DDF6 14 
+0161   DDF7 81 84 9D 14 		G_LINE(80h, 108, 132, 168)		; 81h, 84h, 9Dh, 14h, 0Fh, 0F0h 
+0161   DDFB 0F F0 
+0162   DDFD 00          		.db 0
+0163   DDFE             
+0164   DDFE 5A          initState:	.db 5Ah
+0165   DDFF 00          activePanel:	.db 0
+0166   DE00 00          panelA_info:	.db 0
+0167   DE01 01          panelB_info:	.db 1
+0168   DE02 00          panelA_drive:	.db 0
+0169   DE03 00          panelB_drive:	.db 0
+0170   DE04 00          panelA_filesCnt:.db 0
+0171   DE05 00          panelB_filesCnt:.db 0
+0172   DE06 00          panelA_curFile:	.db 0
+0173   DE07 00          panelB_curFile:	.db 0
+0174   DE08 4E 43 20 20 aNcExt:		.db "NC    EXT",0,0,0,0,0,0,0
+0174   DE0C 20 20 45 58 
+0174   DE10 54 00 00 00 
+0174   DE14 00 00 00 00 
+0175   DE18 41 3A 45 2E aEditor:	.db "A:E.COM",0Dh
+0175   DE1C 43 4F 4D 0D 
+0176   DE20 41 3A 46 4F aFormatB:	.db "A:FORMAT.COM B:"
+0176   DE24 52 4D 41 54 
+0176   DE28 2E 43 4F 4D 
+0176   DE2C 20 42 3A 
+0177   DE2F 0D          		.db 0Dh
+0178   DE30 00 00       v_cmdLinePos:	.dw 0
+0179   DE32 00 00       v_cmdLineEnd:	.dw 0
+0180   DE34 00          v_chooseDrive:	.db 0
+0181   DE35 00 00       v_tapeSaveCRC:	.dw 0
+0182   DE37 00 00       v_savedSP:	.dw 0
+0183   DE39 00 00       word_DDA0:	.dw 0
+0184   DE3B             
+0185   DE3B FF FF FF FF v_cmdLine:	.db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+0185   DE3F FF FF FF FF 
+0185   DE43 FF FF 
+0186   DE45 FF FF FF FF 		.db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+0186   DE49 FF FF FF FF 
+0186   DE4D FF FF 
+0187   DE4F FF FF FF FF 		.db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+0187   DE53 FF FF FF FF 
+0187   DE57 FF FF 
+0188   DE59 FF FF FF FF 		.db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+0188   DE5D FF FF FF FF 
+0188   DE61 FF FF 
+0189   DE63 FF FF FF FF 		.db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+0189   DE67 FF FF FF FF 
+0189   DE6B FF FF 
+0190   DE6D FF FF FF FF 		.db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+0190   DE71 FF FF FF FF 
+0190   DE75 FF FF 
+0191   DE77 FF FF FF FF 		.db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+0191   DE7B FF FF FF FF 
+0191   DE7F FF FF 
+0192   DE81 FF FF FF    		.db 0FFh,0FFh,0FFh
+0193   DE84             
+0194   DE84 FF FF FF FF v_input:	.db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+0194   DE88 FF FF FF FF 
+0194   DE8C FF FF 
+0195   DE8E FF FF FF FF 		.db 0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh,0FFh
+0195   DE92 FF FF FF FF 
+0195   DE96 FF FF 
+0196   DE98 FF          		.db 0FFh
+0197   DE99             
+0198   DE99             		.block 11
+0199   DEA4             files2:		.block 10
+0200   DEAE             v_file_addr:	.block 2
+0201   DEB0             v_file_length:	.block 2
+0202   DEB2             		.block 2
+0203   DEB4             files:		.block 301h
+0204   E1B5             
+0205   E1B5             .endtasm: Number of errors = 0

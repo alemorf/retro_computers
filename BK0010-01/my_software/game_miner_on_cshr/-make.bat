@@ -1,0 +1,1 @@
+bk0010_cshr bk0010_miner.asm

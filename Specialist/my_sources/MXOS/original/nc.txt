@@ -1,0 +1,3 @@
+Comparing files NC.COM and ..\NC.COM\NC.53248.COM
+FC: no differences encountered
+

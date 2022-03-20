@@ -1,0 +1,977 @@
+;COPDEV		V1.1	(c)BD Copyright 1995
+;ТАБЛИЦА MK-DOS
+
+VERS=120004	BLK=120006	DIR=120014	FLOP=120126
+INIDRV=120016	INOUT=120022	RDDIR=120024	DIRFIN=120026
+DELETE=120036	SAVDIR=120042	TXT=120050	STROKA=120052
+DECOUT=120060	TST=120062	TST2=120064	ERRO=120066
+FRFIN2=120120	CREAT2=120122	EMT20=120044	SCREEN=120074
+LD0=120134	SUBTEK=120010	SUBDIR=120013	LD1=120136
+PALET=120127	FRFIN=120032	CREAT=120034	PRINAM=120046
+VINT=414	DEVTEK=120012	MAXTRK=400	TEKBLK=402
+INBUF=404
+	CALL	EDRF
+	MOV	@#122,R3
+	BNE	1	;ЕСЛИ "КЛЮЧА" НЕТ - ПОДСКАЗКА
+0E:	JMP	HELP
+1:	CLR	@#122
+	MOV	@#124,R1
+	ADD	R1,R3
+
+0S:	CMP	R1,R3	;ПРОПУСK ПРОБЕЛОВ И ПРОЧ.
+	BHIS	0E	;ЕСЛИ ТОЛЬКО ПРОБЕЛЫ - ПЕРЕХОД НА
+	CMPB	(R1),#40	;ПОДСКАЗКУ...
+	BHI	1S
+	INC	R1
+	BR	0S
+
+1S:	CMPB	@R1,#'=	;ЕСЛИ СРАЗУ СТОИТ =, ТО ТЕК.УСТРОЙСТВО
+	BNE	2S
+	MOVB	DEVTEK,DEVR	;ЗАПОМНИЛИ УСТ-ВО НА ЧТЕНИЕ
+	BR	5S
+
+
+2S:	MOV	#LDR,R4
+	MOVB	(R1)+,R0
+	CMP	R1,R3
+	BHIS	ERR1
+	CMPB	(R1),#':	;ЭТО БЫЛО ИМЯ УСТРОЙСТВА ?
+	BNE	3S
+	CALL	@TST2	;LAT,ЗАГЛ	
+	SUB	#101,R0
+	BMI	ERR1	;ЕСЛИ НЕ БУКВА....
+	MOVB	R0,DEVR
+	INC	R1
+	BR	4S
+
+3S:	MOVB	R0,(R4)+	;ЗАПОМИНАЕМ ИМЯ LD
+	MOVB	(R1)+,(R4)+
+4S:	CMP	R1,R3
+	BHIS	ERR1
+	CMPB	@R1,#'=
+	BEQ	5S
+	MOVB	(R1)+,(R4)+
+	BR	4S
+
+5S:	INC	R1
+	MOV	#LDW,R4
+	MOVB	(R1)+,R0
+	CMP	R1,R3
+	BHIS	ERR1
+	CMPB	(R1)+,#':	;БЫЛО ИМЯ УСТРОЙСТВА?
+	BNE	ERR1
+	CALL	@TST2
+	SUB	#101,R0		;ЛАТ,ЗАГЛ
+	BMI	ERR1
+	MOVB	R0,DEVW		;ЗАПОМНИЛИ УС-ВО НА ЗАПИСЬ
+6S:	CMP	R1,R3
+	BHIS	0COP
+	CMPB	@R1,#40
+	BLO	0COP
+	CMPB	@R1,#'/
+	BEQ	0KEY
+	CMPB	@R1,#'\
+	BEQ	0KEY
+	MOVB	(R1)+,(R4)+
+	BR	6S
+
+0KEY:	CMP	R1,R3	;УСТАНОВКА КЛЮЧЕЙ
+	BHIS	0COP
+	MOVB	(R1)+,R0
+	CMPB	R0,#'S
+	BNE	1KE
+	INC	S
+1KE:	CMPB	R0,#'F
+	BNE	0KEY
+	INC	F
+	BR	0KEY
+
+ERR1:	JSR	R1,@TXT
+.ASCIZ<12>/COPDEV - Ошибка в командной строке./<12>	.EVEN
+EXIT:	JSR	R1,@TXT
+.ASCIZ<12>/Нажмите любую клавишу для выхода в ДОС./	.EVEN
+	CLR	@#104
+	CLR	@#122
+	CLR	@#177130
+	EMT	6
+	JMP	@#100000
+HLT:	SUB	@PC,@SP
+	RTI
+
+;ОПРЕДЕЛЕНИЕ РАЗМЕРА ИСТОЧНИКА И СМЕЩЕНИЯ К НЕМУ
+0COP:	CALL	@INIDRV
+	CLR	LD1
+	CLR	LD0
+	MOV	#LDR,R5
+	MOVB	DEVR,34(R3)
+	MOVB	DEVR,DEVTEK
+	TST	@R5
+	BEQ	1COP
+	CALL	DISKR
+	CALL	LDSIZE
+	BCS	EXIT
+	MOV	R4,LDR$
+	MOV	R4,LD0
+	MOV	R4,LD1
+	BR	00C
+1COP:	CALL	HDSIZE
+00C:	MOV	R5,SIZER
+	MOV	R5,REAL
+	CALL	DISKR
+	CALL	@RDDIR
+	BCC	2COP
+	JMP	ERR3
+2COP:	CMP	402(R3),#51414
+	BNE	2CO
+	MOV	30(R3),R2
+	ADD	#500,R3
+	TST	R2
+	BEQ	2$
+1$:	CMPB	#377,@R3	;ИЩЕМ ПОСЛЕДНЮЮ ЗАПИСЬ
+	BNE	3$
+	ADD	#30,R3
+	BR	1$
+3$:	ADD	#30,R3
+	SOB	R2,1$
+2$:	MOV	20(R3),REAL
+
+
+;ОПРЕДЕЛЕНИЕ РАЗМЕРА ПРИЕМНИКА И СМЕЩЕНИЯ К НЕМУ
+2CO:	MOVB	DEVR,R0
+	ADD	#101,R0
+	MOVB	R0,INP
+	JSR	R1,@TXT
+.ASCII<12><237>/Диск-источник/<237>/ /
+INP:.ASCIZ/A:/
+	MOV	#LDR-2,R3
+	CALL	@PRINAM
+	JSR	R1,@TXT
+.ASCIZ<12>/объем:/	.EVEN
+	MOV	SIZER,R0
+	CALL	OUTBL
+	JSR	R1,@TXT
+.ASCIZ<12>/занято файлами:/	.EVEN
+	MOV	REAL,R0
+	CALL	OUTBL
+
+	CLR	LD1
+	CLR	LD0
+	CALL	@INIDRV
+	MOV	#LDW,R5
+	MOVB	DEVW,34(R3)
+	MOVB	DEVW,DEVTEK
+	TST	@R5
+	BEQ	3COP1
+	CALL	DISKW
+	CALL	LDSIZE
+	BCC	555
+;ЕСЛИ НЕ НАШЛИ НУЖНЫЙ LD
+	JSR	R1,@TXT
+.ASCIZ<12><12>/Хотите создать логический диск /	.EVEN
+	MOV	#326-2,R3
+	CALL	@PRINAM
+	MOVB	DEVW,R0
+	ADD	#101,R0
+	MOVB	R0,DDD
+	JSR	R1,@TXT
+.ASCII/на устройстве /
+DDD:.ASCIZ/A:/<12>/емкостью /	.EVEN
+	MOV	REAL,R0
+	CALL	OUTBL
+	JSR	R1,@TXT
+.ASCIZ" (Д/Н)?"
+	CLR	@#104
+000:	EMT	6
+	CALL	@TST2
+	CMPB	R0,#'N
+	BNE	001
+	JMP	EXIT
+555:	BR	556
+001:	CMPB	R0,#'D
+	BNE	000
+	MOV	DIR,R3
+	MOV	REAL,R1
+	MOV	R1,SIZEW
+	CALL	@FRFIN2
+	BCC	002
+	JSR	R1,@TXT
+.ASCIZ<12><12>/COPDEV - На устройстве нет места/<12>	.EVEN
+	JMP	EXIT
+3COP1:	BR	3COP
+002:	MOV	20(R3),LDW$
+	MOV	DIR,R4
+	MOV	R3,-(SP)
+	MOV	REAL,R1
+	CALL	@CREAT2
+	MOV	(SP)+,R3
+	MOV	#2,@R3
+	CALL	DISKW
+	CALL	@SAVDIR
+	BCC	7COP
+	JSR	R1,@TXT
+.ASCIZ<12><12>/Ошибка при записи каталога/	.EVEN
+	INC	RW
+	CALL	OUTERR
+	JMP	EXIT
+556:	MOV	R4,LDW$
+	BR	4COP
+3COP:	CALL	HDSIZE
+4COP:	MOV	R5,SIZEW
+7COP:	MOVB	DEVW,R0
+	ADD	#101,R0
+	MOVB	R0,OUT
+	JSR	R1,@TXT
+.ASCII<12><12><237>/Диск-приемник/<237>/ /
+OUT:.ASCIZ/A:/	.EVEN
+	MOV	#LDW-2,R3
+	CALL	@PRINAM
+	JSR	R1,@TXT
+.ASCIZ<12>/объем:/	.EVEN
+	MOV	SIZEW,R0
+	CALL	OUTBL
+	CMP	REAL,SIZEW
+	BLOS	KK
+	JSR	R1,@TXT
+.ASCII<12><12>/Источник имеет больший объем чем приемник!/
+.BYTE	7,7,7,0		.EVEN
+	MOV	SIZEW,REAL
+	MOV	#-1,TOTAL
+KK:	JSR	R1,@TXT
+.ASCIZ<12><12>"Начать копирование (Д/Н)?"		.EVEN
+	CLR	@#177130
+	CLR	@#104
+09:	EMT	6
+	CALL	@TST2
+	CMPB	R0,#'D
+	BEQ	0KK
+	CMPB	R0,#'N
+	BNE	09
+	JMP	EXIT
+
+0KK:	CMPB	DEVW,#'B-101	;ЕСЛИ УСТРОЙСТВО >B:
+	BHI	0NOFMT		;ИЛИ ЕСТЬ LD ПО ЗАПИСИ -
+	TST	LDW$		;ИГНОРИРОВАТЬ /F И /S !!!
+	BNE	0NOFMT
+	TST	F
+	BEQ	0NOFMT
+
+	CALL	DISKW
+1:	MOV	#DRF,R1
+	MOV	#126000,R3
+	MOV	#ED-DRF,R2
+	MOVB	(R1)+,(R3)+
+	SOB	R2,.-2
+	JSR	R1,@TXT
+.ASCIZ<12><12><237>/Форматирование/<237><12>
+	.EVEN
+	TST	S
+	BEQ	2
+	JSR	R1,@TXT
+.ASCIZ<12>/COPDEV - Подключен драйвер "быстрого" форматирования/<12>
+.EVEN
+2:	CALL	@INIDRV
+	MOVB	DEVW,34(R3)
+	MOVB	#125,17(R3)
+	MOVB	#66.,14(R3)
+	MOV	#80.,MAXTRK
+	INC	RW
+	TSTB	FLOP
+	BNE	0G
+	MOVB	#33.,14(R3)	;ПРЕКОР. !!!!
+	MOV	#40.,MAXTRK
+0G:
+
+	CLR	32(R3)
+	CALL	@#126000
+	BCC	01		;ПОПЫТКА ФОРМАТНУТЬ ╣ё
+03:	INC	RW
+	CALL	OUTERR		;НУЛЕВУЮ ДОРОГУ      ╥2 РАЗА
+	BR	NEXT$		;И ПОТОМ ПРОВЕРИТЬ  ╣╧
+0NOFMT:	BR	NOFMT
+01:	CLR	R0
+	MOV	#HELP,R2
+	MOV	#12000,R1
+	MOVB	#1,15(R3)
+	CALL	@#160004
+	BCC	02
+	CLR	32(R3)
+	CALL	@#126000
+	BCS	03
+	CLR	R0
+	MOV	#HELP,R2
+	MOV	#12000,R1
+	CALL	@#160004
+	BCC	02
+	CLR	RW
+	CALL	OUTERR
+	BCS	NEXT$
+
+	JSR	R1,@TXT
+.ASCIZ<12><12>/COPDEV - Нулевая дорожка испорчена/<12>	.EVEN
+
+NEXT$:	JMP	NEXT
+02:	MOVB	#1,33(R3)
+0F:	EMT	26
+	CLR	R1
+	EMT	24
+	MOVB	33(R3),R0
+	CALL	@DECOUT
+	MOV	BLK,R3
+	CLRB	32(R3)		;СОБСТВЕННО ФОРМАЧЕНИЕ
+	CLRB	@#52
+	CALL	@#126000
+	BCC	1F
+	INC	RW
+	CALL	OUTERR
+	BR	NEXT$
+1F:	INCB	33(R3)
+	CMPB	33(R3),MAXTRK
+	BLOS	0F
+
+NOFMT:	CLR	TEKBLK
+	MOV	REAL,MAXTRK
+	CLR	INBUF
+	CALL	@INIDRV
+	JSR	R1,@TXT	;ВКЛ. РЕЖИМА РП
+.BYTE	214,233,224,236,221,233,0	.EVEN
+	CALL	INFO
+INFORM:	TST	MAXTRK
+	BNE	3RE
+	CLR	INBUF
+	CALL	INFO
+	CLR	R0
+	SOB	R0,.
+	SOB	R0,.
+	JMP	NEXTD
+3RE:	MOV	#22,R0
+	EMT	16
+	CALL	DISKR
+	CALL	INFO
+0RE:	MOV	BLK,R3
+	MOVB	DEVR,34(R3)
+	MOV	LDR$,LD1
+	MOV	TEKBLK,R0
+	MOV	#HELP,R2
+	MOV	#57,R1
+	CMP	MAXTRK,R1
+	BHIS	01
+	MOV	MAXTRK,R1
+01:	MOV	R1,INBUF
+	SWAB	R1
+	CALL	@INOUT
+	BCC	02
+	CLR	RW
+	CMPB	34(R3),#'B-101
+	BHI	88
+	CMPB	@#52,#6
+	BNE	88
+	MOV	#-1,DISK0
+	BR	3RE
+88:	CALL	OUTERR
+	BCS	NEXTD1
+	BIT	#100,@#177716
+	BEQ	03
+	MOV	#7,R0
+	EMT	16
+	EMT	16
+	BR	0RE
+03:	CMPB	@#177662,#14
+	BNE	0RE
+02:	TST	TEKBLK
+	BNE	889
+	MOV	#HELP,R1
+	CMP	400(R1),#123456
+	BNE	889
+	CMP	402(R1),#51414
+	BNE	889
+	TST	(PC)+
+TOTAL:	HALT
+	BMI	889
+	MOV	SIZEW,466(R1)
+889:	MOV	#22,R0
+	EMT	16
+	CALL	DISKW
+	CALL	INFO
+1RE:	MOV	BLK,R3
+	MOVB	DEVW,34(R3)
+	MOV	LDW$,LD1
+	MOV	#HELP,R2
+	MOV	TEKBLK,R0
+	MOV	INBUF,R1
+	SWAB	R1
+	NEG	R1
+	CALL	@INOUT
+	BCC	04
+	INC	RW
+	CMPB	@#52,#6
+	BNE	99
+	CMPB	34(R3),#'B-101
+	BHI	99
+	MOV	#-1,DISK0
+	BR	889
+99:	CALL	OUTERR
+	BCS	NEXTD1
+	MOV	BLK,R3
+	CMPB	DEVW,#'B-101
+	BHI	NEXTD1
+	MOV	#12,60(R3)
+	MOV	#400,64(R3)
+	CALL	@#160012
+	BR	1RE
+04:	ADD	INBUF,TEKBLK
+	SUB	INBUF,MAXTRK
+	JMP	INFORM
+
+NEXTD1:	CLR	@#177130
+	CLR	@#104
+	EMT	6
+NEXTD:	MOV	#40000,R0
+	MOV	#20000,R2
+	CLR	(R0)+
+	SOB	R2,.-2
+	JSR	R1,@TXT
+.BYTE	214,233,224,236,221,233,12,12
+.ASCIZ/COPDEV - Копирование завершено./	.EVEN
+
+NEXT:	CLR	@#177130
+	CMPB	DEVW,#'B-101
+	BHI	0N
+	TST	LDW$
+	BNE	0N
+	JSR	R1,@TXT
+.ASCIZ<12><12>"Еще диск (Д/Н)?"		.EVEN
+	CLR	@#104
+01:	EMT	6
+	CALL	@TST2
+	CMPB	R0,#'N
+	BEQ	0N
+	CMPB	R0,#'D
+	BNE	01
+	JMP	KK
+0N:	JMP	EXIT
+
+
+INFO:	MOV	#70000,R1
+	MOV	#1000,R2
+	CLR	R0
+1:	MOV	R0,(R1)+
+	MOV	R0,(R1)+
+	MOV	R0,(R1)+
+	MOV	R0,(R1)+
+	SOB	R2,1
+	JSR	R1,@TXT
+.ASCIZ<22>/ Блоки:/	.EVEN
+	MOV	TEKBLK,R0
+	CALL	@DECOUT
+	TST	INBUF
+	BNE	2
+	RET
+2:	JSR	R1,@TXT
+.ASCIZ/ -/	.EVEN
+	MOV	TEKBLK,R0
+	ADD	INBUF,R0
+	JMP	@DECOUT
+
+
+;П/П ОПРЕДЕЛЕНИЯ РАЗМЕРА LD, В R5-адрес имени LD
+LDSIZE:	MOV	#326,R1
+	MOV	#20,R2
+	MOVB	(R5)+,(R1)+
+	SOB	R2,.-2
+	MOV	#320,@#306
+	CALL	@RDDIR
+	BCC	1
+ERR3:	JSR	R1,@TXT
+.ASCIZ<12><12>/Ошибка чтения каталога/		.EVEN
+	CLR	RW
+	CALL	OUTERR
+	BR	3
+1:	CMP	402(R3),#51414
+	BEQ	2
+	JSR	R1,@TXT
+.ASCIZ<12><12>/COPDEV - Диск не в формате MKDOS/	.EVEN
+3:	JMP	EXIT
+2:	CALL	@DIRFIN
+	BCC	4
+5:	JSR	R1,@TXT
+.ASCIZ<12><12>/COPDEV - Не найден логический диск/	.EVEN
+	SEC
+	RET
+4:	CMPB	#2,@R3
+	BNE	5
+	MOV	20(R3),R4
+	MOV	22(R3),R5
+	CLC
+	RET
+OUTBL:	CALL	@DECOUT
+	JSR	R1,@TXT
+.ASCIZ/ блоков/		.EVEN
+	RET
+
+;П/П ОПРЕДЕЛЕНИЯ ЕМКОСТИ УСТРОЙСТВА
+HDSIZE:	CMPB	34(R3),#1
+	BLOS	78
+	TST	VINT	;БЕЗ ВИНЧЕСТЕРА:
+	BNE	1
+78:	MOV	#1600.,R5
+	TSTB	FLOP
+	BNE	2
+	MOV	#800.,R5
+2:	CMPB	34(R3),#'E-101	;УСТРОЙСТВО "Е:"?
+	BNE	3$
+	CMPB	#300,@#177717	;БК0011М?
+	BNE	3$
+	CMP	@#100054,#160004	;VD включен?
+	BEQ	3$
+	MOV	#128.,R5
+3$:	RET
+
+1:	MOV	#HELP,R2
+	CMP	VINT,#177640
+	BNE	3
+
+	MOV	#1,R1	;САМАРСКИЙ КНЖМД
+	CLR	R0
+	CALL	@INOUT
+	BCS	ERR2
+	MOV	54(R3),R5
+	RET
+
+3:	CLR	R1	;ВАДИМОВСКИЙ КНЖМД
+	CLR	R0
+	CALL	@#160004
+	BCS	ERR2
+	MOV	R0,R5
+	RET
+
+ERR2:	JSR	R1,@TXT
+.ASCIZ<12><12>/COPDEV - нет устройства./
+	.EVEN
+	JMP	EXIT
+
+COLOR:	MOV	R0,-(SP)
+	CMPB	R0,#40
+	BLO	0E
+	CMPB	R0,#237
+	BEQ	0E
+1:	MOV	@#160,-(SP)
+	EMT	16
+	MOV	(SP)+,R0
+	MOV	R2,-(SP)
+	MOV	R1,-(SP)
+	MOV	#12,R2
+12:	MOVB	@R0,R1
+	ROLB	R1
+	BISB	R1,@R0
+	BICB	#125,@R0
+	ADD	#100,R0
+	BPL	11
+	SUB	#40000,R0
+11:	SOB	R2,12
+	MOV	(SP)+,R1
+	MOV	(SP)+,R2
+	TST	(PC)+
+0E:	EMT	16
+	MOV	(SP)+,R0
+	RET
+
+EDRF:	CMP	VERS,#100000+315.
+	BEQ	2
+	TST	(SP)+
+	RET
+2:	CMPB	#300,@#177717
+	BEQ	3
+	TSTB	PALET
+	BEQ	3
+	MOV	#COLOR,SCREEN
+3:	MOV	@#60,@#274
+
+1:	MOV	#VINT1,@#4
+	MOV	#177640,R0
+	TST	@R0
+	BR	0VINT
+VINT1:	CMP	(SP)+,(SP)+
+	MOV	#VINT2,@#4
+	MOV	#177740,R0
+	TST	@R0
+	BR	0VINT
+VINT2:	CMP	(SP)+,(SP)+
+	CLR	R0
+0VINT:	MOV	R0,VINT
+	MOV	#HLT,@#4
+
+	JSR	R1,@TXT
+.ASCII<232><233><224><236><221><233>
+.ASCII/ /<237>"(C) BD  CopDev v1.1"<237>
+.BYTE	12,12,0		.EVEN
+	RET
+
+F:	HALT	;ПРИЗНАК ФОРМАТИРОВАНИЯ
+S:	HALT	;ПРИЗНАК "БЫСТРОГО" ДРАЙВЕРА
+DEVR:	.BYTE	0	;УСТРОЙСТВО ДЛЯ ЧТЕНИЯ
+DEVW:	.BYTE	0	;УСТРОЙСТВО ДЛЯ ЗАПИСИ
+LDR:	.BLKB	30	;ИМЯ LD ПО ЧТЕНИЮ
+LDW:	.BLKB	30	;ИМЯ LD по ЗАПИСИ
+LDR$:	.WORD	0	;СМЕЩЕНИЕ К LDR
+LDW$:	.WORD	0	;СМЕЩЕНИЕ К LDW
+SIZER:	.WORD	0	;РАЗМЕР ИСТОЧНИКА
+SIZEW:	.WORD	0	;РАЗМЕР ПРИЕМНИКА
+REAL:	HALT
+
+DISKR:	CMPB	DEVR,DEVW
+	BEQ	1
+0E:	RET
+1:	CMPB	DEVR,#'C-101
+	BHI	0E
+	TST	DISK0
+	BEQ	0E
+
+	MOV	R5,-(SP)
+	MOV	R3,-(SP)
+	JSR	R1,@TXT
+.ASCIZ<12><12>/Вставьте диск-/<237>/ИСТОЧНИК/<237>
+.EVEN
+	CLR	DISK0
+	BR	0DSK
+
+DISKW:	CMPB	DEVR,DEVW
+	BEQ	1
+0E:	RET
+1:	CMPB	DEVR,#'C-101
+	BHI	0E
+	CMP	#1,DISK0
+	BEQ	0E
+
+	MOV	R5,-(SP)
+	MOV	R3,-(SP)
+	JSR	R1,@TXT
+.ASCIZ<12><12>/Вставьте диск-/<237>/ПРИЕМНИК/<237>	.EVEN
+	MOV	#1,DISK0
+0DSK:	JSR	R1,@TXT
+.ASCIZ/ и нажмите <ВВОД>/<12>	.EVEN
+	CLR	@#104
+	EMT	6
+	MOV	(SP)+,R3
+	MOV	(SP)+,R5
+	RET
+DISK0:	.WORD	-1
+
+
+OUTERR:	MOV	R3,-(SP)
+	MOV	#E1,TER
+	TST	(PC)+
+RW:	HALT
+	BEQ	1
+	MOV	#E1$,TER
+1:	MOVB	@#52,R4
+	BEQ	0E
+	BIC	#177760,R4
+	ASL	R4
+	ADD	#TER-2,R4
+	MOV	@R4,R4
+	JSR	R1,@TXT
+.ASCIZ/ - /	.EVEN
+	MOV	R4,R1
+	CLR	R2
+	CALL	@EMT20
+	MOV	#12,R0
+	EMT	16
+	MOVB	@#52,R0
+	CMPB	R0,#1
+	BNE	01
+	TST	RW
+	BEQ	0E
+	BR	1E
+01:	CMPB	R0,#3
+	BEQ	1E
+	CMPB	R0,#6
+	BEQ	1E
+	CMPB	R0,#7
+	BEQ	1E
+0E:	TST	(PC)+
+1E:	SEC
+	MOV	(SP)+,R3
+	RET
+
+
+DRF:	TST	@#S
+	BNE	1
+	JMP	FORMAT
+1:	JMP	FORMA
+
+VECT04:	TST	(R5)
+	MOV	#7,R0
+ERROR:	MOVB	R0,@#52
+	MOVB	#1,56(R3)
+	BR	40
+ENDS:	CLRB	56(R3)
+40:	MOV	46(R3),@#4
+	MTPS	52(R3)
+	CCC
+	RORB	56(R3)
+	MOV	50(R3),SP
+	RTS	PC
+CRC:	TSTB	(R4)
+	BPL	CRC
+	MOV	#17,R2
+41:	BIT	#40000,(R4)
+	BNE	42
+	SOB	R2,41
+42:	RTS	PC
+
+PUSK:	MOV	#177130,R4
+	MOV	R4,R5
+	CMP	(R5)+,(R5)	;TST	(R5)+
+	BICB	#4,16(R3)
+	BIT	#20,(R3)
+	BEQ	1
+	BISB	#4,16(R3)
+1:	BIS	#20,(R3)
+	MOV	(R3),(R4)
+	BIC	#57,(R3)
+	TSTB	32(R3)
+	BEQ	2
+	BIS	#40,(R3)
+2:	BICB	#177774,34(R3)
+	MOVB	34(R3),R1
+	MOV	PC,R0
+	ADD	#56,R0
+	ADD	R1,R0
+	BISB	(R0),(R3)
+	ADD	R3,R1
+	ADD	#4,R1
+	MOV	R1,2(R3)
+	CALL	UKAZBI
+	BITB	#4,16(R3)
+	BNE	5
+	CLR	R1
+3:	SOB	R1,3
+4:	SOB	R1,4
+5:	MOV	(R3),(R4)
+	MOV	10(R3),R1
+6:	SOB	R1,6
+	RTS	PC
+TBL:	.BYTE	1,2,4,10
+UKAZBI:	CLR	20(R3)
+	BICB	#177774,34(R3)
+	MOVB	34(R3),20(R3)
+	ADD	R3,20(R3)
+	ADD	#22,20(R3)
+	RTS	PC
+POZIT:	TSTB	33(R3)
+	BEQ	GO00
+	TSTB	@2(R3)
+	BPL	1
+	CALL	GO00
+1:	CMPB	@2(R3),33(R3)
+	BEQ	3
+	BHI	2
+	CALL	STEPCE
+	BR	1
+2:	CALL	STEPER
+	BR	1
+3:	MOV	#23420,R0
+4:	SOB	R0,4
+	RTS	PC
+STEPCE:	INCB	@2(R3)
+	BMI	5
+	BIS	#100,(R3)
+	BR	7
+5:	MOV	#4,R0
+	JMP	ERROR
+STEPER:	DECB	@2(R3)
+	BIT	#1,(R4)
+	BEQ	6
+	CLRB	@2(R3)
+	RTS	PC
+6:	BIC	#100,(R3)
+7:	MOV	#310,R0
+	MOV	(R3),(R4)
+8:	SOB	R0,8
+	BIS	#200,(R3)
+	MOV	(R3),(R4)
+	MOV	12(R3),R0
+9:	SOB	R0,9
+	BITB	#1,@20(R3)
+	BEQ	11
+	BITB	#100,16(R3)
+	BNE	11
+	MOV	(R3),(R4)
+	MOV	12(R3),R0
+10:	SOB	R0,10
+11:	BIC	#200,(R3)
+	RTS	PC
+
+GO00:	MOVB	#200,@2(R3)
+	BISB	#100,16(R3)
+12:	CALL	STEPER
+	BIT	#1,(R4)
+	BNE	14
+	TSTB	@2(R3)
+	BNE	12
+	MOV	#3,R0
+	BICB	#100,16(R3)
+	JMP	ERROR
+14:	CLRB	@2(R3)
+	BICB	#100,16(R3)
+	RTS	PC
+
+GOLOVA:	MOV	#47116,(R5)
+	BR	2
+1:	TSTB	(R4)
+	BPL	1
+	MOV	#47116,(R5)
+2:	SOB	R0,1
+	MOV	#6,R0
+3:	TSTB	(R4)
+	BPL	3
+	MOV	#0,(R5)
+	SOB	R0,3
+	BIS	#1000,(R3)
+4:	TSTB	(R4)
+	BPL	4
+	MOV	#120641,(R5)
+	MOV	(R3),(R4)
+	BIC	#1000,(R3)
+5:	TSTB	(R4)
+	BPL	5
+	MOV	40(R3),(R5)
+	RTS	PC
+PREKOR:	BIC	#2000,(R3)
+	CMPB	14(R3),@2(R3)
+	BHI	1
+	BIS	#2000,(R3)
+1:	MOV	(R3),(R4)
+	MOV	#310,R0
+2:	SOB	R0,2
+	RTS	PC
+FORMAT:	CLRB	32(R3)
+	CALL	@#160012
+	BCS	1
+	INCB	32(R3)
+	CALL	@#160012
+1:	RET
+
+FORMA:	MOV	SP,50(R3)
+	MFPS	52(R3)
+	MOV	#4,R0
+	MOV	(R0),46(R3)
+	MOV	PC,@R0
+	ADD	#VECT04-.,(R0)
+	CLRB	32(R3)
+	CALL	PUSK
+	CALL	POZIT
+	CALL	PREKOR
+	BIT	#4,(R4)
+	BEQ	2
+	MOV	#1,R0
+1:	JMP	ERROR
+2:	MOV	#1750,R0
+3:	TST	@R4
+	BPL	5
+	SOB	R0,3
+E4:	TST	(R5)
+	MOV	#6,R0
+	JMP	ERROR
+
+5:	MTPS	#340
+	MOV	#1001,R2
+	MOV	#10.,R1
+	SWAB	32(R3)
+	CALL	FT
+	INCB	32(R3)
+	BIS	#40,@R3
+	MOV	@R3,@R4
+	MOV	#1001,R2
+	MOV	#10.,R1
+	SWAB	32(R3)
+	CALL	F8
+	MTPS	52(R3)
+	JMP	ENDS
+
+FT:	CLR	R0
+6:	TST	(R4)
+	BMI	F8
+	SOB	R0,6
+	BR	E4
+F8:8:	MOV	#20,R0
+	MOV	#177241,40(R3)
+10:	CALL	GOLOVA
+11:	TSTB	(R4)
+	BPL	11
+	MOV	32(R3),(R5)
+	MOV	(R3),(R4)
+12:	TSTB	(R4)
+	BPL	12
+	MOV	R2,(R5)
+	MOV	#13,R0
+	MOV	#175641,40(R3)
+14:	BIT	#40000,(R4)
+	BEQ	14
+	CALL	GOLOVA
+	MOV	#377,R0
+15:	TSTB	(R4)
+	BPL	15
+	MOV	#77776,(R5)
+	MOV	(R3),(R4)
+16:	TSTB	(R4)
+	BPL	16
+	MOV	#77776,(R5)
+	SOB	R0,16
+	INC	R2
+	MOV	#30,R0
+17:	MOV	#177241,40(R3)
+18:	BIT	#40000,(R4)
+	BEQ	18
+	SOB	R1,10
+19:	TSTB	(R4)
+	BPL	19
+	MOV	#47116,(R5)
+	TST	(R4)
+	BPL	19
+20:	TSTB	(R4)
+	BPL	20
+	MOV	#47116,(R5)
+	TST	@R5
+	SWAB	32(R3)
+	RET
+ED:	HALT
+
+
+TER:	.WORD	E1,E2,E3,E4$,E5,E6,E7,E8,E9,E10,E11
+E1:.ASCIZ/CRC в зоне данных/
+E1$:.ASCIZ/диск защищен от записи/
+E2:.ASCIZ/CRC в зоне заголовка/
+E3:.ASCIZ/привод не найден или нет позиционирования в 0/
+E4$:.ASCIZ/ошибка позиционирования/
+E5:.ASCIZ/не найден сектор/
+E6:.ASCIZ/нет диска или он не крутится/
+E7:.ASCIZ/останов пользователя/
+E8:.ASCIZ/не найден адресный маркер/
+E9:.ASCIZ/не найден маркер данных/
+E10:.ASCIZ/нестандартный диск/
+E11:.ASCIZ/ошибка имени sAQPINA/		.EVEN
+
+
+HELP:	JSR	R1,@TXT
+.ASCII/  COPDEV запускается из командной строки так:/<12><12>
+.ASCII/C:\>COPDEV [<INP DEV>]:[<INP LD>]=<OUT DEV>:[<OUT LD>]/
+.BYTE 12,12
+.ASCII/         При копировании на дисковод можно дополнительно/<12>
+.ASCII"  указать ключи /F (предформат) и /S (подключить драйвер"<12>
+.ASCII/  "быстрого" форматирования)./<12>
+.ASCII/                  Примеры:/<12><12>
+.ASCII"COPDEV A:=A:"<12>
+.ASCII"  - копирование дискет на одном дисководе (A:);"<12>
+.ASCII"COPDEV C:ИГРЫ=A:/F"<12>
+.ASCII"  - скопировать с устройства C: логический диск ИГРЫ"<12>
+.ASCII"  на дисковод A: с  предварительным  форматированием"<12>
+.ASCII"  дискеты;"<12>
+.ASCII"COPDEV A:=C:ИГРЫ"<12>
+.ASCII"  - скопировать образ  дискеты A: в логический  диск"<12>
+.ASCII"  ИГРЫ на устройстве C:."<12><12>
+.ASCIZ"                                (C) 1995 Бутырский Д.В."
+	.EVEN
+	JMP	EXIT
+
+.END

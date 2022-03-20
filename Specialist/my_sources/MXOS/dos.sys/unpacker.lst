@@ -1,0 +1,206 @@
+0001   0000             TMP		= 07FFFh
+0002   0000             IO_RAM		= 0FFFCh
+0003   0000             
+0004   E000             .org 0E000h
+0005   E000             
+0006   E000             start:		; Включаем ОЗУ
+0007   E000 32 FC FF    		sta	IO_RAM
+0008   E003             
+0009   E003             		; Стек
+0010   E003 31 FF 7F    		lxi	sp, TMP
+0011   E006             
+0012   E006             		; Распаковываем ОС
+0013   E006 11 E1 E0    		lxi	d, packedData
+0014   E009 01 00 C0    		lxi	b, 0C000h
+0015   E00C C5          		push	b
+0016   E00D C3 10 E0    		jmp	unmlz
+0017   E010             
+0018   E010             ; Разархиватор MegaLZ
+0019   E010             ; (с) b2m, vinxru, группа mayhem...
+0020   E010             
+0021   E010             
+0022   E010 3E 80       unmlz:		mvi	a, 80h
+0023   E012             
+0024   E012 32 FF 7F    loc_2:		sta	TMP		
+0025   E015 1A          		ldax	d
+0026   E016 13          		inx	d
+0027   E017 C3 23 E0    		jmp	loc_13
+0028   E01A             ; ---------------------------------------------------------------------------
+0029   E01A             
+0030   E01A 7E          loc_A:		mov	a, m
+0031   E01B 23          		inx	h
+0032   E01C 02          		stax	b
+0033   E01D 03          		inx	b
+0034   E01E             
+0035   E01E             loc_E:
+0036   E01E 7E          		mov	a, m
+0037   E01F 23          		inx	h
+0038   E020 02          		stax	b
+0039   E021 03          		inx	b
+0040   E022             
+0041   E022             loc_12:
+0042   E022 7E          		mov	a, m
+0043   E023             
+0044   E023             loc_13:
+0045   E023 02          		stax	b
+0046   E024 03          		inx	b
+0047   E025             
+0048   E025             loc_15:
+0049   E025 3A FF 7F    		lda	TMP
+0050   E028 87          		add	a
+0051   E029 C2 2F E0    		jnz	loc_1F
+0052   E02C 1A          		ldax	d
+0053   E02D 13          		inx	d
+0054   E02E 17          		ral
+0055   E02F             
+0056   E02F             loc_1F:
+0057   E02F DA 12 E0    		jc	loc_2
+0058   E032 87          		add	a
+0059   E033 C2 39 E0    		jnz	loc_29
+0060   E036 1A          		ldax	d
+0061   E037 13          		inx	d
+0062   E038 17          		ral
+0063   E039             
+0064   E039             loc_29:
+0065   E039 DA 5F E0    		jc	loc_4F
+0066   E03C 87          		add	a
+0067   E03D C2 43 E0    		jnz	loc_33
+0068   E040 1A          		ldax	d
+0069   E041 13          		inx	d
+0070   E042 17          		ral
+0071   E043             
+0072   E043             loc_33:
+0073   E043 DA 53 E0    		jc	loc_43
+0074   E046 21 FF 3F    		lxi	h, 3FFFh
+0075   E049 CD AA E0    		call	sub_A2
+0076   E04C 32 FF 7F    		sta	TMP
+0077   E04F 09          		dad	b
+0078   E050 C3 22 E0    		jmp	loc_12
+0079   E053             ; ---------------------------------------------------------------------------
+0080   E053             
+0081   E053             loc_43:
+0082   E053 32 FF 7F    		sta	TMP
+0083   E056 1A          		ldax	d
+0084   E057 13          		inx	d
+0085   E058 6F          		mov	l, a
+0086   E059 26 FF       		mvi	h, 0FFh
+0087   E05B 09          		dad	b
+0088   E05C C3 1E E0    		jmp	loc_E
+0089   E05F             ; ---------------------------------------------------------------------------
+0090   E05F             
+0091   E05F             loc_4F:
+0092   E05F 87          		add	a
+0093   E060 C2 66 E0    		jnz	loc_56
+0094   E063 1A          		ldax	d
+0095   E064 13          		inx	d
+0096   E065 17          		ral
+0097   E066             
+0098   E066             loc_56:
+0099   E066 DA 70 E0    		jc	loc_60
+0100   E069 CD BF E0    		call	sub_B7
+0101   E06C 09          		dad	b
+0102   E06D C3 1A E0    		jmp	loc_A
+0103   E070             ; ---------------------------------------------------------------------------
+0104   E070             
+0105   E070             loc_60:
+0106   E070 26 00       		mvi	h, 0
+0107   E072             
+0108   E072             loc_62:
+0109   E072 24          		inr	h
+0110   E073 87          		add	a
+0111   E074 C2 7A E0    		jnz	loc_6A
+0112   E077 1A          		ldax	d
+0113   E078 13          		inx	d
+0114   E079 17          		ral
+0115   E07A             
+0116   E07A             loc_6A:
+0117   E07A D2 72 E0    		jnc	loc_62
+0118   E07D F5          		push	psw
+0119   E07E 7C          		mov	a, h
+0120   E07F FE 08       		cpi	8
+0121   E081 D2 A8 E0    		jnc	loc_98
+0122   E084 3E 00       		mvi	a, 0
+0123   E086             
+0124   E086             loc_76:
+0125   E086 1F          		rar
+0126   E087 25          		dcr	h
+0127   E088 C2 86 E0    		jnz	loc_76
+0128   E08B 67          		mov	h, a
+0129   E08C 2E 01       		mvi	l, 1
+0130   E08E F1          		pop	psw
+0131   E08F CD AA E0    		call	sub_A2
+0132   E092 23          		inx	h
+0133   E093 23          		inx	h
+0134   E094 E5          		push	h
+0135   E095 CD BF E0    		call	sub_B7
+0136   E098 EB          		xchg
+0137   E099 E3          		xthl
+0138   E09A EB          		xchg
+0139   E09B 09          		dad	b
+0140   E09C             
+0141   E09C 7E          loc_8C:		mov	a, m
+0142   E09D 23          		inx	h
+0143   E09E 02          		stax	b
+0144   E09F 03          		inx	b
+0145   E0A0 1D          		dcr	e
+0146   E0A1 C2 9C E0    		jnz	loc_8C
+0147   E0A4 D1          		pop	d
+0148   E0A5 C3 25 E0    		jmp	loc_15
+0149   E0A8             
+0150   E0A8             ; ---------------------------------------------------------------------------
+0151   E0A8             
+0152   E0A8             loc_98:
+0153   E0A8 F1          		pop	psw
+0154   E0A9             		; Конец
+0155   E0A9 C9          		ret
+0156   E0AA             
+0157   E0AA             ; ---------------------------------------------------------------------------
+0158   E0AA             
+0159   E0AA 87          sub_A2:		add	a
+0160   E0AB C2 B1 E0    		jnz	loc_A9
+0161   E0AE 1A          		ldax	d
+0162   E0AF 13          		inx	d
+0163   E0B0 17          		ral
+0164   E0B1             
+0165   E0B1 DA B9 E0    loc_A9:		jc	loc_B1
+0166   E0B4 29          		dad	h
+0167   E0B5 D8          		rc
+0168   E0B6 C3 AA E0    		jmp	sub_A2
+0169   E0B9             
+0170   E0B9             ; ---------------------------------------------------------------------------
+0171   E0B9             
+0172   E0B9 29          loc_B1:		dad	h
+0173   E0BA 2C          		inr	l
+0174   E0BB D8          		rc
+0175   E0BC C3 AA E0    		jmp	sub_A2
+0176   E0BF             
+0177   E0BF             ; ---------------------------------------------------------------------------
+0178   E0BF             
+0179   E0BF 87          sub_B7:		add	a
+0180   E0C0 C2 C6 E0    		jnz	loc_BE
+0181   E0C3 1A          		ldax	d
+0182   E0C4 13          		inx	d
+0183   E0C5 17          		ral
+0184   E0C6             
+0185   E0C6 DA D2 E0    loc_BE:		jc	loc_CA
+0186   E0C9 32 FF 7F    		sta	TMP
+0187   E0CC 1A          		ldax	d
+0188   E0CD 13          		inx	d
+0189   E0CE 6F          		mov	l, a
+0190   E0CF 26 FF       		mvi	h, 0FFh
+0191   E0D1 C9          		ret
+0192   E0D2             ; ---------------------------------------------------------------------------
+0193   E0D2             
+0194   E0D2 21 FF 1F    loc_CA:		lxi	h, 1FFFh
+0195   E0D5 CD AA E0    		call	sub_A2
+0196   E0D8 32 FF 7F    		sta	TMP
+0197   E0DB 65          		mov	h, l
+0198   E0DC 25          		dcr	h
+0199   E0DD 1A          		ldax	d
+0200   E0DE 13          		inx	d
+0201   E0DF 6F          		mov	l, a
+0202   E0E0 C9          		ret
+0203   E0E1             
+0204   E0E1             packedData:
+0205   E0E1             
+0206   E0E1             .endtasm: Number of errors = 0

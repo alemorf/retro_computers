@@ -1,0 +1,1 @@
+bool parse_insert_bitmap();

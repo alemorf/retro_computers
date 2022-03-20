@@ -1,0 +1,5 @@
+0001   0000                  .org 0h
+0002   0000             
+0003   0000             Entry:
+0004   0000 00 00 5A 00      .dw 0, 05Ah
+0005   0004             .Endtasm: Number of errors = 0

@@ -1,0 +1,538 @@
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+<h1>Преобразовать ROM в WAV</h1>
+
+Формат:<br>
+<label><input type="radio" name="model" value="10" onclick="modelChanged()" checked> БК0010 3 МГц - гарантированно прочитается на любой БК</label><br>
+
+<label><input type="radio" name="model" value="11" onclick="modelChanged()"> БК0011 4 МГц - загрузка быстрее на 17%, но не совместимо с БК0010</label><br>
+
+<label><input type="radio" name="model" value="turbo" onclick="modelChanged()"> БК0010 3 МГц - ускорение в 8 раз с турбо-загрузчиком</label><br>
+
+<div id="speedContainer">
+<label><input type="checkbox" id="speed" checked> Дополнительное ускорение на 11%</label><br><br>
+</div>
+
+<button onClick="convertFile()">Преобразовать</button><br><br>
+
+(c) Manwe, http://thesands.ru/bk0010/wav-converter<br>
+(c) Alemorf<br>
+
+<script>
+
+function modelChanged() {
+  let model = document.querySelector('[name=model]:checked').value;
+  document.querySelector('#speedContainer').style.visibility = model == 'turbo' ? 'hidden' : 'visible';
+}
+
+modelChanged();
+
+
+//---------------------------------------------------------------------------------------------------------------------
+// file tools
+
+function saveAs(fileName, data) {
+    var blob = new Blob([new Uint8Array(data)], {type: 'application/octet-stream'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function loadAs(result)
+{
+    var link = document.createElement('div');
+    link.innerHTML = '<input type="file">';
+    var load = link.childNodes[0];
+    document.body.appendChild(link);
+    load.click();
+    document.body.removeChild(link);
+    load.onchange = function()
+    {
+        var fr = new FileReader;
+        fr.readAsArrayBuffer(load.files[0]);
+        fr.onload = function(event) {
+            result(load.files[0].name, new Uint8Array(event.target.result));
+        };
+    }
+}
+
+// (c) Manwe
+//   |
+// \ | /
+//  \|/ 
+
+var LEVEL_1 = 208;
+var LEVEL_1_TUNE = 200; // чтоб визуально отличать в звуковом редакторе
+var LEVEL_0 = 48;
+var BIT_0 = [
+  LEVEL_1, LEVEL_1,
+  LEVEL_0, LEVEL_0
+];
+var BIT_1 = [
+  LEVEL_1, LEVEL_1, LEVEL_1, LEVEL_1,
+  LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0
+];
+var TUNE = [
+  LEVEL_1_TUNE, LEVEL_1_TUNE,
+  LEVEL_0, LEVEL_0
+];
+var AFTER_TUNE = [
+  LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE,
+  LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0
+];
+var SYNCHRO_SHORT = [
+  LEVEL_1_TUNE, LEVEL_1_TUNE,
+  LEVEL_0
+];
+var SYNCHRO_LONG = [
+  LEVEL_1_TUNE, LEVEL_1_TUNE,
+  LEVEL_0, LEVEL_0
+];
+var SAMPLE_RATE_10 = 21428;
+var SAMPLE_RATE_11 = 25000;
+var SAMPLE_RATE_TURBO = 40000;
+var TUNE_COUNT = 4096;
+var TUNE_COUNT_SECOND = 10;
+var TUNE_COUNT_END = 200;
+var ADDRESS_MIN = '320';
+var ADDRESS_MIN_TURBO = '600';
+var ADDRESS_MAX = '177600';
+
+var TURBO_TUNE_COUNT = 1024;
+var TURBO_TUNE_COUNT_END = 2;
+
+var TURBO_BIT_0 = [
+  LEVEL_1,
+  LEVEL_0, LEVEL_0
+];
+var TURBO_BIT_1 = [
+  LEVEL_1, LEVEL_1, LEVEL_1,
+  LEVEL_0, LEVEL_0
+];
+var TURBO_TUNE = [
+  LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE,
+  LEVEL_0, LEVEL_0, LEVEL_0
+];
+var TURBO_AFTER_TUNE = [
+  LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE,
+  LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE, LEVEL_1_TUNE,
+  LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0,
+  LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0, LEVEL_0
+];
+
+// БКшный код загрузчика
+var LOADER_CODE = [
+  '000760',
+  '000302',
+  '001000',
+  '001000',
+  '001000',
+  '001000',
+  '001000',
+  '001000',
+  '001000',
+  '001000',
+  '012701',
+  '040000',
+  '012700',
+  '024102',
+  '010137',
+  '000322',
+  '010037',
+  '000324',
+  '012704',
+  '001106',
+  '012705',
+  '000400',
+  '012425',
+  '001376',
+  '005002',
+  '012703',
+  '000400',
+  '012704',
+  '177716',
+  '012705',
+  '000040',
+  '030514',
+  '001376',
+  '030514',
+  '001776',
+  '005202',
+  '030514',
+  '001375',
+  '077306',
+  '105002',
+  '000302',
+  '006302',
+  '006302',
+  '000137',
+  '000400',
+  '005003',
+  '030514',
+  '001776',
+  '005203',
+  '030514',
+  '001375',
+  '160203',
+  '100001',
+  '005403',
+  '020327',
+  '000006',
+  '003364',
+  '012703',
+  '000010',
+  '010302',
+  '030514',
+  '001776',
+  '030514',
+  '001410',
+  '030514',
+  '001406',
+  '030514',
+  '001404',
+  '030514',
+  '001376',
+  '000261',
+  '000401',
+  '000241',
+  '106011',
+  '077217',
+  '005201',
+  '077022',
+  '013705',
+  '000322',
+  '010503',
+  '013704',
+  '000324',
+  '162704',
+  '000002',
+  '005002',
+  '152502',
+  '060200',
+  '005500',
+  '077405',
+  '020041',
+  '001002',
+  '000137',
+  '001357',
+  '012701',
+  '100734',
+  '012702',
+  '000006',
+  '104020',
+  '000000'
+];
+
+var LOADER_OFFSET_ADDRESS = 22; // Где в загрузчике адрес, с учетом заголовков самого загрузчика
+var LOADER_OFFSET_SIZE = 26;
+var LOADER_START_ADDR_PLACEHOLDER = '001357'; // в ячейку с таким содержимым засовываем адрес запуска файла
+
+Uint8Array.prototype.getWord = function(i) {
+  return this[i] + (this[i + 1] << 8);
+};
+
+Uint8Array.prototype.setWord = function(i, word) {
+  this[i] = word & 0xff;
+  this[i + 1] = (word >> 8) & 0xff;
+};
+
+// Функция преобразования бинарных данных в тело wav-файла
+function binaryToSoundBytes(binary, speedBoost, isTurbo) {
+  var soundBytes = [];
+  var push = getPushFunction(soundBytes, !!isTurbo);
+  for (var i = 0; i < TUNE_COUNT; i++) {
+    push(TUNE);
+  }
+  push(AFTER_TUNE);
+  push(BIT_1);
+  for (var i = 0; i < TUNE_COUNT_SECOND; i++) {
+    push(TUNE);
+  }
+  push(AFTER_TUNE);
+  push(BIT_1);
+  var synchro = speedBoost ? SYNCHRO_SHORT : SYNCHRO_LONG;
+  for (var i = 0; i < binary.length; i++) {
+    if (i === 20) {
+      // после заголовков
+      for (var j = 0; j < TUNE_COUNT_SECOND; j++) {
+        push(TUNE);
+      }
+      push(AFTER_TUNE);
+      push(BIT_1);
+    } else if (i === binary.length - 2) {
+      // для контрольной суммы - длинный синхроимпульс
+      synchro = SYNCHRO_LONG;
+    }
+    var byte = binary[i];
+    for (var bit = 1; bit < 255; bit <<= 1) {
+      push(synchro);
+      push(byte & bit ? BIT_1 : BIT_0);
+    }
+  }
+  if (!isTurbo) {
+    for (var i = 0; i < TUNE_COUNT_END; i++) {
+      push(TUNE);
+    }
+  }
+  return soundBytes;
+}
+
+// Преобразование в байты wav-файла части в турбо-режиме
+function binaryToSoundBytesTurbo(binary) {
+  var soundBytes = [];
+  var push = getPushFunction(soundBytes);
+  var newBinary = new Uint8Array(binary.length - 2);
+  newBinary.set(binary.subarray(4));
+  addCheckSum(newBinary, 0);
+  for (var i = 0; i < TURBO_TUNE_COUNT; i++) {
+    push(TURBO_TUNE);
+  }
+  push(TURBO_AFTER_TUNE);
+  for (var i = 0; i < newBinary.length; i++) {
+    var byte = newBinary[i];
+    for (var bit = 1; bit < 255; bit <<= 1) {
+      push(byte & bit ? TURBO_BIT_1 : TURBO_BIT_0);
+    }
+  }
+  for (var i = 0; i < TURBO_TUNE_COUNT_END; i++) {
+    push(TURBO_TUNE);
+  }
+
+  return soundBytes;
+}
+
+// Чисто для упрощения кода вставки в wav, может отдавать функию, удваивающую вставку для турбо-режима
+function getPushFunction(arr, double) {
+  if (double) {
+    return function(bytes) {
+      for (var i = 0; i < bytes.length; i++) {
+        arr.push(bytes[i], bytes[i]);
+      }
+    }
+  } else {
+    var push = Array.prototype.push;
+    return function(bytes) {
+      push.apply(arr, bytes);
+    }
+  }
+}
+
+// Точка входа при нажатии на кнопку конвертирования
+function convertFile() {
+  loadAs(function(fileName, binary) 
+    {  
+    var model = document.querySelector('[name=model]:checked').value;
+    var isTurbo = model == 'turbo';
+    if (checkFile(binary, isTurbo)) {
+      var baseName = fileName.replace(/\.[^.]*$/, '');
+      if (isTurbo) {
+        if (binary.length & 1) { // если нечетная длина
+          binary = addZeroByteToBinary(binary);
+        }
+        var binaryLoader = getBinaryLoader(binary);
+        binaryLoader = insertFileNameAndCheckSum(binaryLoader, baseName);
+        var soundBytes = binaryToSoundBytes(binaryLoader, true, true);
+        var payloadSoundBytes = binaryToSoundBytesTurbo(binary);
+        soundBytes = soundBytes.concat(payloadSoundBytes);
+      } else {
+        binary = insertFileNameAndCheckSum(binary, baseName);
+        var speedBoost = document.querySelector('#speed').checked;
+        var soundBytes = binaryToSoundBytes(binary, speedBoost);
+      }
+      var sampleRate = isTurbo ? SAMPLE_RATE_TURBO :
+        (model == '11' ? SAMPLE_RATE_11 : SAMPLE_RATE_10);
+      var wavFile = toWavFile(soundBytes, sampleRate);
+      saveAs(baseName + '.wav', wavFile);
+    }
+  });
+}
+
+// Получение массива байтов загрузчика турбо-режима со вставленным адресом и длиной основного бинарника
+function getBinaryLoader(binary) {
+  var loader = new Uint8Array(LOADER_CODE.length * 2);
+  var startOffset;
+  LOADER_CODE.forEach(function(oct, i) {
+    var offset = i * 2;
+    var dec = parseInt(oct, 8);
+    loader.setWord(offset, dec);
+    if (!startOffset && oct === LOADER_START_ADDR_PLACEHOLDER) {
+      startOffset = offset;
+    }
+  });
+  var addr = binary.getWord(0);
+  loader.setWord(LOADER_OFFSET_ADDRESS, addr);
+  var size = binary.getWord(2) + 2; // 2 - контрольная сумма
+  loader.setWord(LOADER_OFFSET_SIZE, size);
+  if (startOffset) {
+    // задаем в загрузчике адрес запуска
+    var startAddr;
+    if (addr < 512) { // 1000
+      var offset = 4 /* адрес и длина */ + (512 - addr) - 4; // где в стеке взять адрес
+      startAddr = binary.getWord(offset);
+    } else {
+      startAddr = addr;
+    }
+    loader.setWord(startOffset, startAddr);
+  }
+  return loader;
+}
+
+// Добавление пустого байта в бинарник в случае нечетной длины (меняет длину внутри бинарника)
+function addZeroByteToBinary(binary) {
+  var newBinary = new Uint8Array(binary.length + 1);
+  newBinary.set(binary);
+  var size = newBinary.length - 4;
+  newBinary.setWord(2, size);
+  return newBinary;
+}
+
+// Проверка исходного бинарника
+function checkFile(binary, isTurbo) {
+  var error = '';
+  if (binary.length < 6) {
+    error = 'Слишком короткий bin-файл';
+  } else {
+    var address = binary.getWord(0);
+    var size = binary.getWord(2);
+    var addrMin = isTurbo ? ADDRESS_MIN_TURBO : ADDRESS_MIN;
+    if (size !== binary.length - 4) {
+      error = 'Некорректный размер (' + size + " != " + (binary.length - 4) + ')';
+    } else if (address < parseInt(addrMin, 8)) {
+      error = 'Адрес загрузки меньше ' + addrMin;
+    } else if (address >= parseInt(ADDRESS_MAX, 8)) {
+      error = 'Адрес загрузки больше ' + ADDRESS_MAX;
+    } else if (address + size > parseInt(ADDRESS_MAX, 8)) {
+      error = 'Адрес + размер больше ' + ADDRESS_MAX;
+    }
+    if (error) {
+      error = 'Ошибка в bin-файле: ' + error;
+    }
+  }
+  if (error) alert(error);
+  return !error;
+}
+
+// Внедрение имени файла и контрольной суммы в бинарные данные
+function insertFileNameAndCheckSum(binary, fileName) {
+  var newBinary = new Uint8Array(binary.length + 16 + 2);
+  newBinary.set(binary.subarray(0, 4));
+  newBinary.set(convertFileNameToBytes(fileName), 4);
+  var body = binary.subarray(4);
+  var bodyOffset = 20;
+  newBinary.set(body, bodyOffset);
+  addCheckSum(newBinary, bodyOffset);
+  return newBinary;
+}
+
+// Подсчет и добавление контрольной суммы тела файла в последние два байта бинарника
+function addCheckSum(binary, bodyOffset) {
+  var checkSum = 0;
+  var checkSumOffset = binary.length - 2;
+  for (var i = bodyOffset; i < checkSumOffset; i++) {
+    checkSum += binary[i];
+    if (checkSum > 65535) { // переполнение
+      checkSum -= 65536;
+      checkSum++;
+    }
+  }
+  binary.setWord(checkSumOffset, checkSum);
+}
+
+// Добавление заголовков wav-файла к телу
+function toWavFile(soundBytes, sampleRate) {
+  var channelCount = 1;
+  var bitsPerSample = 8;
+  var subChunk1Size = 16;
+  var subChunk2Size = soundBytes.length;
+  var chunkSize = 4 + (8 + subChunk1Size) + (8 + subChunk2Size);
+  var blockAlign = channelCount * (bitsPerSample / 8);
+  var byteRate = sampleRate * blockAlign;
+  var data = [
+    82, 73, 70, 70,               // "RIFF" in ASCII
+    chunkSize & 0xff,             // Chunk Size
+    (chunkSize >> 8) & 0xff,
+    (chunkSize >> 16) & 0xff,
+    (chunkSize >> 24) & 0xff,
+    87, 65, 86, 69,               // "WAVE" in ASCII
+    102, 109, 116, 32,            // "fmt " in ASCII
+    subChunk1Size, 0, 0, 0,       // Sub chunk 1 size (always 16)
+    1, 0,                         // Audio format (1 == PCM)
+    channelCount & 0xff,          // Number Channels
+    (channelCount >> 8) & 0xff,
+    sampleRate & 0xff,            // Sample Rate
+    (sampleRate >> 8) & 0xff,
+    (sampleRate >> 16) & 0xff,
+    (sampleRate >> 24) & 0xff,
+    byteRate & 0xff,              // Byte Rate
+    (byteRate >> 8) & 0xff,
+    (byteRate >> 16) & 0xff,
+    (byteRate >> 24) & 0xff,
+    blockAlign & 0xff,            // Block Align
+    (blockAlign >> 8) & 0xff,
+    bitsPerSample & 0xff,         // Bits per sample
+    (bitsPerSample >> 8) & 0xff,
+    100, 97, 116, 97,             // "data" in ASCII
+    subChunk2Size & 0xff,         // Sub chunk 1 size
+    (subChunk2Size >> 8) & 0xff,
+    (subChunk2Size >> 16) & 0xff,
+    (subChunk2Size >> 24) & 0xff
+  ].concat(soundBytes);
+
+  return data;
+}
+
+function convertFileNameToBytes(name) {
+  // Побеждаем глюк файловой системы macos с буквами Й и Ё
+  name = name
+    .replace(/И\u0306/g, 'Й')
+    .replace(/и\u0306/g, 'й')
+    .replace(/Е\u0308/g, 'Ё')
+    .replace(/е\u0308/g, 'ё');
+  name = name.substr(0, 16);
+  if (name.length < 16) {
+    for (var i = name.length; i < 16; i++) {
+      name += ' ';
+    }
+  }
+
+  return new Uint8Array(getKOI8Bytes(name));
+}
+
+function getKOI8Bytes(text) {
+  var charsList = 'юабцдефгхийклмнопярстужвьызшэщчъЮАБЦДЕФГХИЙКЛМНОПЯРСТУЖВЬЫЗШЭЩЧЪ';
+  var bytes = [];
+  var code, char, index;
+  for (var i = 0; i < text.length; i++) {
+    code = text.charCodeAt(i);
+    if (code < 32) {
+      code = 32;
+    } else if (code > 127) {
+      char = text[i];
+      index = charsList.indexOf(char);
+      if (index > -1) {
+        code = 192 + index;
+      } else if (char === 'Ё') {
+        code = 229; // Е
+      } else if (char === 'ё') {
+        code = 197; // е
+      } else {
+        code = 32;
+      }
+    }
+    bytes.push(code);
+  }
+
+  return bytes;
+}
+
+</script>
+
+</body>
+</html>

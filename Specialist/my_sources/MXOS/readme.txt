@@ -1,0 +1,6 @@
+Не запускается
+
+PRAK32.EXE
+PRG171.EXE
+R63V8.EXE
+RBAS1.EXE

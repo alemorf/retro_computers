@@ -1,0 +1,21 @@
+@echo off
+del spec_keyb.a
+del spec_keyb.asm
+del spec_keyb.cbi
+del spec_keyb.cci
+del spec_keyb.c~
+del spec_keyb.c_cbf
+del spec_keyb.cof
+del spec_keyb.fct
+del spec_keyb.i
+del spec_keyb.lst
+del spec_keyb.map
+del spec_keyb.o
+del spec_keyb.obj
+del spec_keyb.rom
+del spec_keyb.str1
+del spec_keyb.sym1
+del spec_keyb.sym2
+del spec_keyb.sym3
+del spec_keyb.txt
+

@@ -1,0 +1,8 @@
+// uint op_div16_mod @ "op_div16";
+
+void op_mod16() {
+  op_div16();
+  asm {
+    lhld op_div16_mod;
+  }
+}  

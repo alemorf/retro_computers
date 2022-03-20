@@ -1,0 +1,1 @@
+void win2koi(char* str);
