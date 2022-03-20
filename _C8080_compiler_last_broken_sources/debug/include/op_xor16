@@ -1,0 +1,8 @@
+op_xor16:
+    mov a, h
+    xra d
+    mov h, a
+    mov a, l
+    xra e
+    mov l, a
+    ret

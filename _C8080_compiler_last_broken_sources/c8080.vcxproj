@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4CF13D7F-A85E-49BE-B28B-26F27AE3FF65}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>c8080</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="assembler.cpp" />
+    <ClCompile Include="a_compile.cpp" />
+    <ClCompile Include="a_compileCondOperator.cpp" />
+    <ClCompile Include="a_compileConstI.cpp" />
+    <ClCompile Include="a_compileConstS.cpp" />
+    <ClCompile Include="a_compileConvert.cpp" />
+    <ClCompile Include="a_compileDeaddr.cpp" />
+    <ClCompile Include="a_compileIncDecOperator.cpp" />
+    <ClCompile Include="a_compileMonoOperator.cpp" />
+    <ClCompile Include="a_compileOperator.cpp" />
+    <ClCompile Include="a_compileOperator2_16.cpp" />
+    <ClCompile Include="a_compileOperator2_16_const_add.cpp" />
+    <ClCompile Include="a_compileOperator2_8.cpp" />
+    <ClCompile Include="a_compileOperatorV2_16.cpp" />
+    <ClCompile Include="a_compileOperatorV2_16_const.cpp" />
+    <ClCompile Include="a_compileOperatorV2_8.cpp" />
+    <ClCompile Include="a_compileOperatorV2_8_const.cpp" />
+    <ClCompile Include="a_compileSave.cpp" />
+    <ClCompile Include="a_compileSet.cpp" />
+    <ClCompile Include="a_compileSetV2_nswap.cpp" />
+    <ClCompile Include="a_compileSetV2_swap.cpp" />
+    <ClCompile Include="a_compileVar.cpp" />
+    <ClCompile Include="b_compineState.cpp" />
+    <ClCompile Include="b_fork.cpp" />
+    <ClCompile Include="b_load.cpp" />
+    <ClCompile Include="b_needFunction.cpp" />
+    <ClCompile Include="b_saveRegs.cpp" />
+    <ClCompile Include="b_writeJmp.cpp" />
+    <ClCompile Include="b_zForFlag8.cpp" />
+    <ClCompile Include="b_zForFlagA.cpp" />
+    <ClCompile Include="c_parser.cpp" />
+    <ClCompile Include="FinLib\exception.cpp" />
+    <ClCompile Include="FinLib\file.cpp" />
+    <ClCompile Include="FinLib\findfiles.cpp" />
+    <ClCompile Include="FinLib\replace.cpp" />
+    <ClCompile Include="FinLib\string.cpp" />
+    <ClCompile Include="FinLib\winapi_exception.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="c8080.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="a.h" />
+    <ClInclude Include="asm.h" />
+    <ClInclude Include="assembler.h" />
+    <ClInclude Include="b.h" />
+    <ClInclude Include="c8080.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="c_parser.h" />
+    <ClInclude Include="FinLib\exception.h" />
+    <ClInclude Include="FinLib\file.h" />
+    <ClInclude Include="FinLib\fillbuffer.h" />
+    <ClInclude Include="FinLib\findfiles.h" />
+    <ClInclude Include="FinLib\replace.h" />
+    <ClInclude Include="FinLib\std.h" />
+    <ClInclude Include="FinLib\string.h" />
+    <ClInclude Include="FinLib\types.h" />
+    <ClInclude Include="FinLib\winapi_exception.h" />
+    <ClInclude Include="nodes.h" />
+    <ClInclude Include="stdafx.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

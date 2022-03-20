@@ -1,0 +1,10 @@
+op_sub16:
+    xchg
+op_sub16_swap:
+    mov a, l
+    sub e
+    mov l, a
+    mov a, h
+    sbb d
+    mov h, a
+    ret

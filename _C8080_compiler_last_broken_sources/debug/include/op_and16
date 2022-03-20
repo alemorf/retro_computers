@@ -1,0 +1,8 @@
+op_and16:
+    mov a, h
+    ana d
+    mov h, a
+    mov a, l
+    ana e
+    mov l, a
+    ret

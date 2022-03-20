@@ -1,0 +1,7 @@
+op_cmp16:
+    mov a, h
+    cmp d
+    rnz
+    mov a, l
+    cmp e
+    ret
