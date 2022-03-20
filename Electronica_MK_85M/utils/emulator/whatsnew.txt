@@ -1,0 +1,166 @@
+version 48, 2018/01/22
+
+- disassembler (relative address mode)
+
+
+version 47, 2016/08/21
+
+- changed appearance (bigger image)
+
+
+version 46, 2010/12/17
+
+- debugger code cleanup in order to make it more portable
+- debugger invoked with the key F3 instead of F10, because F10 appears to be
+  by default reserved for the system to switch between windows
+- all file names converted to lower case
+
+
+version 45, 2009/12/25
+
+Changes and fixes of the CPU instruction set in order to conform to the test
+programs 791401, 791402, 691404:
+- the Stack Pointer register can take odd values
+- the instruction SXT clears the V flag
+- the instruction MFPS sets the flags as the instruction MOVB
+- the instructions ASH and ASHC treat the shifted value as signed
+- the instructions MUL and DIV set the V flag if the product or quotient
+  is outside the range -32768..+32767
+- the instructions JMP and JSR with a register as the destination cause
+  TRAP 04h instead of TRAP 08h
+
+
+version 43, 2009/09/23
+
+- selectable data size (byte/word) in the binary editor
+
+
+version 42, 2009/08/10
+
+- selectable base of the numeral system used by the debugger
+
+
+version 41, 2008/02/14
+
+- code cleanup
+- added RAM initialisation key (F8)
+
+
+version 40, 2007/12/23
+
+- fixed a cosmetic issue (a released key wasn't redrawn when the main
+  form lost focus)
+- increased the limit of the RAM size to 32kbytes (the system supports
+  only 30kB though)
+
+
+version 39, 2007/10/24
+
+- fixed bug with the overflow flag calculation in the instructions ADD,
+  SUB, CMP, CMPB
+
+
+version 38, 2007/07/12
+
+- the ROM size was increased to 32kB
+- fixed key locks occurring when the main form loses the focus while
+  a key is being pressed
+
+
+version 37, 2007/03/22
+
+- optimised CPU emulation (removed superfluous address calculations)
+- fixed instruction DEC which incorrectly set the V flag
+- fixed a bug causing the program to crash when the emulated CPU was
+  ordered from the Debug Window to execute small count of instructions
+
+
+version 36, 2007/03/15
+
+- code cleanup in order to make it more reusable
+- fixed interrupt vectors in the HALT mode
+
+
+version 33, 2006/11/3
+
+- the window dragging uses fully documented approach (earlier version
+  used an undocumented system message)
+- unified palette for all images fixed some display quirks (random
+  hue changes)
+- improved animation of key movements
+- changed the font charset to DEFAULT which fixed the Debug form
+  appearance on localised Windows versions
+
+
+version 32, 2006/10/11
+
+- faster application launch and termination due to optimised choice
+  of the file transfer routines
+- changed the way the application windows is dragged
+
+
+version 31, 2006/06/06
+
+- debugger code cleanup
+- disabled the Tab key in the Debug form (in previous versions it
+  moved the focus to the next control which disturbed the editing)
+
+
+version 30, 2006/04/09
+
+- the image on the screen is redrawn only when its contents has
+  changed, reduces mouse cursor flickers visible on some old computers
+
+
+version 29, 2006/03/19
+
+- added support for the complete HALT mode instruction set
+- added support for the floating point instruction set extension
+- fixed a bug in the assembler/disassembler concerning instructions
+  ADD and SUB
+
+
+version 28, 2006/03/05
+
+- added support for bit 11 of the CPU control register $104 (optional
+  clock divide by 8) which results in more accurate timing
+- added support for the HALT operating mode, instructions HALT, RTI,
+  RTT corrected accordingly
+- corrected emulation of the STOP key, the supposed interrupt proved
+  to be a switch to the HALT-mode
+- the supposed undocumented Return From Interrupt instruction (code
+  00012, temporarily named RTI12) proved to be a HALT-mode instruction
+  GO causing return to the USER-mode
+
+
+version 27, 2006/02/21
+
+- fixed a bug which caused the initial "READY P0" message sometimes to
+  appear distorted
+
+
+version 26, 2006/02/14
+
+- added support for instructions MARK, ASH, ASHC
+- instruction RTI12 added to the assembler and disassembler
+- fixed a bug in the assembler which caused problems with instructions
+  ASHC and BHIS
+
+
+version 25, 2006/02/12
+
+- the address is always aligned to be even for word size access
+- corrected emulation of interrupts (they don't use the stack any more),
+  instructions HALT and RTI12 modified accordingly
+
+
+version 24, 2006/02/08
+
+- corrected TRAP emulation
+- added support for the T status bit
+- added support for instructions MFPS, MTPS, WAIT, HALT
+
+
+version 22, 2006/02/03
+
+- added assembler
