@@ -1,0 +1,1 @@
+find . -type f >monochrome_stm32f103.files

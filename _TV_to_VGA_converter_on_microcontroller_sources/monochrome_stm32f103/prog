@@ -1,0 +1,1 @@
+st-flash --format ihex write build/monochrome_stm32f103.hex

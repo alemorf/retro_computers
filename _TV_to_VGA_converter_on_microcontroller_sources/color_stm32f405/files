@@ -1,0 +1,2 @@
+find -name *.c >vga405.files
+find -name *.h >>vga405.files
