@@ -1,0 +1,1 @@
+(c) http://www.nedopc.org/forum/viewtopic.php?t=11458
