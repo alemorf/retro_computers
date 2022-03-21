@@ -1,0 +1,50 @@
+LABCENTER PROTEUS TOOL INFORMATION FILE
+=======================================
+
+In case of difficulty, please e-mail support@labcenter.co.uk
+
+Tool set up for Proteus layout 'kd_kish_rev_1_2.LYT'.
+CADCAM generated at 21:18:30 on 21 февраля 2016 г..
+
+File List
+---------
+Top Copper              : kd_kish_rev_1_2 - CADCAM Top Copper.TXT
+Bottom Copper           : kd_kish_rev_1_2 - CADCAM Bottom Copper.TXT
+Top Silk Screen         : kd_kish_rev_1_2 - CADCAM Top Silk Screen.TXT
+Top Solder Resist       : kd_kish_rev_1_2 - CADCAM Top Solder Resist.TXT
+Bottom Solder Resist    : kd_kish_rev_1_2 - CADCAM Bottom Solder Resist.TXT
+Drill                   : kd_kish_rev_1_2 - CADCAM Drill.TXT
+
+Photoplotter Setup
+------------------
+Format: RS274X, ASCII, 2.4, imperial, absolute, eob=*, LZO
+Notes:  D=Diameter, S=Side, W=Width, H=Height
+
+D10	CIRCLE	D=40th                                      DRAW
+D11	CIRCLE	D=15th                                      DRAW
+D12	CIRCLE	D=10th                                      DRAW
+D13	CIRCLE	D=30th                                      DRAW
+D14	CIRCLE	D=50th                                      FLASH
+D15	CIRCLE	D=20th                                      DRAW
+D16	CIRCLE	D=60th                                      FLASH
+D17	SQUARE	S=50th                                      FLASH
+D18	CIRCLE	D=70th                                      FLASH
+D19	CIRCLE	D=80th                                      FLASH
+D70	CIRCLE	D=8th                                       DRAW
+D71	CIRCLE	D=2.5th                                     DRAW
+D20	SMT	W=70th                H=70th                FLASH
+D21	CIRCLE	D=90th                                      FLASH
+D22	CIRCLE	D=100th                                     FLASH
+
+NC Drill Setup
+--------------
+Format: ASCII, 2.4, imperial, absolute, eob=<CR><LF>, no zero suppression.
+Notes:  Tool sizes are diameters. Layer sets are in brackets - 0=TOP, 15=BOTTOM, 1-14=INNER.
+
+T01	20th (0-15)
+T02	118.1th (0-15)
+T03	40th (0-15)
+T04	30th (0-15)
+
+
+[END OF FILE]

@@ -1,0 +1,9 @@
+./make_pcm_wav_file.h
+./vector06c_bin_to_wav.creator
+./.clang-format
+./make_pcm_wav_file.cpp
+./fs_tools.h
+./Makefile
+./vector06c_bin_to_wav.files
+./fs_tools.cpp
+./vector06c_bin_to_wav.cpp
