@@ -1,0 +1,11 @@
+./Makefile
+./vector_music.creator.user
+./vector_music.cxxflags
+./bin/sjasmplus
+./bin/cmm
+./vector_music.cflags
+./vector_music.vec
+./vector_music.creator
+./vector_music.files
+./vector_music.c
+./vector_music.asm

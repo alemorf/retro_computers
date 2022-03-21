@@ -1,0 +1,1808 @@
+;COMMAND.MAC
+;3.7.92
+ENTRY   EQU     5       ;entry point for the cp/m bdos.
+TFCB    EQU     5CH     ;default file control block.
+TBUFF   EQU     80H     ;i/o buffer and command line storage.
+TBASE   EQU     100H    ;transiant program storage area.
+;
+;   Set control character equates.
+;
+CNTRLC  EQU     3       ;control-c
+CNTRLE  EQU     05H     ;control-e
+BS      EQU     08H     ;backspace
+TAB     EQU     09H     ;tab
+LF      EQU     0AH     ;line feed
+FF      EQU     0CH     ;form feed
+CR      EQU     0DH     ;carriage return
+CNTRLP  EQU     10H     ;control-p
+CNTRLR  EQU     12H     ;control-r
+CNTRLS  EQU     13H     ;control-s
+CNTRLU  EQU     15H     ;control-u
+CNTRLX  EQU     18H     ;control-x
+CNTRLZ  EQU     1AH     ;control-z (end-of-file mark)
+DEL     EQU     7FH     ;rubout
+;
+;   Set origin for CP/M
+;
+CBASE:  JMP     COMMAND  ;execute command processor (ccp).
+        JMP     CLEARBUF ;entry to empty input buffer before starting ccp.
+;
+;   Standard cp/m ccp input buffer. Format is (max length),
+; (actual length), (char #1), (char #2), (char #3), etc.
+;
+INBUFF:
+MAXLEN: DB      127     ;length of input buffer.
+LENSTR: DB      0
+BUF:    DB      '                                      '
+        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+INPOIN: DW      INBUFF+2;input line pointer
+NAMEPN: DW      0       ;input line pointer used for error message. Points to
+                        ;start of name in error.
+;
+             PUBLIC NAMEPN
+CURPOS:   DB    1       ;текущая позиция курсора.
+PRTFLG:   DB    0       ;флаг принтера (печатать если не 0).
+;
+;   Routine to print (A) on the console. All registers used.
+;
+PRINT:  MOV     E,A     ;setup bdos call.
+        MVI     C,2
+        JMP     ENTRY
+;   Routine to print (A) on the console and to save (BC).
+;
+PRINTB: PUSH    B
+        CALL    PRINT
+        POP     B
+        RET
+;
+;   Routine to send a carriage return, line feed combination
+; to the console.
+;
+CRLF:   MVI     A,CR
+        CALL    PRINTB
+        MVI     A,LF
+        JMP     PRINTB
+;
+;   Routine to send one space to the console and save (BC).
+;
+SPACE:  MVI     A,' '
+        JMP     PRINTB
+;
+;   Routine to print character string pointed to be (BC) on the
+; console. It must terminate with a null byte.
+;
+PLINE:  PUSH    B
+        CALL    CRLF
+        POP     H
+PLINE2: MOV     A,M
+        ORA     A
+        RZ
+        INX     H
+        PUSH    H
+        CALL    PRINT
+        POP     H
+        JMP     PLINE2
+;
+;   вызов резидентного CCP
+CcpRes:  push psw
+         mov a,c
+         sta CcpFun+1
+         xchg
+         shld CcpFun+2
+         lxi d,CcpFun
+         mvi c,50
+         call entry
+         lhld CcpFun+2
+         pop psw
+         ret
+CcpFun:  db 48
+         db 0
+         dw 0
+;   Routine to reset the disk system.
+;
+RESDSK: MVI     C,13
+        JMP     ENTRY
+;
+;   Routine to select disk (A).
+;
+DSKSEL: MOV     E,A
+        MVI     C,14
+        JMP     ENTRY
+;
+;
+;   Routine to open file at (FCB).
+;
+OPENFCB: XRA    A       ;clear the record number byte at fcb+32
+         STA    FCB+32
+         LXI    D,FCB
+;         JMP  OPEN
+;
+;   Routine to open a file. (DE) must point to the FCB.
+;
+OPEN:   MVI     C,15
+;        JMP   ENTRY1
+;
+;   Routine to call bdos and save the return code. The zero
+; flag is set on a return of 0ffh.
+;
+ENTRY1: CALL    ENTRY
+        STA     RTNCODE ;save return code.
+        INR     A       ;set zero if 0ffh returned.
+        RET
+;   Routine to close a file. (DE) points to FCB.
+;
+CLOSE:  MVI     C,16
+        JMP     ENTRY1
+;
+;   Routine to search for the first file with ambigueous name
+; (DE).
+;
+SRCHFST: MVI    C,17
+         JMP    ENTRY1
+;
+;   Search for the next ambigeous file name.
+;
+SRCHNXT: MVI    C,18
+         JMP    ENTRY1
+;
+;   Search for file at (FCB).
+;
+SRCHFCB: LXI    D,FCB
+         JMP    SRCHFST
+;
+;   Routine to delete a file pointed to by (DE).
+;
+DELETE: MVI     C,19
+        JMP     ENTRY
+;
+;   Routine to call the bdos and set the zero flag if a zero
+; status is returned.
+;
+ENTRY2: CALL    ENTRY
+        ORA     A       ;set zero flag if appropriate.
+        RET
+;
+;   Routine to read the next record from a sequential file.
+; (DE) points to the FCB.
+;
+RDREC:  MVI     C,20
+        JMP     ENTRY2
+;
+;   Routine to read file at (FCB).
+;
+READFCB: LXI    D,FCB
+         JMP    RDREC
+;
+;   Routine to write the next record of a sequential file.
+; (DE) points to the FCB.
+;
+WRTREC: MVI     C,21
+        JMP     ENTRY2
+;
+;   Routine to create the file pointed to by (DE).
+;
+CREATE: MVI     C,22
+        JMP     ENTRY1
+;
+;   Routine to rename the file pointed to by (DE). Note that
+; the new name starts at (DE+16).
+;
+RENAM:  MVI     C,23
+        JMP     ENTRY
+;
+;   Get the current user code.
+;
+GETUSR: MVI     E,0FFH
+;
+;   Routne to get or set the current user code.
+; If (E) is FF then this is a GET, else it is a SET.
+;
+GETSETUS:  MVI                C,32
+           JMP  ENTRY
+;
+; set user & disk
+SaveUD:
+         LHLD  CDRIVE
+         xchg
+         lhld svblpath
+         mov m,e
+         inx h
+         mov m,d
+         ret
+; процедура получения и установки дисков по умолчанию
+GetUD:
+         lhld svblpath
+         mov e,m
+         inx h
+         mov d,m
+         xchg
+         shld cdrive
+         push h
+         mov  e,h
+         call getsetus
+         pop  H
+         mov  a,l
+         jmp dsksel
+;
+;   Routine to convert (A) into upper case ascii. Only letters
+; are affected.
+;
+UPPER:  CPI     'a'     ;check for letters in the range of 'a' to 'z'.
+        RC
+        CPI     '{'
+        RNC
+        ANI     5FH     ;convert it if found.
+        RET
+;*****************************************************************************
+; структура резервированной памяти
+; -->    возвращаемый указатель функцией 4
+;BatFlag:db  255              ; если 255, буфер пустой
+;BatUser:db   0
+;BatFcb: ds   33
+;BatBuf: ds   128
+;BatLine:ds   128
+;BatFcb:  dw   fcb
+BatBuf:  dw   80h
+PosBuf:  dw   80h
+
+GetBatFlag:
+         mvi  c,4
+         jmp  CcpRes
+DoBak:
+         Call GetBatFlag
+         mvi  m,128           ; size of buffer
+         inx  h
+         lda  UserCcp
+         mov  m,a             ; CCP user
+         mvi  b,33
+         inx  h
+         lxi  d,fcb
+         xchg                 ;
+         call HL2DE           ; transfer FCB
+         Jmp  CMMND1          ; do new command
+GETINP:
+         Call GetBatFlag
+         mov  c,m              ; HL - адрес флага==числу байтов в буфере
+         mvi  b,0
+         lxi  d,35
+         dad  d               ; начало буфера
+         shld BatBuf
+         dad  b               ; текущая позиция в буфере
+         shld PosBuf
+         inr  c
+         JZ    GETIN1          ; BAT файл не открыт
+;
+; здесь считается, что строка берется из BAT файла
+; HL указывает на номер байта
+;
+
+;**********************************************************************
+; этот кусок записывает один байт в буфер строки
+; Если достигнут конец строки, читается из файла новый сектор
+;**********************************************************************
+         lxi  d,INBUFF+2      ; начало буфера консоли
+
+ByteWrite:
+         push d
+         push b
+         call ByteRead        ; read byte
+         pop  b
+         pop  d
+         stax d               ; save it in buffer
+         jz   EOL             ; end of line
+         cpi  10
+         jz   ByteWrite       ; skip LF
+         cpi  13
+         jz   EOL             ; end of line
+         inx  d
+         inr  b
+         cpi  127             ; test lenght of line
+         jnz  ByteWrite
+EOL:
+         xra  a
+         stax d
+         lxi  h,inbuff+1
+         mov  m,b
+;   Print line just read on console.
+;
+        LXI     H,INBUFF+2
+        CALL    PLINE2
+;       CALL  CHKCON          ;check console, quit on a key.
+        Jmp   GETIN2          ;jump if no key is pressed.
+;**********************************************************************
+; этот кусок читает один байт из BAT файла.
+; Если достигнут конец буфера, читается из файла новый сектор
+;**********************************************************************
+ByteRead:
+         Call GetBatFlag
+         mvi  a,128
+         cmp  m             ; a - число байт до конца буфера
+         jnz  ByteR
+
+         mvi  m,0             ; restore num. byte
+         inx  h               ; get num. user
+         push h
+         mov  e,m
+         call getsetus        ; set .bat user
+         pop  d
+         inx  d               ; .bat FCB
+         push d
+         lxi  h,33
+         dad  d               ; get address BatBuf
+         push h
+         shld PosBuf          ; restore
+         call open
+         pop  d
+         jz   ErrBat
+         mvi  c,26
+         call entry           ; set DMA to BatBuf
+         pop  d
+         call RdRec           ; прочитали новый кусок .Bat файла
+         jz   ByteRead        ; все заново
+         dcr  a               ; == 0, if EOF
+         jz   EofBat
+ErrBat:
+         Call EofBat
+         mvi  c,9
+         lxi  d,BatErrMes
+         call Entry
+         jmp  command
+BatErrMes:
+         db   'Error in Batch',13,10,'$'
+ByteR:
+         inr  m
+         lhld PosBuf
+         mov  a,m             ; get byte
+         inx  h
+         shld PosBuf
+         cpi  26
+         rnz                  ; not EOF
+EofBat:
+         Call GetBatFlag
+         mvi  m,255           ; is EOF
+         xra  a
+         ret
+;**********************************************************************
+
+;
+;   Get here for normal keyboard input. Delete the submit file
+; incase there was one.
+;
+GETIN1:
+         MVI  C,10
+         LXI  D,INBUFF
+         CALL entry
+;
+;   Convert input line to upper case.
+;
+GETIN2: LXI     H,INBUFF+1
+        MOV     B,M     ;(B)=character counter.
+GETIN3: INX     H
+        MOV     A,B     ;end of the line?
+        ORA     A
+        JZ      GETIN4
+        MOV     A,M     ;convert to upper case.
+        CALL    UPPER
+        MOV     M,A
+        DCR     B       ;adjust character count.
+        JMP     GETIN3
+GETIN4: MOV     M,A     ;add trailing null.
+        LXI     H,INBUFF+2
+        SHLD    INPOIN  ;reset input line pointer.
+        RET
+;
+;   Routine to check the console for a key pressed. The zero
+; flag is set is none, else the character is returned in (A).
+;
+CHKCON: MVI     C,11    ;check console.
+        CALL    ENTRY
+        ORA     A
+        RZ              ;return if nothing.
+        MVI     C,1     ;else get character.
+        CALL    ENTRY
+        ORA     A       ;clear zero flag and return.
+        RET
+;
+;   Routine to get the currently active drive number.
+;
+GETDSK: MVI     C,25
+        JMP     ENTRY
+;
+;   Set the stabdard dma address.
+;
+STDDMA: LXI     D,TBUFF
+;
+;   Routine to set the dma address to (DE).
+;
+DMASET: MVI     C,26
+        JMP     ENTRY
+;
+;  Delete the batch file created by SUBMIT.
+;
+;   Print back file name with a '?' to indicate a syntax error.
+;
+SYNER:  CALL    CRLF    ;end current line.
+        LHLD    NAMEPNT ;this points to name in error.
+SYNER1: MOV     A,M     ;print it until a space or null is found.
+        CPI     ' '
+  JZ  syner2
+        ORA     A
+        JZ      SYNER2
+        PUSH    H
+        CALL    PRINT
+        POP     H
+        INX     H
+        JMP     SYNER1
+SYNER2: MVI     A,'?'   ;add trailing '?'.
+        CALL    PRINT
+        CALL    CRLF
+;         CALL DELBATCH;delete any batch file.
+        JMP     CMMND1  ;and restart from console input.
+;
+;   Check character at (DE) for legal command input. Note that the
+; zero flag is set if the character is a delimiter.
+;
+CHECK:  LDAX    D
+        ORA     A
+        RZ
+        CPI     ' '     ;control characters are not legal here.
+        JC      SYNER
+        RZ              ;check for valid delimiter.
+        CPI     '='
+        RZ
+        CPI     '_'
+        RZ
+        CPI     '.'
+        RZ
+        CPI     ':'
+        RZ
+        CPI     ';'
+        RZ
+        CPI     '<'
+        RZ
+        CPI     '>'
+        RZ
+        RET
+;
+;   Get the next non-blank character from (DE).
+;
+NONBLANK: LDAX   D
+        ORA     A       ;string ends with a null.
+        RZ
+        CPI     ' '
+        RNZ
+        INX     D
+        JMP     NONBLANK
+;
+;   Add (HL)=(HL)+(A)
+;
+ADDHL:  ADD     L
+        MOV     L,A
+        RNC     ;take care of any carry.
+        INR     H
+        RET
+;
+;   Convert the first name in (FCB).
+;
+;CONVFST: MVI  A,0
+;
+;   Format a file name (convert * to '?', etc.). On return,
+; (A)=0 is an unambigeous name was specified. Enter with (A) equal to
+; the position within the fcb for the name (either 0 or 16).
+;
+CONVR:
+        PUSH    H
+        PUSH    H
+        XRA     A
+        STA     CHGDRV  ;initialize drive change flag.
+        STA     chgusr  ;ячейка изменения кода пользователя
+        STA     flgusr  ;флаг изменения user'a
+        LHLD    INPOINT ;set (HL) as pointer into input line.
+        XCHG
+        CALL    NONBLANK;get next non-blank character.
+        XCHG
+        SHLD    NAMEPNT ;save pointer here for any error message.
+        XCHG
+        POP     H
+        LDAX    D       ;get first character.
+        ORA     A
+        JZ      CONVR1  ;текущий диск-идем на преобразование имени файла
+        SBI     'A'-1   ;might be a drive name, convert to binary.
+        MOV     B,A     ;and save.
+        INX     D       ;check next character for a ':'.
+        LDAX    D
+        CPI     ':'
+        JZ      CONVR2 ;пред.символ-имя диска
+        DCX     D      ;nope, move pointer back to the start of the line.
+  CONVR1:
+        LDA     CDRIVE
+
+        inr     a               ;я думаю, здесь была ошибка
+
+        MOV     M,A             ;выбранный диск в FCB
+        JMP     TESTUSR         ;проверяем на user
+CONVR2:
+        MOV     A,B     ;в рег.А
+        STA     CHGDRV  ;set change in drives flag.
+        MOV     M,B     ;код диска в FCB
+        INX     D       ;след.символ после ':'
+TESTUSR:
+        LDAX  D
+        CPI   92      ;м.б.слеж user'a
+        JNZ   NMDSK1  ;user не менялся
+        MVI   A,1
+        STA   flgusr  ;фиксируем изменение user'a
+        INX   D       ;след.символ-номер user'a
+        LDAX  D
+        SUI   48      ;преобразуем в число
+        STA   CHGUSR  ;отправим в опознавательную ячейку
+        INX   D       ;проверим след.символ
+        LDAX  D
+        CPI   92      ;user или слеж?
+        JNZ   TSTUSR1 ;вторая цифра user'а
+        INX   D       ;слеж-
+        JMP   convr3 ;-переходим к имени файла
+NMDSK1:
+  lda  UserCcp  ;отправим текущий user в chgusr
+  sta  chgusr
+  JMP  convr3  ;и идем на преобразование имени
+TSTUSR1:
+  CPI  48
+  JC   ERR1
+  CPI  58
+  JNC  ERR1   ;должна быть цифра или слэш
+  SUI  48     ;преобр.вторую цифру в число
+  PUSH PSW    ;и сохраним
+  LDA  CHGUSR
+  ADI  9      ;должна быть десятка
+  MOV  C,A
+  POP  PSW
+  ADD  C
+  STA  CHGUSR
+  CPI  16      ;т.к. user<=15
+  JNC  EX2
+  INX  D      ;след.символ-слеж
+  LDAX D      ;проверим
+  CPI  92
+  JNZ  ERR1
+  INX  D      ;переходим к имени файла
+;
+;   Convert the basic file name.
+;
+CONVR3:
+  MVI B,08H
+CONVR4:
+  CALL  CHECK
+        JZ      CONVR8
+        INX     H
+        CPI     '*'     ;note that an '*' will fill the remaining
+        JNZ     CONVR5  ;field with '?'.
+        MVI     M,'?'
+        JMP     CONVR6
+CONVR5:
+  MOV M,A
+        INX     D
+CONVR6:
+  DCR B
+        JNZ     CONVR4
+CONVR7:
+  CALL  CHECK ;get next delimiter.
+        JZ      GETEX
+        INX     D
+        JMP     CONVR7
+CONVR8:
+  INX H ;blank fill the file name.
+        MVI     M,' '
+        DCR     B
+        JNZ     CONVR8
+;
+;   Get the extension and convert it.
+;
+GETEX:  MVI     B,03H
+        CPI     '.'
+        JNZ     GETEX5
+        INX     D
+GETEX1: CALL    CHECK
+        JZ      GETEX5
+        INX     H
+        CPI     '*'
+        JNZ     GETEX2
+        MVI     M,'?'
+        JMP     GETEX3
+GETEX2: MOV     M,A
+        INX     D
+GETEX3: DCR     B
+        JNZ     GETEX1
+GETEX4: CALL    CHECK
+        JZ      GETEX6
+        INX     D
+        JMP     GETEX4
+GETEX5: INX     H
+        MVI     M,' '
+        DCR     B
+        JNZ     GETEX5
+GETEX6: MVI     B,3
+GETEX7: INX     H
+        MVI     M,0
+        DCR     B
+        JNZ     GETEX7
+        XCHG
+        SHLD    INPOINT ;save input line pointer.
+        POP     H
+;
+;   Check to see if this is an ambigeous file name specification.
+; Set the (A) register to non zero if it is.
+;
+        LXI     B,11    ;set name length.
+GETEX8: INX     H
+        MOV     A,M
+        CPI     '?'     ;any question marks?
+        JNZ     GETEX9
+        INR     B       ;count them.
+GETEX9: DCR     C
+        JNZ     GETEX8
+        MOV     A,B
+        ORA     A
+        RET
+;
+;   CP/M command table. Note commands can be either 3 or 4 characters long.
+;
+NUMCMDS EQU 9 ;number of commands
+CMDTBL: DB      'DIR '
+        DB      'ERA '
+        DB      'TYPE'
+        DB      'SAVE'
+        DB      'REN '
+        DB      'USER'
+  DB  'COPY'
+  DB  'SHEL'
+  DB  'PATH'
+;
+;   Search the command table for a match with what has just
+; been entered. If a match is found, then we jump to the
+; proper section. Else jump to (UNKNOWN).
+; On return, the (C) register is set to the command number
+; that matched (or NUMCMDS+1 if no match).
+;
+SEARCH: LXI     H,CMDTBL
+        MVI     C,0
+SEARC1: MOV     A,C
+        CPI     NUMCMDS ;this commands exists.
+        RNC
+        LXI     D,FCB+1 ;check this one.
+        MVI     B,4     ;max command length.
+SEARC2: LDAX    D
+        CMP     M
+        JNZ     SEARC3  ;not a match.
+        INX     D
+        INX     H
+        DCR     B
+        JNZ     SEARC2
+        LDAX    D       ;allow a 3 character command to match.
+        CPI     ' '
+        JNZ     SEARC4
+        MOV     A,C     ;set return register for this command.
+        RET
+SEARC3: INX     H
+        DCR     B
+        JNZ     SEARC3
+SEARC4: INR     C
+        JMP     SEARC1
+;
+;   Set the input buffer to empty and then start the command
+; processor (ccp).
+;
+CLEARBUF:  XRA A
+           STA INBUFF+1       ;second byte is actual length.
+;
+;**************************************************************
+;*
+;*
+;* C C P  -   C o n s o l e   C o m m a n d   P r o c e s s o r
+;*
+;**************************************************************
+COMMAND: ;LXI  sp,CCPSTK       ;setup stack area.
+         lxi h,0
+         dad sp
+         shld svstack
+         lxi d,CcpF2           ;извлекаем указатель на блок данных
+         mvi c,50
+         call entry
+         CALL RESDSK          ;reset the disk system.
+         CALL GETUD           ;and set it.
+         LDA  INBUFF+1
+        ORA     A       ;anything in input buffer already?
+        JNZ     CMMND2  ;yes, we just process it.
+;
+;   Entry point to get a command line from the console.
+;
+CMMND1:
+        lhld svstack
+        sphl
+;        LXI     SP,CCPSTK;set stack straight.
+        CALL  CRLF  ;start a new line on the screen.
+         lda  UserCcp
+         ora  a
+         jz   uskip
+         mvi  e,0
+dec0:    mov  b,a
+         sui  0ah
+         jc   dec1
+         inr  e
+         jmp  dec0
+dec1:    mov  a,e
+         cpi  0
+         jz   dec2
+         adi  '0'
+         call printb           ; будет печатать номер текущего user
+dec2:    mov  a,b
+         adi  '0'
+         call print
+uskip:   CALL GETDSK          ;get current drive.
+        ADI     'A'
+        CALL    PRINT   ;print current drive.
+        MVI     A,'>'
+        CALL    PRINT   ;and add prompt.
+        CALL    GETINP  ;get line from user.
+;
+;   Process command line here.
+;
+CMMND2: LXI     D,TBUFF
+        CALL    DMASET  ;set standard dma address.
+         CALL GETUD           ;and set disk & user.
+;         CALL GETDSK
+;         STA  CDRIVE          ;set current drive.
+        LXI     H,FCB
+        CALL    CONVR   ;convert name typed in.
+        CNZ     SYNER   ;wild cards are not allowed.
+        LDA     CHGDRV  ;if a change in drives was indicated,
+        ORA     A       ;then treat this as an unknown command
+        JNZ     UNKNOWN ;which gets executed.
+	LDA	FLGUSR  ;if a change in user's code was indicated,
+	ORA	A       ;then treat this as an unknown command
+	JNZ	UNKNOWN ;which gets executed.
+        CALL    SEARCH  ;else search command table for a match.
+;
+;   Note that an unknown command returns
+; with (A) pointing to the last address
+; in our table which is (UNKNOWN).
+;
+        LXI     H,CMDADR;now, look thru our address table for command (A).
+        MOV     E,A     ;set (DE) to command number.
+        MVI     D,0
+        DAD     D
+        DAD     D       ;(HL)=(CMDADR)+2*(command number).
+        MOV     A,M     ;now pick out this address.
+        INX     H
+        MOV     H,M
+        MOV     L,A
+        PCHL            ;now execute it.
+;
+;   CP/M command address table.
+;
+CMDADR: DW      DIRECT,ERASE,TYPE,SAVE
+  DW  RENAME,USER,COPY,SHELL
+  DW  PATH,UNKNOWN
+;
+;   Read error while TYPEing a file.
+;
+RDERROR: LXI    B,RDERR
+        JMP     PLINE
+RDERR:  DB      'READ ERROR',0
+;
+;   Required file was not located.
+;
+NONE:   LXI     B,NOFILE
+        JMP     PLINE
+NOFILE: DB  'ФАЙЛА(ОВ) НЕТ',0
+;
+;   Decode a command of the form 'A>filename number{ filename}.
+; Note that a drive specifier is not allowed on the first file
+; name. On return, the number is in register (A). Any error
+; causes 'filename?' to be printed and the command is aborted.
+;
+DECODE: LXI     H,FCB
+        CALL    CONVR   ;convert filename.
+        LDA     CHGDRV  ;do not allow a drive to be specified.
+        ORA     A
+        JNZ     SYNER
+        LXI     H,FCB+1 ;convert number now.
+        LXI     B,11    ;(B)=sum register, (C)=max digit count.
+DECOD1: MOV     A,M
+        CPI     ' '     ;a space terminates the numeral.
+        JZ      DECOD3
+        INX     H
+        SUI     '0'     ;make binary from ascii.
+        CPI     10      ;legal digit?
+        JNC     SYNER
+        MOV     D,A     ;yes, save it in (D).
+        MOV     A,B     ;compute (B)=(B)*10 and check for overflow.
+        ANI     0E0H
+        JNZ     SYNER
+        MOV     A,B
+        RLC
+        RLC
+        RLC     ;(A)=(B)*8
+        ADD     B       ;.......*9
+        JC      SYNER
+        ADD     B       ;.......*10
+        JC      SYNER
+        ADD     D       ;add in new digit now.
+DECOD2: JC      SYNER
+        MOV     B,A     ;and save result.
+        DCR     C       ;only look at 11 digits.
+        JNZ     DECOD1
+        RET
+DECOD3: MOV     A,M     ;spaces must follow (why?).
+        CPI     ' '
+        JNZ     SYNER
+        INX     H
+DECOD4: DCR     C
+        JNZ     DECOD3
+        MOV     A,B     ;set (A)=the numeric value entered.
+        RET
+;
+;   Move 3 bytes from (HL) to (DE). Note that there is only
+; one reference to this at (A2D5h).
+;
+MOVE3:  MVI     B,3
+;
+;   Move (B) bytes from (HL) to (DE).
+;
+HL2DE:  MOV     A,M
+        STAX    D
+        INX     H
+        INX     D
+        DCR     B
+        JNZ     HL2DE
+        RET
+;
+;   Compute (HL)=(TBUFF)+(A)+(C) and get the byte that's here.
+;
+EXTRACT:LXI     H,TBUFF
+        ADD     C
+        CALL    ADDHL
+        MOV     A,M
+        RET
+;
+;  Check drive specified. If it means a change, then the new
+; drive will be selected. In any case, the drive byte of the
+; fcb will be set to null (means use current drive).
+;
+DSELECT: XRA    A       ;null out first byte of fcb.
+        STA     FCB
+        LDA     CHGDRV  ;a drive change indicated?
+        ORA     A
+        RZ
+        DCR     A       ;yes, is it the same as the current drive?
+        LXI     H,CDRIVE
+        CMP     M
+        RZ
+        JMP     DSKSEL  ;no. Select it then.
+;
+;   Check the drive selection and reset it to the previous
+; drive if it was changed for the preceeding command.
+;
+RESETDR: LDA    CHGDRV  ;drive change indicated?
+        ORA     A
+        RZ
+        DCR     A       ;yes, was it a different drive?
+        LXI     H,CDRIVE
+        CMP     M
+        RZ
+        LDA     CDRIVE  ;yes, re-select our old drive.
+        JMP     DSKSEL
+;
+;**************************************************************
+;*
+;*           D I R E C T O R Y   C O M M A N D
+;*
+;**************************************************************
+;
+DIRECT: LXI     H,FCB
+        CALL    CONVR   ;convert file name.
+	LDA	FLGUSR
+	CPI	0
+	JZ	DIREC0
+	LDA	CHGUSR
+	MOV	E,A
+	CALL	GETSETUS        
+DIREC0: CALL    DSELECT ;select indicated drive.
+	LXI     H,FCB+1 ;was any file indicated?
+        MOV     A,M
+        CPI     ' '
+        JNZ     DIREC2
+        MVI     B,11    ;no. Fill field with '?' - same as *.*.
+DIREC1: MVI     M,'?'
+        INX     H
+        DCR     B
+        JNZ     DIREC1
+DIREC2: MVI     E,0     ;set initial cursor position.
+        PUSH    D
+        CALL    SRCHFCB ;get first file name.
+        CZ      NONE    ;none found at all?
+DIREC3: JZ      DIREC9  ;terminate if no more names.
+        LDA     RTNCODE ;get file's position in segment (0-3).
+        RRC
+        RRC
+        RRC
+        ANI     60H     ;(A)=position*32
+        MOV     C,A
+        MVI     A,10
+        CALL    EXTRACT ;extract the tenth entry in fcb.
+        RAL             ;check system file status bit.
+        JC      DIREC8  ;we don't list them.
+        POP     D
+        MOV     A,E     ;bump name count.
+        INR     E
+        PUSH    D
+        ANI     03H     ;at end of line?
+        PUSH    PSW
+        JNZ     DIREC4
+        CALL    CRLF    ;yes, end this line and start another.
+        PUSH    B
+        CALL    GETDSK  ;start line with ('A:').
+        POP     B
+        ADI     'A'
+        CALL    PRINTB
+        MVI     A,':'
+        CALL    PRINTB
+        JMP     DIREC5
+DIREC4: CALL    SPACE   ;add seperator between file names.
+        MVI     A,':'
+        CALL    PRINTB
+DIREC5: CALL    SPACE
+        MVI     B,1     ;'extract' each file name character at a time.
+DIREC6: MOV     A,B
+        CALL    EXTRACT
+        ANI     7FH     ;strip bit 7 (status bit).
+        CPI     ' '     ;are we at the end of the name?
+        JNZ     DRECT5
+        POP     PSW     ;yes, don't print spaces at the end of a line.
+        PUSH    PSW
+        CPI     3
+        JNZ     DRECT3
+        MVI     A,9     ;first check for no extension.
+        CALL    EXTRACT
+        ANI     7FH
+        CPI     ' '
+        JZ      DIREC7  ;don't print spaces.
+DRECT3: MVI     A,' '   ;else print them.
+DRECT5: CALL    PRINTB
+        INR     B       ;bump to next character psoition.
+        MOV     A,B
+        CPI     12      ;end of the name?
+        JNC     DIREC7
+        CPI     9       ;nope, starting extension?
+        JNZ     DIREC6
+        CALL    SPACE   ;yes, add seperating space.
+        JMP     DIREC6
+DIREC7: POP     PSW     ;get the next file name.
+DIREC8: CALL    CHKCON  ;first check console, quit on anything.
+        JNZ     DIREC9
+        CALL    SRCHNXT ;get next name.
+        JMP     DIREC3  ;and continue with our list.
+DIREC9: POP     D       ;restore the stack and return to command level.
+        JMP     GETBACK
+;
+;**************************************************************
+;*
+;*                E R A S E   C O M M A N D
+;*
+;**************************************************************
+;
+ERASE:  LXI     H,FCB
+        CALL    CONVR   ;convert file name.
+        CPI     11      ;was '*.*' entered?
+        JNZ     ERASE1
+        LXI     B,YESNO ;yes, ask for confirmation.
+        CALL    PLINE
+        CALL    GETINP
+        LXI     H,INBUFF+1
+        DCR     M       ;must be exactly 'y'.
+        JNZ     CMMND1
+        INX     H
+        MOV     A,M
+        CPI     'Y'
+        JNZ     CMMND1
+        INX     H
+        SHLD    INPOINT ;save input line pointer.
+ERASE1: LDA     flgUSR  ;user менялся?
+        CPI     0
+        JZ      ERASE2  ;нет-идем дальше
+        LDA     CHGUSR
+        MOV     E,A     ;да-устанавливаем нужный
+        CALL    GETSETUS
+ERASE2: CALL    DSELECT ;select desired disk.
+	LXI     D,FCB
+        CALL    DELETE  ;delete the file.
+        INR     A
+        CZ      NONE    ;not there?
+        JMP     GETBACK ;return to command level now.
+YESNO:  DB      'ALL (Y/N)?',0
+;
+;**************************************************************
+;*
+;*            T Y P E   C O M M A N D
+;*
+;**************************************************************
+;
+TYPE:   LXI     H,FCB
+        CALL    CONVR   ;convert file name.
+        JNZ     SYNER   ;wild cards not allowed.
+        LDA     FLGUSR  ;user менялся?
+        CPI     0
+        JZ      TYPE0   ;нет-идем дальше
+        LDA     CHGUSR  ;да-устанавливаем нужный
+        MOV     E,A
+        CALL    GETSETUS
+TYPE0:  CALL    DSELECT ;select indicated drive.
+	CALL    OPENFCB ;open the file.
+        JZ      TYPE5   ;not there?
+        CALL 	CRLF    ;ok, start a new line on the screen.
+        LXI     H,NBYTES;initialize byte counter.
+        MVI     M,0FFH  ;set to read first sector.
+TYPE1:  LXI     H,NBYTES
+TYPE2:  MOV     A,M     ;have we written the entire sector?
+        CPI     128
+        JC      TYPE3
+        PUSH    H       ;yes, read in the next one.
+        CALL    READFCB
+        POP     H
+        JNZ     TYPE4   ;end or error?
+        XRA     A       ;ok, clear byte counter.
+        MOV     M,A
+TYPE3:  INR     M       ;count this byte.
+        LXI     H,TBUFF ;and get the (A)th one from the buffer (TBUFF).
+        CALL    ADDHL
+        MOV     A,M
+        CPI     CNTRLZ  ;end of file mark?
+        JZ      GETBACK
+        CALL    PRINT   ;no, print it.
+        CALL    CHKCON  ;check console, quit if anything ready.
+        JNZ     GETBACK
+        JMP     TYPE1
+;
+;   Get here on an end of file or read error.
+;
+TYPE4:  DCR     A       ;read error?
+        JZ      GETBACK
+        CALL    RDERROR ;yes, print message.
+TYPE5: 	CALL    RESETDR ;and reset proper drive        
+	JMP     SYNER   ;now print file name with problem.
+;
+;**************************************************************
+;*
+;*            S A V E   C O M M A N D
+;*
+;**************************************************************
+;
+SAVE:   CALL    DECODE  ;get numeric number that follows SAVE.
+        PUSH    PSW     ;save number of pages to write.
+        LXI     H,FCB
+        CALL    CONVR   ;convert file name.
+        JNZ     SYNER   ;wild cards not allowed.
+        LDA     FLGUSR  ;user менялся?
+        CPI     0
+        JZ      SAVE0   ;нет-идем дальше
+        LDA     CHGUSR  ;да-устанавливаем нужный
+        MOV     E,A
+        CALL    GETSETUS
+SAVE0:  CALL    DSELECT ;select specified drive.
+	LXI     D,FCB   ;now delete this file.
+        PUSH    D
+        CALL    DELETE
+        POP     D
+        CALL    CREATE  ;and create it again.
+        JZ      SAVE3   ;can't create?
+        XRA     A       ;clear record number byte.
+        STA     FCB+32
+        POP     PSW     ;convert pages to sectors.
+        MOV     L,A
+        MVI     H,0
+        DAD     H       ;(HL)=number of sectors to write.
+        LXI     D,TBASE ;and we start from here.
+SAVE1:  MOV     A,H     ;done yet?
+        ORA     L
+        JZ      SAVE2
+        DCX     H       ;nope, count this and compute the start
+        PUSH    H       ;of the next 128 byte sector.
+        LXI     H,128
+        DAD     D
+        PUSH    H       ;save it and set the transfer address.
+        CALL    DMASET
+        LXI     D,FCB   ;write out this sector now.
+        CALL    WRTREC
+        POP     D       ;reset (DE) to the start of the last sector.
+        POP     H       ;restore sector count.
+        JNZ     SAVE3   ;write error?
+        JMP     SAVE1
+;
+;   Get here after writing all of the file.
+;
+SAVE2:  LXI     D,FCB   ;now close the file.
+        CALL    CLOSE
+        INR     A       ;did it close ok?
+        JNZ     SAVE4
+;
+;   Print out error message (no space).
+;
+SAVE3:  LXI     B,NOSPACE
+        CALL    PLINE
+SAVE4:  CALL    STDDMA  ;reset the standard dma address.
+        JMP     GETBACK
+NOSPACE: DB     'NO SPACE',0
+;
+;**************************************************************
+;*
+;*           R E N A M E   C O M M A N D
+;*
+;**************************************************************
+;
+RENAME: LXI     H,FCB
+        CALL    CONVR   ;convert first file name.
+        JNZ     SYNER   ;wild cards not allowed.
+	LDA	CHGUSR
+	STA	USRS
+        LDA     CHGDRV  ;remember any change in drives specified.
+        PUSH    PSW
+        lda     flgusr
+        cpi     0
+        jz      renam0
+        lda     chgusr
+        mov     e,a
+        call    getsetus
+renam0: CALL    DSELECT ;and select this drive.
+	CALL    SRCHFCB ;is this file present?
+        JZ      RENAM4  ;no, print error message.
+        LXI     H,FCB   ;yes, save this name into FCB1.
+        LXI     D,FCB1
+        MVI     B,16
+        CALL    HL2DE
+        xra     a
+        sta     fcb1    ;clear the drive byte of the fcb1.
+        LHLD    INPOINT ;get input pointer.
+        XCHG
+        CALL    NONBLANK;get next non blank character.
+        CPI     '='     ;only allow an '=' or '_' seperator.
+        JZ      RENAM1
+        CPI     '_'
+        JNZ     RENAM5
+RENAM1: XCHG
+        INX     H       ;ok, skip seperator.
+        SHLD    INPOINT ;save input line pointer.
+        LXI     H,FCB
+        CALL    CONVR   ;convert this second file name now.
+        JNZ     RENAM5  ;again, no wild cards.
+        POP     PSW     ;if a drive was specified, then it
+        MOV     B,A     ;must be the same as before.
+        LXI     H,CHGDRV
+        MOV     A,M
+        ORA     A
+        JZ      RENAM2
+        CMP     B
+        MOV     M,B
+        JNZ     RENAM5  ;they were different, error.
+RENAM2: MOV     M,B;    reset as per the first file specification.
+        ;XRA     A
+        ;STA     FCB     ;clear the drive byte of the fcb.
+        lda     flgusr
+        cpi     0
+        jz      renam3
+        lda     usrs
+        mov     b,a
+	lda	chgusr
+	cmp	b
+	jnz	renam5
+RENAM3: CALL    SRCHFCB ;and go look for second file.
+        JNZ     RENAM6  ;exist?-print message and exit
+        lxi     h,fcb    ;отправим имя нового файла
+        lxi     d,fcb1+16;во вторую часть FCB1
+        mvi     b,16
+        call    hl2de
+        LXI     D,FCB1
+        CALL    RENAM   ;ok, rename the file.
+        JMP     GETBACK
+;
+;   Process rename errors here.
+;
+RENAM4: CALL    NONE    ;file not there.
+        JMP     GETBACK
+RENAM5: CALL    RESETDR ;bad command format.
+        JMP     SYNER
+RENAM6: LXI     B,EXISTS;destination file already exists.
+        CALL    PLINE
+        JMP     GETBACK
+EXISTS: DB      'FILE EXISTS',0
+;
+;**************************************************************
+;*
+;*             U S E R   C O M M A N D
+;*
+;**************************************************************
+;
+USER:   CALL    DECODE  ;get numeric value following command.
+        CPI     16      ;legal user number?
+        JNC     SYNER
+         sta  UserCcp
+         call SaveUD
+        CALL    GETSETUS;ok, set user code.
+        JMP     GTBCK1
+;**************************************************************
+;*
+;*             C O P Y  C O M M A N D
+;*
+;**************************************************************
+;
+;Формируем FCB1 имени копируемого файла в соответствии с INPOINT
+;
+COPY:
+   LXI H,FCB
+   CALL CONVR
+   STA DSTFL   ;сохраним флаг опознавания наличия неопр.символов
+   LDA FCB+1
+   CPI ' '
+   JZ  err1
+   LDA CHGUSR  ;отправляем значение user'a
+   STA USRS    ;в опознавательную ячейку источника
+   LXI H,FCB   ;перекачиваем fcb в fcb1
+   LXI D,FCB1
+   MVI B,33
+   CALL HL2DE
+   XRA A
+   STA FCB1+12
+   STA FCB1+32 ;ФОРМИРУЕМ ОКОНЧАТЕЛЬНО FCB1
+   STA CNTFL   ;обнуляем счетчик файлов
+   LXI H,FCB1  ;формируем FCBS источника
+   LXI D,FCBS
+   MVI B, 33
+   CALL HL2DE
+   XRA A
+   STA FCBS+12
+   STA FCBS+32
+    LXI  H,FCB  ;формируем FCBD приемника
+    CALL CONVR
+    LDA  CHGUSR ;user
+    STA  USRD   ;в опознавательную ячейку приемника
+    LDA  DSTFL   ;Проверка исходн.имени файла на неопр. символы
+    CPI  0       ;есть неопр.символы?
+    JNZ  SRCHFL  ;есть -идем на поиск
+    LDA  FCB+1
+    CPI  ' '    ;есть имя у второго файла?
+    JZ   L1     ;нет - копируем имя источника(FCB1=FCBS)
+NZ:             ;проверка наличия неопр.символов
+    MVI  B,11
+    LXI  H,FCB+1
+NZ1:
+    MOV  A,M
+    CPI  '?'
+    JZ   ERR    ;есть неопр.символ?-не годится
+    DCR  B
+    JZ   cmpusr ;все символы правильны?-идем дальше
+    INX  H
+    JMP  NZ1
+cmpusr:
+    call cmpr1  ;есть имя-сравним диски
+    jnz  l0     ;разные?-копируем имя
+    call cmpr2  ;сравним user'a
+    JNZ  L0     ;разные? -копируем имя из FCB->FCBD
+    MVI  B,11   ;диск+user те же -должны быть разные имена у файлов
+    LXI  H,FCB+1
+    LXI  D,FCB1+1
+ZL: LDAX D
+    CMP  M      ;сравниваем посимвольно имена файлов
+    JNZ  L0     ;разные символы?-O'KEY - копируем FCB->FCBD
+    DCR  B
+    JZ   ERR    ;все символы совпадают?-не годится
+    INX  H
+    INX  D
+    JMP  ZL
+L0: LXI  H,FCB+1
+    JMP  L2     ;все нормально,копируем имя из FCB в FCBD
+L1:
+    call cmpr1  ;есть имя-сравним диски
+    jnz  l22    ;разные?-копируем имя
+    call cmpr2  ;сравним user'a
+    JZ   ERR    ;диск и user одинаковые - копировать нельзя
+l22:
+    LXI  H,FCB1+1
+L2: LDA  FCB
+    STA  FCBD
+    LXI  D,FCBD+1
+    MVI  B,32
+    CALL HL2DE
+    XRA  A
+    STA  FCBD+12
+    STA  FCBD+32
+    JMP  FRSRCH
+;функция сравнения дисков
+cmpr1:
+    lda  fcb
+    mov  c,a
+    lda  fcb1
+    cmp  c
+    ret
+;сравнение user'oв
+cmpr2:
+    lda  usrs
+    mov  c,a
+    lda  usrd
+    cmp  c
+    ret
+srchfl:
+    LDA  FCB+1
+    CPI  ' '    ;есть имя у второго файла?
+    JNZ  ERR    ;имени не должно быть
+    call cmpr1  ;сравним диски
+    jnz  frsrch ;разные?-идем на поиск файла
+    call cmpr2  ;одинаковые?-сравним user'a
+    JZ   ERR    ;диск и user одинаковые - копировать нельзя
+;
+;Поиск нужного файла для копирования
+;Поиск первого подходящего имени
+;
+FRSRCH:
+    LXI  H,TBUFF
+    XCHG
+    CALL DMASET
+    CALL STUSRS  ;установить user источника
+    LXI  D,FCB1
+    CALL SRCHFST
+    CZ   NONE    ;файлов нет
+    JZ   EXIT    ;объявляем об этом и возвращаемся в систему
+    LDA  DSTFL   ;Проверка имени файла на наличие неопределенных символов
+    CPI  0       ;есть неопр.символы?
+    JZ   CRTFL   ;нет - копируем
+    LDA  CNTFL
+    CPI  0       ;есть уже записанные файлы?
+    JZ   CRTFCB  ;нет - переходим к созданию FCBS
+    MOV  B,A     ;создаем внутренний счетчик
+LP: PUSH B
+    CALL SRCHNXT ;есть -поиск следующего подходящего имени
+    JZ   EXIT    ;больше нет файлов? возвращаемся в систему
+    POP  B
+    DCR  B
+    JZ   CRTFCB  ; равно нулю? нужно копировать,переходим к
+    JMP  LP      ;созданию FCBS. нет? ищем следующий
+;
+;Создаем FCBS и FCBD найденного файла
+;
+CRTFCB:
+    LDA  RTNCODE
+    RRC
+    RRC
+    RRC
+    ANI  60H
+    MOV  C,A
+    MVI  A,1
+    LXI  H,TBUFF  ;переносим имя файла из DMA пользователя
+    ADD  C
+    CALL ADDHL
+    LXI  D,FCBS+1 ;в FCBS
+    MVI  B,32
+    CALL HL2DE
+    XRA  A
+    STA  FCBS+12
+    STA  FCBS+32
+    lda  fcb      ;создаем FCBD
+    sta  fcbd
+    LXI  H,FCBS+1
+    LXI  D,FCBD+1
+    MVI  B,32
+    CALL HL2DE
+    XRA  A
+    STA  FCBD+32
+;
+;  Создаем файл,открываем нужный,читаем его и копируем в уже созданный
+;
+CRTFL:
+    CALL STUSRD ;установить user приемника
+    LXI  D,FCBD ;этот файл стираем,если он есть на диске
+    CALL DELETE
+    LXI  D,FCBD ;создаем заново файл
+    CALL CREATE
+    INR  A
+    JZ   EXIT1  ;в оглавлении диска нет места?- выход в систему
+    XRA  A
+    STA  FCBD+32 ;обнуляем номер текущей записи после создания файла
+    CALL STUSRS  ;установить user источника
+    LXI  D,FCBS
+    CALL OPEN   ;открываем нужный файл
+    JZ   EX0
+    XRA  A
+    STA  FCBS+32 ;обнуляем номер текущей записи после открытия файла
+RDFL:
+    XRA  A
+    STA  ENDFL   ;флаг конца файла
+    STA  CNTREC  ;устанавливаем счетчик числа читаемых секторов
+    LXI  H,FLBUF ;читаем файл в память начиная с этого адреса
+RDFL1:
+    PUSH H
+    XCHG
+    CALL DMASET
+    CALL STUSRS  ;установить user источника
+    LXI  D,FCBS ;отсюда читаем
+    CALL RDREC
+    STA  ENDFL  ;1 в рег.А -конец файла
+    JNZ  EX     ;конец файла? идем на проверку
+    LDA  CNTREC
+    INR  A
+    STA  CNTREC ;нет -увеличиваем число считанных секторов
+    POP  H      ;устанавливаем адрес следующей записи
+    LXI  D,128
+    DAD  D
+    LXI  D,ENDBF ;есть еще место в буфере?
+    MOV  A,L
+    SUB  E
+    MOV  A,H
+    SBB  D
+    JNC  WRTFL ;нет - пишем содержимое буфера на диск
+    JMP  RDFL1 ;есть -читаем следующий сектор в FLBUF
+WRTFL:
+    LXI  H,FLBUF ;с этого адреса пишем в файл
+WRTFL1:
+    LDA  CNTREC ;все сектора списаны ?
+    CPI  0
+    JNZ  WRT1   ;нет,пишем дальше
+    LDA  ENDFL
+    CPI  1      ;конец файла?
+    JZ   CLOSFL ;да -закрываем новый файл
+    JMP  RDFL   ;нет-читаем файл и пишем в память
+WRT1:
+    DCR  A
+    STA  CNTREC
+    PUSH H
+    XCHG
+    CALL DMASET
+    CALL STUSRD ;установить user приемника
+    LXI  D,FCBD ;сюда пишем
+    CALL WRTREC
+    JNZ  EX4    ;плохо?
+
+    POP  H      ;устанавливаем адрес следующей записи
+    LXI  D,128
+    DAD  D
+    JMP  WRTFL1  ;копируем следующую запись на диск
+CLOSFL:
+    LXI  D,FCBD
+    CALL CLOSE  ;закрываем новый файл
+    JZ   EX1
+    LDA  CNTFL
+    INR  A
+    STA  CNTFL
+    LDA  DSTFL
+    CPI  0
+    JNZ  FRSRCH
+    JZ   EXIT
+;
+EX: POP  H
+    DCR  A      ;нормальный конец файла?
+    JNZ  EXIT2  ;нет-объявляем об этом и возвращаемся в систему
+    JZ   WRTFL  ;да - копируем
+;
+;Вывод на дисплей объявления о числе скопированных
+;файлов в DEC-коде
+
+EXIT:
+    CALL STCOD  ;возврат текущего user'a
+    call crlf
+    LXI  H,FINAL
+    CALL PLINE2
+    MVI  E,0
+    LDA  CNTFL
+BIDEC:
+    MOV  B,A
+    SUI  64H    ;есть cотня?
+    JC  BIDEC1  ;нет,смотрим десятки
+    INR  E      ;есть-фиксируем это
+    JMP  BIDEC  ;проверим следующую
+BIDEC1:
+    MOV  A,E    ;есть сотни ?
+    CPI  0
+    JZ   BIDEC2 ;нет-считаем десятки
+    ADI  48
+    CALL PRINTB ;есть-выводим на экран
+BIDEC2:
+    PUSH D      ;сохраним сотни
+    MVI  E,0    ;обнуляем рег.E
+    MOV  A,B    ;последнее значение числа в рег.A
+BIDEC3:
+    MOV  B,A    ;сохраним
+    SUI  0AH    ;есть десятка?
+    JC   BIDEC4 ;нет-идем на единицы
+    INR  E      ;есть-фиксируем
+    JMP  BIDEC3 ;и смотрим следующую
+BIDEC4:
+    MOV  A,E
+    CPI  0      ;есть десятки?
+    JZ   BIDEC5 ;нет-проверим сотни
+    ADI  48
+    CALL PRINTB ;есть-печатаем
+    JMP  BIDEC6 ;и печатаем единицы
+BIDEC5:
+    POP  D      ;восстановим сотни
+    MOV  A,E
+    CPI  0
+    JZ   BIDEC6 ;сотен нет-печатаем единицы
+    MVI  A,0
+    ADI  48
+    CALL PRINTB ;сотни есть-на месте десятков печатаем 0
+BIDEC6:
+    MOV  A,B
+    ADI  48
+    CALL PRINT
+    JMP  GETBACK
+;
+EXIT1:
+    LXI  B,OWRDIR
+E1: CALL PLINE
+    JMP  EXIT
+
+EXIT2:
+    LXI  B,NOREAD
+    JMP  E1
+EX0:
+    LXI  B,OPNERR
+    JMP  E1
+EX1:
+    LXI  B,CLOSER
+    JMP  E1
+EX2:
+    LXI  B,USERR
+EX20:
+    CALL PLINE
+    JMP  CMMND1
+EX3:
+    LXI  B,OWRDSK
+    JMP  E1
+EX4:
+    POP  H
+    DCR  A
+    JZ   EXIT1  ;нет места в оглавлении?-объявляем и выходим
+    DCR  A
+    JZ   EX3    ;нет места на диске?-объявляем и выходим
+    JMP  EXIT
+ERR:
+    LXI  B,LDERR
+    JMP  E1
+ERR1:
+    LXI  B,LDERR
+    JMP  EX20
+;
+;Получить текущий код пользователя и сохранить его
+;GTCOD:
+;    CALL GETUSR
+;    STA  cruser
+;    RET
+;Восстановить текущий код пользователя
+STCOD:
+    LDA  UserCcp
+    MOV  E,A
+    JMP  GETSETUS
+;Установить код пользователя источника
+STUSRS:
+    LDA  USRS
+    MOV  E,A
+    JMP  GETSETUS
+;Установить код пользователя приемника
+STUSRD:
+    LDA  USRD
+    MOV  E,A
+    JMP  GETSETUS
+;
+FINAL:   DB 'Скопировано файлов: ',0
+NOREAD:  DB 'ФАЙЛ НЕ ЧИТАЕТСЯ',0
+OWRDIR:  DB 'ПЕРЕПОЛНЕНИЕ ДИРЕКТОРИИ!',0
+OWRDSK:  DB 'НЕТ МЕСТА НА ДИСКЕ!',0
+LDERR:   DB 'СИНТАКСИС КОМАНДЫ НЕВЕРЕН',0
+OPNERR:  DB 'ФАЙЛ НЕ ОТКРЫВАЕТСЯ',0
+CLOSER:  DB 'ФАЙЛ НЕ ЗАКРЫВАЕТСЯ',0
+USERR:   DB 'ОШИБКА ВЫБОРА КОДА ПОЛЬЗОВАТЕЛЯ',0
+;
+;*************************************************************
+;*
+;*                 S H E L L   P R O G R A M
+;*
+;*************************************************************
+;
+SHELL:
+  LXI H,FCB
+  CALL  CONVR
+  LDA FCB+1
+  CPI ' '
+  JZ  err1
+  call crlf
+  LXI D,FCB
+  MVI C,5
+  CALL  CcpRes
+  JMP cmmnd1
+;
+;**************************************************************
+;*
+;*                 P A T H     P R O G R A M
+;*
+;**************************************************************
+;
+PATH:
+  JMP GETBACK
+;
+;**************************************************************
+;*
+;*        T R A N S I A N T   P R O G R A M   C O M M A N D
+;*
+;**************************************************************
+;
+UNKNOWN::
+        LDA     FCB+1   ;anything to execute?
+        CPI     ' '
+        JNZ     UNKWN1
+	
+        LDA     CHGDRV  ;a drive change?
+        ORA     A
+	JNZ	UNKNO0  ;да,установим диск,проверим user
+	LDA	FLGUSR
+	ORA	A
+	JZ	GTBCK1  ;neither???
+       	JMP	UNKNO1	;менялся только user
+UNKNO0:
+        DCR     A
+        STA     CDRIVE  ;ok, store new drive.
+	LDA	FLGUSR  ; user менялся?
+	ORA	A
+	JZ      UNKNO2 
+UNKNO1:	
+	LDA	CHGUSR  ;да, установим новый
+	STA	UserCcp
+UNKNO2:	
+        CALL SaveUD          ;set user & disk also.
+	LDA  CDRIVE
+        CALL    DSKSEL  ;and select this drive.
+        JMP     GTBCK1;then return.
+;
+;   Here a file name was typed. Prepare to execute it.
+;
+UNKWN1: LXI     D,FCB+9 ;an extension specified?
+        LDAX    D
+        CPI     ' '
+        JNZ     SYNER   ;yes, not allowed.
+UNKWN2:
+         push d
+         LXI  H,BATFILE;set the extension to 'BAT'.
+        CALL    MOVE3
+	lda	flgusr
+	ora	a
+	jz	unkno3
+	lda	chgusr
+	mov	e,a
+	call	getsetus
+unkno3:
+         call openfcb
+         pop  d
+         jnz   DoBak          ;test file
+
+         LXI  H,COMFILE;set the extension to 'COM'.
+        CALL    MOVE3
+	lda	flgusr
+	ora	a
+	jz	unkno4
+	lda	chgusr
+	mov	e,a
+	call	getsetus
+unkno4:
+         call openfcb
+         jz   SynEr          ;test file
+
+         LXI  H,TFCB
+        CALL    CONVR   ;convert the first file name that follows
+
+          LXI  H,CHGDRV;command name.
+          PUSH H
+          MOV  A,M             ;set drive code in default fcb.
+          STA  TFCB
+
+         LXI  H,TFCB+16
+        CALL    CONVR   ;convert second file name.
+
+          POP  H
+          MOV  A,M             ;and set the drive for this second file.
+          STA  TFCB+16
+
+         XRA  A               ;clear record byte in fcb.
+        STA     TFCB+32
+
+         LXI  H,INBUFF+2;now move the remainder of the input
+UNKWN5: MOV     A,M     ;line down to (0080h). Look for a non blank.
+        ORA     A       ;or a null.
+        JZ      UNKWN6
+        CPI     ' '
+        JZ      UNKWN6
+        INX     H
+        JMP     UNKWN5
+;
+;   Do the line move now. It ends in a null byte.
+;
+UNKWN6: MVI     B,0     ;keep a character count.
+        LXI     D,TBUFF+1;data gets put here.
+UNKWN7: MOV     A,M     ;move it now.
+        STAX    D
+        ORA     A
+        JZ      UNKWN8
+        INR     B
+        INX     H
+        INX     D
+        JMP     UNKWN7
+UNKWN8: MOV     A,B     ;now store the character count.
+        STA     TBUFF
+
+CLLEXT: 
+         call CRLF
+         LXI   D,FCB
+         MVI  C,1
+         Jmp  CcpRes
+;
+;   Transiant programs return here (or reboot).
+;
+;   Get here if some error occured.
+;
+COMFILE: DB     'COM'   ;command file extension.
+BATFILE: DB   'BAT'
+;
+;   Get here to return to command level. We will reset the
+; previous active drive and then either return to command
+; level directly or print error message and then return.
+;
+GETBACK: CALL   RESETDR ;reset previous drive.
+GTBCK1:  LXI    H,FCB
+          CALL CONVR          ;convert first name in (FCB).
+         LDA    FCB+1   ;if this was just a drive change request,
+        SUI     ' '     ;make sure it was valid.
+        LXI     H,CHGDRV
+        ORA     M
+        JNZ     SYNER
+        JMP     CMMND1  ;ok, return to command level.
+;
+;   ccp stack area.
+;
+;        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+;        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+;CCPSTK  EQU     $       ;end of ccp stack area.
+;
+;************************************************************
+;  моя память для моих данных
+;************************************************************
+svstack: dw 0    ;area for store stack
+CcpF2:   db 48
+          db 2
+svblpath: dw 0  ; для указателя на блок данных диск/user
+;************************************************************
+;   File control block setup by the CCP.
+;
+FCB:    DB      0,'           ',0,0,0,0,0,'           ',0,0,0,0,0
+FCB1: DB  0,'           ',0,0,0,0,0,'           ',0,0,0,0,0
+FCBS: DB  0,'           ',0,0,0,0,0,'           ',0,0,0,0,0
+FCBD: DB  0,'           ',0,0,0,0,0,'           ',0,0,0,0,0
+DSTFL:  DB  0
+CNTFL:  DB  0
+CNTREC: DB  0
+CHGUSR: DB  0   ;ячейка измененного user'a
+FLGUSR: DB  0   ;флаг опознавания измения user'a
+USRS:   DB  0   ;user источника
+USRD:   DB  0   ;user приемника
+ENDFL:  DB  0   ;флаг опознавания конца файла
+RTNCODE: DB   0 ;status returned from bdos call.
+CDRIVE:  DB   0 ;currently active drive.
+USERCCP: db   0 ;текущий user
+CHGDRV:  DB   0 ;change in drives flag (0=no change).
+NBYTES:  DW   0 ;byte counter used by TYPE.
+FLBUF   EQU $
+ENDBF   EQU FLBUF+16*1024
+;
+        End
+;
+ned from bdos call.
+CDRIVE:  DB   0 ;currently active drive.
+USERCCP: db   0 ;текущий user
+CHGDRV:  DB   0 ;change in drive

@@ -1,0 +1,369 @@
+len equ 12
+    dseg
+.s:
+        DB 48
+        DB 0
+        DS 30
+.as::
+        DB 48
+        DB 0
+        DS 18
+.snum:
+        DB 48,49,50,51,52,53,54,55,56,57,46,0
+.skop:
+        DB 45,42,43,47,61,0
+.af:
+        DB 00H,00H,00H,00H,00H,00H,00H,00H
+.rf:
+        DB 00H,00H,00H,00H,00H,00H,00H,00H
+;.i:
+;        DS 2
+.kop:
+        DB 0
+.flkop:
+        DB 0
+.flget:
+        DB 0
+.flov:
+        db 0
+.flz:
+        db 0
+        CSEG
+calc::
+        CALL initas_
+        CALL outa_##
+mainloop:
+.28:
+        call getch##
+        mov c,a
+        lda .flov
+        ora a
+        jnz .reset
+        mov a,c
+        cpi 'r'
+        JNZ .nor
+.reset:
+        call .dlip##
+        DB 00H,00H,00H,00H,00H,00H,00H,00H
+        LXI H,.rf
+        CALL .dst##
+        LXI H,.af
+        CALL .dst##
+        CALL initas_
+        xra a
+        sta  .flkop
+        sta .flget
+        sta .flov
+.nor:
+        cpi 'z'
+        jnz noz
+
+        lda .flget
+        ora a
+        jnz strm
+        lxi h,.af
+        push h
+        call .dldp##
+        call .dng##
+        pop h
+        call .dst##
+        jmp .43
+strm:
+        lda .as
+        cpi ' '
+        jz setmin
+        mvi a,' '
+        sta .as
+        jmp noz
+setmin:
+        mvi a,'-'
+        sta .as
+noz:
+        cpi 8
+        CZ decas_
+        lxi h,.snum
+        CALL index
+        CNZ addas_
+
+        LXI H,.skop
+        CALL index
+        JZ .34
+
+        lda .flz
+        ora a
+        jnz .atof
+
+        Lda .flget
+        ORA a
+        JZ .38
+.atof:
+        xra a
+        sta .flz
+        LXI H,.af            ;rf=af
+        CALL .dldp##
+        LXI H,.rf
+        CALL .dst##
+
+        LXI H,.as
+.36:
+;        MOV a,M
+;        cpi 32
+;        JNZ .37
+;        inx h
+;        JMP .36        ;сделано в ATOF
+.37:
+        PUSH H
+        CALL atof_##
+        POP D
+        LXI H,.af
+        CALL .dst##
+.35:
+        Lda .flkop
+        ORA a
+        JZ .43
+
+        LDa .kop
+        cpi 42
+        JNZ .39
+
+        LXI H,.af
+        CALL .dldp##
+        LXI H,.rf
+        CALL .dlds##
+        CALL .dml##
+        LXI H,.af
+        CALL .dst##
+.39:
+        LDa .kop
+        cpi 47
+        JNZ .40
+
+        LXI H,.rf
+        CALL .dldp##
+        LXI H,.af
+        CALL .dlds##
+        CALL .ddv##
+        LXI H,.af
+        CALL .dst##
+.40:
+        LDa .kop
+        cpi 45
+        JNZ .41
+
+        LXI H,.rf
+        CALL .dldp##
+        LXI H,.af
+        CALL .dlds##
+        CALL .dsb##
+        LXI H,.af
+        CALL .dst##
+.41:
+        LDa .kop
+        cpi 43
+        JNZ .42
+
+        LXI H,.af
+        CALL .dldp##
+        LXI H,.rf
+        CALL .dlds##
+        CALL .dad##
+        LXI H,.af
+        CALL .dst##
+.42:
+        LXI H,.af
+        CALL .dldp##
+        call .dlis##
+        DB 044H,48H,76H,0E7H,0FFH,00H,00H,0
+        CALL .dgt##
+        JZ .43
+over:
+        lxi h,.as
+        mvi b,len
+loopov:
+        mvi m,'.'
+        inx h
+        dcr b
+        jnz loopov
+        mvi a,1
+        sta .flov
+        JMP .44
+.43:
+        LXI H,.af
+        CALL .dldp##
+        call .dlis##
+        DB 0c4H,48H,76H,0E7H,0FFH,00H,00H,0
+        CALL .dlt##
+        jnz over
+        lxi h,.as
+        LXI H,1
+        PUSH H
+        LXI H,13
+        PUSH H
+        LXI H,.s
+        PUSH H
+        LXI H,.af
+        CALL .dldp##
+        call .dlis##
+        DB 0,0,0,0,0,0,0,0
+        call .dlt##
+        jnz .mns
+        call .dlis##
+        DB 03CH,0AH,0FEH,0BFH,0F0H,0BCH,0B2H,04BH
+        CALL .dad##
+        jmp .ftoa
+.mns:
+        call .dlis##
+        DB 03CH,0AH,0FEH,0BFH,0F0H,0BCH,0B2H,04BH
+        CALL .dsb##
+
+.ftoa:
+        CALL .dpsh##
+        CALL ftoa_##
+        XCHG
+        LXI H,14
+        DAD SP
+        SPHL
+        mvi b,11
+        LXI d,.s
+        LXI H,.as
+        ldax d
+        cpi '-'
+        jnz skpmin
+        mov m,a
+        inx d
+        jmp skppl
+skpmin: mvi m,' '
+skppl:  inx h
+
+loopcpy:
+        ldax d
+        ora a
+        jz .44
+        mov m,a
+        inx h
+        inx d
+        dcr b
+        jnz loopcpy
+.44:    mvi m,0
+
+.38:
+        mov a,c
+        Sta .kop
+        cpi 61
+        JNZ .45
+        xra a
+        sta .flkop
+        JMP .46
+.45:
+        mvi a,1
+        sta .flkop
+.46:
+        xra a
+        sta .flget
+.34:
+.47:    mov a,c
+        cpi 27
+        RZ              ;exit
+        CALL outa_##
+        JMP .28
+
+
+initas_:
+        mvi b,len-1
+        lxi h,.as
+loopinit:
+        mvi m,' '
+        inx h
+        dcr b
+        jnz loopinit
+        MVI M,'0'
+        inx h
+        mvi m,0
+        ret
+
+addas_:
+        LXI H,.flget
+        mov a,m
+        cpi len-1
+        rz              ;перепонение
+        ora a
+        jnz nofirst
+        call initas_
+        LXI H,.flget
+        mov a,c
+        cpi '0'
+        jz szero             ; 0 уже есть
+        cpi '.'
+        jnz frst      ; 0 оставляем
+        inr m
+        jmp nofirst
+szero:
+        mvi a,1
+        sta .flz
+        ret
+frst:
+        mvi a,' '           ; 0 затираем
+        sta .as+len-1
+nofirst:
+        inr m           ;set .flget
+        mvi b,len-2
+        lxi h,.as+1     ;не трогаем знак
+        lxi d,.as+2
+loopadd:
+        ldax d
+        mov m,a
+        inx d
+        inx h
+        dcr b
+        jnz loopadd
+        mov m,c
+        ret
+
+decas_:
+        LXI H,.flget
+        mov a,m
+        ora a
+        rz              ;удалять нечего
+        dcr m
+        jz dcend
+        cpi 2
+        jnz no2
+        lda .as+len-1
+        cpi '.'
+        jnz no2
+        lda .as+len-2
+        cpi '0'
+        jnz no2
+        dcr m
+no2:
+        lxi h,.as+len-1
+        lxi d,.as+len-2
+        mvi b,len-1
+
+loopdcr:
+        ldax d
+        mov m,a
+        dcx d
+        dcx h
+        dcr b
+        jnz loopdcr
+        mvi m,' '
+        ret
+dcend:
+        lxi h,.as+len-1
+        mvi m,48
+        RET
+index:
+        mov a,m
+        ora a
+        rz
+        inx h
+        cmp c
+        jnz index
+        ori  1
+        ret
+        END
+mov a,m
+        ora a
+        rz
+        i

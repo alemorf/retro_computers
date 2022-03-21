@@ -1,0 +1,114 @@
+
+CSEG
+
+
+STBL	EQU	0BH	; СТРОБ В 0
+STBH	EQU	0AH	; Строб в 1
+RDYMASK	EQU	04H	; Ready mask for BUSY select
+			; ( bit 2 of port C )
+LIST::
+	CALL	LISTST   ; Is printer ready ?
+	JZ	LIST    ; If not ready - wait
+	MOV A,C
+OFS	EQU	080H	;смещение таблицы
+	CPI OFS
+	JC  PRN		;ASCII
+	LXI  H,LSTTAB-OFS
+	MVI B,0
+	DAD B		;адрес кода в таблице принтера
+	MOV A,M
+PRN:	XRI 0FFH	;маска инверсии для принтера
+;	XRA	C      ; инвертируем ?!
+	STA	PRNPORT##  ; кладем
+	LXI	H,STBPORT##+1	; СТРОБ PORT
+	MVI	M,STBL
+	XTHL
+	XTHL		; DELAY
+	MVI	M,STBH
+	RET	        ; 
+
+;     статус принтера (0 не готов, 0FFH готов)
+
+LISTST::
+	LDA	PSTPORT##  ; Get status
+	ANI	RDYMASK  ; Select bit
+	RZ	         ; Return if still BUSY
+	MVI	A,0FFH   ; Get ready flag
+	RET	         ; and exit
+;Таблица перекодировки для принтера для кодов 80H-0FFH
+LSTTAB::
+;80H
+	DB 080H,081H,082H,083H,084H,085H,086H,087H
+	DB 088H,089H,08AH,08BH,08CH,08DH,08EH,08FH
+;90H
+	DB 090H,091H,092H,093H,094H,095H,096H,097H
+	DB 098H,099H,09AH,09BH,09CH,09DH,09EH,09FH
+;0A0H
+	DB 0A0H,0A1H,0A2H,0A3H,0A4H,0A5H,0A6H,0A7H
+	DB 0A8H,0A9H,0AAH,0ABH,0ACH,0ADH,0AEH,0AFH
+;0B0H
+	DB 0B0H,0B1H,0B2H,0B3H,0B4H,0B5H,0B6H,0B7H
+	DB 0B8H,0B9H,0BAH,0BBH,0BCH,0BDH,0BEH,0BFH
+;0C0H
+	DB 0F0H,0D1H,0D2H,0E8H,0D5H,0D6H,0E6H,0D4H
+	DB 0E7H,0DAH,0DBH,0DCH,0DDH,0DEH,0DFH,0E0H
+;0D0H
+	DB 0E1H,0F1H,0E2H,0E3H,0E4H,0E5H,0D8H,0D3H
+	DB 0EEH,0EDH,0D9H,0EAH,0EFH,0EBH,0E9H,0ECH
+;0E0H
+	DB 0C0H,0A1H,0A2H,0B8H,0A5H,0A6H,0B6H,0A4H
+	DB 0B7H,0AAH,0ABH,0ACH,0ADH,0AEH,0AFH,0B0H
+;0F0H
+	DB 0B1H,0C1H,0B2H,0B3H,0B4H,0B5H,0A8H,0A3H
+	DB 0BEH,0BDH,0A9H,0BAH,0BFH,0BBH,0B9H,0BCH
+
+
+; Выводим на последовательный интерфейс с регистра  С.
+	EXT IRPS
+PUNCH::	call punchst
+	jz	punch	 ; ждем готовности
+	MOV	A,C
+	sta	irps
+	RET
+PUNCHST::
+	lda	irps+1
+	ani	81h	;вырезаем конец передачи и готовность 
+	xri	81H
+	jnz notdsr	; если NOT DSR
+	xri 0ffh	;
+	ret		;return OK
+notdsr:	xra a
+	ret
+
+;     read   character	into register A from reader device
+; статус для RDR: пока вводим без прерываний,
+; поскольку для его реализации с .. требуется гарантия
+; 1 msek
+READER::
+	call rdrst
+	jnz dokey
+	DI
+	mvi	m,27h		; SET DTR
+lprdr:	call rdrst1
+	jz lprdr
+	mvi	m,25h		; reset DTR
+dokey:	dcx	h
+	mov	a,m
+	EI
+	RET
+
+RDRST::	lxi h,irps+1
+RDRST1:	mov a,m
+	ANI 2
+	rz	;не готово
+	mvi a,255
+	ret
+
+	END
+; 1 msek
+READER::
+	call rdrst
+	jnz dokey
+	DI
+	mvi	m,27h		; SET DTR
+lprdr

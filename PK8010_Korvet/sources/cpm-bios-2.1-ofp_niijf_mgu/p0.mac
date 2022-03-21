@@ -1,0 +1,24 @@
+START:
+        DI
+        LXI H,0180H
+        LXI B,2140H
+        LXI D,0d300H
+LOOP:
+        MOV A,B
+        ORA C
+        JZ pend
+        MOV A,M
+        STAX D
+        INX D
+        INX H
+        DCX B
+        JMP LOOP
+pend:   ;call HINIT##
+        mvi c,0
+        jmp 0d300H
+        END START
+;
+     INX H
+        DCX B
+        JMP LOOP
+pend:   ;call HINIT#

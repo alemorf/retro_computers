@@ -1,0 +1,366 @@
+
+; 12/10/1987
+;	Драйвер клавиатуры
+
+
+SHMSK	EQU	81H
+SMMSK	EQU	5EH
+CTRMSK	EQU	20H
+KBD	EQU	0F800H
+KBDD	EQU	0F900H
+
+FSHIFT	EQU	0F72DH
+FALF	EQU	0F72EH
+FGRAPH	EQU	0F72FH
+FSEL	EQU	0F730H
+CONTTAB EQU	0F729H
+FUNTAB	EQU	0F72BH
+
+LONGVAL	EQU	0F720H	;константа автоповтора большая
+AUTOVAL	EQU	0F721H	;константа автоповтора маленькая
+COUNT	EQU	0F71FH
+
+	PUBLIC KOI8
+KOI8	EQU	0F71AH
+     
+LOCKFL	EQU	20H
+RUSFL	EQU	80H
+SELECT	EQU	01H
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Опрос клавиатуры. Возвращается номер нажатой клавиши.
+; Одновременно состояние контрольных клавиш помещается
+; в переменную CNTRKEY. Функция LOCK обрабатывается
+; внутри драйвера. Результат помещен в виде  флагов
+; в ячейках 0F72DH-0F730H.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+INKEY::
+	LDA	KBD+1111111B
+	ORA	A
+	JNZ	FIELD1
+	LDA	KBDD+111111B
+	ORA	A
+	JNZ	FIELD2
+	LDA	KBD+128
+	ORA	A
+	JNZ	STR8
+RTZ:	XRA	A
+	STA	OLD	;клавиша не нажата
+	RET		;return, если нет нажатых клавиш
+;Опрос контрольных клавиш
+STR8:	
+	MOV	B,A
+	ANI	48H	;оставляем LOCK & ESC
+	JZ	RTZ	;нет LOCK & ESC
+	MVI C,0
+	CALL PR
+	MVI A,56
+	ADD  C
+	MOV C,A
+	CPI 59
+	JZ  EXIT	;ESC
+	LXI H,OLD
+	SUB   M		;ESC имеет #59; LOCK имеет #62.
+	RZ		;return, если эта клавиша уже нажата
+	MOV M,C
+;	CPI 62
+;	RNZ		;return, если ESC
+	LXI H,FSHIFT
+	MVI  A,SHMSK
+	ANA B		;SHIFT ?
+	JZ  NOSHIFT
+	MVI A,0FFH
+	XRA M
+	MOV M,A
+NOSHIFT: INX H
+	MVI A,10B	;алфавит
+	ANA B
+	XRA M
+	MOV M,A
+	MVI A,100B	;графические символы
+	INX H
+	ANA B
+	XRA M
+	MOV  M,A
+	INX H
+	MVI A,10000B	;цифровое поле
+	ANA B
+	XRA M
+	MOV M,A
+	XRA A
+	RET		;return 0. Обработка  внутри.
+;Опрос клавиатуры
+FIELD2:	LXI	H,KBDD+20H
+	CALL	LOOP
+	RZ
+	MVI	A,40H
+	ADD	C	;смещение дополнительного поля
+	MOV	C,A
+	JMP	EXIT
+FIELD1:
+;Основное поле
+	LXI	H,KBD+40H
+	CALL	LOOP
+	RZ
+EXIT:			;С содержит номер нажатой клавиши
+	LXI	D,OLD	;
+	LXI	H,COUNT	;счетчик автоповтора
+	LDAX	D	;результат предыдущего опроса
+	SUB	C
+	JZ	RAWNO
+	LDA	LONGVAL
+;Клавиша нажата, номер возвращается!
+YES:	MOV	M,A	;задержка начала автоповтора
+	LDA	KBD+128
+	STA	CNTRKEY
+	MOV	B,A
+	MOV	A,C	;клавиша нажата вновь
+	STAX	D
+	ORA	A	;флаг Z
+	RET
+
+RAWNO:	
+	LDA	AUTOVAL
+	DCR	M	;автоповтор?
+	JZ	YES
+	XRA	A
+	RET
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+LOOP2:
+	MOV	A,L
+	RAR
+	MOV	L,A
+	ORA	A
+	RZ		;не нажато!
+LOOP:	MOV	A,M
+	ORA	A
+	JZ	LOOP2
+PRESS:			;A содержит строку матрицы
+	MVI	C,0
+	PUSH	PSW
+	MOV	A,L
+	CALL	PR
+	MOV	A,C
+	ADD	A
+	ADD	A
+	ADD	A
+	INR	A	;увеличиваем на 1 для ^@ !
+	MOV	C,A
+	POP	PSW	;В регистре С код клавиши
+PR:
+	RRC
+	RC
+	INR	C
+	JMP	PR
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Процедура CONIN. Результат - в регистре A.
+; Процедура CONST. 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+CONST:: LDA	FLAG
+	ORA	A
+	RNZ
+	LDA	SYMBUF
+	ORA	A
+	RZ
+	MVI	A,0FFH
+	RET
+CONIN::	LDA	FLAG	;признак последовательности
+	ORA	A
+	LHLD ADR
+	JNZ	READBUF
+CINLOOP: EI
+	LDA	SYMBUF	;CALL INKEY
+	ORA	A
+	JZ	CINLOOP
+	MOV C,A
+	XRA A
+	STA SYMBUF
+;Далее - функция ASC
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Процедура получения кода(ов), соответствующих нажатой
+; клавише. A = ASC(C): регистр C содержит номер клавиши.
+; Переменная CNTRKEY содержит информацию об контрольных
+; клавишах.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ASC::	DCR  C
+	MVI  B,0	;BC содержит смещение таблиц
+	LDA CNTRKEY
+	MOV E,A		;CONTROL-KEY
+	MOV	A,C
+	CPI	32
+	JC	ALPHABET
+	CPI	44
+	JC	DIGIT 
+	CPI	48
+	JC	ZNAKI
+	CPI	56
+	JC	SPEC
+	CPI	64
+	JC	ESCAPE
+	CPI	80
+	JC	AUXKEY
+	CPI	96
+	JC	FUNKEY
+	CPI	112
+	JC	CURKEY
+	XRA	A
+	RET		;Не существующие клавиши.
+;
+ALPHABET:
+	LXI H,ALPHA1
+	DAD B		;HL содержит адрес символа
+	MOV L,M		;символ в L
+	MOV A,E
+	ANI CTRMSK
+	JNZ ALPCNTR
+	LDA FGRAPH
+	XRA E
+	ANI 100B
+	JZ ALPHA
+	MOV A,L
+	XRI 0C0H
+	RET		;GRAPH KEY
+ALPCNTR: MOV A,L
+	ANI 11111B
+	RET		;CONTROL KEY
+ALPHA:
+	LDA FALF
+	XRA E
+	ANI 10B
+	JNZ ALP1	;Z-латинский символ
+	LDA KOI8
+	ORA A
+	JZ ALP2		;русский КОИ-8
+	LXI H,ALPHA2
+	DAD B		;HL содержит адрес символа
+	MOV L,M
+ALP1:	CALL TSHFT
+	ADD L		;MOV B,A
+	RET
+;Контроль shift: A содержит 20H, если shift
+TSHFT:	MVI A,10000001B
+	ANA E
+	JZ NOSHFT
+	MVI A,0FFH
+NOSHFT:	MOV E,A
+	LDA FSHIFT
+	XRA E
+	RZ
+	MVI A,20H	; верхний регистр
+	RET
+ALP2:	
+	CALL TSHFT
+	XRI 0A0H
+	ADD L
+	RET
+
+ALPHA1: ;Последовательность латинская и КОИ-8
+	DB '@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_'
+ALPHA2: ;Последовательность дополнительного набора
+	;русских символов.
+	DB 0CEH,0B0H,0B1H,0C6H,0B4H,0B5H,0C4H,0B3H
+	DB 0C5H,0B8H,0B9H,0BAH,0BBH,0BCH,0BDH,0BEH
+	DB 0BFH,0CFH,0C0H,0C1H,0C2H,0C3H,0B6H,0B2H
+	DB 0CCH,0CBH,0B7H,0C8H,0CDH,0C9H,0C7H,0CAH
+ALPHA3: ;Управляющие коды
+	DB	0DH,8DH,03H,8BH,8CH,08H,09H,20H
+
+
+DIGIT:
+	MOV	A,E
+	ANI	SHMSK
+	MOV	A,C
+	RNZ
+	ADI	10H
+	RET
+
+ZNAKI:
+	MOV	A,E
+	ANI	SHMSK
+	MOV	A,C
+	RZ
+	ADI	10H
+	RET
+SPEC:
+	LXI	H,ALPHA3-30H
+NSHS:   
+	DAD	B
+	MOV	A,M
+	CPI 80H
+	RC	;return, если ASCII
+	MOV C,A
+	JMP CRK	;спецсимволы
+
+ESCAPE: MVI A,27
+	RET
+AUXKEY:
+	LDA FSEL
+	XRA E
+	ANI 10000B
+	JZ AUXCONTR
+GDIG:	MVI A,60H
+	XRA C
+	CPI 42
+	RNC
+	ADI 10H
+	RET
+CURKEY:
+AUXCONTR:
+	MVI A,SHMSK
+	ANA E
+	JZ CRK
+	CALL GDIG
+	ADI 60H
+	RET
+CRK:	MVI A,1111B
+	ANA C
+	MOV C,A
+	LHLD CONTTAB
+	CPI 0EH
+	JC GETBUF
+	MVI C,10
+GETBUF:
+	DAD B
+	DAD B
+	MOV A,M
+	INX H
+	MOV H,M
+	MOV L,A		;адрес буфера с последовательностью
+READBUF:
+	MOV A,M		;LDAX D
+	INX H
+	SHLD ADR
+	MOV  D,A
+	ORA A
+	JZ TZERO
+	MOV A,M
+TZERO:	STA FLAG
+	MOV A,D
+	RET
+FUNKEY:
+	LHLD FUNTAB
+	MVI A,1111B
+	ANA C
+	MOV C,A
+	CPI 5
+	JNC GETBUF
+	MVI A,81H
+	ANA E
+	JZ GETBUF
+	MOV A,C
+	ADI 5		;получение F6-F10
+	MOV C,A
+	JMP GETBUF
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Вспомогательные ячейки
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+OLD:	DB	0	;номер предыдущей клавиши
+FLAG:	DB	0	;Флаг последовательности
+ADR:	DW	0	;адрес следующего символа посл.
+
+SYMBUF::DB	0	;скан-код
+CNTRKEY::DB	0	;копия конрольной линейки
+
+	END
+йки
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

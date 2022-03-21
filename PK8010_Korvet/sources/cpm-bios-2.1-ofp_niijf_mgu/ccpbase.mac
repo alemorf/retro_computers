@@ -1,0 +1,395 @@
+;CCPBASE.MAC
+;7.14.92
+; некоторые определения
+Wboot   equ     0
+Bdos    equ     5
+CallCcp equ     8
+RstDsk  equ    13
+Tbase    equ  100h
+PrtStr   equ    9
+MaxFun   equ  9
+
+; CCP резидентный модуль, который вызывается только из транзитной программы
+; и должен перемещаться;
+
+.Start::
+; тест autoexec.bat; потом перенесем!
+         mvi c,RstDsk          ;обязятельно!
+         call bdos
+
+        lxi   d,BatFcb
+         mvi  c,15
+         call Bdos
+         inr  a
+         jz   start1
+         mvi  a,128
+         sta  BatFlag
+         jmp start1
+Start1:
+         jmp .begin
+
+         ds 17*3
+
+.Begin::
+; Восстановитель вызова BDOS, указатель стека, вызов рез. CCP и др.
+Wboot_::Di
+;        mvi a,(jmp)
+;        sta CallCcp
+;        lxi h,Ccp_
+;        shld CallCcp+1
+        lxi sp,stackarea
+; Вызов функции BIOS инициализации железа и физического сброса дисков
+init:
+         mvi c,50
+         lxi d,WbData
+         call bdos      ; init dos
+
+         mvi c,RstDsk          ;обязятельно!
+         call bdos
+
+        lda BatFlag
+        inr a
+        jnz CcpCont         ;.BAT процесс не прерывается
+        lxi h,ChainFlag
+        cmp m               ; in A zero!
+        jz CcpCont
+        dcr m               ;zero to ChainFlag
+        lhld SaveRet
+        pchl                ;если 0, то опять рестарт
+; проверяем, кто вызвал
+CcpCont:
+         lda  FlagCcp
+         ora  a
+         jz   init1
+         jmp tbase            ; CCP на месте
+; загрузка COMMAND.COM была неправильна
+ErrOF:   lxi d,PrmtErrCcp
+         mvi c,PrtStr
+         CALL  Bdos           ; put Error message
+         mvi c,1
+         call Bdos            ; wait key
+         lxi  h,Command
+         shld FcbCcp          ; установили основной CCP
+         jmp  Wboot           ; еще одна попытка
+
+; Если теплый старт происходит из программы пользователя, загрузка
+; транзитной части CCP и передаче ей управления.
+init1:
+         mvi  a,1
+         sta  FlagCcp
+         mvi  c,20H
+         mvi  e,0             ;user where CCP
+         call Bdos            ;set user
+         lhld  FcbCcp
+         xchg
+         call CopyFcb
+         call OpenF
+         jz   ErrOF
+         Call LOADPROG
+         JMP   ErrOF
+
+WbData:  db 0
+         db 255         ;на всякий случай
+
+; Собственные функции CCP, взаимодействуют через RST 1.
+OpenF:
+         xra a
+         sta FCB+32
+         LXI D,FCB
+         MVI     C,15
+         CALL    5
+         INR   A
+         RET                  ;not present ?
+
+LOADPROG:
+;
+;   Load in the program
+;
+        LXI  D,TBASE   ;store the program starting here
+EXECLP:
+        PUSH    D
+        MVI     C,26
+        CALL    5         ;set transfer address
+        LXI D,FCB       ;and read the next record
+        MVI     C,20
+        CALL    5
+        ORA     A
+        JNZ EXEC2     ;end of file or read error
+        POP     H         ;nope, bump pointer for next sector
+        LXI     D,128
+        DAD     D
+        XCHG
+        JMP     EXECLP
+;
+;    Get here after finished reading
+;
+EXEC2:   POP   H
+         DCR     A          ;normal end of file ?
+         RNZ               ;ошибка загрузки
+
+         LXI  D,80H      ;default DMA address is 80H
+         mvi c,26
+         call bdos
+
+         mvi  c,20h
+         lda  SysUser
+         mov  e,a
+         Call Bdos            ; set default user
+
+         mvi  c,0eh
+         lda  SysDisk
+         mov  e,a
+         Call Bdos            ; set default disk
+
+;*********************************************************
+;                      интерфейс CP
+;*********************************************************
+Ccp::
+         inx d
+         xchg
+         mov c,m        ;номер подфункции
+;         inr c          ;чтобы убрать 255
+         inx h
+         mov e,m
+         inx h
+         mov d,m        ;достали параметры
+         push h         ;спрятяли указатель на блок параматров
+         call ccp_
+ExitCcp:
+         pop d          ;восстановили указатель на блок параметров
+         xchg
+         mov m,d
+         dcx h
+         mov m,e
+         ret
+Fun35::  lxi d,Mess35
+         mvi c,PrtStr
+         lda FlagCcp
+         ora a
+         CZ  Bdos           ; put Error message if not CCP
+         jmp Wboot_
+Mess35: db 13,10,'Программа прервана',13,10,'$'
+Fun36:: inx d       ;номер устройства
+        ldax d
+        cpi 16
+        jnc Device
+        lxi d,Mess36
+        mvi c,PrtStr
+        CALL  Bdos           ; put Error message
+        jmp Wboot_
+Mess36: db 13,10,'Ошибка диска',13,10,'$'
+Device: mvi a,2
+        inx d
+        stax d      ;прерываем операцию (пока)
+        ret
+;*************************************************************
+;  Блок сообщений
+;*************************************************************
+BlockMess:
+        dw      M0
+        dw      M1
+        dw      M2
+        dw      M3
+        dw      M4
+        dw      M5
+        dw      M6
+        dw      M7
+        dw      M8
+        dw      M9
+        dw      MA
+        dw      MB
+        dw      MC
+        dw      MD
+        dw      ME
+        dw      MF
+        dw      M10
+        dw      M11
+        dw      M12
+M0:     db      '$'
+M1:     db      '$'
+M2:     db      '$'
+M3:     db      '$'
+M4:     db      '$'
+M5:     db      '$'
+M6:     db      '$'
+M7:     db      '$'
+M8:     db      '$'
+M9:     db      '$'
+Ma:     db      '$'
+Mb:     db      '$'
+Mc:     db      '$'
+Md:     db      '$'
+Me:     db      '$'
+Mf:     db      '$'
+M10:
+NOLOAD:  db   0dh,0ah,'Ошибка загрузки',0dh,0ah,'$'
+PrmtErrCcp:
+        db   'Ошибка загрузки COMMAND.SYS ...','$'
+M11:    db      '$'
+M12:    db      '$'
+M13:    db      '$'
+;*************************************************************
+
+Ccp_:
+         mov  a,c
+         cpi  MaxFun
+         rnc             ;Wboot
+         mvi  b,0
+         lxi  h,FunTab
+         dad  b
+         dad  b
+         mov  a,m
+         inx  h
+         mov  h,m
+         mov  l,a
+         pchl
+FunTab:
+         DW   Wboot,LdProg,GetBlData,GetStat,GetBatArea,ChgShell,Path
+         DW   CallCom,GetChain
+LdProg:       ;загрузить программу и передать ей управление
+         lxi  sp,stackarea
+         xra  a
+         sta  FlagCcp
+         call CopyFcb
+         call OpenF
+         jz   ErrLd
+         Call LoadProg
+         lxi  d,Wboot
+         push d               ;for Wboot thrue ret
+         jnz  Tbase
+ErrLd:   LXI  D,NOLOAD
+         MVI  C,PrtStr
+         CALL Bdos
+         JMP  Wboot
+ChgShell:
+Path:    lxi  sp,stackarea
+         MVI  C,33
+         lxi  H,CommUser
+         CALL LOOPFCB
+         LXI  H,CommUser
+         SHLD FcbCcp
+         xra  a
+         sta  FlagCcp
+         JMP  Wboot
+;**************************************************************
+;    CallCom - процедура вызова из программы пользователя
+;интерпретатора команд с целью выполнения командной строки
+;с последующим возвратом управления вызывающей программе.
+;Предполагается, что вызывающая программа сидит в памяти
+;резидентно, однако это не обязательно. В последнем случае
+;интерпретация строки происходит обычным способом, однако
+;вместо возврата управления происходит рестарт системы.
+;   Правила вызова через ССР - DE указывает на блок параметров:
+;             db    7    ; пока 7, далее возможно будет 1
+;             dw  (адрес возврата. Если 0 - управление после
+;                  выполнения передается процедуре рестарта
+;                 ).
+;  Командная строка всегда располагается с адреса 80Н!
+; Второй параметр тогда не нужен.
+;             ;dw  (указатель на командную строку. Строка не
+;             ;     должна перекраваться с областью ТРА (при
+;             ;     загрузке СОММAND.СОМ не должен ее портить)
+;             ;    ).
+;   Возвращаемых параметров пока нет.
+;   Одна особенность: если вызывается .ВАТ файл, то управление
+;возвращается после выполнения всего .ВАТ файла. Если вызываемая
+;программа делает аналогичный вызов, то текущий возврат "забывается".
+;
+;**************************************************************
+CallCom:
+; получение параметров
+        xchg           ;aдрес возврата - в HL
+        shld  SaveRet
+; настройка процедуры рестарта
+        mvi a,1
+        sta ChainFlag  ; командная строка берется с адреса 80Н
+; загрузка COMMAND.COM
+; передача управления
+        jmp init1      ; теперь загружаем COMMAND.COM
+SaveRet: dw 0
+ChainFlag: dw 0
+;
+GetBlData:
+GetStat:
+         lxi h,SysDisk
+         ret
+GetBatArea:
+         lxi  h,BatArea
+         ret
+GetChain:    ;пока функция 8
+         lhld ChainFlag
+         ret
+; Вспомогательные функции
+
+; установка FCB. HL - приемник, DE - источник
+COPYFCB:
+         MVI  C,33
+         LXI  H,FCB
+LOOPFCB:
+         LDAX D
+         MOV  M,A
+         INX  D
+         INX  H
+         DCR  C
+         JNZ  LOOPFCB
+         RET
+; Некоторый служебные ячейки памяти и буфера.
+
+        DS 128;    пока не 128     ; Резерв для стека
+STACKAREA::
+FCB:
+        DB      1,'COMMAND COM' ; пока диск А:
+        DB      0,0,0,0,0,0,0,0,0,0
+        DB      0,0,0,0,0,0,0,0,0,0,0
+
+FcbCcp:  dw Command
+Command:
+         DB      1,'COMMAND COM' ; пока диск А: for Korvet
+
+        DB      0,0,0,0,0,0,0,0,0,0
+        DB      0,0,0,0,0,0,0,0,0,0,0
+CommUser:
+        DB      1,'COMMAND COM' ; пока диск А:
+        DB      0,0,0,0,0,0,0,0,0,0
+        DB      0,0,0,0,0,0,0,0,0,0,0
+FlagCcp:db    0
+; ************  блок данных диск/user ********************
+CpDisk: db   0
+CpUser: db   0
+TcDisk: db 255
+TcUser: db 255
+SysDisk: DB   0
+SysUser: db   0
+Pth1d:   db   255
+Pth1u:   db   255
+Pth2d:   db   255
+Pth2u:   db   255
+; *********************************************************
+Error:   db   0
+;*****************************************************************************
+; структура резервированной памяти
+; -->    возвращаемый указатель функцией 4
+BatArea:
+BatFlag:db  255              ; если 255, буфер пустой
+BatUser:db   0
+BatFcb:
+         IFDEF    PC
+         DB      5,'autoexecbat' ; пока диск E: for PC
+         ELSE
+         DB      1,'AUTOEXECBAT' ; пока диск А: for Korvet
+         ENDIF
+
+        DB      0,0,0,0,0,0,0,0,0,0
+        DB      0,0,0,0,0,0,0,0,0,0,0
+
+BatBuf:  db   'autoexec',10,13,26
+         ds   117
+BatLine:ds   128              ; for .bat command line ($1 & so on)
+.End::
+        end
+utoexec',10,13,26
+         ds   11
+         ret         ;ничего не делаем
+
+;BOOT::
+;        DI              ;

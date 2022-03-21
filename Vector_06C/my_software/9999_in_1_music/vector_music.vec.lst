@@ -1,0 +1,1706 @@
+0001   0000                 device zxspectrum48
+0002   0000             
+0001   0000                 ; vector_music.c:2 
+0002   0000                 ; vector_music.c:3 asm(" org 0x100");
+0003   0000              org 0x100
+0004   0100                 ; vector_music.c:4 asm("begin:");
+0005   0100             begin: 
+0006   0100                 ; vector_music.c:5 
+0007   0100                 ; vector_music.c:6 // Sound chip
+0008   0100                 ; vector_music.c:7 const int PORT_VI53_A = 0x0B;
+0009   0100                 ; vector_music.c:8 const int PORT_VI53_B = 0x0A;
+0010   0100                 ; vector_music.c:9 const int PORT_VI53_C = 0x09;
+0011   0100                 ; vector_music.c:10 const int PORT_VI53_CONTROL = 0x08;
+0012   0100                 ; vector_music.c:11 const int VI53_MODE_MUTE = 0;
+0013   0100                 ; vector_music.c:12 const int VI53_MODE_MEANDER = 6;
+0014   0100                 ; vector_music.c:13 const int VI53_SET_CHANNEL_MODE_0 = 0x30;
+0015   0100                 ; vector_music.c:14 const int VI53_SET_CHANNEL_MODE_1 = 0x70;
+0016   0100                 ; vector_music.c:15 const int VI53_SET_CHANNEL_MODE_2 = 0xB0;
+0017   0100                 ; vector_music.c:16 
+0018   0100                 ; vector_music.c:17 // Interrupt handler
+0019   0100                 ; vector_music.c:18 const int INTERRUPT_HANDLER_ENABLE = 0xC3;
+0020   0100                 ; vector_music.c:19 const int INTERRUPT_HANDLER_EMPTY = 0xC9;
+0021   0100                 ; vector_music.c:20 extern uint8_t interrupt_handler_mode = 0x38;
+0022   0100             interrupt_handler_mode=56
+0023   0100                 ; vector_music.c:21 extern uint16_t interrupt_handler_address = 0x39;
+0024   0100             interrupt_handler_address=57
+0025   0100                 ; vector_music.c:22 
+0026   0100                 ; vector_music.c:23 // System port
+0027   0100                 ; vector_music.c:24 const int PORT_SYSTEM_A = 3;
+0028   0100                 ; vector_music.c:25 const int PORT_SYSTEM_B = 2;
+0029   0100                 ; vector_music.c:26 const int PORT_SYSTEM_C = 1;
+0030   0100                 ; vector_music.c:27 const int PORT_SYSTEM_MODE = 0;
+0031   0100                 ; vector_music.c:28 
+0032   0100                 ; vector_music.c:29 // Palette
+0033   0100                 ; vector_music.c:30 const int PALELLE_PROGRAMMING_MODE = 0x88;
+0034   0100                 ; vector_music.c:31 const int PORT_PALETTE_INDEX = 0x02;
+0035   0100                 ; vector_music.c:32 const int PORT_PALETTE_VALUE = 0x0C;
+0036   0100                 ; vector_music.c:33 
+0037   0100                 ; vector_music.c:34 // Video
+0038   0100                 ; vector_music.c:35 const int VIDEO_ADDRESS = 0x8000;
+0039   0100                 ; vector_music.c:36 const int PALETTE_COUNT = 16;
+0040   0100                 ; vector_music.c:37 
+0041   0100                 ; vector_music.c:38 // Main programm
+0042   0100                 ; vector_music.c:39 void main() {
+0043   0100             main: 
+0044   0100                 ; vector_music.c:40 disableInterrupts();
+0045   0100 F3              di
+0046   0101                 ; vector_music.c:41 
+0047   0101                 ; vector_music.c:42 // Init stack
+0048   0101                 ; vector_music.c:43 sp = &main;
+0049   0101 31 00 01        ld   sp, main
+0050   0104                 ; vector_music.c:44 
+0051   0104                 ; vector_music.c:45 // Reset palette
+0052   0104                 ; vector_music.c:46 setPalette(hl = &black_palette);
+0053   0104 21 28 01        ld   hl, black_palette
+0054   0107 CD 4E 01        call setPalette
+0055   010A                 ; vector_music.c:47 
+0056   010A                 ; vector_music.c:48 // Clear screen
+0057   010A                 ; vector_music.c:49 hl = VIDEO_ADDRESS;
+0058   010A 21 00 80        ld   hl, 32768
+0059   010D                 ; vector_music.c:50 a ^= a; // a = 0
+0060   010D AF              xor  a
+0061   010E                 ; vector_music.c:51 do {
+0062   010E             l0: 
+0063   010E                 ; vector_music.c:52 *hl = a;
+0064   010E 77              ld   (hl), a
+0065   010F                 ; vector_music.c:53 hl++;
+0066   010F 23              inc  hl
+0067   0110                 ; vector_music.c:54 } while(a != h);
+0068   0110 BC              cp   h
+0069   0111 C2 0E 01        jp   nz, l0
+0070   0114             l1: 
+0071   0114                 ; vector_music.c:55 
+0072   0114                 ; vector_music.c:56 // Init music
+0073   0114                 ; vector_music.c:57 musicInit();
+0074   0114 CD 8F 01        call musicInit
+0075   0117                 ; vector_music.c:58 
+0076   0117                 ; vector_music.c:59 // Set irq handler
+0077   0117                 ; vector_music.c:60 interrupt_handler_mode = a = INTERRUPT_HANDLER_ENABLE;
+0078   0117 3E C3           ld   a, 195
+0079   0119 32 38 00        ld   (interrupt_handler_mode), a
+0080   011C                 ; vector_music.c:61 interrupt_handler_address = hl = &irqHandler;
+0081   011C 21 38 01        ld   hl, irqHandler
+0082   011F 22 39 00        ld   (interrupt_handler_address), hl
+0083   0122                 ; vector_music.c:62 
+0084   0122                 ; vector_music.c:63 // Enable interrupts
+0085   0122                 ; vector_music.c:64 enableInterrupts();
+0086   0122 FB              ei
+0087   0123                 ; vector_music.c:65 
+0088   0123                 ; vector_music.c:66 // Infinite loop
+0089   0123                 ; vector_music.c:67 while() {
+0090   0123             l2: 
+0091   0123                 ; vector_music.c:68 halt();
+0092   0123 76              halt
+0093   0124                 ; vector_music.c:69 }
+0094   0124 C3 23 01        jp   l2
+0095   0127             l3: 
+0096   0127                 ; vector_music.c:70 }
+0097   0127 C9              ret
+0098   0128                 ; vector_music.c:71 
+0099   0128                 ; vector_music.c:72 uint8_t black_palette[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+0100   0128             black_palette: 
+0101   0128 00              db 0
+0102   0129 00              db 0
+0103   012A 00              db 0
+0104   012B 00              db 0
+0105   012C 00              db 0
+0106   012D 00              db 0
+0107   012E 00              db 0
+0108   012F 00              db 0
+0109   0130 00              db 0
+0110   0131 00              db 0
+0111   0132 00              db 0
+0112   0133 00              db 0
+0113   0134 00              db 0
+0114   0135 00              db 0
+0115   0136 00              db 0
+0116   0137 00              db 0
+0117   0138                 ; vector_music.c:73 
+0118   0138                 ; vector_music.c:74 void irqHandler() {
+0119   0138             irqHandler: 
+0120   0138                 ; vector_music.c:75 push(a, bc, de, hl) {
+0121   0138 F5              push af
+0122   0139 C5              push bc
+0123   013A D5              push de
+0124   013B E5              push hl
+0125   013C                 ; vector_music.c:76 musicTick();
+0126   013C CD BC 01        call musicTick
+0127   013F                 ; vector_music.c:77 }
+0128   013F E1              pop  hl
+0129   0140 D1              pop  de
+0130   0141 C1              pop  bc
+0131   0142 F1              pop  af
+0132   0143                 ; vector_music.c:78 enable_interrupts();    
+0133   0143 FB              ei
+0134   0144                 ; vector_music.c:79 }
+0135   0144 C9              ret
+0136   0145                 ; vector_music.c:80 
+0137   0145                 ; vector_music.c:81 void memcpy(de, hl, c) {
+0138   0145             memcpy: 
+0139   0145                 ; vector_music.c:82 do {
+0140   0145             l4: 
+0141   0145                 ; vector_music.c:83 *de = a = *hl; hl++; de++;
+0142   0145 7E              ld   a, (hl)
+0143   0146 12              ld   (de), a
+0144   0147 23              inc  hl
+0145   0148 13              inc  de
+0146   0149                 ; vector_music.c:84 } while(flag_nz --c);
+0147   0149 0D              dec  c
+0148   014A C2 45 01        jp   nz, l4
+0149   014D             l5: 
+0150   014D                 ; vector_music.c:85 }
+0151   014D C9              ret
+0152   014E                 ; vector_music.c:86 
+0153   014E                 ; vector_music.c:87 void setPalette(hl) {
+0154   014E             setPalette: 
+0155   014E                 ; vector_music.c:88 // Сan change the palette only during horizontal blanking. 
+0156   014E                 ; vector_music.c:89 // These are columns 0, 32 - 47 of 48. 
+0157   014E                 ; vector_music.c:90 
+0158   014E                 ; vector_music.c:91 // Setup GPIO mode for palette programming
+0159   014E                 ; vector_music.c:92 out(PORT_SYSTEM_MODE, a = PALELLE_PROGRAMMING_MODE);
+0160   014E 3E 88           ld   a, 136
+0161   0150 D3 00           out  (0), a
+0162   0152                 ; vector_music.c:93 
+0163   0152                 ; vector_music.c:94 // Set empty interrupt handler
+0164   0152                 ; vector_music.c:95 interrupt_handler_mode = a = INTERRUPT_HANDLER_EMPTY;
+0165   0152 3E C9           ld   a, 201
+0166   0154 32 38 00        ld   (interrupt_handler_mode), a
+0167   0157                 ; vector_music.c:96 
+0168   0157                 ; vector_music.c:97 // Synchronize the processor with the video controller 
+0169   0157                 ; vector_music.c:98 a ^= a;
+0170   0157 AF              xor  a
+0171   0158                 ; vector_music.c:99 enable_interrupts();
+0172   0158 FB              ei
+0173   0159                 ; vector_music.c:100 halt();
+0174   0159 76              halt
+0175   015A                 ; vector_music.c:101 
+0176   015A                 ; vector_music.c:102 // Not 9-th column (if the interrupt handler is empty)
+0177   015A                 ; vector_music.c:103 
+0178   015A                 ; vector_music.c:104 c = a;                  // 9-11
+0179   015A 4F              ld   c, a
+0180   015B                 ; vector_music.c:105 do {
+0181   015B             l6: 
+0182   015B                 ; vector_music.c:106 out(PORT_PALETTE_INDEX, a);       // 11-14
+0183   015B D3 02           out  (2), a
+0184   015D                 ; vector_music.c:107 a = *hl;            // 14-16
+0185   015D 7E              ld   a, (hl)
+0186   015E                 ; vector_music.c:108 out(PORT_PALETTE_VALUE, a);       // 16-19 ---
+0187   015E D3 0C           out  (12), a
+0188   0160                 ; vector_music.c:109 hl++;               // 19-21
+0189   0160 23              inc  hl
+0190   0161                 ; vector_music.c:110 c++;                // 21-23
+0191   0161 0C              inc  c
+0192   0162                 ; vector_music.c:111 
+0193   0162                 ; vector_music.c:112 out(PORT_PALETTE_INDEX, a = c);   // 24-29
+0194   0162 79              ld   a, c
+0195   0163 D3 02           out  (2), a
+0196   0165                 ; vector_music.c:113 a = *hl;            // 29-31
+0197   0165 7E              ld   a, (hl)
+0198   0166                 ; vector_music.c:114 out(PORT_PALETTE_VALUE, a);       // 31-34 ---
+0199   0166 D3 0C           out  (12), a
+0200   0168                 ; vector_music.c:115 hl++;               // 34-36
+0201   0168 23              inc  hl
+0202   0169                 ; vector_music.c:116 c++;                // 36-38
+0203   0169 0C              inc  c
+0204   016A                 ; vector_music.c:117 
+0205   016A                 ; vector_music.c:118 swap(*sp, hl);      // 38-44
+0206   016A E3              ex   (sp), hl
+0207   016B                 ; vector_music.c:119 swap(*sp, hl);      // 44-2
+0208   016B E3              ex   (sp), hl
+0209   016C                 ; vector_music.c:120 a = c; a = c;       // 3-6
+0210   016C 79              ld   a, c
+0211   016D 79              ld   a, c
+0212   016E                 ; vector_music.c:121 } while(a < PALETTE_COUNT);        // 7-11
+0213   016E FE 10           cp   16
+0214   0170 DA 5B 01        jp   c, l6
+0215   0173             l7: 
+0216   0173                 ; vector_music.c:122 }
+0217   0173 C9              ret
+0218   0174                 ; vector_music.c:123 
+0219   0174                 ; vector_music.c:124 // *** Music algorithm ***
+0220   0174                 ; vector_music.c:125 
+0221   0174                 ; vector_music.c:126 // State of current music channel. Temporary variables.
+0222   0174                 ; vector_music.c:127 uint8_t  musicDelay = 0;
+0223   0174 00          musicDelay db 0
+0224   0175                 ; vector_music.c:128 uint16_t musicPtr = 0;
+0225   0175 00 00       musicPtr dw 0
+0226   0177                 ; vector_music.c:129 uint8_t  musicSubRepeatCounter = 0;
+0227   0177 00          musicSubRepeatCounter db 0
+0228   0178                 ; vector_music.c:130 uint16_t musicSubRet = 0;
+0229   0178 00 00       musicSubRet dw 0
+0230   017A                 ; vector_music.c:131 
+0231   017A                 ; vector_music.c:132 // Music channel 0 state
+0232   017A                 ; vector_music.c:133 uint8_t  music1Delay = 0;
+0233   017A 00          music1Delay db 0
+0234   017B                 ; vector_music.c:134 uint16_t music1Ptr = 0;
+0235   017B 00 00       music1Ptr dw 0
+0236   017D                 ; vector_music.c:135 uint8_t  music1SubCnt = 0;
+0237   017D 00          music1SubCnt db 0
+0238   017E                 ; vector_music.c:136 uint16_t music1SubRet = 0;
+0239   017E 00 00       music1SubRet dw 0
+0240   0180                 ; vector_music.c:137 
+0241   0180                 ; vector_music.c:138 // Music channel 1 state
+0242   0180                 ; vector_music.c:139 uint8_t  music2Delay = 0;
+0243   0180 00          music2Delay db 0
+0244   0181                 ; vector_music.c:140 uint16_t music2Ptr = 0;
+0245   0181 00 00       music2Ptr dw 0
+0246   0183                 ; vector_music.c:141 uint8_t  music2SubCnt = 0;
+0247   0183 00          music2SubCnt db 0
+0248   0184                 ; vector_music.c:142 uint16_t music2SubRet = 0;
+0249   0184 00 00       music2SubRet dw 0
+0250   0186                 ; vector_music.c:143 
+0251   0186                 ; vector_music.c:144 // Music channel 2 state
+0252   0186                 ; vector_music.c:145 uint8_t  music3Delay = 0;
+0253   0186 00          music3Delay db 0
+0254   0187                 ; vector_music.c:146 uint16_t music3Ptr = 0;
+0255   0187 00 00       music3Ptr dw 0
+0256   0189                 ; vector_music.c:147 uint8_t  music3SubCnt = 0;
+0257   0189 00          music3SubCnt db 0
+0258   018A                 ; vector_music.c:148 uint16_t music3SubRet = 0;
+0259   018A 00 00       music3SubRet dw 0
+0260   018C                 ; vector_music.c:149 
+0261   018C                 ; vector_music.c:150 // Music rythm state
+0262   018C                 ; vector_music.c:151 uint8_t  musicRythm = 0;
+0263   018C 00          musicRythm db 0
+0264   018D                 ; vector_music.c:152 uint16_t musicRythmFreq = 0;
+0265   018D 00 00       musicRythmFreq dw 0
+0266   018F                 ; vector_music.c:153 
+0267   018F                 ; vector_music.c:154 const int MUSIC_RYTHM_PERIOD = 12 * 6;
+0268   018F                 ; vector_music.c:155 
+0269   018F                 ; vector_music.c:156 const int MUSIC_COMMAND_DELAY = 0x81;
+0270   018F                 ; vector_music.c:157 const int MUSIC_COMMAND_SUBROUTINE = 0x84;
+0271   018F                 ; vector_music.c:158 const int MUSIC_COMMAND_END_SUBROUTINE = 0x85;
+0272   018F                 ; vector_music.c:159 
+0273   018F                 ; vector_music.c:160 void musicInit() {
+0274   018F             musicInit: 
+0275   018F                 ; vector_music.c:161 music1Ptr = hl = &musicChannel1;
+0276   018F 21 1B 03        ld   hl, musicChannel1
+0277   0192 22 7B 01        ld   (music1Ptr), hl
+0278   0195                 ; vector_music.c:162 music2Ptr = hl = &musicChannel2;
+0279   0195 21 1F 04        ld   hl, musicChannel2
+0280   0198 22 81 01        ld   (music2Ptr), hl
+0281   019B                 ; vector_music.c:163 music3Ptr = hl = &musicChannel3;
+0282   019B 21 3C 05        ld   hl, musicChannel3
+0283   019E 22 87 01        ld   (music3Ptr), hl
+0284   01A1                 ; vector_music.c:164 music1Delay = (a ^= a);
+0285   01A1 AF              xor  a
+0286   01A2 32 7A 01        ld   (music1Delay), a
+0287   01A5                 ; vector_music.c:165 music2Delay = a;
+0288   01A5 32 80 01        ld   (music2Delay), a
+0289   01A8                 ; vector_music.c:166 music3Delay = a;
+0290   01A8 32 86 01        ld   (music3Delay), a
+0291   01AB                 ; vector_music.c:167 a++;
+0292   01AB 3C              inc  a
+0293   01AC                 ; vector_music.c:168 musicRythm = a; // a = 1
+0294   01AC 32 8C 01        ld   (musicRythm), a
+0295   01AF                 ; vector_music.c:169 noreturn;
+0296   01AF                 ; vector_music.c:170 }
+0297   01AF                 ; vector_music.c:171 
+0298   01AF                 ; vector_music.c:172 void musicOff() {
+0299   01AF             musicOff: 
+0300   01AF                 ; vector_music.c:173 out(PORT_VI53_CONTROL, a = [VI53_SET_CHANNEL_MODE_0 | VI53_MODE_MUTE]);
+0301   01AF 3E 30           ld   a, 48
+0302   01B1 D3 08           out  (8), a
+0303   01B3                 ; vector_music.c:174 out(PORT_VI53_CONTROL, a = [VI53_SET_CHANNEL_MODE_1 | VI53_MODE_MUTE]);
+0304   01B3 3E 70           ld   a, 112
+0305   01B5 D3 08           out  (8), a
+0306   01B7                 ; vector_music.c:175 out(PORT_VI53_CONTROL, a = [VI53_SET_CHANNEL_MODE_2 | VI53_MODE_MUTE]);
+0307   01B7 3E B0           ld   a, 176
+0308   01B9 D3 08           out  (8), a
+0309   01BB                 ; vector_music.c:176 }
+0310   01BB C9              ret
+0311   01BC                 ; vector_music.c:177 
+0312   01BC                 ; vector_music.c:178 void musicTick() {
+0313   01BC             musicTick: 
+0314   01BC                 ; vector_music.c:179 musicChannel(hl = &music1Delay);
+0315   01BC 21 7A 01        ld   hl, music1Delay
+0316   01BF CD 0A 02        call musicChannel
+0317   01C2                 ; vector_music.c:180 if (flag_nc) {
+0318   01C2 DA CF 01        jp   c, l8
+0319   01C5                 ; vector_music.c:181 a |= VI53_SET_CHANNEL_MODE_0;
+0320   01C5 F6 30           or   48
+0321   01C7                 ; vector_music.c:182 out(PORT_VI53_CONTROL, a);
+0322   01C7 D3 08           out  (8), a
+0323   01C9                 ; vector_music.c:183 out(PORT_VI53_A, a = l);
+0324   01C9 7D              ld   a, l
+0325   01CA D3 0B           out  (11), a
+0326   01CC                 ; vector_music.c:184 out(PORT_VI53_A, a = h);
+0327   01CC 7C              ld   a, h
+0328   01CD D3 0B           out  (11), a
+0329   01CF                 ; vector_music.c:185 }
+0330   01CF                 ; vector_music.c:186 musicChannel(hl = &music2Delay);
+0331   01CF             l8: 
+0332   01CF 21 80 01        ld   hl, music2Delay
+0333   01D2 CD 0A 02        call musicChannel
+0334   01D5                 ; vector_music.c:187 if (flag_nc) {
+0335   01D5 DA E2 01        jp   c, l9
+0336   01D8                 ; vector_music.c:188 a |= VI53_SET_CHANNEL_MODE_1;
+0337   01D8 F6 70           or   112
+0338   01DA                 ; vector_music.c:189 out(PORT_VI53_CONTROL, a);
+0339   01DA D3 08           out  (8), a
+0340   01DC                 ; vector_music.c:190 out(PORT_VI53_B, a = l);
+0341   01DC 7D              ld   a, l
+0342   01DD D3 0A           out  (10), a
+0343   01DF                 ; vector_music.c:191 out(PORT_VI53_B, a = h);
+0344   01DF 7C              ld   a, h
+0345   01E0 D3 0A           out  (10), a
+0346   01E2                 ; vector_music.c:192 }
+0347   01E2                 ; vector_music.c:193 musicChannel(hl = &music3Delay);
+0348   01E2             l9: 
+0349   01E2 21 86 01        ld   hl, music3Delay
+0350   01E5 CD 0A 02        call musicChannel
+0351   01E8                 ; vector_music.c:194 if (flag_nc) {
+0352   01E8 DA F3 01        jp   c, l10
+0353   01EB                 ; vector_music.c:195 a |= VI53_SET_CHANNEL_MODE_2;
+0354   01EB F6 B0           or   176
+0355   01ED                 ; vector_music.c:196 out(PORT_VI53_CONTROL, a);
+0356   01ED D3 08           out  (8), a
+0357   01EF                 ; vector_music.c:197 hl += hl; // -1 octave
+0358   01EF 29              add  hl, hl
+0359   01F0                 ; vector_music.c:198 musicRythmFreq = hl;
+0360   01F0 22 8D 01        ld   (musicRythmFreq), hl
+0361   01F3                 ; vector_music.c:199 }
+0362   01F3                 ; vector_music.c:200 
+0363   01F3                 ; vector_music.c:201 hl = musicRythmFreq;
+0364   01F3             l10: 
+0365   01F3 2A 8D 01        ld   hl, (musicRythmFreq)
+0366   01F6                 ; vector_music.c:202 a = musicRythm;
+0367   01F6 3A 8C 01        ld   a, (musicRythm)
+0368   01F9                 ; vector_music.c:203 a--;
+0369   01F9 3D              dec  a
+0370   01FA                 ; vector_music.c:204 if (flag_z) {
+0371   01FA C2 00 02        jp   nz, l11
+0372   01FD                 ; vector_music.c:205 a = MUSIC_RYTHM_PERIOD;
+0373   01FD 3E 48           ld   a, 72
+0374   01FF                 ; vector_music.c:206 hl += hl; // -1 octave
+0375   01FF 29              add  hl, hl
+0376   0200                 ; vector_music.c:207 }
+0377   0200                 ; vector_music.c:208 musicRythm = a;
+0378   0200             l11: 
+0379   0200 32 8C 01        ld   (musicRythm), a
+0380   0203                 ; vector_music.c:209 out(PORT_VI53_C, a = l);
+0381   0203 7D              ld   a, l
+0382   0204 D3 09           out  (9), a
+0383   0206                 ; vector_music.c:210 out(PORT_VI53_C, a = h);
+0384   0206 7C              ld   a, h
+0385   0207 D3 09           out  (9), a
+0386   0209                 ; vector_music.c:211 }
+0387   0209 C9              ret
+0388   020A                 ; vector_music.c:212 
+0389   020A                 ; vector_music.c:213 void musicChannel(hl) {
+0390   020A             musicChannel: 
+0391   020A                 ; vector_music.c:214 // Delay before processing the next command 
+0392   020A                 ; vector_music.c:215 a = *hl;
+0393   020A 7E              ld   a, (hl)
+0394   020B                 ; vector_music.c:216 if (a >= 2) {
+0395   020B FE 02           cp   2
+0396   020D DA 16 02        jp   c, l12
+0397   0210                 ; vector_music.c:217 a--;
+0398   0210 3D              dec  a
+0399   0211                 ; vector_music.c:218 *hl = a;
+0400   0211 77              ld   (hl), a
+0401   0212                 ; vector_music.c:219 (a ^= a) -= 1; // Set flag C for return
+0402   0212 AF              xor  a
+0403   0213 D6 01           sub  1
+0404   0215                 ; vector_music.c:220 return;
+0405   0215 C9              ret
+0406   0216                 ; vector_music.c:221 }
+0407   0216                 ; vector_music.c:222 
+0408   0216                 ; vector_music.c:223 // Copy music channel state
+0409   0216                 ; vector_music.c:224 push(hl);
+0410   0216             l12: 
+0411   0216 E5              push hl
+0412   0217                 ; vector_music.c:225 memcpy(de = &musicDelay, hl, c = [&music2Delay - &music1Delay]);
+0413   0217 11 74 01        ld   de, musicDelay
+0414   021A 0E 06           ld   c, (music2Delay) - (music1Delay)
+0415   021C CD 45 01        call memcpy
+0416   021F                 ; vector_music.c:226 
+0417   021F                 ; vector_music.c:227 // Read 2 bypes from the music programm
+0418   021F                 ; vector_music.c:228 hl = musicPtr;
+0419   021F 2A 75 01        ld   hl, (musicPtr)
+0420   0222                 ; vector_music.c:229 musicRetry:
+0421   0222             musicRetry: 
+0422   0222                 ; vector_music.c:230 a = *hl; hl++;
+0423   0222 7E              ld   a, (hl)
+0424   0223 23              inc  hl
+0425   0224                 ; vector_music.c:231 b = *hl; hl++;
+0426   0224 46              ld   b, (hl)
+0427   0225 23              inc  hl
+0428   0226                 ; vector_music.c:232 musicPtr = hl;
+0429   0226 22 75 01        ld   (musicPtr), hl
+0430   0229                 ; vector_music.c:233 
+0431   0229                 ; vector_music.c:234 // This is a musical note
+0432   0229                 ; vector_music.c:235 if (a < [(&notesEnd - &notes) / 2]) {
+0433   0229 FE 47           cp   (+((notesEnd) - (notes))) / (2)
+0434   022B D2 40 02        jp   nc, l13
+0435   022E                 ; vector_music.c:236 l = ((a += a) += &notes); // Convert the musical note number to period by table
+0436   022E 87              add  a
+0437   022F C6 8D           add  notes
+0438   0231 6F              ld   l, a
+0439   0232                 ; vector_music.c:237 h = ((a +@= [&notes >> 8]) -= l);
+0440   0232 CE 02           adc  (notes) >> (8)
+0441   0234 95              sub  l
+0442   0235 67              ld   h, a
+0443   0236                 ; vector_music.c:238 musicDelay = a = b; // The second byte is a delay
+0444   0236 78              ld   a, b
+0445   0237 32 74 01        ld   (musicDelay), a
+0446   023A                 ; vector_music.c:239 c = *hl; hl++;
+0447   023A 4E              ld   c, (hl)
+0448   023B 23              inc  hl
+0449   023C                 ; vector_music.c:240 b = *hl;
+0450   023C 46              ld   b, (hl)
+0451   023D                 ; vector_music.c:241 } else {
+0452   023D C3 7E 02        jp   l14
+0453   0240             l13: 
+0454   0240                 ; vector_music.c:242 // This is a delay
+0455   0240                 ; vector_music.c:243 if (a == MUSIC_COMMAND_DELAY) {
+0456   0240 FE 81           cp   129
+0457   0242 C2 4F 02        jp   nz, l15
+0458   0245                 ; vector_music.c:244 musicDelay = a = b;  // The second byte is a delay
+0459   0245 78              ld   a, b
+0460   0246 32 74 01        ld   (musicDelay), a
+0461   0249                 ; vector_music.c:245 bc = 0;
+0462   0249 01 00 00        ld   bc, 0
+0463   024C                 ; vector_music.c:246 } else {
+0464   024C C3 7E 02        jp   l16
+0465   024F             l15: 
+0466   024F                 ; vector_music.c:247 // This is a subroutine
+0467   024F                 ; vector_music.c:248 if (a == MUSIC_COMMAND_SUBROUTINE) {
+0468   024F FE 84           cp   132
+0469   0251 C2 5C 02        jp   nz, l17
+0470   0254                 ; vector_music.c:249 a = b;  // The second byte is a subroutine repeat counter
+0471   0254 78              ld   a, b
+0472   0255                 ; vector_music.c:250 a++;
+0473   0255 3C              inc  a
+0474   0256                 ; vector_music.c:251 musicSubRet = hl; 
+0475   0256 22 78 01        ld   (musicSubRet), hl
+0476   0259                 ; vector_music.c:252 goto musicReturn; // Third and fourth bytes are a subroutine address
+0477   0259 C3 67 02        jp   musicReturn
+0478   025C                 ; vector_music.c:253 }
+0479   025C                 ; vector_music.c:254 // This is the end of the subroutine
+0480   025C                 ; vector_music.c:255 if (a == MUSIC_COMMAND_END_SUBROUTINE) {
+0481   025C             l17: 
+0482   025C FE 85           cp   133
+0483   025E C2 76 02        jp   nz, l18
+0484   0261                 ; vector_music.c:256 hl = musicSubRet; // Read the subroutime start address from the main programm
+0485   0261 2A 78 01        ld   hl, (musicSubRet)
+0486   0264                 ; vector_music.c:257 a = musicSubRepeatCounter;
+0487   0264 3A 77 01        ld   a, (musicSubRepeatCounter)
+0488   0267                 ; vector_music.c:258 musicReturn:    e = *hl; hl++;
+0489   0267             musicReturn: 
+0490   0267 5E              ld   e, (hl)
+0491   0268 23              inc  hl
+0492   0269                 ; vector_music.c:259 d = *hl; hl++;
+0493   0269 56              ld   d, (hl)
+0494   026A 23              inc  hl
+0495   026B                 ; vector_music.c:260 a--;  // Decrease the subroutime repeat counter
+0496   026B 3D              dec  a
+0497   026C                 ; vector_music.c:261 musicSubRepeatCounter = a;
+0498   026C 32 77 01        ld   (musicSubRepeatCounter), a
+0499   026F                 ; vector_music.c:262 if (flag_nz) { // If the subroutime repeat counter is zero,
+0500   026F CA 73 02        jp   z, l19
+0501   0272                 ; vector_music.c:263 swap(hl, de); // then change the subroutine start address to the main programm address
+0502   0272 EB              ex de, hl
+0503   0273                 ; vector_music.c:264 }
+0504   0273                 ; vector_music.c:265 goto musicRetry;
+0505   0273             l19: 
+0506   0273 C3 22 02        jp   musicRetry
+0507   0276                 ; vector_music.c:266 }
+0508   0276                 ; vector_music.c:267 // Any other command resets the music channel
+0509   0276                 ; vector_music.c:268 pop(hl);
+0510   0276             l18: 
+0511   0276 E1              pop  hl
+0512   0277                 ; vector_music.c:269 pop(hl); // Remove the return address to the musicTick() function
+0513   0277 E1              pop  hl
+0514   0278                 ; vector_music.c:270 musicInit();
+0515   0278 CD 8F 01        call musicInit
+0516   027B                 ; vector_music.c:271 return musicTick();
+0517   027B C3 BC 01        jp   musicTick
+0518   027E                 ; vector_music.c:272 }
+0519   027E             l16: 
+0520   027E                 ; vector_music.c:273 }
+0521   027E             l14: 
+0522   027E                 ; vector_music.c:274 
+0523   027E                 ; vector_music.c:275 pop(de); // Save music channel state
+0524   027E D1              pop  de
+0525   027F                 ; vector_music.c:276 push(bc);
+0526   027F C5              push bc
+0527   0280                 ; vector_music.c:277 memcpy(de, hl = &musicDelay, c = [&music2Delay - &music1Delay]);
+0528   0280 21 74 01        ld   hl, musicDelay
+0529   0283 0E 06           ld   c, (music2Delay) - (music1Delay)
+0530   0285 CD 45 01        call memcpy
+0531   0288                 ; vector_music.c:278 pop(hl);
+0532   0288 E1              pop  hl
+0533   0289                 ; vector_music.c:279 a ^= a; // Reset flag C for return
+0534   0289 AF              xor  a
+0535   028A                 ; vector_music.c:280 a = VI53_MODE_MEANDER;
+0536   028A 3E 06           ld   a, 6
+0537   028C                 ; vector_music.c:281 }
+0538   028C C9              ret
+0539   028D                 ; vector_music.c:282 
+0540   028D                 ; vector_music.c:283 // *** Music ***
+0541   028D                 ; vector_music.c:284 
+0542   028D                 ; vector_music.c:285 uint16_t notes[] = {
+0543   028D                 ; vector_music.c:286 0x6AE0,
+0544   028D                 ; vector_music.c:287 0x5F30,
+0545   028D                 ; vector_music.c:288 0x59E0,
+0546   028D                 ; vector_music.c:289 0x54D0,
+0547   028D                 ; vector_music.c:290 0x5010,
+0548   028D                 ; vector_music.c:291 0x4B90,
+0549   028D                 ; vector_music.c:292 0x4750,
+0550   028D                 ; vector_music.c:293 0x4350,
+0551   028D                 ; vector_music.c:294 0x3F80,
+0552   028D                 ; vector_music.c:295 0x3BF0,
+0553   028D                 ; vector_music.c:296 0x3890,
+0554   028D                 ; vector_music.c:297 0x3570,
+0555   028D                 ; vector_music.c:298 0x3270,
+0556   028D                 ; vector_music.c:299 0x2F90,
+0557   028D                 ; vector_music.c:300 0x2CF0,
+0558   028D                 ; vector_music.c:301 0x2A60,
+0559   028D                 ; vector_music.c:302 0x2800,
+0560   028D                 ; vector_music.c:303 0x25C0,
+0561   028D                 ; vector_music.c:304 0x23A0,
+0562   028D                 ; vector_music.c:305 0x21A0,
+0563   028D                 ; vector_music.c:306 0x1FC0,
+0564   028D                 ; vector_music.c:307 0x1DF0,
+0565   028D                 ; vector_music.c:308 0x1C40,
+0566   028D                 ; vector_music.c:309 0x1AB0,
+0567   028D                 ; vector_music.c:310 0x1930,
+0568   028D                 ; vector_music.c:311 0x17C0,
+0569   028D                 ; vector_music.c:312 0x1670,
+0570   028D                 ; vector_music.c:313 0x1520,
+0571   028D                 ; vector_music.c:314 0x13F0,
+0572   028D                 ; vector_music.c:315 0x12D0,
+0573   028D                 ; vector_music.c:316 0x11C0,
+0574   028D                 ; vector_music.c:317 0x10C0,
+0575   028D                 ; vector_music.c:318 0x0FD0,
+0576   028D                 ; vector_music.c:319 0x0EE0,
+0577   028D                 ; vector_music.c:320 0x0E10,
+0578   028D                 ; vector_music.c:321 0x0D40,
+0579   028D                 ; vector_music.c:322 0x0C80,
+0580   028D                 ; vector_music.c:323 0x0BD0,
+0581   028D                 ; vector_music.c:324 0x0B20,
+0582   028D                 ; vector_music.c:325 0x0A80,
+0583   028D                 ; vector_music.c:326 0x09F0,
+0584   028D                 ; vector_music.c:327 0x0960,
+0585   028D                 ; vector_music.c:328 0x08D0,
+0586   028D                 ; vector_music.c:329 0x0850,
+0587   028D                 ; vector_music.c:330 0x07E0,
+0588   028D                 ; vector_music.c:331 0x0760,
+0589   028D                 ; vector_music.c:332 0x0700,
+0590   028D                 ; vector_music.c:333 0x0690,
+0591   028D                 ; vector_music.c:334 0x0630,
+0592   028D                 ; vector_music.c:335 0x05E0,
+0593   028D                 ; vector_music.c:336 0x0580,
+0594   028D                 ; vector_music.c:337 0x0530,
+0595   028D                 ; vector_music.c:338 0x04F0,
+0596   028D                 ; vector_music.c:339 0x04A0,
+0597   028D                 ; vector_music.c:340 0x0460,
+0598   028D                 ; vector_music.c:341 0x0420,
+0599   028D                 ; vector_music.c:342 0x03E0,
+0600   028D                 ; vector_music.c:343 0x03A0,
+0601   028D                 ; vector_music.c:344 0x0370,
+0602   028D                 ; vector_music.c:345 0x0340,
+0603   028D                 ; vector_music.c:346 0x0310,
+0604   028D                 ; vector_music.c:347 0x02E0,
+0605   028D                 ; vector_music.c:348 0x02B0,
+0606   028D                 ; vector_music.c:349 0x0290,
+0607   028D                 ; vector_music.c:350 0x0270,
+0608   028D                 ; vector_music.c:351 0x0240,
+0609   028D                 ; vector_music.c:352 0x0220,
+0610   028D                 ; vector_music.c:353 0x0200,
+0611   028D                 ; vector_music.c:354 0x01E0,
+0612   028D                 ; vector_music.c:355 0x01C0,
+0613   028D                 ; vector_music.c:356 0x01B0
+0614   028D                 ; vector_music.c:357 };
+0615   028D             notes: 
+0616   028D E0 6A           dw 27360
+0617   028F 30 5F           dw 24368
+0618   0291 E0 59           dw 23008
+0619   0293 D0 54           dw 21712
+0620   0295 10 50           dw 20496
+0621   0297 90 4B           dw 19344
+0622   0299 50 47           dw 18256
+0623   029B 50 43           dw 17232
+0624   029D 80 3F           dw 16256
+0625   029F F0 3B           dw 15344
+0626   02A1 90 38           dw 14480
+0627   02A3 70 35           dw 13680
+0628   02A5 70 32           dw 12912
+0629   02A7 90 2F           dw 12176
+0630   02A9 F0 2C           dw 11504
+0631   02AB 60 2A           dw 10848
+0632   02AD 00 28           dw 10240
+0633   02AF C0 25           dw 9664
+0634   02B1 A0 23           dw 9120
+0635   02B3 A0 21           dw 8608
+0636   02B5 C0 1F           dw 8128
+0637   02B7 F0 1D           dw 7664
+0638   02B9 40 1C           dw 7232
+0639   02BB B0 1A           dw 6832
+0640   02BD 30 19           dw 6448
+0641   02BF C0 17           dw 6080
+0642   02C1 70 16           dw 5744
+0643   02C3 20 15           dw 5408
+0644   02C5 F0 13           dw 5104
+0645   02C7 D0 12           dw 4816
+0646   02C9 C0 11           dw 4544
+0647   02CB C0 10           dw 4288
+0648   02CD D0 0F           dw 4048
+0649   02CF E0 0E           dw 3808
+0650   02D1 10 0E           dw 3600
+0651   02D3 40 0D           dw 3392
+0652   02D5 80 0C           dw 3200
+0653   02D7 D0 0B           dw 3024
+0654   02D9 20 0B           dw 2848
+0655   02DB 80 0A           dw 2688
+0656   02DD F0 09           dw 2544
+0657   02DF 60 09           dw 2400
+0658   02E1 D0 08           dw 2256
+0659   02E3 50 08           dw 2128
+0660   02E5 E0 07           dw 2016
+0661   02E7 60 07           dw 1888
+0662   02E9 00 07           dw 1792
+0663   02EB 90 06           dw 1680
+0664   02ED 30 06           dw 1584
+0665   02EF E0 05           dw 1504
+0666   02F1 80 05           dw 1408
+0667   02F3 30 05           dw 1328
+0668   02F5 F0 04           dw 1264
+0669   02F7 A0 04           dw 1184
+0670   02F9 60 04           dw 1120
+0671   02FB 20 04           dw 1056
+0672   02FD E0 03           dw 992
+0673   02FF A0 03           dw 928
+0674   0301 70 03           dw 880
+0675   0303 40 03           dw 832
+0676   0305 10 03           dw 784
+0677   0307 E0 02           dw 736
+0678   0309 B0 02           dw 688
+0679   030B 90 02           dw 656
+0680   030D 70 02           dw 624
+0681   030F 40 02           dw 576
+0682   0311 20 02           dw 544
+0683   0313 00 02           dw 512
+0684   0315 E0 01           dw 480
+0685   0317 C0 01           dw 448
+0686   0319 B0 01           dw 432
+0687   031B                 ; vector_music.c:358 notesEnd:
+0688   031B             notesEnd: 
+0689   031B                 ; vector_music.c:359 
+0690   031B                 ; vector_music.c:360 uint8_t musicChannel1[] = {
+0691   031B                 ; vector_music.c:361 0x24, 0x60,
+0692   031B                 ; vector_music.c:362 0x81, 0xC,
+0693   031B                 ; vector_music.c:363 0x28, 0x30,
+0694   031B                 ; vector_music.c:364 0x26, 0xC,
+0695   031B                 ; vector_music.c:365 0x24, 0xC,
+0696   031B                 ; vector_music.c:366 0x26, 0xC,
+0697   031B                 ; vector_music.c:367 0x24, 0x48,
+0698   031B                 ; vector_music.c:368 0x81, 0xC,
+0699   031B                 ; vector_music.c:369 0x26, 0xC,
+0700   031B                 ; vector_music.c:370 0x28, 0xC,
+0701   031B                 ; vector_music.c:371 0x24, 0xC,
+0702   031B                 ; vector_music.c:372 0x24, 0x60,
+0703   031B                 ; vector_music.c:373 0x81, 0xC,
+0704   031B                 ; vector_music.c:374 0x24, 0xC,
+0705   031B                 ; vector_music.c:375 0x1F, 0x30,
+0706   031B                 ; vector_music.c:376 0x23, 0x18,
+0707   031B                 ; vector_music.c:377 0x26, 0x30,
+0708   031B                 ; vector_music.c:378 0x28, 0x18,
+0709   031B                 ; vector_music.c:379 0x24, 0x18,
+0710   031B                 ; vector_music.c:380 0x24, 0x60,
+0711   031B                 ; vector_music.c:381 0x81, 0xC,
+0712   031B                 ; vector_music.c:382 0x26, 0xC,
+0713   031B                 ; vector_music.c:383 0x24, 0x60,
+0714   031B                 ; vector_music.c:384 0x81, 0xC,
+0715   031B                 ; vector_music.c:385 0x1C, 0x18,
+0716   031B                 ; vector_music.c:386 0x1D, 0xC,
+0717   031B                 ; vector_music.c:387 0x1F, 0x90,
+0718   031B                 ; vector_music.c:388 0x81, 0x90,
+0719   031B                 ; vector_music.c:389 0x24, 0x60,
+0720   031B                 ; vector_music.c:390 0x81, 0x18,
+0721   031B                 ; vector_music.c:391 0x28, 0x24,
+0722   031B                 ; vector_music.c:392 0x81, 6,
+0723   031B                 ; vector_music.c:393 0x26, 6,
+0724   031B                 ; vector_music.c:394 0x24, 6,
+0725   031B                 ; vector_music.c:395 0x26, 6,
+0726   031B                 ; vector_music.c:396 0x24, 0x60,
+0727   031B                 ; vector_music.c:397 0x26, 0x18,
+0728   031B                 ; vector_music.c:398 0x28, 6,
+0729   031B                 ; vector_music.c:399 0x24, 6,
+0730   031B                 ; vector_music.c:400 0x24, 6,
+0731   031B                 ; vector_music.c:401 0x26, 6,
+0732   031B                 ; vector_music.c:402 0x21, 0x60,
+0733   031B                 ; vector_music.c:403 0x24, 0xC,
+0734   031B                 ; vector_music.c:404 0x1F, 0x30,
+0735   031B                 ; vector_music.c:405 0x23, 0x18,
+0736   031B                 ; vector_music.c:406 0x26, 0x48,
+0737   031B                 ; vector_music.c:407 0x28, 0xC,
+0738   031B                 ; vector_music.c:408 0x24, 0xC,
+0739   031B                 ; vector_music.c:409 0x26, 0xC,
+0740   031B                 ; vector_music.c:410 0x24, 0x48,
+0741   031B                 ; vector_music.c:411 0x28, 0x12,
+0742   031B                 ; vector_music.c:412 0x26, 6,
+0743   031B                 ; vector_music.c:413 0x24, 6,
+0744   031B                 ; vector_music.c:414 0x26, 6,
+0745   031B                 ; vector_music.c:415 0x24, 0x60,
+0746   031B                 ; vector_music.c:416 0x81, 0x18,
+0747   031B                 ; vector_music.c:417 0x24, 0x18,
+0748   031B                 ; vector_music.c:418 0x2B, 0x90,
+0749   031B                 ; vector_music.c:419 0x2F, 0x48,
+0750   031B                 ; vector_music.c:420 0x2D, 6,
+0751   031B                 ; vector_music.c:421 0x2F, 6,
+0752   031B                 ; vector_music.c:422 0x2D, 6,
+0753   031B                 ; vector_music.c:423 0x2B, 6,
+0754   031B                 ; vector_music.c:424 0x2D, 6,
+0755   031B                 ; vector_music.c:425 0x2B, 6,
+0756   031B                 ; vector_music.c:426 0x29, 0x24,
+0757   031B                 ; vector_music.c:427 0x28, 0x30,
+0758   031B                 ; vector_music.c:428 0x24, 0x18,
+0759   031B                 ; vector_music.c:429 0x1F, 0x90,
+0760   031B                 ; vector_music.c:430 0x81, 0x48,
+0761   031B                 ; vector_music.c:431 0x24, 0x30,
+0762   031B                 ; vector_music.c:432 0x81, 6,
+0763   031B                 ; vector_music.c:433 0x26, 6,
+0764   031B                 ; vector_music.c:434 0x24, 6,
+0765   031B                 ; vector_music.c:435 0x26, 6,
+0766   031B                 ; vector_music.c:436 0x24, 0x48,
+0767   031B                 ; vector_music.c:437 0x23, 0x12,
+0768   031B                 ; vector_music.c:438 0x1F, 0x12,
+0769   031B                 ; vector_music.c:439 0x1C, 0x60,
+0770   031B                 ; vector_music.c:440 0x23, 0x48,
+0771   031B                 ; vector_music.c:441 0x21, 0xC,
+0772   031B                 ; vector_music.c:442 0x1D, 0xC,
+0773   031B                 ; vector_music.c:443 0x1A, 0x30,
+0774   031B                 ; vector_music.c:444 0x81, 0xC,
+0775   031B                 ; vector_music.c:445 0x26, 0x48,
+0776   031B                 ; vector_music.c:446 0x28, 0xC,
+0777   031B                 ; vector_music.c:447 0x26, 0xC,
+0778   031B                 ; vector_music.c:448 0x28, 0xC,
+0779   031B                 ; vector_music.c:449 0x2B, 0xC,
+0780   031B                 ; vector_music.c:450 0x2D, 0x12,
+0781   031B                 ; vector_music.c:451 0x28, 6,
+0782   031B                 ; vector_music.c:452 0x26, 6,
+0783   031B                 ; vector_music.c:453 0x24, 6,
+0784   031B                 ; vector_music.c:454 0x26, 6,
+0785   031B                 ; vector_music.c:455 0x24, 0x90,
+0786   031B                 ; vector_music.c:456 0x81, 0x7E,
+0787   031B                 ; vector_music.c:457 0x84, 1, &F6B9, [&F6B9 >> 8],
+0788   031B                 ; vector_music.c:458 0x26, 0xC,
+0789   031B                 ; vector_music.c:459 0x24, 0xC,
+0790   031B                 ; vector_music.c:460 0x28, 0xC,
+0791   031B                 ; vector_music.c:461 0x2B, 0x24,
+0792   031B                 ; vector_music.c:462 0x2D, 0xC,
+0793   031B                 ; vector_music.c:463 0x28, 0xC,
+0794   031B                 ; vector_music.c:464 0x24, 6,
+0795   031B                 ; vector_music.c:465 0x26, 6,
+0796   031B                 ; vector_music.c:466 0x24, 0x30,
+0797   031B                 ; vector_music.c:467 0x81, 0xC,
+0798   031B                 ; vector_music.c:468 0x84, 1, &F6B9, [&F6B9 >> 8],
+0799   031B                 ; vector_music.c:469 0x28, 0xC,
+0800   031B                 ; vector_music.c:470 0x26, 0xC,
+0801   031B                 ; vector_music.c:471 0x24, 0x90,
+0802   031B                 ; vector_music.c:472 0x86
+0803   031B                 ; vector_music.c:473 };
+0804   031B             musicChannel1: 
+0805   031B 24              db 36
+0806   031C 60              db 96
+0807   031D 81              db 129
+0808   031E 0C              db 12
+0809   031F 28              db 40
+0810   0320 30              db 48
+0811   0321 26              db 38
+0812   0322 0C              db 12
+0813   0323 24              db 36
+0814   0324 0C              db 12
+0815   0325 26              db 38
+0816   0326 0C              db 12
+0817   0327 24              db 36
+0818   0328 48              db 72
+0819   0329 81              db 129
+0820   032A 0C              db 12
+0821   032B 26              db 38
+0822   032C 0C              db 12
+0823   032D 28              db 40
+0824   032E 0C              db 12
+0825   032F 24              db 36
+0826   0330 0C              db 12
+0827   0331 24              db 36
+0828   0332 60              db 96
+0829   0333 81              db 129
+0830   0334 0C              db 12
+0831   0335 24              db 36
+0832   0336 0C              db 12
+0833   0337 1F              db 31
+0834   0338 30              db 48
+0835   0339 23              db 35
+0836   033A 18              db 24
+0837   033B 26              db 38
+0838   033C 30              db 48
+0839   033D 28              db 40
+0840   033E 18              db 24
+0841   033F 24              db 36
+0842   0340 18              db 24
+0843   0341 24              db 36
+0844   0342 60              db 96
+0845   0343 81              db 129
+0846   0344 0C              db 12
+0847   0345 26              db 38
+0848   0346 0C              db 12
+0849   0347 24              db 36
+0850   0348 60              db 96
+0851   0349 81              db 129
+0852   034A 0C              db 12
+0853   034B 1C              db 28
+0854   034C 18              db 24
+0855   034D 1D              db 29
+0856   034E 0C              db 12
+0857   034F 1F              db 31
+0858   0350 90              db 144
+0859   0351 81              db 129
+0860   0352 90              db 144
+0861   0353 24              db 36
+0862   0354 60              db 96
+0863   0355 81              db 129
+0864   0356 18              db 24
+0865   0357 28              db 40
+0866   0358 24              db 36
+0867   0359 81              db 129
+0868   035A 06              db 6
+0869   035B 26              db 38
+0870   035C 06              db 6
+0871   035D 24              db 36
+0872   035E 06              db 6
+0873   035F 26              db 38
+0874   0360 06              db 6
+0875   0361 24              db 36
+0876   0362 60              db 96
+0877   0363 26              db 38
+0878   0364 18              db 24
+0879   0365 28              db 40
+0880   0366 06              db 6
+0881   0367 24              db 36
+0882   0368 06              db 6
+0883   0369 24              db 36
+0884   036A 06              db 6
+0885   036B 26              db 38
+0886   036C 06              db 6
+0887   036D 21              db 33
+0888   036E 60              db 96
+0889   036F 24              db 36
+0890   0370 0C              db 12
+0891   0371 1F              db 31
+0892   0372 30              db 48
+0893   0373 23              db 35
+0894   0374 18              db 24
+0895   0375 26              db 38
+0896   0376 48              db 72
+0897   0377 28              db 40
+0898   0378 0C              db 12
+0899   0379 24              db 36
+0900   037A 0C              db 12
+0901   037B 26              db 38
+0902   037C 0C              db 12
+0903   037D 24              db 36
+0904   037E 48              db 72
+0905   037F 28              db 40
+0906   0380 12              db 18
+0907   0381 26              db 38
+0908   0382 06              db 6
+0909   0383 24              db 36
+0910   0384 06              db 6
+0911   0385 26              db 38
+0912   0386 06              db 6
+0913   0387 24              db 36
+0914   0388 60              db 96
+0915   0389 81              db 129
+0916   038A 18              db 24
+0917   038B 24              db 36
+0918   038C 18              db 24
+0919   038D 2B              db 43
+0920   038E 90              db 144
+0921   038F 2F              db 47
+0922   0390 48              db 72
+0923   0391 2D              db 45
+0924   0392 06              db 6
+0925   0393 2F              db 47
+0926   0394 06              db 6
+0927   0395 2D              db 45
+0928   0396 06              db 6
+0929   0397 2B              db 43
+0930   0398 06              db 6
+0931   0399 2D              db 45
+0932   039A 06              db 6
+0933   039B 2B              db 43
+0934   039C 06              db 6
+0935   039D 29              db 41
+0936   039E 24              db 36
+0937   039F 28              db 40
+0938   03A0 30              db 48
+0939   03A1 24              db 36
+0940   03A2 18              db 24
+0941   03A3 1F              db 31
+0942   03A4 90              db 144
+0943   03A5 81              db 129
+0944   03A6 48              db 72
+0945   03A7 24              db 36
+0946   03A8 30              db 48
+0947   03A9 81              db 129
+0948   03AA 06              db 6
+0949   03AB 26              db 38
+0950   03AC 06              db 6
+0951   03AD 24              db 36
+0952   03AE 06              db 6
+0953   03AF 26              db 38
+0954   03B0 06              db 6
+0955   03B1 24              db 36
+0956   03B2 48              db 72
+0957   03B3 23              db 35
+0958   03B4 12              db 18
+0959   03B5 1F              db 31
+0960   03B6 12              db 18
+0961   03B7 1C              db 28
+0962   03B8 60              db 96
+0963   03B9 23              db 35
+0964   03BA 48              db 72
+0965   03BB 21              db 33
+0966   03BC 0C              db 12
+0967   03BD 1D              db 29
+0968   03BE 0C              db 12
+0969   03BF 1A              db 26
+0970   03C0 30              db 48
+0971   03C1 81              db 129
+0972   03C2 0C              db 12
+0973   03C3 26              db 38
+0974   03C4 48              db 72
+0975   03C5 28              db 40
+0976   03C6 0C              db 12
+0977   03C7 26              db 38
+0978   03C8 0C              db 12
+0979   03C9 28              db 40
+0980   03CA 0C              db 12
+0981   03CB 2B              db 43
+0982   03CC 0C              db 12
+0983   03CD 2D              db 45
+0984   03CE 12              db 18
+0985   03CF 28              db 40
+0986   03D0 06              db 6
+0987   03D1 26              db 38
+0988   03D2 06              db 6
+0989   03D3 24              db 36
+0990   03D4 06              db 6
+0991   03D5 26              db 38
+0992   03D6 06              db 6
+0993   03D7 24              db 36
+0994   03D8 90              db 144
+0995   03D9 81              db 129
+0996   03DA 7E              db 126
+0997   03DB 84              db 132
+0998   03DC 01              db 1
+0999   03DD FE              db F6B9
+1000   03DE 03              db +((F6B9) >> (8))
+1001   03DF 26              db 38
+1002   03E0 0C              db 12
+1003   03E1 24              db 36
+1004   03E2 0C              db 12
+1005   03E3 28              db 40
+1006   03E4 0C              db 12
+1007   03E5 2B              db 43
+1008   03E6 24              db 36
+1009   03E7 2D              db 45
+1010   03E8 0C              db 12
+1011   03E9 28              db 40
+1012   03EA 0C              db 12
+1013   03EB 24              db 36
+1014   03EC 06              db 6
+1015   03ED 26              db 38
+1016   03EE 06              db 6
+1017   03EF 24              db 36
+1018   03F0 30              db 48
+1019   03F1 81              db 129
+1020   03F2 0C              db 12
+1021   03F3 84              db 132
+1022   03F4 01              db 1
+1023   03F5 FE              db F6B9
+1024   03F6 03              db +((F6B9) >> (8))
+1025   03F7 28              db 40
+1026   03F8 0C              db 12
+1027   03F9 26              db 38
+1028   03FA 0C              db 12
+1029   03FB 24              db 36
+1030   03FC 90              db 144
+1031   03FD 86              db 134
+1032   03FE                 ; vector_music.c:474 
+1033   03FE                 ; vector_music.c:475 uint8_t F6B9[] = {
+1034   03FE                 ; vector_music.c:476 0x1D, 0xC,
+1035   03FE                 ; vector_music.c:477 0x1F, 0x24,
+1036   03FE                 ; vector_music.c:478 0x21, 0xC,
+1037   03FE                 ; vector_music.c:479 0x24, 0xC,
+1038   03FE                 ; vector_music.c:480 0x23, 0x30,
+1039   03FE                 ; vector_music.c:481 0x24, 0xC,
+1040   03FE                 ; vector_music.c:482 0x23, 0xC,
+1041   03FE                 ; vector_music.c:483 0x21, 0x30,
+1042   03FE                 ; vector_music.c:484 0x1D, 0xC,
+1043   03FE                 ; vector_music.c:485 0x21, 0xC,
+1044   03FE                 ; vector_music.c:486 0x1F, 0x48,
+1045   03FE                 ; vector_music.c:487 0x1D, 0xC,
+1046   03FE                 ; vector_music.c:488 0x1F, 0x24,
+1047   03FE                 ; vector_music.c:489 0x21, 0xC,
+1048   03FE                 ; vector_music.c:490 0x24, 0xC,
+1049   03FE                 ; vector_music.c:491 0x26, 0x30,
+1050   03FE                 ; vector_music.c:492 0x85
+1051   03FE                 ; vector_music.c:493 };
+1052   03FE             F6B9: 
+1053   03FE 1D              db 29
+1054   03FF 0C              db 12
+1055   0400 1F              db 31
+1056   0401 24              db 36
+1057   0402 21              db 33
+1058   0403 0C              db 12
+1059   0404 24              db 36
+1060   0405 0C              db 12
+1061   0406 23              db 35
+1062   0407 30              db 48
+1063   0408 24              db 36
+1064   0409 0C              db 12
+1065   040A 23              db 35
+1066   040B 0C              db 12
+1067   040C 21              db 33
+1068   040D 30              db 48
+1069   040E 1D              db 29
+1070   040F 0C              db 12
+1071   0410 21              db 33
+1072   0411 0C              db 12
+1073   0412 1F              db 31
+1074   0413 48              db 72
+1075   0414 1D              db 29
+1076   0415 0C              db 12
+1077   0416 1F              db 31
+1078   0417 24              db 36
+1079   0418 21              db 33
+1080   0419 0C              db 12
+1081   041A 24              db 36
+1082   041B 0C              db 12
+1083   041C 26              db 38
+1084   041D 30              db 48
+1085   041E 85              db 133
+1086   041F                 ; vector_music.c:494 
+1087   041F                 ; vector_music.c:495 uint8_t musicChannel2[] = {
+1088   041F                 ; vector_music.c:496 0x84, 2, &F791, [&F791 >> 8],
+1089   041F                 ; vector_music.c:497 0x84, 2, &F79E, [&F79E >> 8],
+1090   041F                 ; vector_music.c:498 0x84, 2, &F7AB, [&F7AB >> 8],
+1091   041F                 ; vector_music.c:499 0x84, 2, &F7B8, [&F7B8 >> 8],
+1092   041F                 ; vector_music.c:500 0x84, 2, &F791, [&F791 >> 8],
+1093   041F                 ; vector_music.c:501 0x84, 2, &F79E, [&F79E >> 8],
+1094   041F                 ; vector_music.c:502 0x84, 2, &F7C5, [&F7C5 >> 8],
+1095   041F                 ; vector_music.c:503 0x84, 2, &F7B8, [&F7B8 >> 8],
+1096   041F                 ; vector_music.c:504 0x84, 2, &F791, [&F791 >> 8],
+1097   041F                 ; vector_music.c:505 0x84, 2, &F79E, [&F79E >> 8],
+1098   041F                 ; vector_music.c:506 0x84, 2, &F7AB, [&F7AB >> 8],
+1099   041F                 ; vector_music.c:507 0x84, 2, &F7B8, [&F7B8 >> 8],
+1100   041F                 ; vector_music.c:508 0x84, 2, &F791, [&F791 >> 8],
+1101   041F                 ; vector_music.c:509 0x84, 2, &F79E, [&F79E >> 8],
+1102   041F                 ; vector_music.c:510 0x84, 2, &F7C5, [&F7C5 >> 8],
+1103   041F                 ; vector_music.c:511 0x84, 2, &F7B8, [&F7B8 >> 8],
+1104   041F                 ; vector_music.c:512 0x84, 2, &F791, [&F791 >> 8],
+1105   041F                 ; vector_music.c:513 0x84, 2, &F7B8, [&F7B8 >> 8],
+1106   041F                 ; vector_music.c:514 0x84, 2, &F791, [&F791 >> 8],
+1107   041F                 ; vector_music.c:515 0x10, 0xC,
+1108   041F                 ; vector_music.c:516 0x13, 0xC,
+1109   041F                 ; vector_music.c:517 0x17, 0xC,
+1110   041F                 ; vector_music.c:518 0x1C, 0xC,
+1111   041F                 ; vector_music.c:519 0x17, 0xC,
+1112   041F                 ; vector_music.c:520 0x1F, 0xC,
+1113   041F                 ; vector_music.c:521 0x84, 1, &F7C5, [&F7C5 >> 8],
+1114   041F                 ; vector_music.c:522 0x11, 0xC,
+1115   041F                 ; vector_music.c:523 0x15, 0xC,
+1116   041F                 ; vector_music.c:524 0x18, 0xC,
+1117   041F                 ; vector_music.c:525 0x1D, 0xC,
+1118   041F                 ; vector_music.c:526 0xC, 0xC,
+1119   041F                 ; vector_music.c:527 0x15, 0xC,
+1120   041F                 ; vector_music.c:528 0x84, 1, &F7AB, [&F7AB >> 8],
+1121   041F                 ; vector_music.c:529 0x84, 2, &F7B8, [&F7B8 >> 8],
+1122   041F                 ; vector_music.c:530 0x84, 2, &F791, [&F791 >> 8],
+1123   041F                 ; vector_music.c:531 0x84, 2, &F7D2, [&F7D2 >> 8],
+1124   041F                 ; vector_music.c:532 0x84, 1, &F7AB, [&F7AB >> 8],
+1125   041F                 ; vector_music.c:533 0x84, 1, &F7DF, [&F7DF >> 8],
+1126   041F                 ; vector_music.c:534 0x84, 1, &F7AB, [&F7AB >> 8],
+1127   041F                 ; vector_music.c:535 0x84, 1, &F7EC, [&F7EC >> 8],
+1128   041F                 ; vector_music.c:536 0x84, 1, &F7AB, [&F7AB >> 8],
+1129   041F                 ; vector_music.c:537 0x84, 1, &F7DF, [&F7DF >> 8],
+1130   041F                 ; vector_music.c:538 0x84, 1, &F791, [&F791 >> 8],
+1131   041F                 ; vector_music.c:539 0x84, 1, &F7D2, [&F7D2 >> 8],
+1132   041F                 ; vector_music.c:540 0x84, 1, &F7AB, [&F7AB >> 8],
+1133   041F                 ; vector_music.c:541 0x84, 1, &F7DF, [&F7DF >> 8],
+1134   041F                 ; vector_music.c:542 0x84, 1, &F7AB, [&F7AB >> 8],
+1135   041F                 ; vector_music.c:543 0x84, 1, &F7EC, [&F7EC >> 8],
+1136   041F                 ; vector_music.c:544 0x84, 1, &F7AB, [&F7AB >> 8],
+1137   041F                 ; vector_music.c:545 0x84, 1, &F7DF, [&F7DF >> 8],
+1138   041F                 ; vector_music.c:546 0x84, 2, &F791, [&F791 >> 8],
+1139   041F                 ; vector_music.c:547 0x86
+1140   041F                 ; vector_music.c:548 };
+1141   041F             musicChannel2: 
+1142   041F 84              db 132
+1143   0420 02              db 2
+1144   0421 D4              db F791
+1145   0422 04              db +((F791) >> (8))
+1146   0423 84              db 132
+1147   0424 02              db 2
+1148   0425 E1              db F79E
+1149   0426 04              db +((F79E) >> (8))
+1150   0427 84              db 132
+1151   0428 02              db 2
+1152   0429 EE              db F7AB
+1153   042A 04              db +((F7AB) >> (8))
+1154   042B 84              db 132
+1155   042C 02              db 2
+1156   042D FB              db F7B8
+1157   042E 04              db +((F7B8) >> (8))
+1158   042F 84              db 132
+1159   0430 02              db 2
+1160   0431 D4              db F791
+1161   0432 04              db +((F791) >> (8))
+1162   0433 84              db 132
+1163   0434 02              db 2
+1164   0435 E1              db F79E
+1165   0436 04              db +((F79E) >> (8))
+1166   0437 84              db 132
+1167   0438 02              db 2
+1168   0439 08              db F7C5
+1169   043A 05              db +((F7C5) >> (8))
+1170   043B 84              db 132
+1171   043C 02              db 2
+1172   043D FB              db F7B8
+1173   043E 04              db +((F7B8) >> (8))
+1174   043F 84              db 132
+1175   0440 02              db 2
+1176   0441 D4              db F791
+1177   0442 04              db +((F791) >> (8))
+1178   0443 84              db 132
+1179   0444 02              db 2
+1180   0445 E1              db F79E
+1181   0446 04              db +((F79E) >> (8))
+1182   0447 84              db 132
+1183   0448 02              db 2
+1184   0449 EE              db F7AB
+1185   044A 04              db +((F7AB) >> (8))
+1186   044B 84              db 132
+1187   044C 02              db 2
+1188   044D FB              db F7B8
+1189   044E 04              db +((F7B8) >> (8))
+1190   044F 84              db 132
+1191   0450 02              db 2
+1192   0451 D4              db F791
+1193   0452 04              db +((F791) >> (8))
+1194   0453 84              db 132
+1195   0454 02              db 2
+1196   0455 E1              db F79E
+1197   0456 04              db +((F79E) >> (8))
+1198   0457 84              db 132
+1199   0458 02              db 2
+1200   0459 08              db F7C5
+1201   045A 05              db +((F7C5) >> (8))
+1202   045B 84              db 132
+1203   045C 02              db 2
+1204   045D FB              db F7B8
+1205   045E 04              db +((F7B8) >> (8))
+1206   045F 84              db 132
+1207   0460 02              db 2
+1208   0461 D4              db F791
+1209   0462 04              db +((F791) >> (8))
+1210   0463 84              db 132
+1211   0464 02              db 2
+1212   0465 FB              db F7B8
+1213   0466 04              db +((F7B8) >> (8))
+1214   0467 84              db 132
+1215   0468 02              db 2
+1216   0469 D4              db F791
+1217   046A 04              db +((F791) >> (8))
+1218   046B 10              db 16
+1219   046C 0C              db 12
+1220   046D 13              db 19
+1221   046E 0C              db 12
+1222   046F 17              db 23
+1223   0470 0C              db 12
+1224   0471 1C              db 28
+1225   0472 0C              db 12
+1226   0473 17              db 23
+1227   0474 0C              db 12
+1228   0475 1F              db 31
+1229   0476 0C              db 12
+1230   0477 84              db 132
+1231   0478 01              db 1
+1232   0479 08              db F7C5
+1233   047A 05              db +((F7C5) >> (8))
+1234   047B 11              db 17
+1235   047C 0C              db 12
+1236   047D 15              db 21
+1237   047E 0C              db 12
+1238   047F 18              db 24
+1239   0480 0C              db 12
+1240   0481 1D              db 29
+1241   0482 0C              db 12
+1242   0483 0C              db 12
+1243   0484 0C              db 12
+1244   0485 15              db 21
+1245   0486 0C              db 12
+1246   0487 84              db 132
+1247   0488 01              db 1
+1248   0489 EE              db F7AB
+1249   048A 04              db +((F7AB) >> (8))
+1250   048B 84              db 132
+1251   048C 02              db 2
+1252   048D FB              db F7B8
+1253   048E 04              db +((F7B8) >> (8))
+1254   048F 84              db 132
+1255   0490 02              db 2
+1256   0491 D4              db F791
+1257   0492 04              db +((F791) >> (8))
+1258   0493 84              db 132
+1259   0494 02              db 2
+1260   0495 15              db F7D2
+1261   0496 05              db +((F7D2) >> (8))
+1262   0497 84              db 132
+1263   0498 01              db 1
+1264   0499 EE              db F7AB
+1265   049A 04              db +((F7AB) >> (8))
+1266   049B 84              db 132
+1267   049C 01              db 1
+1268   049D 22              db F7DF
+1269   049E 05              db +((F7DF) >> (8))
+1270   049F 84              db 132
+1271   04A0 01              db 1
+1272   04A1 EE              db F7AB
+1273   04A2 04              db +((F7AB) >> (8))
+1274   04A3 84              db 132
+1275   04A4 01              db 1
+1276   04A5 2F              db F7EC
+1277   04A6 05              db +((F7EC) >> (8))
+1278   04A7 84              db 132
+1279   04A8 01              db 1
+1280   04A9 EE              db F7AB
+1281   04AA 04              db +((F7AB) >> (8))
+1282   04AB 84              db 132
+1283   04AC 01              db 1
+1284   04AD 22              db F7DF
+1285   04AE 05              db +((F7DF) >> (8))
+1286   04AF 84              db 132
+1287   04B0 01              db 1
+1288   04B1 D4              db F791
+1289   04B2 04              db +((F791) >> (8))
+1290   04B3 84              db 132
+1291   04B4 01              db 1
+1292   04B5 15              db F7D2
+1293   04B6 05              db +((F7D2) >> (8))
+1294   04B7 84              db 132
+1295   04B8 01              db 1
+1296   04B9 EE              db F7AB
+1297   04BA 04              db +((F7AB) >> (8))
+1298   04BB 84              db 132
+1299   04BC 01              db 1
+1300   04BD 22              db F7DF
+1301   04BE 05              db +((F7DF) >> (8))
+1302   04BF 84              db 132
+1303   04C0 01              db 1
+1304   04C1 EE              db F7AB
+1305   04C2 04              db +((F7AB) >> (8))
+1306   04C3 84              db 132
+1307   04C4 01              db 1
+1308   04C5 2F              db F7EC
+1309   04C6 05              db +((F7EC) >> (8))
+1310   04C7 84              db 132
+1311   04C8 01              db 1
+1312   04C9 EE              db F7AB
+1313   04CA 04              db +((F7AB) >> (8))
+1314   04CB 84              db 132
+1315   04CC 01              db 1
+1316   04CD 22              db F7DF
+1317   04CE 05              db +((F7DF) >> (8))
+1318   04CF 84              db 132
+1319   04D0 02              db 2
+1320   04D1 D4              db F791
+1321   04D2 04              db +((F791) >> (8))
+1322   04D3 86              db 134
+1323   04D4                 ; vector_music.c:549 
+1324   04D4                 ; vector_music.c:550 uint8_t F791[] = {
+1325   04D4                 ; vector_music.c:551 0x18, 0xC,
+1326   04D4                 ; vector_music.c:552 0x1C, 0xC,
+1327   04D4                 ; vector_music.c:553 0x1F, 0xC,
+1328   04D4                 ; vector_music.c:554 0x24, 0xC,
+1329   04D4                 ; vector_music.c:555 0x1F, 0xC,
+1330   04D4                 ; vector_music.c:556 0x1C, 0xC,
+1331   04D4                 ; vector_music.c:557 0x85
+1332   04D4                 ; vector_music.c:558 };
+1333   04D4             F791: 
+1334   04D4 18              db 24
+1335   04D5 0C              db 12
+1336   04D6 1C              db 28
+1337   04D7 0C              db 12
+1338   04D8 1F              db 31
+1339   04D9 0C              db 12
+1340   04DA 24              db 36
+1341   04DB 0C              db 12
+1342   04DC 1F              db 31
+1343   04DD 0C              db 12
+1344   04DE 1C              db 28
+1345   04DF 0C              db 12
+1346   04E0 85              db 133
+1347   04E1                 ; vector_music.c:559 
+1348   04E1                 ; vector_music.c:560 uint8_t F79E[] = {
+1349   04E1                 ; vector_music.c:561 0x15, 0xC,
+1350   04E1                 ; vector_music.c:562 0x18, 0xC,
+1351   04E1                 ; vector_music.c:563 0x1C, 0xC,
+1352   04E1                 ; vector_music.c:564 0x21, 0xC,
+1353   04E1                 ; vector_music.c:565 0x1C, 0xC,
+1354   04E1                 ; vector_music.c:566 0x18, 0xC,
+1355   04E1                 ; vector_music.c:567 0x85
+1356   04E1                 ; vector_music.c:568 };
+1357   04E1             F79E: 
+1358   04E1 15              db 21
+1359   04E2 0C              db 12
+1360   04E3 18              db 24
+1361   04E4 0C              db 12
+1362   04E5 1C              db 28
+1363   04E6 0C              db 12
+1364   04E7 21              db 33
+1365   04E8 0C              db 12
+1366   04E9 1C              db 28
+1367   04EA 0C              db 12
+1368   04EB 18              db 24
+1369   04EC 0C              db 12
+1370   04ED 85              db 133
+1371   04EE                 ; vector_music.c:569 
+1372   04EE                 ; vector_music.c:570 uint8_t F7AB[] = {
+1373   04EE                 ; vector_music.c:571 0x11, 0xC,
+1374   04EE                 ; vector_music.c:572 0x15, 0xC,
+1375   04EE                 ; vector_music.c:573 0x18, 0xC,
+1376   04EE                 ; vector_music.c:574 0x1D, 0xC,
+1377   04EE                 ; vector_music.c:575 0x18, 0xC,
+1378   04EE                 ; vector_music.c:576 0x15, 0xC,
+1379   04EE                 ; vector_music.c:577 0x85
+1380   04EE                 ; vector_music.c:578 };
+1381   04EE             F7AB: 
+1382   04EE 11              db 17
+1383   04EF 0C              db 12
+1384   04F0 15              db 21
+1385   04F1 0C              db 12
+1386   04F2 18              db 24
+1387   04F3 0C              db 12
+1388   04F4 1D              db 29
+1389   04F5 0C              db 12
+1390   04F6 18              db 24
+1391   04F7 0C              db 12
+1392   04F8 15              db 21
+1393   04F9 0C              db 12
+1394   04FA 85              db 133
+1395   04FB                 ; vector_music.c:579 
+1396   04FB                 ; vector_music.c:580 uint8_t F7B8[] = {
+1397   04FB                 ; vector_music.c:581 0x13, 0xC,
+1398   04FB                 ; vector_music.c:582 0x17, 0xC,
+1399   04FB                 ; vector_music.c:583 0x1A, 0xC,
+1400   04FB                 ; vector_music.c:584 0x1F, 0xC,
+1401   04FB                 ; vector_music.c:585 0x1A, 0xC,
+1402   04FB                 ; vector_music.c:586 0x17, 0xC,
+1403   04FB                 ; vector_music.c:587 0x85
+1404   04FB                 ; vector_music.c:588 };
+1405   04FB             F7B8: 
+1406   04FB 13              db 19
+1407   04FC 0C              db 12
+1408   04FD 17              db 23
+1409   04FE 0C              db 12
+1410   04FF 1A              db 26
+1411   0500 0C              db 12
+1412   0501 1F              db 31
+1413   0502 0C              db 12
+1414   0503 1A              db 26
+1415   0504 0C              db 12
+1416   0505 17              db 23
+1417   0506 0C              db 12
+1418   0507 85              db 133
+1419   0508                 ; vector_music.c:589 
+1420   0508                 ; vector_music.c:590 uint8_t F7C5[] = {
+1421   0508                 ; vector_music.c:591 0x10, 0xC,
+1422   0508                 ; vector_music.c:592 0x13, 0xC,
+1423   0508                 ; vector_music.c:593 0x17, 0xC,
+1424   0508                 ; vector_music.c:594 0x1C, 0xC,
+1425   0508                 ; vector_music.c:595 0x17, 0xC,
+1426   0508                 ; vector_music.c:596 0x13, 0xC,
+1427   0508                 ; vector_music.c:597 0x85
+1428   0508                 ; vector_music.c:598 };
+1429   0508             F7C5: 
+1430   0508 10              db 16
+1431   0509 0C              db 12
+1432   050A 13              db 19
+1433   050B 0C              db 12
+1434   050C 17              db 23
+1435   050D 0C              db 12
+1436   050E 1C              db 28
+1437   050F 0C              db 12
+1438   0510 17              db 23
+1439   0511 0C              db 12
+1440   0512 13              db 19
+1441   0513 0C              db 12
+1442   0514 85              db 133
+1443   0515                 ; vector_music.c:599 
+1444   0515                 ; vector_music.c:600 uint8_t F7D2[] = {
+1445   0515                 ; vector_music.c:601 0x18, 0xC,
+1446   0515                 ; vector_music.c:602 0x1C, 0xC,
+1447   0515                 ; vector_music.c:603 0x1F, 0xC,
+1448   0515                 ; vector_music.c:604 0x22, 0xC,
+1449   0515                 ; vector_music.c:605 0x1F, 0xC,
+1450   0515                 ; vector_music.c:606 0x1C, 0xC,
+1451   0515                 ; vector_music.c:607 0x85
+1452   0515                 ; vector_music.c:608 };
+1453   0515             F7D2: 
+1454   0515 18              db 24
+1455   0516 0C              db 12
+1456   0517 1C              db 28
+1457   0518 0C              db 12
+1458   0519 1F              db 31
+1459   051A 0C              db 12
+1460   051B 22              db 34
+1461   051C 0C              db 12
+1462   051D 1F              db 31
+1463   051E 0C              db 12
+1464   051F 1C              db 28
+1465   0520 0C              db 12
+1466   0521 85              db 133
+1467   0522                 ; vector_music.c:609 
+1468   0522                 ; vector_music.c:610 uint8_t F7DF[] = {
+1469   0522                 ; vector_music.c:611 0x13, 0xC,
+1470   0522                 ; vector_music.c:612 0x17, 0xC,
+1471   0522                 ; vector_music.c:613 0x1A, 0xC,
+1472   0522                 ; vector_music.c:614 0x1D, 0xC,
+1473   0522                 ; vector_music.c:615 0x1A, 0xC,
+1474   0522                 ; vector_music.c:616 0x17, 0xC,
+1475   0522                 ; vector_music.c:617 0x85
+1476   0522                 ; vector_music.c:618 };
+1477   0522             F7DF: 
+1478   0522 13              db 19
+1479   0523 0C              db 12
+1480   0524 17              db 23
+1481   0525 0C              db 12
+1482   0526 1A              db 26
+1483   0527 0C              db 12
+1484   0528 1D              db 29
+1485   0529 0C              db 12
+1486   052A 1A              db 26
+1487   052B 0C              db 12
+1488   052C 17              db 23
+1489   052D 0C              db 12
+1490   052E 85              db 133
+1491   052F                 ; vector_music.c:619 
+1492   052F                 ; vector_music.c:620 uint8_t F7EC[] = {
+1493   052F                 ; vector_music.c:621 0xF, 0xC,
+1494   052F                 ; vector_music.c:622 0x13, 0xC,
+1495   052F                 ; vector_music.c:623 0x16, 0xC,
+1496   052F                 ; vector_music.c:624 0x1B, 0xC,
+1497   052F                 ; vector_music.c:625 0x16, 0xC,
+1498   052F                 ; vector_music.c:626 0x13, 0xC,
+1499   052F                 ; vector_music.c:627 0x85
+1500   052F                 ; vector_music.c:628 };
+1501   052F             F7EC: 
+1502   052F 0F              db 15
+1503   0530 0C              db 12
+1504   0531 13              db 19
+1505   0532 0C              db 12
+1506   0533 16              db 22
+1507   0534 0C              db 12
+1508   0535 1B              db 27
+1509   0536 0C              db 12
+1510   0537 16              db 22
+1511   0538 0C              db 12
+1512   0539 13              db 19
+1513   053A 0C              db 12
+1514   053B 85              db 133
+1515   053C                 ; vector_music.c:629 
+1516   053C                 ; vector_music.c:630 uint8_t musicChannel3[] = {
+1517   053C                 ; vector_music.c:631 0x18, 0x90,
+1518   053C                 ; vector_music.c:632 0x15, 0x90,
+1519   053C                 ; vector_music.c:633 0x11, 0x90,
+1520   053C                 ; vector_music.c:634 0x13, 0x90,
+1521   053C                 ; vector_music.c:635 0x18, 0x90,
+1522   053C                 ; vector_music.c:636 0x15, 0x90,
+1523   053C                 ; vector_music.c:637 0x10, 0x90,
+1524   053C                 ; vector_music.c:638 0x13, 0x24,
+1525   053C                 ; vector_music.c:639 0x1F, 0x24,
+1526   053C                 ; vector_music.c:640 0x23, 0x24,
+1527   053C                 ; vector_music.c:641 0x26, 0x24,
+1528   053C                 ; vector_music.c:642 0x1C, 0x24,
+1529   053C                 ; vector_music.c:643 0x84, 1, &F856, [&F856 >> 8],
+1530   053C                 ; vector_music.c:644 0x24, 0x48,
+1531   053C                 ; vector_music.c:645 0x1D, 0x24,
+1532   053C                 ; vector_music.c:646 0x26, 0x24,
+1533   053C                 ; vector_music.c:647 0x24, 0x24,
+1534   053C                 ; vector_music.c:648 0x23, 0x24,
+1535   053C                 ; vector_music.c:649 0x1F, 0x24,
+1536   053C                 ; vector_music.c:650 0x28, 0x24,
+1537   053C                 ; vector_music.c:651 0x26, 0x24,
+1538   053C                 ; vector_music.c:652 0x81, 0x24,
+1539   053C                 ; vector_music.c:653 0x84, 1, &F856, [&F856 >> 8],
+1540   053C                 ; vector_music.c:654 0x24, 0x24,
+1541   053C                 ; vector_music.c:655 0x1F, 0x90,
+1542   053C                 ; vector_music.c:656 0x26, 0x90,
+1543   053C                 ; vector_music.c:657 0x24, 0x90,
+1544   053C                 ; vector_music.c:658 0x23, 0x24,
+1545   053C                 ; vector_music.c:659 0x1F, 0x24,
+1546   053C                 ; vector_music.c:660 0x23, 0x24,
+1547   053C                 ; vector_music.c:661 0x26, 0x24,
+1548   053C                 ; vector_music.c:662 0x18, 0x90,
+1549   053C                 ; vector_music.c:663 0x1C, 0x90,
+1550   053C                 ; vector_music.c:664 0x1D, 0x90,
+1551   053C                 ; vector_music.c:665 0x1F, 0x90,
+1552   053C                 ; vector_music.c:666 0x18, 0x90,
+1553   053C                 ; vector_music.c:667 0x81, 0x90,
+1554   053C                 ; vector_music.c:668 0x84, 1, &F861, [&F861 >> 8],
+1555   053C                 ; vector_music.c:669 0x16, 0x48,
+1556   053C                 ; vector_music.c:670 0x84, 1, &F861, [&F861 >> 8],
+1557   053C                 ; vector_music.c:671 0x18, 0x48,
+1558   053C                 ; vector_music.c:672 0x86
+1559   053C                 ; vector_music.c:673 };
+1560   053C             musicChannel3: 
+1561   053C 18              db 24
+1562   053D 90              db 144
+1563   053E 15              db 21
+1564   053F 90              db 144
+1565   0540 11              db 17
+1566   0541 90              db 144
+1567   0542 13              db 19
+1568   0543 90              db 144
+1569   0544 18              db 24
+1570   0545 90              db 144
+1571   0546 15              db 21
+1572   0547 90              db 144
+1573   0548 10              db 16
+1574   0549 90              db 144
+1575   054A 13              db 19
+1576   054B 24              db 36
+1577   054C 1F              db 31
+1578   054D 24              db 36
+1579   054E 23              db 35
+1580   054F 24              db 36
+1581   0550 26              db 38
+1582   0551 24              db 36
+1583   0552 1C              db 28
+1584   0553 24              db 36
+1585   0554 84              db 132
+1586   0555 01              db 1
+1587   0556 97              db F856
+1588   0557 05              db +((F856) >> (8))
+1589   0558 24              db 36
+1590   0559 48              db 72
+1591   055A 1D              db 29
+1592   055B 24              db 36
+1593   055C 26              db 38
+1594   055D 24              db 36
+1595   055E 24              db 36
+1596   055F 24              db 36
+1597   0560 23              db 35
+1598   0561 24              db 36
+1599   0562 1F              db 31
+1600   0563 24              db 36
+1601   0564 28              db 40
+1602   0565 24              db 36
+1603   0566 26              db 38
+1604   0567 24              db 36
+1605   0568 81              db 129
+1606   0569 24              db 36
+1607   056A 84              db 132
+1608   056B 01              db 1
+1609   056C 97              db F856
+1610   056D 05              db +((F856) >> (8))
+1611   056E 24              db 36
+1612   056F 24              db 36
+1613   0570 1F              db 31
+1614   0571 90              db 144
+1615   0572 26              db 38
+1616   0573 90              db 144
+1617   0574 24              db 36
+1618   0575 90              db 144
+1619   0576 23              db 35
+1620   0577 24              db 36
+1621   0578 1F              db 31
+1622   0579 24              db 36
+1623   057A 23              db 35
+1624   057B 24              db 36
+1625   057C 26              db 38
+1626   057D 24              db 36
+1627   057E 18              db 24
+1628   057F 90              db 144
+1629   0580 1C              db 28
+1630   0581 90              db 144
+1631   0582 1D              db 29
+1632   0583 90              db 144
+1633   0584 1F              db 31
+1634   0585 90              db 144
+1635   0586 18              db 24
+1636   0587 90              db 144
+1637   0588 81              db 129
+1638   0589 90              db 144
+1639   058A 84              db 132
+1640   058B 01              db 1
+1641   058C A2              db F861
+1642   058D 05              db +((F861) >> (8))
+1643   058E 16              db 22
+1644   058F 48              db 72
+1645   0590 84              db 132
+1646   0591 01              db 1
+1647   0592 A2              db F861
+1648   0593 05              db +((F861) >> (8))
+1649   0594 18              db 24
+1650   0595 48              db 72
+1651   0596 86              db 134
+1652   0597                 ; vector_music.c:674 
+1653   0597                 ; vector_music.c:675 uint8_t F856[] = {
+1654   0597                 ; vector_music.c:676 0x1C, 0x24,
+1655   0597                 ; vector_music.c:677 0x1F, 0x24,
+1656   0597                 ; vector_music.c:678 0x24, 0x48,
+1657   0597                 ; vector_music.c:679 0x1C, 0x24,
+1658   0597                 ; vector_music.c:680 0x21, 0x24,
+1659   0597                 ; vector_music.c:681 0x85
+1660   0597                 ; vector_music.c:682 };
+1661   0597             F856: 
+1662   0597 1C              db 28
+1663   0598 24              db 36
+1664   0599 1F              db 31
+1665   059A 24              db 36
+1666   059B 24              db 36
+1667   059C 48              db 72
+1668   059D 1C              db 28
+1669   059E 24              db 36
+1670   059F 21              db 33
+1671   05A0 24              db 36
+1672   05A1 85              db 133
+1673   05A2                 ; vector_music.c:683 
+1674   05A2                 ; vector_music.c:684 uint8_t F861[] = {
+1675   05A2                 ; vector_music.c:685 0x11, 0x48,
+1676   05A2                 ; vector_music.c:686 0x13, 0x48,
+1677   05A2                 ; vector_music.c:687 0x15, 0x48,
+1678   05A2                 ; vector_music.c:688 0x16, 0x48,
+1679   05A2                 ; vector_music.c:689 0x11, 0x48,
+1680   05A2                 ; vector_music.c:690 0x13, 0x48,
+1681   05A2                 ; vector_music.c:691 0x18, 0x48,
+1682   05A2                 ; vector_music.c:692 0x85
+1683   05A2                 ; vector_music.c:693 };
+1684   05A2             F861: 
+1685   05A2 11              db 17
+1686   05A3 48              db 72
+1687   05A4 13              db 19
+1688   05A5 48              db 72
+1689   05A6 15              db 21
+1690   05A7 48              db 72
+1691   05A8 16              db 22
+1692   05A9 48              db 72
+1693   05AA 11              db 17
+1694   05AB 48              db 72
+1695   05AC 13              db 19
+1696   05AD 48              db 72
+1697   05AE 18              db 24
+1698   05AF 48              db 72
+1699   05B0 85              db 133
+1700   05B1                 ; vector_music.c:694 
+1701   05B1                 ; vector_music.c:695 
+1702   05B1             
+0001   05B1                 savebin "vector_music.vec", begin, $ - begin
+0002   05B1             

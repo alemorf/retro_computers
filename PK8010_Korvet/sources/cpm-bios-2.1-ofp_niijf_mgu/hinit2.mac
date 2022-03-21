@@ -1,0 +1,136 @@
+DETOHL:
+        MOV A,B                 ;5
+        ORA C                   ;4
+        RZ                      ;4    13
+DETO:   LDAX    D               ;7    20
+        MOV     M,A             ;7
+        INX     H               ;5
+        INX     D               ;5
+        DCX     B               ;5
+        JMP     DETOHL          ;10 25+27=52*.4=21mksek
+
+HINIT:
+        LXI D,FKEYTAB
+        LXI H,0F600H
+        LXI B,16*10+14*6
+        CALL DETOHL
+
+        LXI D,SYSTAB
+        LXI H,0F715H
+        LXI B,TEND-SYSTAB
+        JMP DETOHL
+
+
+
+; Системная информация (копия)
+FKEYTAB:
+        DB      'DIR ',0,0,0,0,0,0,0,0,0,0,0,0
+        DB      'TYPE ',0,0,0,0,0,0,0,0,0,0,0
+        DB      'ERA ',0,0,0,0,0,0,0,0,0,0,0,0
+        DB      'REN ',0,0,0,0,0,0,0,0,0,0,0,0
+        DB      'A:ST',0dh,0,0,0,0,0,0,0,0,0,0,0
+        DB      'BASIC ',0,0,0,0,0,0,0,0,0,0
+        DB      'F6',0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DB      'SAVE ',0,0,0,0,0,0,0,0,0,0,0
+        DB      'F8',0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DB      'A:RC',0DH,0,0,0,0,0,0,0,0,0,0,0
+
+        DB      128,0,0,0,0,0
+        DB      129,0,0,0,0,0
+        DB      130,0,0,0,0,0
+        DB      131,0,0,0,0,0
+        DB      132,0,0,0,0,0
+        DB      133,0,0,0,0,0
+        DB      134,0,0,0,0,0
+        DB      135,0,0,0,0,0
+        DB      136,0,0,0,0,0
+        DB      137,0,0,0,0,0
+        DB      138,0,0,0,0,0
+        DB      'DEL',0,0,0
+        DB      'INS',0,0,0
+        DB      'CLS',0,0,0
+
+ PUBLIC BELLDIV,BELLDEL,LUTFLG,SNDFLG,SYSCOPY,COLCOPY,latflg
+
+SYSCOPY  EQU 0F703H
+COLCOPY  EQU 0F704H
+BELLDIV EQU 0F715H
+BELLDEL EQU 0F717H
+LUTFLG  EQU 0F719H
+SNDFLG  EQU 0F731H
+latflg  equ 0f72eh
+SYSTAB:
+
+        DW  0B00H
+        DW  1000H
+; Начинается с  констант автоповтора, адрес 0F719H
+        DB      0FFH
+        DB      0       ;флаг КОИ-8, 0F71AH
+SYMBUF: DW      0
+        DW      0
+        DS      1
+        DB      30      ;начало автоповтора
+        DB      2       ;автоповтор
+        DB      0
+        DW      SYMBUF ;адрес скан-кода
+        DW      SYMBUF ;адрес, куда помещать скан-код
+        DW      0
+        DW      0F736H  ;C0-C9,.,DEL  & INS
+        DW      0F752H  ;F0-F9
+        DB      0H      ;регистр: 0FFH-верхний
+        DB      00000010B ;ALF 00000000B - русский
+        DB      00000000B ;100B - GRAPH
+        DB      00000000B ;10000B NUM
+        DB      0FFH      ;Звук (подтверждение нажатия)
+        DW      0
+        DW      0         ;не  используются
+
+        DW      0F600H+160 +6*0
+        DW      0F600H+160 +6*1
+        DW      0F600H+160 +6*2
+        DW      0F600H+160 +6*3
+        DW      0F600H+160 +6*4
+        DW      0F600H+160 +6*5
+        DW      0F600H+160 +6*6
+        DW      0F600H+160 +6*7
+        DW      0F600H+160 +6*8
+        DW      0F600H+160 +6*9
+        DW      0F600H+160 +6*10
+        DW      0F600H+160 +6*11
+        DW      0F600H+160 +6*12
+        DW      0F600H+160 +6*13
+
+        DW      0F600H +16*0
+        DW      0F600H +16*1
+        DW      0F600H +16*2
+        DW      0F600H +16*3
+        DW      0F600H +16*4
+        DW      0F600H +16*5
+        DW      0F600H +16*6
+        DW      0F600H +16*7
+        DW      0F600H +16*8
+        DW      0F600H +16*9
+;магнитофон
+        DB 61,68,27,33,0,0
+;лок. сеть
+        DB 0,0
+;LUT
+LUTFL   EQU 0F76EH
+ADRLUT  EQU 0F76FH
+TABLUT  EQU 0F771H  ;системная копия просм. таблицы
+        PUBLIC LUTFL,ADRLUT,TABLUT
+F76E:   DB 0
+        DW TABLUT
+        db 00h,011h,022h,033h,044h,055h,066h,077h
+        db 0F8h,0F9h,0Fah,0Fbh,0Fch,0Fdh,0Feh,0Ffh
+;ячейки принтера
+F781:   DB 0
+        DW 0
+TEND:
+
+44h,055h,066h,077h
+        db 0F8h,0F9h,0Fah,0Fbh,0Fch,0Fdh,0Feh,0Ffh
+;ячейки принтера
+F781:   DB 0
+        DW 0
+TEND:

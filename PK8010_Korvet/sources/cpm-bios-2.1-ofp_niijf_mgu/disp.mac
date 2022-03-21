@@ -1,0 +1,81 @@
+
+CON	EQU	4CH
+cseg
+SNDFLG	EQU	0F731H
+;	Драйвер дисплея 
+; C содержит код символа
+CONOUT::	
+OUTCH::	
+;	LHLD TMOUT##
+;	MOV A,L
+;	ORA H
+;	CZ LUTON##	;если экран выключен,включаем
+;	LXI H,outdel##	;определен в cbios.mac
+;	SHLD TMOUT##	;возобнавляем счетчик
+;	jz luton##
+	MOV A,C
+	CPI  7
+	JZ BEEP
+	LXI	H,0
+	DAD	SP
+	LXI	SP,endebuf## ;буфер электронного диска!
+	PUSH	H
+	MVI A,14H
+	DI
+	sta syscopy##	;сохраняем копию
+	STA 0FA7FH
+	ei
+	CALL CON	;печатаем
+	MVI A,1CH
+	di
+	STA 0FA7FH
+	sta syscopy##	;сохраняем копию
+	ei
+	POP	H
+	SPHL
+	RET
+BEEP:
+
+	MVI A,36H
+	STA 0FB03H
+	LHLD BELLDIV##
+	LXI D,0FB00H
+	XCHG
+	MOV M,L
+	MOV M,D
+;
+	MVI L,32H
+	MOV B,M
+	MVI A,8
+	ORA B
+	MOV M,A		;включили звук
+	XCHG
+;
+	LHLD BELLDEL##
+LPBEEP:	
+	DCX H
+	MOV A,L
+	ORA H
+	JNZ  LPBEEP
+	XCHG
+	MOV M,B
+	lda sndflg
+	ora a
+	rz
+SNDON::	MVI A,20H
+	STA 0FB03H
+	MVI A,7
+	STA 0FB33H
+	RET
+
+	END
+	MVI L,32H
+	MOV B,M
+	MVI A,8
+	ORA B
+	MOV M,A		;включили звук
+	XCHG
+;
+	LHLD BELLDEL##
+LPBEEP:	
+	DCX H

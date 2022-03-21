@@ -1,0 +1,71 @@
+; некоторые определения
+CR  EQU 0DH
+LF      EQU     0AH
+ESC     EQU     1BH
+BS      EQU     08H
+DC1     EQU     11H
+DC2     EQU     12H
+DC3     EQU     13H
+DC4     EQU     14H
+FF      EQU     0CH
+
+
+Wboot   equ     0
+Bdos    equ     5
+CallCcp equ     8
+LoadProg equ   47
+RstDsk  equ    13
+PrtStr  EQU     9
+Tbase   EQU  100h
+
+BOOT::
+        DI              ;Запрет прерываний
+        LXI     SP,STACKAREA##  ;Setup stack space
+        MVI     A,1cH   ;системный регистр
+        STA     0FA7FH  ;установили (на всякий случай)
+        STA SYSCOPY
+        CALL  HINIT
+; Это убираем--------------------------------------
+;        XRA     A
+;        STA     4       ;активный диск А: & user 0
+;--------------------------------------------------
+         call WbInit##
+         lxi h,000h
+         dad  sp
+         shld 8000h
+         LXI D,SIGNN1
+         MVI C,PRTSTR
+         CALL  BDOS
+         lxi h,000h
+         dad  sp
+         shld 8002h
+         mvi c,RstDsk          ;обязятельно!
+         call bdos
+         lxi h,000h
+         dad  sp
+         shld 8004h
+         LXI D,SIGNN2
+         MVI C,PRTSTR
+         CALL  BDOS
+
+         JMP .Start##   ;and execute the program
+;
+SIGNN1:
+        DB      1FH,CR,LF
+        DB      'CP/M-80  v. 2.2'
+        DB      CR,LF,'$'
+SIGNN2:
+        DB      0EFH,0E6H,0F0H,20H,20H,0EEH,0E9H,0E9H,0F1H
+        DB      0E6H,20H,20H,0EDH,0E7H,0F5H
+        DB      '  BIOS'
+        DB      CR,LF
+  DB  'Ver. 2.1 (c) IX 1992 '
+  DB  CR,LF,'$'
+
+       maclib HINIT2.MAC
+
+  end
+ DB      '  BIOS'
+        DB      CR,LF
+  DB  'Ver. 2.1 (c) IX 1992 '
+  DB  CR,LF,'$'

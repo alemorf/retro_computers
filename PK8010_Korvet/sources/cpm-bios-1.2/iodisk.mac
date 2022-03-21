@@ -1,0 +1,174 @@
+
+dnotr  equ 80H	;для кода ошибки
+
+
+
+SYSREG	EQU	0fa7FH	; Memory map system register
+clreg	EQU	0fabfh
+VIDBAS	EQU	0FC00H	; Start of video memory
+VIDEO	EQU	0fb3AH	; Video register address
+DRVREG	EQU	0fb39H	; Drive register addresss
+FDC	EQU	0fb18H	; FDC base address
+CASSIN	EQU	0fb38H	; Video status register
+KBDBAS	EQU	0F800H	; Keyboard start address
+INT 	EQU 	0FB28H
+DRNUM	EQU	08H	; Number of drives
+
+RESTOCMD	EQU	08H
+STEPICMD	EQU	48H
+STEPOCMD	EQU	68H
+STEPCMD 	EQU	28H
+RDSECCMD	EQU	84H
+WRSECCMD	EQU	0A4H
+FORCECMD	EQU	0D0H
+READAD		EQU	0C4H
+
+MOTOR	EQU	20H
+;
+;      DTOM - Performes an actual transfer from Disk TO Memory
+;
+; 	  on entry :
+; 	                HL - buffer address
+; 
+;*****
+	EXT STACKS
+ku2 equ 20h
+CSEG 
+
+DTOM::	
+
+	CALL	moton
+	rnz		;not ready
+	DI
+	PUSH	H
+	LXI	H,FDC+3	; BC points to data register of FDC
+	POP	B
+	PUSH	B	; адрес буфера
+
+	MVI	A,RDSECCMD
+	STAX	D
+	CALL	DELAY3
+	CALL	DTOM1
+	
+exitrw:	
+	pop h
+	LDAX	D
+	ANI	0dDH	; Mask out error bits учитываем ready
+;	rz		;если OK
+	EI
+	sta errfl	;код ошибки
+	ret
+
+DTOM1:
+	LDAX	D
+	RRC
+	RNC	; If BUSY flag = 0 - exit
+	RRC
+	JNC	DTOM1	; Byte is ready
+DTOM2:
+	MOV	A,M	; byte
+	STAX	B	; Store it
+	INX	B	; Bump pointer
+	JMP	DTOM1	; If no DRQ flag - continue to wait
+
+
+;
+;      MTOD - Performes an actual transfer from  Memory TO Disk
+;
+;    on entry :
+;                  HL - buffer address
+;
+;****
+MTOD::
+	CALL	MOTON
+	rnz
+MTODR:  DI		;выключаем на время операции
+	MVI	A,WRSECCMD
+	STAX	D	; ISSUE WRITE SECTOR COMMAND
+	CALL	DELAY3
+
+	PUSH	H	; SAVE BUFFER POINTER
+	LXI	H,0
+	DAD	SP
+	SHLD	STACKS	; спасаем 
+	POP	H
+	PUSH	H
+	SPHL		; STACK - BUFFER
+
+	LXI	H,FDC+3	; BC points to data register of FDC
+
+MTOD1:
+	POP	B	; GET DOUBLE BYTE OF DATA
+MTOD2:
+	LDAX	D	; GET STATUS
+	XRI	1	; MAKE TEST FOR BUSY AND DRQ BITS
+	JZ	MTOD2	; IF NOT DONE - WAIT
+	MOV	M,C	; ISSUE 1ST BYTE OF DATA
+	RAR
+	JC WDONE	; Go if not busy
+	RAR
+	JNC MTOD2	; CONTINUE WHEN BUSY STILL
+MTOD3:
+	LDAX	D	; GET STATUS
+	XRI	1	; MAKE TEST FOR BUSY AND DRQ BITS
+	JZ	MTOD3	; IF NOT DONE - WAIT
+	MOV	M,B	; ISSUE 2ND BYTE OF DATA
+	JMP	MTOD1	; LOOP UNTIL ALL'LL BE DONE
+
+WDONE:
+	LHLD	STACKS
+	SPHL		; restore stack
+	jmp exitrw
+
+MOTON::		;HL not erase
+	lxi	d,drvreg
+	mvi	a,0ah	; ку3 - чтобы читать регистр запросов
+	sta	int
+	lda int
+	ani	80H	; для мотора
+	push	psw
+	ldax	d
+	ani	not motor
+	stax	d
+	ori	motor
+	stax	d	;перезапустили мотор
+	ani not motor
+	stax d
+	pop	psw
+	cnz	delay	;если мотор был выключен
+	MVI C,10	; <=> 2 сек.
+LP0000:
+	lda FDC
+	rlc
+	jnc readyOK	;ждем ready
+	dcr c
+	jz nready		;ошибка: not ready
+	call delay
+	jmp lp0000
+readyOK: 
+	LXI	D,FDC	; set FDC & FORCE
+	JMP	force
+nready: mvi a,dnotr
+	sta errfl##
+	ora a
+	ret
+
+delay::	mvi b,0
+lpdl:	call	delay3
+	dcr	b
+	jnz	lpdl
+	ret
+
+FORCE::
+	MVI	A,FORCECMD
+	STA	FDC
+DELAY3::
+	xra	a
+DELAY0:
+	DCR	A
+	JNZ	DELAY0
+	RET
+
+	END
+
+	LXI	D,FD

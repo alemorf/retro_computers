@@ -1,0 +1,190 @@
+
+
+	PUBLIC PIA0
+	PUBLIC PIA1
+	PUBLIC PIA2,INT
+
+PIA0	EQU	0fb30H	; Printer port address
+PIA1	EQU	0fb38H	; Printer status port address
+PIA2	EQU	0fb08H	; Priner strobe control
+
+PRNPORT EQU PIA0
+STBPORT EQU PIA0+2
+PSTPORT EQU PIA1
+	PUBLIC PRNPORT
+	PUBLIC STBPORT
+	PUBLIC PSTPORT
+
+
+CSEG
+TABINT	EQU	 0f7e0h
+
+	DW TABTRAP
+TABTRAP:
+	DW OUTINT##	;0 расш. разъем
+	DW OUTINT##	;1 
+	DW OUTINT##	;2 
+	DW OUTINT##	;3 
+	DW SYST##	;4 системный clock (20мс)
+	DW OUTINT##	;5 timer
+	DW OUTINT##	;6 printer
+	DW OUTINT##	;7 одновибратор мотора
+	DW SKIP3##	;8 клавиатура (вызов опроса)
+	DW 0		;AUXI1
+	DW 0		;AUXI2
+	DW 0		;AUXI3
+
+	PUBLIC TABINT
+TBINT:
+	JMP INT0##	;0f7e0h
+	DB 0		; USER
+	JMP INT1##	;0f7e4h
+	DB 0
+	JMP INT2##	;0f7e8h
+	DB 0
+	JMP INT3##	;0f7ech
+	DB 0
+	JMP INT4##	;0f7f0h
+	DB 0
+	JMP INT5##	;0f7f4h
+	DB 0
+	JMP INT6##	;0f7f8h
+	DB 0
+	JMP INT7##	;0f7fch
+
+;	конец таблиц
+
+timer equ 0fb00h
+int equ 0fb28h
+ku2 equ 20h
+ku3 equ 0ch		;В следующем такте читать запрос
+
+IS51S	EQU	0Fb20H	;сеть
+IRPS	equ	0fb10h	;ирпс
+IS51RS	equ	40h	;сброс
+IS51TR	equ	035h	;прием и передача разрешены, DTR снят.
+IS51CW	equ	0ceh		;асинхр.,/16,8 бит,2 stop bit
+;
+ki1  equ 0f6h
+ki2  equ 0f7h
+	public ki1,IRPS
+	public ki2
+
+cseg
+init::	;при вызове прерывания должны быть закрыты
+;адрес int-таблицы - 0f7e0h : забрасываем
+	DI
+;Иницилизация векторов переходов прерываний
+	LXI D,TABTRAP-2
+	LXI H,0F7C6H	;начало области ячеек прерывания
+	LXI B,58
+	CALL DETOHL##
+;Контроллер прерываний
+	mvi a,ki1	; init interupt
+	sta int
+	mvi a,ki2
+	sta int+1	;
+	mvi a,0efh	;maska
+	sta int+1
+;Последовательный интерфейс
+	lxi	h,irps+1	; init irps
+	xra	a
+	mov	m,a
+	mov	m,a
+	mov	m,a			; сброс програмный
+	mvi	m,is51rs
+	mvi	m,is51cw
+	mvi	m,is51tr
+;Timer
+	lxi	h,timer+3
+	MVI	m,7EH	; init irps timer. КАНАЛ 1 РЕЖИМ 3
+	MVI	M,90h	; канал 2,режим 0,младший байт
+	dcx	h	; 2
+	dcx	h	; 1
+	MVI	m,13	;9600 bod
+	MVI	m,0
+;Графика
+	LDA	VIDEO##
+	ANI 4
+	ORI	020H	;Графическая страница 0
+	STA	VIDEO##
+	lxi h,0		;Стираем страницу 0 (графика)
+	dad sp
+	xchg
+	mvi a,3ch
+	sta 0fa7fh
+	lxi sp,4000h+4000h
+	lxi h,0ffffh
+	lxi b,800h
+	mvi a,0	;lda mask
+	sta 0ffbfh
+lpcls1:	push h
+	push h
+	push h
+	push h
+	dcr c
+	jnz lpcls1
+	dcr b
+	jnz lpcls1
+	xchg
+	sphl
+	mvi a,1ch
+	sta 0ff7fh
+
+;Иницилизируем диски, клавиатуру и дисплей
+	XRA	A	; Clear A
+	STA	DPBK00##; Set " Wrong Info " Flag
+	STA	DPBK01##	;        Too
+	STA	DPBK02##	;        Too
+	STA	DPBK03##	;        Too
+	STA	UNALLO## ; "Write to unallocated block" flag
+	STA	BUFFAC##	; Make Write buffer inactive
+	STA	IOBYTE##	; clear the iobyte
+	STA	SECRDB##	; Select "wrong buffer "
+	STA	SECWRB##	; Select "wrong buffer "
+	STA	SYMBUF##	; Clear Last Received Character
+	mvi a,0ffh
+	sta lutfl##
+	lxi h,initvd
+	call pstrng##
+	mvi a,0ffh
+	STA SNDFLG##	;включили  звук
+;Printer
+	MVI	A, 49H	 ; Setup printer
+	STA	STBPORT
+
+	RET
+
+lut:: CALL TBLANK
+	lhld adrlut##
+	mvi b,16
+ltlp:	mov a,m
+	sta 0fafbh
+	inx h
+	dcr b
+	jnz ltlp
+	ret
+;lutoff::CALL TBLANK 
+;	lxi h,0fafbh
+;	mvi b,16
+;ltlp1:	dcr b
+;	mov m,B
+;	jnz ltlp1
+;	ret
+TBLANK:; LDA 0FB38H
+;	ANI 2
+;	JZ TBLANK
+TBLNK: LDA 0FB38H
+	ANI 2
+	JNZ TBLNK
+	MVI  A,50
+LPDL:	XTHL
+	XTHL
+	DCR  A
+	JNZ LPDL
+	RET
+initvd: db 1BH,';',1bh,':',0	;включили курсор
+	END
+
+h
+;	mvi b,16

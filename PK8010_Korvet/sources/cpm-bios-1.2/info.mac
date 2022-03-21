@@ -1,0 +1,255 @@
+
+CR	EQU	0DH
+LF	EQU	0AH
+ESC	EQU	1BH
+BS	EQU	08H
+DC1	EQU	11H
+DC2	EQU	12H
+DC3	EQU	13H
+DC4	EQU	14H
+FF	EQU	0CH
+
+
+SYSREG	EQU	0fa7FH	; Memory map system register
+clreg	EQU	0fabfh
+VIDBAS	EQU	0FC00H	; Start of video memory
+VIDEO	EQU	0fb3AH	; Video register address
+DRVREG	EQU	0fb39H	; Drive register addresss
+FDC	EQU	0fb18H	; FDC base address
+CASSIN	EQU	0fb38H	; Video status register
+
+DRNUM	EQU	08H	; Number of drives
+
+RESTOCMD	EQU	08H
+STEPICMD	EQU	48H
+STEPOCMD	EQU	68H
+STEPCMD 	EQU	28H
+RDSECCMD	EQU	84H
+WRSECCMD	EQU	0A4H
+FORCECMD	EQU	0D0H
+READAD		EQU	0C4H
+
+LENTRTAB	EQU	32
+
+SIDE1	EQU	10H
+MOTOR	EQU	20H
+SDENFL	EQU	40H
+DR8IN	EQU	80H
+
+CSEG
+
+	EXT DREG
+	EXT SECSEK
+	EXT CPMT
+	EXT DSETUP
+	EXT FORCE
+	EXT TRKSEK
+
+
+;      GETINFO - procedure to get info about disk drive
+;                from 32 bytes of sector #1 track #0
+;                The 32th byte of the info - checksum,
+;                if there is match -O.K.,
+;                else report error
+;	HL - содержит CPMTXX - 2
+
+GETINFO::
+	push	h	; таблица
+
+	mov	a,m	;dregX
+	ani 0fh
+	sta dreg
+	xra a
+	sta trksek
+	inr a
+	sta secsek
+	lxi h,cpmt
+	call dsetup
+	call force
+	lxi	h,fdc
+	LXI D,DRVREG
+setden:	mvi	c,3
+	mvi	m,readad
+
+loop:	call	delay##	; 0.25 сек. Можно ускорить
+	mov	a,m
+	rrc
+	jnc	denOK	; ret if OK
+	ldax	d
+	adi	40h
+	stax	d
+	dcr	c
+	jnz	loop
+	pop	h	; restore tabl
+	inr	c	; set false flag
+	ret
+
+denOK:
+	mvi	a,1
+	sta	FDC+2	; sector set
+	lxi	h,rdbuff##
+	call	dtom##
+	lxi	h,ermsg
+	jnz	gierr	; ret if bad 1 sector 
+
+			; on track # 0 of desired disk
+	lda dreg
+	sta dregrd##
+	xra	a
+	STA	TRKRDB##
+;		     Setup track
+
+	INR	A	; HL =1
+	STA	SECRDB##
+;		      Setup sector
+
+CHKDO:
+	LXI	H,RDBUFF##
+	MVI	A,66H	    ; Initial value for checksum
+	MVI	B,31
+CHKDO1:
+	ADD	M	    ; Calculate checksum
+	INX	H	    ; Bump pointer
+	DCR	B	    ; Decrement counter
+	JNZ	CHKDO1	    ; Loop
+
+	CMP	M	   ; Compare with precalculated checksum
+	JZ	CHOK	   ; If match - O.K.
+
+	LXI	H,ERMSG1
+GIERR:
+	CALL	PSTRNG##	; Print error message
+	POP	H	; Don't forget HL there !
+	MVI	A,1	; With error condition
+	ORA	A
+	RET
+ERMSG:
+	DB	ESC,63H,CR,LF
+	DB	'***** Can`t read info sector	*****'
+	DB	CR,LF,ESC,63H
+	DB	00
+ERMSG1:
+	DB	ESC,63H,CR,LF
+	DB	'****** Wrong checksum	******'
+	DB	CR,LF,ESC,63H
+	DB	00
+
+CHOK:
+	POP	H	; HL points to DPBLKXX
+	PUSH	H	; Save HL
+	lda	drvreg
+	ani	not (motor or side1)
+	sta	dregrd##
+	mov	m,a	;dregX
+	inx	h
+	MVI	M,0FFH	; Flag out - There is info !
+	inx	h		; cpmtXX
+	LXI	D,RDBUFF##+16
+	LXI	B,16		;+lentrtab		; info + tabl
+	CALL	DETOHL##	; Make transfer to DPBLKXX
+
+GIN3:
+	POP	d	; Restore pointer
+	XRA	A
+	dcx	d
+	stax	d	; Mark - We are on track zero now
+	dcx	d
+	lxi	h,rdbuff+10
+	MOV	a,m	;size sector
+	stax	d
+	dcx	d
+	inx	h
+	mov	a,m	;нумерация секторов
+	stax	d
+	dcx	d
+	inx	h
+	mov	a,m	;# секторов на треке
+	stax	d
+	xra	a
+
+	RET
+
+;***************************************************************
+;
+;      LTOF - procedure to convert logical track and sector
+;             given by CP/M to actual physical.
+;
+;           Result is returned in ...SEK block
+;
+
+LTOF::
+	lhld	cpmt
+;		 HL - points to corresponding table now
+;	XRA	A
+;	STA	SIDSEK	; Initial value for side
+	mov	a,m
+	sta	dreg
+
+	dcx	h
+	dcx	h
+	mov	b,m
+	mvi	c,0	; для offset
+
+	lda	seccpm##
+	dcr	a
+	inr	b
+	mov	d,a
+	mov	e,a
+lpts:	dcr	b
+	jz	skipts	; если	сектор 128 byte
+	ORA A
+	MOV	A,e
+	RAR
+	MOV	e,A
+	stc
+	mov	a,c
+	ral
+	mov	c,a
+	jmp	lpts
+
+skipts: MOV A,C
+	ANA	D	; Mask out some bits
+	RAR
+	STA	OFSSEK##+1
+	mvi	a,0
+	rar
+	STA	OFSSEK##
+;  стек сод. физ. сек., offset  установлен, DE сод. DPBLXX+10
+
+	dcx	h
+	mov	d,m	; в B - sec. info
+	ora a
+	dcr	d
+	lda	trkcpm##
+	jnz	ndside
+	rar
+ndside:	sta	trksek
+	cc	side10
+	dcr d
+	jnz	dside
+	dcx	h
+	mov	a,e
+	sub	m	; # физ. секторов в треке
+	jc	dside
+	mov	e,a
+	call	side10
+dside:	mov	a,e
+	inr	a
+	sta	secsek
+	ret
+
+side10:	;mvi	a,1
+;	sta	sidsek
+	lda	dreg
+	ori	side1
+	sta	dreg
+	ret
+
+	END
+ta	trksek
+	cc	side10
+	dcr d
+	jnz	dside
+	dcx	h
+	mov	a,e
+	sub	m

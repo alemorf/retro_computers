@@ -1,0 +1,256 @@
+;Абсолютные адреса в программе отсутствуют
+
+CR      EQU     0DH
+LF      EQU     0AH
+ESC     EQU     1BH
+BS      EQU     08H
+bdos    equ     05h
+;SYSREG  EQU     0fa7FH  ; Карта памяти системного регистра
+;VIDEO   EQU     0fb3AH  ; Адрес видео регистра
+DRVREG  EQU     0fb39H  ; Адрес драйверного регистра
+FDC     EQU     0fb18H  ; FDC адрес
+
+DRNUM   EQU     08H     ; номер драйверов
+
+RESTOCMD        EQU     08H
+STEPICMD        EQU     48H
+STEPOCMD        EQU     68H
+STEPCMD         EQU     28H
+RDSECCMD        EQU     80H
+FORCECMD        EQU     0D0H
+READAD          EQU     0C0H
+
+
+SIDE1   EQU     10H
+MOTOR   EQU     20H
+SDENFL  EQU     40H
+DR8IN   EQU     80H
+
+CSEG
+
+        EXT DREG
+        EXT SECSEK
+        EXT CPMT
+        EXT DSETUP
+        EXT FORCE
+        EXT TRKSEK
+
+
+;      GETINFO - процедура получения информации драйвера
+;                диска (32 байта сектор #1 трек #0)
+;                32-ой байт  - контрольная сумма,
+;                если совпадает -O.K.,
+;                иначе объявляется ошибка
+;       HL - содержит CPMTXX - 2
+
+GETINFO::
+        push    h       ; таблица
+;
+        call flush##    ;проверили буфер записи
+        pop h
+        shld cpmt
+        push h
+        mov     a,m     ;дрегX
+        ani 0fh
+        sta dreg
+        xra a
+        sta trksek
+        inr a
+        sta secsek
+        lxi h,cpmt
+        call dsetup     ;установили параметры
+;
+        lxi     h,rdbuff##
+        call    dtom##          ;прочитали
+;
+        jz denok
+        lda drvreg
+        adi     40h             ;одинарная плотность
+        sta drvreg
+        call force
+        lxi     h,rdbuff##
+        call    dtom##          ;прочитали
+        lxi     d,ermsg
+        jnz     gierr   ; RET если плохой 1 сектор
+
+denOK:
+        lda dreg
+        sta dregrd##
+        xra     a
+        STA     TRKRDB##
+;увеличить трек
+        INR     A       ; HL =1
+        STA     SECRDB##
+;увеличить сектор
+
+CHKDO:
+        LXI     H,RDBUFF##
+        MVI     A,66H       ; начальное значение для контрольной суммы
+        MVI     B,31
+        di
+        push    psw
+        mvi     a,5ch
+        sta     0fa7fh
+        pop     psw
+CHKDO1:
+        ADD     M           ; подсчитать контрольную сумму
+        INX     H           ; увеличить счетчик
+        DCR     B           ; уменьшить счет
+        JNZ     CHKDO1      ; цикл
+
+        CMP     M          ;сравнить с раннее подсчитанной контр.суммой
+        JZ      CHOK       ; совпадает - O.K.
+
+        mvi     a,1ch
+        sta     0ff7fh
+        ei
+        LXI     d,ERMSG1
+GIERR:
+        POP     h               ; не забывать HL  !
+        mvi     c,9
+      ;  jmp     bdos
+      ;  CALL    PSTRNG##        ; печатать сообщение
+        MVI     A,1             ; о соответствующей ошибке
+        ORA     A
+        RET
+ERMSG:
+        DB      ESC,63H,CR,LF
+        DB      '***** Диск не читается *****'
+        DB      CR,LF,ESC,63H,'$'
+ERMSG1:
+        DB      ESC,63H,CR,LF
+        DB      '****** Нет системной информации ******'
+        DB      CR,LF,ESC,63H,'$'
+
+CHOK:
+        POP     H       ; HL фиксируется в DPBLKXX
+        PUSH    H       ; сохранить HL
+        lda     0fe39h
+        ani     not     (motor or side1)
+        mov     m,a     ;дрегX
+        inx     h
+        MVI     M,0FFH  ; флаг вывода - это  info !
+        inx     h       ; cpmtXX
+        LXI     D,RDBUFF##+16
+        LXI     B,15            ;+lentrtab      ; info + tabl
+        CALL    DETOHL##        ; передается в DPBLKXX
+
+GIN3:
+        POP     d       ; восстановить счетчик
+        XRA     A
+        dcx     d
+        stax    d       ; метка - мы сейчас на нулевом треке
+        dcx     d
+        lxi     h,rdbuff+10
+        MOV     a,m     ;размер сектора
+        stax    d
+        dcx     d
+        inx     h
+        mov     a,m     ;нумерация секторов
+        stax    d
+        mov c,a
+        inr c
+        mvi a,80h
+lpinf:  rlc
+        dcr c
+        jnz lpinf       ;число лог. секторов в физ.секторе
+        sta nsecrd##
+
+        dcx     d
+        inx     h
+        mov     a,m     ;# секторов на треке
+        stax    d
+        dcx d
+        dcx d
+        inx h
+        inx h
+        mov a,m
+        stax d          ;# физ. треков на диске.
+        mvi a,1ch
+        sta 0ff7fh
+        ei
+        xra     a       ;        чтения нескольких физ. секторов
+
+        RET
+
+;**************************************************************
+;
+;      LTOF - процедура конвертирования логических трека и сектора
+;             СР/М в действительные физические
+;
+;           Результат возвращается в ...SEK блоке
+;
+
+LTOF::
+        lhld    cpmt
+;HL - указывает на соответствующую таблицу
+        mov     a,m
+        sta     dreg
+
+        dcx     h
+        dcx     h
+        mov     b,m
+        mvi     c,0FFH  ; для offset
+
+        lda     cscpm##
+        dcr     a
+        inr     b
+        mov     d,a
+        mov     e,a
+lpts:   dcr     b
+        jz      skipts  ; если  сектор 128 byte
+        ORA A
+        MOV     A,e
+        RAR
+        MOV     e,A
+        mov     a,c
+        add     a
+        mov     c,a
+        jmp     lpts
+
+skipts: MOV A,C
+        ANA     D       ; маска или какие-л.биты
+        INR     A
+        STA     PRSEC## ;первый сектор в буфере
+        MOV A,C
+        CMA
+        INR A
+        STA LSEC##      ;число лог. секторов в физическом
+;  стек сод. физ. сек., offset  установлен, DE сод. DPBLXX+10
+
+        dcx     h
+        mov     d,m     ; в B - сек. info
+        ora a
+        dcr     d
+        lda     ctcpm##
+        jnz     ndside
+        rar
+ndside: sta     trksek
+        cc      side10
+        dcr d
+        jnz     dside
+        dcx     h
+        mov     a,e
+        sub     m       ; число физ. секторов в треке
+        jc      dside
+        mov     e,a
+        call    side10
+dside:  mov     a,e
+        inr     a
+        sta     secsek
+        ret
+
+side10:
+        lda     dreg
+        ori     side1
+        sta     dreg
+        ret
+
+        END
+secsek
+        ret
+
+side10:
+        lda     dreg
+        ori     side1
+        st

@@ -1,0 +1,1054 @@
+
+;;;;;;   БСВВ  для  CP/M-80 	;;;;;;;
+
+
+MSIZE	EQU	56 	;cp/m размер памяти в Кбайтах
+
+;       "bias" is address offset from 3400H for memory 
+;	 systems  than 16K (referred to as "b" 
+;	 throughout the text).
+
+BIAS	EQU	(MSIZE-20)*1024
+CCP	EQU	3400H+BIAS	;base of ccp
+BDOS	EQU	CCP+806H	;base of bdos
+BIOS	EQU	CCP+1600H	;base of bios
+CDISK	EQU	0004H ;current disk number 0=A,...,15=P
+IOBYTE	EQU	0003H	;intel i/o byte
+BUFF	EQU	80H
+
+	PUBLIC IOBYTE,VIDEO
+
+CR	EQU	0DH
+LF	EQU	0AH
+ESC	EQU	1BH
+BS	EQU	08H
+DC1	EQU	11H
+DC2	EQU	12H
+DC3	EQU	13H
+DC4	EQU	14H
+FF	EQU	0CH
+
+SYSREG	EQU	0fa7FH	; Системный регистр: карта памяти
+clreg	EQU	0fabfh	; Регистр цвета
+VIDBAS	EQU	0FC00H	; Начало ВидеоПамяти
+VIDEO	EQU	0fb3AH	; ВидеоРегистр
+DRVREG	EQU	0fb39H	; Регистр  дисковода
+FDC	EQU	0fb18H	; Контроллер диска
+CASSIN	EQU	0fb38H	; Статусный регистр
+KBDBAS	EQU	0F800H	; Начало поля клавиатуры
+; Атрибут инверсии
+ATRFRE	EQU	30H	; Нейтральное состояние ( S=1 R=1 )
+ATRSET	EQU	10H	; Установка  инверсии  ( S=0 R=1 )
+ATRRES	EQU	20H	; Сброс инверсии ( S=1 R=0 )
+BIT8M	EQU	08H	; Маска чтения атрибута инверсии
+
+; Некоторые команды конроллера дисков
+DRNUM	EQU	08H	; Число накопителей
+RESTOCMD	EQU	08H
+STEPICMD	EQU	48H
+STEPOCMD	EQU	68H
+STEPCMD 	EQU	28H
+RDSECCMD	EQU	84H
+WRSECCMD	EQU	0A4H
+FORCECMD	EQU	0D0H
+READAD		EQU	0C4H
+
+cseg
+NSECTS	EQU	1600H/128 ;warm start sector count
+
+
+START:
+; Таблица jmp(ов) БСВВ
+	JMP	BOOT	;"холодный" старт
+WBOOTE::
+	JMP	WBOOT	;"теплый" старт
+	JMP	CONST##	;статус консоли
+	JMP	CONIN##	;ввод символа с консоли в (А)
+	JMP	CONOUT## ;вывод символа на консоль из (А)
+	JMP	LIST##  ;вывод символа на принтер
+	JMP	PUNCH##	;вывод символа на посл.интерфейс
+	JMP	READER##;прием символа с посл.интерфейса
+	JMP	HOME   	;restore
+	JMP	SELDSK 	;выбор диска
+	JMP	SETTRK 	;установка #трека
+	JMP	SETSEC 	;установка #сектора
+	JMP	SETDMA 	;установка вектора DMA
+	JMP	READ   	;операция чтения
+	JMP	WRITE  	;операция записи
+	JMP	LISTST## ;готовность принтера
+	JMP	SECTRAN	;пересчет логического номера в физ.
+
+; таблицы параметров дисков
+;диск A:
+DPH0:	DW	0000H,0000H
+	DW	0000H,0000H
+	DW	DIRBF,CPMT00
+	DW	CHK00,ALL00
+;диск В:
+DPH1:	DW	0000H,0000H
+	DW	0000H,0000H
+	DW	DIRBF,CPMT01
+	DW	CHK01,ALL01
+;диск С:
+DPH2:	DW	0000H,0000H
+	DW	0000H,0000h
+	DW	DIRBF,CPMT02
+	DW	CHK02,ALL02
+;диск D:
+DPH3:	DW	0000H,0000H
+	DW	0000H,0000H
+	DW	DIRBF,CPMT03
+	DW	CHK03,ALL03
+;диск Е: (электронный)
+DPH4:	DW	0000H,0000H
+	DW	0000H,0000H
+	DW	DIRBF,CPMT04
+	DW	0000H,ALL04
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	DB	080H	; скорость головки
+	DB	05H	; Sector/track
+	DB	01H	; Sector placement info
+				;( 00 - single sided disk
+				;  01 -sector numbered from 
+				;      1 to n on each side
+				;  02 -sector numbers 
+				;      continued on next side)
+	DB	02H	; 512 bytes/sector 
+				;( 00 - 128 bytes/sector
+				;  01 - 256 bytes/sector
+				;  02 - 512 bytes/sector
+				;  03 - 1024 bytes/sector )
+			DB	0		; # трека
+			DB	1		;DREG0
+DPBK00::	DB	0		; INFO
+;		        CP/M parameters
+
+CPMT00:	DW	20  ; 128 bytes sectors per track; SPT
+	DB	4   ; block shift factor         ; BSH
+	DB	15  ; block mask                 ; BLM
+	DB	01  ; extent mask                ; EXM
+	DW	195 ; disk size                  ; DSM
+	DW	127 ; directory max -1           ; DRM
+	DB	192 ; alloc 0                    ; AL0
+	DB	0   ; alloc 1                    ; AL1
+	DW	32  ; check size                 ; CKS
+	DW	2   ; track offset               ; OFS
+	DB	1BH ; Checksum
+TRNS00:
+
+	DB	80H	; скорость головки
+	DB	05H	; Sector/track
+	DB	01H	; Sector placement info
+				;( 00 - single sided disk
+				;  01 -sector numbered from 
+				;      1 to n on each side
+				;  02 -sector numbers 
+				;      continued on next side)
+	DB	02H	; 512 bytes/sector 
+				;( 00 - 128 bytes/sector
+				;  01 - 256 bytes/sector
+				;  02 - 512 bytes/sector
+				;  03 - 1024 bytes/sector )
+			DB	0		; # трека
+			DB	2		;DREG1
+DPBK01::	DB	0		; INFO
+;		        CP/M parameters
+
+CPMT01:	DW	20  ; 128 bytes sectors per track; SPT
+	DB	4   ; block shift factor         ; BSH
+	DB	15  ; block mask                 ; BLM
+	DB	01  ; extent mask                ; EXM
+	DW	195 ; disk size                  ; DSM
+	DW	127 ; directory max -1           ; DRM
+	DB	192 ; alloc 0                    ; AL0
+	DB	0   ; alloc 1                    ; AL1
+	DW	32  ; check size                 ; CKS
+	DW	2   ; track offset               ; OFS
+	DB	1BH ; Checksum
+TRNS01:
+
+
+	DB	080H	; скорость головки
+	DB	05H	; Sector/track
+	DB	0H	; Sector placement info
+				;( 00 - single sided disk
+				;  01 -sector numbered from 
+				;      1 to n on each side
+				;  02 -sector numbers 
+				;      continued on next side)
+	DB	03H	; 512 bytes/sector 
+				;( 00 - 128 bytes/sector
+				;  01 - 256 bytes/sector
+				;  02 - 512 bytes/sector
+				;  03 - 1024 bytes/sector )
+	DB	0		; # трека
+	DB	4		;DREG2
+DPBK02::	DB	0		; INFO
+;		        CP/M parameters
+
+CPMT02:	DW	40  ; 128 bytes sectors per track; SPT
+	DB	4   ; block shift factor         ; BSH
+	DB	15  ; block mask                 ; BLM
+	DB	01  ; extent mask                ; EXM
+	DW	195 ; disk size                  ; DSM
+	DW	127 ; directory max -1           ; DRM
+	DB	192 ; alloc 0                    ; AL0
+	DB	0   ; alloc 1                    ; AL1
+	DW	32  ; check size                 ; CKS
+	DW	0   ; track offset               ; OFS
+	DB	1BH ; Checksum
+TRNS02:
+
+
+	DB	080H	; скорость головки
+	DB	05H	; Sector/track
+	DB	01H	; Sector placement info
+				;( 00 - single sided disk
+				;  01 -sector numbered from 
+				;      1 to n on each side
+				;  02 -sector numbers 
+				;      continued on next side)
+	DB	02H	; 512 bytes/sector 
+				;( 00 - 128 bytes/sector
+				;  01 - 256 bytes/sector
+				;  02 - 512 bytes/sector
+				;  03 - 1024 bytes/sector )
+			DB	0		; # трека
+			DB	8		;DREG3
+DPBK03::	DB	0		; INFO
+;		        CP/M parameters
+
+CPMT03:	DW	20  ; 128 bytes sectors per track; SPT
+	DB	4   ; block shift factor         ; BSH
+	DB	15  ; block mask                 ; BLM
+	DB	01  ; extent mask                ; EXM
+	DW	195 ; disk size                  ; DSM
+	DW	127 ; directory max -1           ; DRM
+	DB	192 ; alloc 0                    ; AL0
+	DB	0   ; alloc 1                    ; AL1
+	DW	32  ; check size                 ; CKS
+	DW	2   ; track offset               ; OFS
+	DB	1BH ; Checksum
+TRNS03:
+
+
+CPMT04:	DW	128  ; 128 bytes sectors per track; SPT
+	DB	3   ; block shift factor         ; BSH
+	DB	7   ; block mask                 ; BLM
+	DB	0   ; extent mask                ; EXM
+	DW	143 ; disk size                  ; DSM
+	DW	31  ; directory max -1           ; DRM
+	DB	128 ; alloc 0                    ; AL0
+	DB	0   ; alloc 1                    ; AL1
+	DW	0   ; check size                 ; CKS
+	DW	0   ; track offset               ; OFS
+	
+SIGNON:
+	DB 	1FH,CR,LF
+	DB	'CP/M-80  v. 2.2'
+	DB	CR,LF
+	DB	0EFH,0E6H,0F0H,20H,20H,0EEH,0E9H,0E9H,0F1H
+	DB	0E6H,20H,20H,0EDH,0E7H,0F5H
+	DB	'  BIOS'
+	DB	CR,LF
+	DB	'Ver. 1.2 (c) III 1988 '
+	DB	CR,LF,00H
+
+BOOT::
+	DI		; Запрет прерываний
+	LXI	SP,80H	; Setup stack space
+	MVI	A,1cH	; системный регистр
+	STA	0FA7FH	; установили (на всякий случай)
+	STA	SYSCOPY##
+	CALL INIT##
+	CALL HINIT##
+	XRA A		;
+	STA	CDISK	; активный диск А: & user 0
+	LXI	H,SIGNON
+	CALL	PSTRNG	; печать начального сообщения
+WBOOT:: DI
+	LXI	SP,80H	; стек ниже буфера 
+	CALL INIT##
+	MVI	C,0     	;выбор диска 0
+	CALL	SELDSK
+	CALL	HOME    	;трек 00
+	MVI	B,NSECTS	;число секторов для загрузки
+	MVI	C,0     	;# текущего трека
+	MVI	D,2     	;# текущего сектора
+; сектор 1 содержит спец. информацию
+	LXI	H,CCP   ;начальный адрес загрузки
+; загружаем  1 сектор
+LOAD1:
+	PUSH	B       ;save sector count, current track
+	PUSH	D       ;save next sector to read
+	PUSH	H       ;save dma address
+	MOV	C,D     ;get sector address to register c
+	MVI	B,00    ; add MSB
+	CALL	SETSEC  ;set sector address from register c
+	POP	B       ;recall dma address to b,c
+	PUSH	B       ;replace on stack for later recall
+	CALL	SETDMA  ;set dma address from b,c
+
+	CALL	READ
+	ORA	A    	; any errors?
+	JNZ	WBOOT	;retry boot if an error occurs
+
+;	     no error, move to next sector
+
+	POP	H     	;recall dma address
+	LXI	D,128 	;dma=dma+128
+	DAD	D     	;new dma address is in h,l
+	POP	D     	;recall sector address
+	POP	B     	;recall number of sectors remaining
+			; and current trk
+	DCR	B     	;sectors=sectors-1
+	JZ	GOCPM 	;go to cp/m if all have been loaded
+
+;	     more sectors remain to load, check for track change
+
+	INR	D
+	LDA	CPMT00 	;Get maximum sector number
+	CMP	D
+	JNC	LOAD1      ;carry generated if sector > maximum
+
+;	     end of current track, go to next track
+
+	MVI	D,1    	;begin with first sector of next track
+	INR	C      	;track=track+1
+
+;     save register state, and change tracks
+
+	PUSH	B
+	PUSH	D
+	PUSH	H
+	MVI	B,00   	; add MSB
+	CALL	SETTRK 	;track address set from register c
+	POP	H
+	POP	D
+	POP	B
+	JMP	LOAD1  	;for another sector
+
+;     end of load operation, set parameters and go to cp/m
+
+GOCPM:
+	MVI	A,JMP   ;c3 is a jmp instruction
+	STA	0       	;for jmp to wboot
+	LXI	H,WBOOTE	;wboot entry point
+	SHLD	1        ;set address field for jmp at 0
+
+	STA	5        ;for jmp to bdos
+	LXI	H,BDOS   ;bdos entry point
+	SHLD	6        ;address field of jump at 5 to bdos
+
+	LXI	B,80H    ;default dma address is 80h
+	CALL	SETDMA
+
+;	EI	         ;enable the interrupt system
+	LDA	CDISK    ;get current disk number
+	MOV	C,A      ;send to the ccp
+	JMP	CCP      ;go to cp/m for further processing
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;Обработка прерываний
+;   Таблица перехода
+DOINT0 EQU	0F7C8H
+DOINT1 EQU	0F7CAH
+DOINT2 EQU	0F7CCH
+DOINT3 EQU	0F7CEH
+DOINT4 EQU	0F7D0H
+DOINT5 EQU	0F7D2H
+DOINT6 EQU	0F7D4H
+DOINT7 EQU	0F7D6H
+DOINT8 EQU	0F7D8H
+	PUBLIC DOINT0,DOINT1,DOINT2,DOINT3,DOINT4
+	PUBLIC DOINT5,DOINT6,DOINT7,DOINT8
+
+INT0::
+	PUSH	H
+	LHLD	DOINT0
+	JMP	DOINT
+INT1::
+	PUSH	H
+	LHLD	DOINT1
+	JMP	DOINT
+INT2::
+	PUSH	H
+	LHLD	DOINT2
+	JMP	DOINT
+INT3::
+	PUSH	H
+	LHLD	DOINT3
+	JMP	DOINT
+INT4::
+	PUSH	H
+	LHLD	DOINT4
+	JMP	DOINT
+INT5::
+	PUSH	H
+	LHLD	DOINT5
+	JMP	DOINT
+INT6::
+	PUSH	H
+	LHLD	DOINT6
+	JMP	DOINT
+INT7::
+	PUSH	H
+	LHLD	DOINT7
+
+DOINT::	PUSH	PSW
+	MVI	A,1CH	;Конфигурация, принятая в CPM
+	STA	SYSREG
+	PCHL		;вложенные прерывания  не откраваем
+OUTINT::
+	LDA	SYSCOPY##
+	STA	SYSREG
+	DI
+	MVI	A,20H
+	STA	INT##
+	POP	PSW
+	POP	H
+	EI
+	RET
+outdel	equ 30000
+;	public outdel
+;tmout::	dw outdel	;5 минут
+SYST::	
+	LXI H,0
+	DAD SP
+	LXI SP,SYSST
+	PUSH H		;спасли стек
+	PUSH D
+	PUSH B
+;функция LUT
+	LDA LUTFL##
+	ORA A
+	JZ KBD
+	CALL LUT##
+	XRA A
+	STA LUTFL##
+;контроль занятости
+;	lda lutflg##
+;	ora a
+;	jz skip5
+;	lhld tmout
+;	mov a,l
+;	ora H
+;	jz skip5
+;	dcx h
+;	mov a,l
+;	ora H
+;	shld tmout
+;	cz lutoff##
+;
+KBD:	LDA SYMBUF##
+	ORA  A
+	JNZ SKIP1	;SKIP4;прыгаем, если символ в буфере
+; опрос клавиатуры
+skip5:	CALL INKEY##	;<B> содержит контрольную линейку
+	ORA A		;<C> содержит скан-код
+	JZ SKIP1	;SKIP4;прыгаем, если кнопка не нажата
+	LHLD DOINT8
+	PCHL		;программное прерывание
+skip3::
+	MOV A,C
+	ORA A
+	JZ	SKIP2	;контроль: вырезано что-либо или нет
+	STA SYMBUF##
+	MOV A,B
+	STA CNTRKEY##
+	LDA SNDFLG##
+	ORA A
+	JZ SKIP2
+	CALL SNDON##	;настроили TIMER
+	MVI a,01H
+	STA	0FB00H	;щелчок
+
+SKIP2:;	lhld tmout
+;	mov a,l
+;	ora h
+;	cz luton##
+;	lxi h,outdel
+;	shld tmout	
+SKIP1:
+	POP B
+	POP D
+	pop H		;стек
+	SPHL
+	JMP	OUTINT
+;SKIP4:	LDA 0F8FFH
+;	ORA A
+;	JZ SKIP1
+;	JMP SKIP2
+
+	DS 30
+SYSST:
+
+; Установка трека 0
+HOME::
+	MVI	C,0
+	JMP	SETTRK
+; Выбор диска по (С), (HL) содержит адрес таблицы (на выходе)
+SELDSK::
+	MOV	A,C
+	cpi	255	;запрос адреса таблицы векторов
+	LXI	H,DOINT0
+	RZ
+	CPI	DRNUM    ; не более DRNUM
+	JNC	DSERR
+; определяем адрес таблицы
+	LXI	H,DRVTAB
+	STA	DSKCPM
+	mvi	b,0
+	dad	b
+	dad	B		;адрес таблицы + 2*dskcpm
+	mov	a,m
+	inx	h
+	mov	h,m
+	mov	l,A
+	ORA	H
+	JZ	DSERR
+	MOV	A,C
+	CPI	4
+	RNC			;не floppy
+	push	h	;адрес таблицы DPH
+	lxi	b,10
+	dad	b
+	mov	a,m
+	inx	h
+	mov	h,m
+	mov	l,a	;cpmtXX
+	dcx	h
+	mov	a,m	;info
+	dcx	h
+	shld	cpmt	;текущий драйв
+	inr	a
+	cnz	getinfo##
+	pop	h
+	rz
+DSERR:	LXI	H,0000   ; если ошибка, вернем 0
+	XRA	A
+	STA	CDISK    ; если ошибка, драйв А:
+	RET
+; трек по регистру (С)
+SETTRK::
+	MOV	A,C
+	STA	TRKCPM
+	RET
+; таблица адресов дисковых таблиц
+DRVTAB:
+	DW		DPH0	; A 0
+	DW		dph1	; B 1
+	DW		DPH2	; C 2 
+	DW		DPH3	; D 3
+	DW		DPH4	; E 4	Электронный
+	DW		0		; F 5
+	DW		0		; G 6
+	DW		0		; H 7	HARD
+; сектор по регистру (С)
+SETSEC::
+	MOV	A,C
+	STA	SECCPM
+	RET
+; translate the sector given by BC using the
+; translate table given by DE
+
+SECTRAN::
+	MOV	H,B  	; Make no translation
+	MOV	L,C
+	INX	H	; физический  номер начинается с 1!
+	RET	       	;with value in HL
+; DMA устанавливается по содержимому (ВС)
+SETDMA::
+	MOV	L,C    	;low order address
+	MOV	H,B    	;high order address
+	SHLD	DMACPM 	;save the address
+	RET
+
+;*************************
+;		    perform read operation
+;           if (there is sector in write buffer)
+;           then
+;               mem:= write buffer
+;           else
+;               if (there is sector in read buffer)
+;               then
+;                   mem:= read buffer
+;               else
+;                  {
+;                   read buffer := sector from disk
+;                   mem:= read buffer
+;                  }
+;
+READ:: MVI A,4
+	STA OPER
+	lda	dskcpm
+	cpi	4
+	jZ 	edisk
+	CALL	LTOF## ; Вычисление физического адреса диска
+	call	cmprd  ; нужные данные в буфере чтения?
+	JZ	RTFR
+	CALL	cmpwr ; нужные данные в буфере записи?
+	JNZ	R2
+; O.K.	- читаем из буфера записи
+	LXI	D,WRBUFF
+	JMP	TRF
+; O.K.	- читаем из буфера чтения
+RTFR:
+	LXI	D,RDBUFF
+TRF:	LHLD	OFSSEK
+	DAD	D 	; адрес сектора в буфере
+	XCHG
+	LHLD	DMACPM
+	LXI	B,128	; размер сектора
+	CALL	DETOHL 	; 
+	LDA	ERRFL 	; флаг ошибки
+	ORA	A
+	RET
+R2:
+	LHLD	DREG
+	SHLD	DREGRD
+	LDA	SECSEK
+	STA	SECRDB
+R21: 	LXI H,CPMT
+	CALL	DSETUP 	; предустановка
+	LXI	H,RDBUFF
+	CALL	DTOM## 	; физическое чтение
+	JMP	RTFR
+EDISK:
+	LDA TRKCPM
+	ADD	A
+	CPI	17
+	MOV	E,A
+	MVI	A,1
+	RNC		;RETURN, если трек большой
+	MVI	D,0
+	LXI	H,ETRAK
+	DAD	D
+	LDA	VIDEO
+	STA	STORE
+	ANI	3FH
+	ORA	M
+	STA	VIDEO		;Нужная страница
+	INX	H
+	MOV	A,M
+	STA	store+1	;Нужная маска цвета
+	LDA	SECCPM
+	RRC
+	MOV	E,A
+	ANI	3FH
+	ORI	40H
+	MOV	D,A		;Старщий байт адреса
+	MVI	A,80H
+	ANA	E
+	MOV	E,A		;Младший байт адреса
+	MVI	B,80H		;Счетчик
+	LXI	H,EBUF
+	LDA	OPER
+	CPI	6
+	CZ	EWRITE
+	lda	store+1
+	inr	a
+	sta	clreg
+	MVI	A,3CH
+	DI
+	STA	SYSREG
+LPEDISK: LDAX	D
+	MOV	M,A
+	INX	D
+	INX	H
+	DCR	B
+	JNZ	LPEDISK	;ACCESS
+ 	MVI	A,1cH
+	STA	0FF7FH	;%
+	EI
+	LDA	STORE
+	STA	VIDEO
+	LDA	OPER
+	CPI	4
+	JZ	EREAD
+	XRA	A
+	RET
+EREAD:	LHLD	DMACPM
+	LXI	D,EBUF
+	LXI	B,80H
+	JMP	DETOHL
+EWRITE:	PUSH	D
+	XCHG
+	LHLD	DMACPM
+	XCHG
+	LXI	B,80H
+	CALL	DETOHL
+	pop	h
+	push	h
+	lda	store+1
+	sta	clreg
+	MVI	A,3CH
+	DI
+	STA	SYSREG
+	mvi	a,0ffh
+	mvi	b,80h
+LPECLR:	mov	m,a
+	inx	h
+	dcr	b
+	jnz	lpeclr	
+	MVI	A,1cH
+	STA	0FF7FH	;%
+	EI
+	POP	H
+	LXI	D,EBUF
+	MVI	B,80H
+	RET
+STORE:	DS		2
+ETRAK:	DB 40H,1CH	;1б - маска страницы; 2б- маска цвета
+	DB 40H,2AH
+	DB 40H,46H
+	DB 80H,1CH
+	DB 80H,2AH
+	DB 80H,46H
+	DB 0c0H,1CH
+	DB 0c0H,2AH
+	DB 0c0H,46H
+
+CMPRD:	LXI	H,DREGRD
+CMPB:	LXI D,DREG
+	MVI	B,3
+LOOPCM:	LDAX D
+	CMP	M		;DRIVE & SIDE
+	RNZ
+	INX D
+	INX H
+	DCR B
+	JNZ LOOPCM
+	RET			; ZERO если o'key
+CMPWR:	lxi	h,dregwr
+	jmp	cmpb
+DOWRBF:	LHLD	DREG
+	SHLD	DREGWR
+	LDA	SECSEK
+	STA	SECWRB
+	LHLD	CPMT
+	SHLD	CPMTWR
+	RET
+
+; Операция записи
+WRITE:: MVI A,6
+	STA OPER
+	LDA	DSKCPM
+	CPI	4
+	JZ	EDISK
+	MOV	A,C
+	STA	WRTYPE 	; тип записи
+	CALL	LTOF## 	; получение физических  параметров
+
+	LDA	WRTYPE 	; 
+	CPI	01H 	; Запись в директорию?
+	JNZ	WR1
+;  Запись в директорию
+	XRA	A
+	STA	UNALLO 	; Буфер не аллокирован
+	CALL	CMPWR
+	JZ	WRD1 	; если сектор в буфере
+	CALL	FLUSH 	; If buffer was active - flush it
+	RNZ		; Exit if error
+	CALL	PREREAD	; Read buffer from disk
+	RNZ		; Exit if error
+	jmp	flush
+WRD1:
+	CALL	CPTOBUF	; Transfer bytes to write buffer
+	JMP	FLUSH 	; And write buffer
+;;;;;;;;;;
+WR1:
+	ORA	A 	; Is A = 0 ?
+	JNZ	WR2 	; If not - there will be
+			;" WRITE TO UNALLOC. " type
+;	Writing to ordinary sector ( may be to unallocated )
+	CALL	cmpwr	; Is desired record in buffer ?
+	JZ	CPTOBUF	; If so - transfer and exit
+	CALL	FLUSH
+	RNZ			; If error - exit
+;	If unalloc. flag   and   we are in unalloc. block -
+;		make buffer and write into it
+	LDA	UNALLO
+	ORA	A 	; Unallocated block ?
+	JZ	WRU1 	; No - make an ordinary pre-read
+
+	call	cmpblk
+	JNZ	wru1
+; Next sector is unallocated one - the pre-read is unnesessary
+
+	CALL	dowrbf 	; Make a new buffer
+	JMP	CPTOBUF	; and write into it
+
+CMPBLK:	lhld	dskbls	;disk & track
+		lda	secbls
+		mov	e,a
+		lda	dskcpm
+		cmp	l
+		rnz		; если драйв не тот
+		lda	trkcpm
+		sub	h
+		rc		;если трек <, чем был
+		lhld	cpmt
+		inx	h
+		inx	h	;# sector per track
+		jz	cmpsec	;== track
+		dcr	a
+		rnz		;если трек >,чем на 1
+		lda	seccpm
+		add	m	;приведеный # сектора
+cmps:		inx	h
+		inx	h
+		inx	h	;sector in block - 1
+		sub	m
+		cmp	e
+		rnc		;если не блок
+		xra	a
+		ret		;если блок
+CMPSEC: 	lda	seccpm
+		cmp	e
+		rc		;если сектор <
+		jmp	cmps
+WRU1:
+	XRA	A
+	STA	UNALLO 	; Mark - no unallocated block
+	JMP	PREREAD	; Fill write buffer
+;	BDOS has signalled - unallocated block begins
+WR2:
+	CALL	FLUSH 	; Write old buffer,
+	RNZ
+	MVI A,0FFH
+	STA	UNALLO 	; We now work with unallocated block
+	LDA	DSKCPM
+	STA	DSKBLS
+	LHLD TRKCPM
+	SHLD	TRKBLS
+	CALL	DOWRBF 	; Make a new buffer
+	JMP	CPTOBUF
+;
+; PREREAD - If there is info in read buffer -
+;		   move it to write buffer,
+;    else - read sector to write buffer from disk.
+;
+;	Before to make reading from disk ask for info in RDBUFF
+
+PREREAD: call	dowrbf
+	CALL	cmprd	; Are read and write buffer the same ?
+	JNZ	PREREZ 	; No - Make Pre-read
+
+; There is info in read buffer - transfere it into write buffer
+
+	LXI	B,1024	; Setup counter
+	LXI	H,WRBUFF
+	LXI	D,RDBUFF
+	call	DETOHL 	; Move all read buffer into write buffer
+	jmp	cptobuf
+PREREZ: LXI H,CPMT
+	CALL	DSETUP 	; Setup FDC and DRVREG
+	LXI	H,WRBUFF
+	CALL	DTOM## 	; Read sector into buffer
+	RNZ
+; CPTOBUF - procedute to transfer bytes from .(DMACPM)
+; to write buffer
+CPTOBUF:
+	CALL	cmprd	; Are write and read buffers the same ?
+	JNZ	CPT1	; transfer bytes to write buffer only	
+	xra	a
+	sta	dregrd	;буфер чтения не активный
+CPT1:
+	LXI	D,WRBUFF
+	LHLD	OFSSEK
+	DAD	D 	; Calculate place for record in buffer
+	XCHG
+	LHLD	DMACPM 	; Get DMA address
+	LXI	B,128 	; Load counter
+	XCHG
+	MVI 	A,0FFH
+	STA	BUFFAC	; Mark : there were info
+			; written in buffer
+	JMP	DETOHL	; Fill part of buffer and return 
+			; with success flag
+;   FLUSH - запись буфера на диск
+FLUSH:
+	LDA	BUFFAC
+	ORA	A
+	RZ		; Do nothing if buffer was inactive
+
+	XRA	A
+	STA	BUFFAC 	; If you write buffer to disk -
+			; mark it as unactive
+	LXI	H,CPMTWR
+	CALL	DSETUP 		; Setup FDC and DRVREG
+	LXI	H,WRBUFF	; HL points to buffer
+	CALL	MTOD## 	; Write sector from buffer to disk
+	RNZ		;плохая запись
+	sta	dregwr	;не активный буфер для записи
+	ret
+
+WRTYPE:
+	DB	0 	;Storage for write type :
+			;	0 - ordinary write
+			;       1 - directory write
+			;       2 - first sector of 
+			;	      unallocated block
+
+BUFFAC::
+	DB	0 	; Active write buffer
+UNALLO::
+	DB	0 	; <>0 - Write to unallocated block
+ERRFL::
+	DB	0
+
+;       DSETUP - Subprogramme to setup FDC and DRVREG before
+;                      actual real/write
+;
+; 	HL points to Header in that way :
+
+SIDE1	EQU	10H
+MOTOR	EQU	20H
+SDENFL	EQU	40H
+DR8IN	EQU	80H
+
+DSETUP::
+; I~~~~~~I~~~~~~~I~~~~~~I~~~~~~I~~~~~~I~~~~~~I~~~~~~I~~~~~~~I
+; I8"/5" I /DDEN I Moto I Side I DS3  I  DS2 I  DS1 I  DS0  I
+; I------I-------I------I------I------I------I------I-------I
+; I  d7  I  d6   I  d5  I  d4  I  d3  I  d2  I   d1 I   d0  I
+; I______I_______I______I______I______I______I______I_______I
+; 	     Select disk
+;	 HL - Address of parameter block for setup
+
+	MOV	E,M
+	INX	H
+	MOV D,M		;адрес cpmtXX в DE
+	inx	h
+	call force##
+	mov	a,m
+	STA	DRVREG
+	push d
+;	push h
+	call moton##
+;	pop h
+	pop d
+	DCX	D 	; DE points to current track now
+	inx	h
+	ldax d
+	sta fdc+1
+	MOV	A,M
+	sta	fdc+3
+	ORA A
+	 mvi c,18h		;seek
+	JNZ SK5
+	MOV C,A
+SK5:	stax d	;new track
+	inx h
+	mov	a,m
+	sta	fdc+2	;sector
+	dcx d
+	dcx d
+	dcx d
+	dcx d	;сие указывает на скорость головки
+	ldax d
+	ani 0c0h
+	mov b,a
+	lda drvreg
+	push psw
+	ora b
+	sta drvreg
+	ldax d
+	ANI	3
+	ora	c
+	STA	FDC
+	CALL	DELAY3##
+WAITB2:
+	LDA	FDC	; Get status
+	rrc
+	Jc	WAITB2	; If not DONE yet - wait
+	pop psw
+	sta drvreg
+	RET
+
+
+PSTRNG::
+	MOV	A,M 	; Print message pointed by HL to 0
+	ORA	A	; Zero ?
+	RZ
+
+	PUSH	H	; Save HL
+	MOV	C,A
+	CALL	CONOUT##
+	POP	H	; Restore HL
+	INX	H	; Bump pointer
+	JMP	PSTRNG
+
+DETOHL::
+	MOV A,B			;5
+	ORA C			;4
+	RZ			;4    13
+DETO:	LDAX	D		;7    20
+	MOV	M,A		;7
+	INX	H		;5
+	INX	D		;5
+	DCX	B		;5
+	JMP	DETOHL		;10 25+27=52*.4=21mksek
+
+
+BEGDAT	EQU	$      	;beginning of data area
+
+STACKS::
+	DS	2	; STORAGE FOR STACK POINTER
+
+; Блок CPM/МикроДос параметров (128 байт/сектор)
+BPO::
+DSKCPM:	DB	1	; Disk number from BDOS
+CHW:		db 80h
+OPER:		DB	4		;чтение
+NSEC:		db	1
+TRKCPM::	DB 0	; Track number from BDOS
+SECCPM::	DB 1	; Sector number from BDOS
+DMACPM:	DW 80H	; DMA Address
+UNUSED:	dw	0
+
+; Блок физических параметров (LTOF делает из CPM параметров)
+CPMT::	dw	cpmt00
+DREG::	DB	1
+TRKSEK::	DB	0
+SECSEK::	DB	0
+OFSSEK::	DW	0000H	; смещение сектора в буфере
+; Буфер чтения
+DREGRD::	DB 0
+TRKRDB::	DB 0
+SECRDB::	DB 0
+; Буфер записи
+CPMTWR::	dw	cpmt00
+DREGWR::	DB	0
+TRKWRB::	DB	0
+SECWRB::	DB	0
+; Логические параметры начала неаллокированного блока
+DSKBLS:	DB	1
+TRKBLS:	DB	0
+SECBLS:	DB	0
+
+ENDDAT	EQU	$      	;end of data area
+
+
+	PUBLIC	RDBUFF,WRBUFF,ENDDAT,ENDEBUF
+WRBUFF	EQU	0F200H		; Write buffer
+RDBUFF	EQU	WRBUFF-1024	; Read buffer
+EBUF	EQU	RDBUFF-128	; E-диск буфер
+endebuf EQU RDBUFF-2
+
+; память, используемая BDOS'ом 
+CHK03	EQU	EBUF-32		;check vector 3
+CHK02	EQU	CHK03-32	;check vector 2
+CHK01	EQU	CHK02-32	;check vector 1
+CHK00	EQU	CHK01-32	;check vector 0
+ALL04	EQU	CHK00-18	; E-диск
+ALL03	EQU	ALL04-50	;allocation vector 3
+ALL02	EQU	ALL03-50	;allocation vector 2
+ALL01	EQU	ALL02-50	;allocation vector 1
+ALL00	EQU	ALL01-50	;allocation vector 0
+DIRBF	EQU	ALL00-128	;буфер директории
+	END
+;check vector 0
+ALL04	EQU	CHK00-18	; E-

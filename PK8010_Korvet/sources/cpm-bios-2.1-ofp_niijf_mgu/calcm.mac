@@ -1,0 +1,30 @@
+        CSEG
+main:
+        mvi c,31
+        call 0da0ch
+        call calc##
+        jmp 0                      ;exit
+outa_::
+        mvi c,13                ;вк
+        call 0da0cH
+        mvi c,4                 ;clrstr
+        call 0da0cH
+        LXI H,.as##
+loopout:
+        mov a,m
+        ora a
+        rz
+        mov c,a
+        push h
+        call 0da0ch
+        pop h
+        inx h
+        jmp loopout
+
+getch::
+        jmp 0da09h
+
+        END   main
+
+        call 0da0ch
+   
