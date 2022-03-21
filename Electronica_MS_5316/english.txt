@@ -1,0 +1,15 @@
+Electronica MS5316 Floppy drive (Электроника МС5316 НГМД)
+
+Year:	≤1992
+
+"Electronica MS5316" is a case with a power supply and a floppy drive. Inside
+the case different Soviet drives could be installed: MS5305, MS5311, MS5313 and
+even foreign drives. For example, I have a japanese drive "MITSUBISHI ELECTRIC 
+U288Y073". The lever is in the wrong place. Part of the case front panel is cut
+out. Eyewitnesses said to me that it was in this form that it was sold.
+
+Some Soviet home computers could connect an external floppy drive. Floppy drive
+in the 80s was a dream. Drive with controller the drive sometimes cost more
+than the computer itself. User could buy a floppy drive without a case and
+just put it on the table near the computer. And use it without a case.
+Or user could buy such a nice external floppy drive.
