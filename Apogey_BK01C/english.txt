@@ -1,0 +1,38 @@
+Apogey BK01C (Апогей БК01Ц)
+
+Year:	1988
+RAM:	52 kB
+ROM:	4 kB
+CPU:	i8080 1.7 MHz
+Text:	64x25x8
+Graph:	128x62x8
+Group:	Radio 86RK
+
+Apogee BK01C is a Soviet home computer, an improved version computer Radio 86RK.
+In Apogee the RAM was increased to 52 kB. Added three-channel sound generator
+(i8253 chip). Added an alternative character generator with character size of 
+6x4 pixels, which allows you to display pseudographic resolution 192x102. Or 
+384x204 with skillful use of character generator.
+
+There are two versions of the computer: Apogey BK01 and Apogey BK01C. Apogey
+BK01C has 8 colors. The screen displays colored characters on a black
+background, or black symbols on a colored background. In pseudographic mode,
+this means two colors into a matrix of 3x2 dots, one of which is black. Apogee
+BK01 is a black and white. It can increase brightness of the background 
+and the symbol at the same time. On the screen 4 colors can be displayed: 
+black (background), dark gray (bright background), light gray (symbol), 
+white (bright symbol).
+
+The i8275 chip, on which the Radio 86RK video adapter is built, supported output
+of a color image, but for the sake of simplicity of the Radio 86RK scheme, it
+contains a color output did not do. Color output was done in Apogey BK01C. Color
+management in i8275 for the programmer was implemented extremely inconveniently.
+The programmer wrote into video memory a special value with codes 80h - 9Fh,
+which changed the color of all characters following it. These characters could
+be displayed as spaces, but then there were unused positions on the screen. Or
+the video controller could work without spaces, but this would shift the entire
+video memory by one character. The address symbol in video memory with certain
+coordinates depended on the previous characters and in general could be anything.
+Well, no more than 16 color changes were allowed per line. And also the
+desynchronization of the DMA controller and video adapter, which led to
+twitching and shifting of the screen.
