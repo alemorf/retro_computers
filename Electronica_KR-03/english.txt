@@ -1,0 +1,28 @@
+Electronica KR-03 (Электроника КР-03)
+
+Year:	1987
+RAM:	16 kB
+ROM:	2 kB
+CPU:	i8080 1.7 MHz
+Text:	64x25x2
+Graph:	128x62x2
+Group:	Radio 86RK
+
+Electronica KR-03 is a Radio 86RK with 16 kilobytes of RAM in a good metal case
+with a reliable power supply and an excellent keyboard.
+
+There is only 16 kilobytes of RAM here, usually 32 kilobytes are installed in
+Radio 86RK. RAM can be increased by soldering memory chips on the second floor.
+It's a pity to lose the warranty? It have no warranty in anycase. The box of the
+computer says "Radioconstructor" only so that the seller would have a legal way
+not to give a guarantee for the computer. The computer was sold assembled and
+ready to go.
+
+MS7007 keyboard is used here. This is one of the best keyboards in the USSR.
+She is reliable and pleasant. But, this keyboard is not compatible with Radio
+86RK. In almost all games, the labels on the buttons will not correspond to
+reality. For the game man is moving to the right, you must press not the right
+arrow, but some kind of symbol. If the program works with the keyboard through
+the BIOS functions, then everything is fine. Only most games work directly with
+the hardware, which is why such problems arise. But these are trifles. No normal
+games for Radio 86RK is avialable, but typing on this keyboard is a pleasure.

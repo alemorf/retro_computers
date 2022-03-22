@@ -1,0 +1,62 @@
+Argo PK FV-6511 (Арго ПК ФВ-6511)
+
+Year:	≤1992
+RAM:	128 kB
+ROM:	2 kB
+CPU:	Z80 3.5 MHz
+Text:	80x25x16
+Graph:	640x200x8, 320x200x16, 256x192x15
+Group:	ZX Spectrum
+
+This is a very strange computer. It works with the tape as with a floppy disk.
+The tape has a CP/M file system, sectors, a list of files in the first sectors,
+and the files can be fragmented. The computer is able to detect sectors with
+damaged tape and dont use them. Argo uses the Z80 processor and this computer
+can run programs for the "ZX Spectrum 48K" computer. Argo has 128 kilobytes of
+RAM, but it can't run programs for the ZX Spectrum 128K. Argo's video adapter
+is built on the i8275 chip, on the same chip that built the Radio 86RK computer.
+Agro has a hardware text video mode 80x25x16 with variable character generator.
+Argo has 640x200x8, 320x200x16 graphics video modes. And it's all about the same
+computer.
+
+The ROM size of this computer is only 2 kilobytes. The ROM contains only the
+bootloader from the tape. Every time the power is turned on, the TCP/M operating
+system boots from the tape. TCP/M is CP/M with a tape recorder driver instead
+of a floppy drive. T is Tape.
+
+For this computer, a special tape recorder is needed, in which rewind, playback
+and recording can be activated by an electrical signal. The authors of the
+computer advise the Mayak-231 tape recorder and its later modifications. I
+bought an Orel-101-1 tape recorder for this computer.
+
+The first time you use a cassette, you must format it. During the formatting of
+the cassette, the computer writes marks on the cassette containing sector
+numbers. When working with a tape, the operating system uses these marks to
+determine where and which sector begins. In what direction should the cassette
+be rewound in order to find the desired sector.
+
+Tape recorder control is not unique to this computer. You can connect the tape
+recorder to any computer with a parallel port. Of interest here is the tape
+recorder driver for the TCP/M operating system. It controls the tape recorder.
+
+The computer's ROM does not contain the computer firmware "ZX Spectrum 48K",
+which is needed by ZX programs. The ROM does not have a program for switching
+the computer to the compatibility mode with the computer "ZX Spectrum 48K". This
+program and firmware must be loaded from the cassette every time before starting
+any ZX Spectrum game.
+
+How did the authors manage to make the video adapter based on the i8275 chip
+compatible with the ZX Spectrum? They placed the character generator in RAM. The
+character generator format is the same as the ZX Spectrum screen format and it
+is located at the same address as the screen. If the video memory is filled with
+certain character codes, then the character generator becomes the ZX Spectrum
+screen.
+
+The keyboard is locked while the ZX program is loading and remains locked when
+finished. To unlock the keyboard, you must press F10. The F9 key resets the
+computer without exiting the ZX Spectrum mode. The F8 key returns the computer
+to TCP/M. This suggests that the ZX keyboard is being emulated.
+
+The computer has an excellent keyboard, high-quality printed circuit board and
+a good metal case that does not give the impression of a brick. Personally, I
+fell in love with metal cases after such computers.
