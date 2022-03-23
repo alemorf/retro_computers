@@ -1,0 +1,124 @@
+BK0010 (БК0010)
+
+Year:	1985
+RAM:	32 kB
+ROM:	24 kB
+CPU:	K1801VM1 3 MHz
+Graph:	512x256x2, 256x256x4
+Group:	BK0010
+
+BK0010 is a Soviet school and home computer. Developed by NPO "Scientific
+Center”, now it is Sitronics. This computer uses Soviet 16 bit processor 
+KR1801VM1 of their own design. The processor has no foreign analogues, but using
+the PDP11 command set, which was developed by DEC corrporation. But this does
+not mean that the processor is not Soviet. I'll give you an analogy. AMD
+releases processors with an instruction set developed by Intel.
+
+The word PDP11 means not only the processor instruction system, but also
+computer architecture that allows you to run operating systems and programs
+for PDP11.
+
+BK0010 could not run operating systems and programs from PDP11. Few memory, but
+the memory can be increased. The unsolvable problem was the video memory located
+in the middle of the address space (at addresses 4000h-7FFFh). The RTOS
+operating system (standard for the PDP11) and its programs required contiguous
+address space from the beginning of memory. The error is very common. 
+ZX Spectrum computer had the same address space problem, no allowing you to run
+the CP/M operating system.
+
+The keyboard of the BK0010 is not comfortable, but it is cheap and maintainable.
+In it the most common tact buttons (PKN-150) were used, which even now buy is
+not a problem. Their only drawback is a very small move. Over button places a
+full-size key. And on the keys lies printout. They certainly could put names on
+the keys, but the inscriptions on the keys erased by fingers cannot be restored
+at home. There are no problems at all to make a new printout and laminate it.
+
+On the right, under the cover, there is a socket for ROM chips. The thing is not
+needed and even dangerous, there are enough idiots in schools. The switch under
+the cover is a reset. Not a button, but a switch with two positions! To reboot
+computer, you need to remove the cover and pull the tiny switch left and right.
+I can't understand it. It's easier to turn off and turn on the power supply,
+which was external.
+
+The computer had 32 kilobytes of RAM, of which half was used under video memory.
+Programs had only 16 kilobytes left. You can work, but still little memory. The
+video adapter supported two modes 512x256 2 colors, 256x256 4 colors. There is
+hardware vertical scrolling.
+
+In order to reduce the cost, school computers did not solder parts for the
+256x256 mode 4 colors. There is a place on the board, but there are no details.
+
+4 colors is not so bad if you could choose any 4 colors from the palette.
+But the palette was not added. The computer had 4 fixed colors: black,
+red, blue, green. But this was all over the place. IBM PC with CGA adapter
+also had two terrible fixed palettes.
+
+In a normal computer, the program itself switches the video adapter mode. If the
+program needs 512x256, then it will enable it. If 256x256, then enable it.
+BK0010 has two connectors on the back, one for 512x256 resolution, the second
+one is for 256x256. If the program is written for 512x256 and TV connected to
+256x256 socket, you'll see colored porridge. If the program is written for
+256x256 4 colors, and the connector will be in 512, then the color image will
+be represented by shading. In this case, colors 1 and 2 will be similar.
+
+The situation is complicated by the fact that the wires had to be soldered by
+yourself (from the computer there should be two connectors). Only for this it
+was necessary to be able to solder, therefore most of people worked like that.
+See screenshot.
+
+BK0010 uses a hardware keyboard controller. The program immediately receives
+code of the pressed key. Only now BK0010 cannot process several simultaneously
+pressed keys, this problem is hardware and not solvable. And no
+auto-repeat when a key is pressed for a long time, this is a software problem.
+
+A lot of games for BK were released and ported. And this despite the fact that
+for transfer games had to completely rewrite the entire code.
+
+In schools, computers were networked, where as a central computer DVK computer
+was used. DVK contains two six-port network boards (it is more correct to call
+the "controller of telegraph channels"). And from each BK was connected a wire
+to DVK.
+
+*** Focal ***
+
+The ROM of the BK0010 computer contains the Focal programming language. After
+turning on the computer, you could start programming on the Focal. Although all
+country taught BASIC.
+
+Focal was the standard language for PDP computers. It was very simple and
+small, which allowed to work on the first computers. This language is deciphered
+as FORmula CALculator, which actually speaks of its opportunities. From a
+programmer's point of view, Focal is very similar to BASIC, but there no string
+variables and graphical functions. There are only 26 teams in the BK Focal and
+20 functions. Let me briefly talk about it. If not me, then you won't know
+never:
+
+Each line of the Focal program has a fractional number, for example "1.10",
+"1.20", "5.15". If you enter 1.1, it will mean 1.10.
+
+Commands can be abbreviated to a single letter. All Focal commands beginning
+from different letters. And the simplest Focal program looks like this:
+
+// Output the text "Enter a number " and enter the number from the keyboard
+// into the variable X
+1.10 ASK "Enter number", X
+
+// Evaluate the expression and write the result to Y
+1.20 SET Y = X * 2 - 6
+
+// Calculate the value of the expression Y-10, and if it is less than zero,
+// then go to line 1.10. If equal to zero, then to line 1.80. If more
+// zero, then on line 1.40
+1.30 IF(Y-10) 1.10, 1.80, 1.40
+
+// Outputting the text "Result" and the value of the variable Y
+1.40 TYPE "Result", Y
+
+// Display the program on the screen
+WRITE
+
+// Run the program
+GO
+
+That's actually all. Several games were written on the focal point, some even
+have become cult. For example "Kingdom of Euphoria".
