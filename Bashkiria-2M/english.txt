@@ -1,0 +1,34 @@
+Bashkiria (Башкирия 2М)
+
+Year:	1989
+RAM:	128 kB
+ROM:	8 kB
+CPU:	i8080 2 MHz
+Graph:	384x256x16, palette 64 colors
+
+Bashkiria-2M was developed at the Bashkir Research and Production Association
+named of S. M. Kirov, in the Republic of Bashkiria, from which the computer got
+its name. The computer is rare and there are very few native programs for it,
+but the CP/M operating system partially compensates for this. This computer
+solves two major problems for running CP/M programms. Programs do not have
+enough RAM and the screen scrolls up for a long time. The computer has 128 KB of
+RAM, and the video has vertical hardware scrolling. It allows you to use CP/M to
+the maximum.
+
+"To the maximum" with the proviso that the screen resolution would be a little
+more. The screen resolution of Bashkiria 2M is 384x256 pixels. This is the
+optimal resolution for color TVs or monitors of the time. The graininess and
+focusing of televisions (CRT) allows you to see individual pixels. In addition,
+the proportions of a pixel at this resolution are close to a square. But working
+in CP/M, that is, working with text at 512 or 640 pixels, is more convenient.
+In these modes, you can draw 80 characters per line in a clear font.
+
+The computer can display 4 colors from a palette of 64 colors. The computer has
+a built-in LAN adapter and a printer port.
+
+The computer was produced in two versions: student and teacher. The student
+computer came with an external ROM cartridge. Usually the BASIC programming
+language was stored there. The teacher's computer was supplied with an external
+floppy drive controller. It is impossible to connect the floppy drive controller
+to the student's computer, since not all the necessary signals were output to
+the student's computer expansion connector.
