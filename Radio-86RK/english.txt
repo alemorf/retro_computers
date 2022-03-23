@@ -1,0 +1,39 @@
+Radio-86RK (Радио-86РК)
+
+Year:	1986
+RAM:	16 - 32 kB
+ROM:	2 kB
+CPU:	i8080 1.7 MHz
+Text:	64x25x2
+Graph:	128x62x2
+Group:	Radio 86RK
+
+The Radio 86RK computer appeared in the form of diagrams in Radio magazine in
+1986 (No. 4-6). It was a very simple computer: 9 large chips, 11 small ones, and
+8 memory chips. Some chips could not be installed.
+
+The computer is simple, because the video is assembled on the i8275 and i8257
+chips. Those chips can show color video mode, but for the sake of simplicity,
+this feature was not used in Radio 86RK.
+
+The i8275 chip can only display the text mode using only 128 characters. The
+character generator of Radio 86RK contains english and russian letters, but the
+small character generator was only enough for capital letters. There are no
+lowercase letters. Also, 16 pseudo-graphic symbols were placed in the character
+generator, dividing the familiarity in half in width and height. Thanks to them,
+it is possible to implement pseudo-graphic mode 128x62.
+
+The video adapter slowed down the processor unpredictably while reading the RAM,
+so the program execution time could not be calculated. And this is necessary for
+the correct operation of the program for loading and saving to a tape recorder.
+Therefore, during boot from the tape recorder, the video controller turned off
+and the user see a black screen.
+
+A little later, many factories decided to produce this computer. Moreover, they
+were released in different cases with different keyboards and under different
+names: Radio 86RK, Krista, Partner 01.01, Microsha, Electronica KR, Spectr 001,
+Micko 88, Geofit, Elix-89, Quantor BK, Apogey BK01, Alfa BK ... Some computers
+were significantly expanded, for example, 56 kB of RAM, a three-channel sound
+generator were installed in Apogey BK01C, color was added and a 192×128
+pseudographic mode was added (against 128×62 for the original computer). Most of
+the 86RK computers produced were not compatible with each other.

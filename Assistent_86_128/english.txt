@@ -1,0 +1,66 @@
+Assistent 86 128 (Ассистент 86 128)
+
+Year:	1988
+RAM:	128 - 1024 kB
+ROM:	48 kB
+CPU:	i8086 4.7 MHz
+Graph:	320x200x4, 640x200x2
+Text:	80x25x16, 80x25x16
+Sound:	i8253
+Group:	IBM PC
+
+Assistant 86 128 is an IBM PC-compatible Soviet home computer. All computer
+PCBs are in a single case with a keyboard. Assistant 128 is the coolest and
+largest computer in this form factor in the USSR.
+
+Inside the computer, one above the other, there are 5 PCBs: a keyboard board,
+a video adapter board and 128 kilobytes of RAM, a central processor board, a
+ROM board, a drive controller board and 1 megabyte of RAM. Inside the computer
+case is still a switching power supply.
+
+Assistant 86 128 computer has a i8086 processor operating at a frequency of
+4.7 MHz. This is a faster processor than was found in the original IBM PC.
+i8088 was used there. i8086 has an external data bus of 16 bits, while i8088
+has only 8 bits, which significantly affects the speed of exchange with RAM.
+A full-fledged CGA video adapter is installed in the Assistant 86 128. Unlike
+the original IBM PC, the "snow" in the Assistant was removed in the 80x25x16
+color text mode. The original IBM PC did not have enough video memory speed to
+run the processor and monitor at the same time. When the program changed
+something on the screen, a noise similar to snow appeared on the screen. The
+Assistant 86 128 has a full-fledged XT keyboard with a separate microcontroller
+(KR1816BE35). The expansion connector on the computer is non-standard, but if
+you wish, you can make an adapter for an ISA board.
+
+My computer has an expansion board containing 1 megabyte of RAM (976 kB
+available) and a floppy disk drive controller. Without this board, you will have
+to load programs from a tape cassette. By the way, the first IBM PC had such an
+opportunity. A program or game found on a floppy disk with friends simply cannot
+be recorded on a cassette. It is not obvious how to connect a tape recorder to
+a regular IBM PC and where to get programs for recording on a cassette. The game
+being recorded should work without MS DOS operating system, on a bare BIOS and
+require no more than ~100 KB of RAM. Without a RAM expansion card, the computer
+has only 128 kilobytes, some of which uses the BIOS and video adapter. The most
+interesting games and programs disappear immediately. But on the other hand,
+BASIC is flashed into the ROM of the computer. Without an expansion board
+installed, after turning on the computer, we get into BASIC. You can start
+writing your program.
+
+When we load MS DOS no program starts due to lack of RAM. MS DOS does not see
+extended memory, all ~100 KB of base memory are occupied by the operating system
+itself. It is required to reflash the BIOS, which is tightly soldered to the
+board. Or download the driver, which fortunately was found on one of the floppy
+disks. The ability to create a virtual disk using RAM was built into this
+driver. MS DOS cannot use the entire megabyte of memory. The excess is just
+convenient to use for a virtual disk. After the operating system is loaded,
+system files are copied there, which are constantly loaded from a floppy disk
+(command.com, vc.com...). The boot floppy after loading can be removed from the
+drive, replacing it, for example, with a game.
+
+MS DOS only supports 5.25" 360 kB floppy disks. If you connect a newer 80-track
+drive instead of a 40-track drive to your computer and load the 800.com driver,
+then the same 360 ​​kB floppy disks can be formatted on 800 kB. It 800 kB floppies
+can be read and write on a big computer.
+
+In general, this is a full-fledged IBM PC, a little faster than the original and
+without some of its jambs. It can run all programs for MS DOS / 8086 / CGA. You
+can even run Windows 3.0 and older versions.

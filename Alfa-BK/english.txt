@@ -1,0 +1,17 @@
+Alfa-BK (Альфа-БК)
+
+Year:	≤1990
+RAM:	32 kB
+ROM:	2 kB
+CPU:	i8080 1.7 MHz
+Text:	64x25x2
+Graph:	128x62x2
+Group:	Radio 86RK
+
+Alfa-BK is a Radio 86RK computer with 32 kB of RAM in a 3 mm thick steel case.
+One case weighs 5 kg. This computer uses a simple keyboard. A couple of layers
+of film are glued onto a sheet of textolite. The user presses the film against
+the textolite with his finger and closes the contact. After 25 years, the
+keyboard works clearly.
+
+
