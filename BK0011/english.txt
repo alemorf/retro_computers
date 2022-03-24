@@ -1,0 +1,44 @@
+BK0011 (БК0011)
+
+Year:	1989
+RAM:	128 kB
+ROM:	32 kB
+CPU:	K1801VM1 4 MHz
+Graph:	512x256x2, 256x256x4, 8 colors palette
+Group:	BK0010
+
+BK0011 is a continuation of the development of the computer BK0010.01. CPU 
+frequency has been increased from 3 MHz to 4 MHz. RAM has been increased from
+32 kB up to 128 kB. Previously, only 16 kB was available to the user, the rest
+was occupied by video memory, and now 112 kB is available. The difference is 7
+times! Used paging memory, because address space of the K1801VM1 processor only
+64 kB.
+
+An external floppy drive controller was supplied with the BK0011 computer. But
+this only applies to home versions. Only one controller was included to schools
+complect of 13 computers.
+
+To run some programs for BK0010 on BK0011, you must first load the BK0010 ROM
+image into RAM. Entry points and set of routines in the ROM of BK0011 has
+changed significantly. Also in programs for BK0010 launched there will be no
+sound on BK0011 due to an error in the computer circuit.
+
+Page management added to unused control bits port of sound port. And so that
+old programs do not accidentally switch the memory page, working with sound, the
+authors of the computer blocked this port entirely for old programs. In the
+BK0011M computer, next version of BK0011, the sound was returned. There are
+blocked only the page memory control bits.
+
+Everyone was waiting for a new video mode, everyone wanted 8 or 16 colors.
+256x256 4 colors for 1989 year is not serious. But no, the graphics mode has not
+changed. Appeared the ability to select one of two video pages to be displayed
+on the monitor. And appeared a palette, or rather 16 alternative sets of colors.
+
+Take a look at palettes 5, 6, 7, 8. They contain identical colors. What for?
+Palettes 9, 10 are the same. What for? And you will not find a palette in which
+there would be blue and white colors. And this combination first comes to mind
+when you are going to write Norton commander. I can't think of a reason why they
+put together such a palette. Even if for the authors it is absolutely did not
+care.. Even if they choose colors by random way, by throwing the die, the result
+will be better. Unless, they mixed up at the factory firmware. We flashed the
+ROM of the palettes with firmware for the microprocessor. May be...

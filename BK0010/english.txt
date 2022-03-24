@@ -111,13 +111,13 @@ from different letters. And the simplest Focal program looks like this:
 // zero, then on line 1.40
 1.30 IF(Y-10) 1.10, 1.80, 1.40
 
-// Outputting the text "Result" and the value of the variable Y
+// Print the text "Result" and the value of the variable Y
 1.40 TYPE "Result", Y
 
-// Display the program on the screen
+// Print this program
 WRITE
 
-// Run the program
+// Run this program
 GO
 
 That's actually all. Several games were written on the focal point, some even
