@@ -1,0 +1,44 @@
+BK0010.01 (БК0010.01)
+
+Year:	1987
+RAM:	32 kB
+ROM:	32 kB
+CPU:	K1801VM1 3 MHz
+Graph:	512x256x2, 256x256x4
+Group:	BK0010
+
+BK0010.01 is a improved version of the BK0010 computer. Computer PCB, processor,
+performance, amount of RAM is not changed and new equipment did not appear. This
+is what has changed:
+
+The flat keyboard BK0010 was beautiful and easy to repair, but the printing on
+it was not convenient. In BK0010.01, a normal keyboard was installed. The keys
+of which had big move. But this keyboard had a very strong bounce of contacts.
+If slowly press the key to the end, then the computer will print 3-5 characters,
+so users of BK0010.01 had a special way of printing, fast and weak touches.
+
+The new keyboard did not fit in the old case. They did not make a new case. They
+added to the previous case 4 slats increasing its height. Because of this it
+became possible to disassemble the computer without breaking the seal. Worth
+only pull out the slats and the upper part of the case can be unscrewed, gain
+access to the insides of a computer.
+
+The unpopular programming language Focal, which was flashed into the computer's
+ROM, changed to BASIC. Moreover, BASIC was not an interpreter, but a compiler in
+threaded code. This means that the program runs faster, but the RAM spending 
+more.
+
+The ability to program in Focal was retained. For BK0010.01 they released an
+external expansion unit called MSTD, which contained a ROM with Focal language
+and selftest programs. It may seem that the MSTD block is a step into the past,
+but no. For the sake of this block, engineers added the ability to disable the
+internal ROM, which in the future allowed to increase the RAM of the computer,
+produce a RAM extension unit.
+
+A mysterious inscription "CAGLRCCC.R" appeared in the upper left corner of the
+screen. And you don't guess what it is if no one tells you. It's a hint to you
+what's hot keys AP2+1 .. AP2+0 display the words: COLOR, AUTO, GOTO, LIST, RUN,
+COLOR 1.0, CLOAD, CONT, ., RUN.
+
+And also in BK0010.01 there was always soldered details (probably always) for a
+color video output.
