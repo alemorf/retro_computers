@@ -4,9 +4,10 @@ Year:	≤1981
 RAM:	32 kB
 CPU:	K1801VE1
 Graph:	512x256x2
+Grouph:	BK0010
 
-"Electronica NT-8010" is a prototype of the BK0010 computer. A computer 
-"Electronica NT-8010" was produced in only a few copies. You can look at this
+Electronica NC-8010 is a prototype of the BK0010 computer. A computer 
+Electronica NC-8010 was produced in only a few copies. You can look at this
 computer in the museums of Angstrem or Sitronics.
 
 Until ~1980, NII TT processors and microcontrollers had their own command set. 
