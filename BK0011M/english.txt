@@ -1,0 +1,16 @@
+BK0011M (БК0011М)
+
+Year:	1990
+RAM:	128 kB
+ROM:	32 kB
+CPU:	K1801VM1 4 MHz
+Graph:	512x256x2, 256x256x4, 8 colors palette
+Group:	BK0010
+
+BK0011M is a version of the BK0011 computer with repaired sound. Programs for
+BK0010 running on BK0011 were executed without sound.
+
+I will not dare to say for all BK0011M, but all computers that I have seen have
+a good keyboard. Keyboard similar in design to MC7007 (UKNC) or Delta S.
+
+No new features have emerged. This is the last computer in the BK series.

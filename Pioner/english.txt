@@ -1,4 +1,4 @@
-Pioneer (Пионер)
+Pioner (Пионер)
 
 Year:	≤1992
 RAM:	48 kB
@@ -7,7 +7,7 @@ CPU:	i8080 2 MHz
 Video:	384x256x5, 384x256x8
 Group:	Specialist
 
-Pioneer is a regular "Specialist" computer with 5 color graphics. It hasn't a
+Pioner is a regular "Specialist" computer with 5 color graphics. It hasn't a
 parallel port. And it has an incompatible keyboard.
 
 In the factory configuration, computer has only one ROM chip of 2 kilobyte. ROM
