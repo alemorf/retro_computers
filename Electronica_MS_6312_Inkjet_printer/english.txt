@@ -1,0 +1,36 @@
+Electronica MS6312 (Электроника МС6312)
+
+Year:	≤1991
+
+Elektronica MS6312 is a Soviet inkjet printer. Cartridge with liquid ink is used
+in inkjet printers. Ink is pushing out of the cartridge on the paper sheet. In
+this printer, pushing occurs due to fast heating ink. A tiny part of the ink is
+heated and the wapour push emitted a tiny drop of ink on a sheet of paper. This
+printing principle is quieter, faster and better quality than dot matrix
+printers.
+
+In the late 80s, dot matrix printer was a dream. Matrix and inkjet printers are
+very similar. In these printers, the print head moves left and right on a sheet
+of paper, slowly drawing letters and pictures. Matrix printers use an ink
+ribbon. Metal needles hit the tape dozens of times per second. The needles are
+pressed ink ribbon to a sheet of paper. They squeeze the ink out of the tape,
+leaving ink on the sheet. Sometimes dry-dye plastic tapes are used, but the
+essence it doesn't change. It's slow, noisy and poor quality. But at that time
+many people who use computers could not even imagine that there are other
+printers. Quieter and faster. Printers that can be lifted with one hand. Like
+the "Electronics MS6312" printer.
+
+The Electronics MS6312 printer uses a Soviet print head. Such head is no longer
+available for sale. But we must praise the engineers, because fastening and
+contacts of the Soviet head are fully compatible with the imported head
+HP51604A. This head can still be found in stores. The imported head is higher
+supply voltage, so you need to replace the zener diode on the printer PCB. It
+described in the instructions for the printer.
+
+The PCB contains a standard circuit based on the KR580VM80A (i8080)
+microprocessor. Each KR580VV55A (i8255) chip is a 24-bit parallel port, that is,
+a GPIO. Chip KR573RU10 (HM6516-9) is 2 kilobytes of RAM. White chip KR573RF4A
+(2764) is 8 kilobytes of ROM. This is where the printer program is stored. The
+small KR580GF24 (i8224) is a master clock. All together it's almost ATMega8 
+microcontroller. The remaining microcircuits are current amplifiers and simple
+logics.
