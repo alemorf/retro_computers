@@ -1,0 +1,12 @@
+Krista (Криста)
+
+Year:	≤1989
+RAM:	32 kB
+ROM:	2 kB
+CPU:	i8080 1.7 MHz
+Graph:	128x62x2
+Text:	64x25x2
+Sound:	i8253
+Group:	Radio 86RK
+
+TODO
