@@ -1,0 +1,12 @@
+Pengaton 128
+
+Year:	1991
+RAM:	128 kB
+ROM:	32 kB
+CPU:	Z80 3.5 MHz
+Graph:	256x192x15
+Sound:	AY-3-8910
+Ground:	ZX Spectrum
+In ROM:	Basic
+
+TODO
