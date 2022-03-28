@@ -1,0 +1,10 @@
+Specialist (Специалист)
+
+Year:	1987
+RAM:	48 kB
+ROM:	2 - 16 kB
+CPU:	i8080 2 MHz
+Graph:	384x256x2, 384x256x5, 384x256x8
+Group:	Specialist
+
+TODO

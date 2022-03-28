@@ -1,0 +1,12 @@
+Partner 01.01 (Партнер 01.01)
+
+Year:	≤1990
+RAM:	64 kB
+ROM:	16 kB
+CPU:	i8080 1.7 MHz
+Graph:	128x129x2
+Text:	64x25x2
+Sound:	i8253
+Group:	Radio 86RK
+
+TODO

@@ -1,0 +1,10 @@
+Poisk (Поиск)
+
+Year:	1991
+RAM:	128 - 512 kB
+ROM:	8 kB
+CPU:	i8088 5 MHz
+Graph:	320x200x4, 560x200x3, 640x200x2
+Sound:	i8253
+Group:	IBM PC
+

@@ -40,3 +40,6 @@ a whole loop of wires to the controller of the SD card. This upgrade does not
 look so beautiful, but it's worth it. Now this is a computer "Specialist" in the
 maximum configuration, which is convenient not only for games, but also for
 development.
+
+More information can be found in the Specialist folder.
+
