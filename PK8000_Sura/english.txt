@@ -1,0 +1,10 @@
+PK8000 Sura (ПК8000 Сура)
+
+Year:	1987
+RAM:	64 kB
+ROM:	16 kB
+CPU:	i8080 1.7 MHz
+Graph:	256x192x16
+In ROM:	Basic
+
+TODO
