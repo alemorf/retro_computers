@@ -1,0 +1,11 @@
+Vector 06C (Вектор 06Ц)
+
+Year:	1987
+RAM:	64-320 kB
+ROM:	0.5 kB
+CPU:	i8080 3 MHz
+Graph:	512x256x4, 256x256x16, 256 colors palette
+Sound:	i8253 x3
+Group:	Vector 06C
+
+TODO

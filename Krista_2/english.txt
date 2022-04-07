@@ -1,7 +1,7 @@
 Krista 2 (Криста 2)
 
 Year:	≤1990
-RAM:	54 kB
+RAM:	64 kB
 ROM:	0.5 kB
 CPU:	i8080 2.5 MHz
 Graph:	1024x256x2, 512x256x4, 256x256x16
