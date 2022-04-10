@@ -1,0 +1,105 @@
+<html lang="ru">
+<head>
+<style>
+.tbl2 {
+    border-collapse: collapse;
+}
+.tbl2 td, .tbl2 th {
+	padding: 2px 4px 2px 4px;
+	border: 1px solid black
+}
+</style>
+<meta charset="utf-8">
+</head>
+<body>
+<table class="tbl2">
+<tr><td>80h</td><td>CLS</td><td>Очистить первый битвый план экрана</td></tr>
+<tr><td>81h</td><td>REM</td><td>Комментарий</td></tr>
+<tr><td>82h</td><td>LIST</td><td>Вывести программу на экран</td></tr>
+<tr><td>83h</td><td>RUN</td><td>Запустить программу</td></tr>
+<tr><td>84h</td><td>INPUT</td><td>Ввод значений с клавиатуры в переменную</td></tr>
+<tr><td>85h</td><td>DIM</td><td>Установить размерность массива</td></tr>
+<tr><td>86h</td><td>READ</td><td></td></tr>
+<tr><td>87h</td><td>LOCATE X, Y</td><td>Установить положение курсора</td></tr>
+<tr><td>88h</td><td>GOTO</td><td></td></tr>
+<tr><td>89h</td><td>FOR</td><td></td></tr>
+<tr><td>8Ah</td><td>IF</td><td></td></tr>
+<tr><td>8Bh</td><td>RESTORE</td><td></td></tr>
+<tr><td>8Ch</td><td>GOSUB строка</td><td>Переход на подпрограмму</td></tr>
+<tr><td>8Dh</td><td>RETURN</td><td>Возврат из подпрограммы</td></tr>
+<tr><td>8Eh</td><td>NEXT</td><td></td></tr>
+<tr><td>8Fh</td><td>STOP</td><td>Приостановить выполнение программы</td></tr>
+<tr><td>90h</td><td>OUT порт, значение</td><td>Вывод значение в порт</td></tr>
+<tr><td>91h</td><td>ON</td><td></td></tr>
+<tr><td>92h</td><td>PSET</td><td></td></tr>
+<tr><td>93h</td><td>LINE</td><td></td></tr>
+<tr><td>94h</td><td>POKE АДРЕС, ЗНАЧЕНИЕ</td><td>Записать байт в оперативную память</td></tr>
+<tr><td>95h</td><td>PRINT</td><td></td></tr>
+<tr><td>96h</td><td>DEF</td><td></td></tr>
+<tr><td>97h</td><td>CONT</td><td>Продолжить выполнение программы после STOP</td></tr>
+<tr><td>98h</td><td>DATA</td><td></td></tr>
+<tr><td>99h</td><td>CLEAR</td><td></td></tr>
+<tr><td>9Ah</td><td>CLOAD</td><td></td></tr>
+<tr><td>9Bh</td><td>CSAVE</td><td></td></tr>
+<tr><td>9Ch</td><td>VERIFY</td><td></td></tr>
+<tr><td>9Dh</td><td>BEEP</td><td></td></tr>
+<tr><td>9Eh</td><td>NEW</td><td>Удалить программу и забыть переменные</td></tr>
+<tr><td>9Fh</td><td>INVERSE</td><td>Установть негативный вывод текста</td></tr>
+<tr><td>A0h</td><td>NORMAL</td><td>Установить позитивный вывод текста</td></tr>
+<tr><td>A1h</td><td>RENUM [ШАГ]</td><td>Перенумеровать строки программы</td></tr>
+<tr><td>A2h</td><td>END</td><td>Завершить работу программы</td></tr>
+<tr><td>A3h</td><td>?</td><td></td></tr>
+<tr><td>A4h</td><td>CIRCLE (X,Y),РАДИУС,ЦВЕТ</td><td>Нарисовать круг</td></tr>
+<tr><td>A5h</td><td>PAINT (X,Y),ЦВЕТ</td><td>Закрасить цветом</td></tr>
+<tr><td>A6h</td><td>ASAVE</td><td></td></tr>
+<tr><td>A7h</td><td>ALOAD</td><td></td></tr>
+<tr><td>A8h</td><td>LUT</td><td></td></tr>
+<tr><td>A9h</td><td>PRESET</td><td></td></tr>
+<tr><td>AAh</td><td>COLOR</td><td></td></tr>
+<tr><td>ABh</td><td>PCLS</td><td>Очистить экран</td></tr>
+<tr><td>ACh</td><td>TAB</td><td></td></tr>
+<tr><td>ADh</td><td>TO</td><td></td></tr>
+<tr><td>AEh</td><td>SRC</td><td></td></tr>
+<tr><td>AFh</td><td>FN</td><td></td></tr>
+<tr><td>B0h</td><td>THEN</td><td></td></tr>
+<tr><td>B1h</td><td>NOT</td><td></td></tr>
+<tr><td>B2h</td><td>STEP</td><td></td></tr>
+<tr><td>B3h</td><td>+</td><td></td></tr>
+<tr><td>B4h</td><td>-</td><td></td></tr>
+<tr><td>B5h</td><td>*</td><td></td></tr>
+<tr><td>B6h</td><td>/</td><td></td></tr>
+<tr><td>B7h</td><td>^</td><td></td></tr>
+<tr><td>B8h</td><td>число AND число</td><td>Функция, логическое И</td></tr>
+<tr><td>B9h</td><td>число OR число</td><td>Функция, логическое ИЛИ</td></tr>
+<tr><td>BAh</td><td>></td><td></td></tr>
+<tr><td>BBh</td><td>=</td><td></td></tr>
+<tr><td>BCh</td><td>&lt;</td><td></td></tr>
+<tr><td>BDh</td><td>SGN (x)</td><td>Функция, знак числа, результат +1, 0, 1.</td></tr>
+<tr><td>BEh</td><td>INT (x)</td><td>Функция, наибольшее целоое числов, не превосходящее заданное числово</td></tr>
+<tr><td>BFh</td><td>ABS (x)</td><td>Функция, модуль числа</td></tr>
+<tr><td>C0h</td><td>USR (адрес)</td><td>Выполнить подпрограмму в машинных кодах по адресу</td></tr>
+<tr><td>C1h</td><td>FRE (0)</td><td>Функция, объем свободной памяти, аргумент игнорируется</td></tr>
+<tr><td>C2h</td><td>INP (порт)</td><td>Функция, чтение из порта ввода-вывода</td></tr>
+<tr><td>C3h</td><td>POS (x)</td><td>Функция, координата X курсора, аргумент игнорируется</td></tr>
+<tr><td>C4h</td><td>SQR (x)</td><td>Функция, квадратный корень</td></tr>
+<tr><td>C5h</td><td>RND (1)</td><td>Функция, псевдослучайное число.</tr>
+<tr><td>C5h</td><td>RND (0)</td><td>Функция, повторить прошлое псевдослучайное число.</td></tr>
+<tr><td>C6h</td><td>LOG (x)</td><td>Функция, натуральный логарифм</td></tr>
+<tr><td>C7h</td><td>EXP (x)</td><td>Функция, экспонента</td></tr>
+<tr><td>C8h</td><td>COS (x)</td><td>Функция, косинус</td></tr>
+<tr><td>C9h</td><td>SIN (x)</td><td>Функция, синус</td></tr>
+<tr><td>CAh</td><td>TAN (x)</td><td>Функция, тангенс</td></tr>
+<tr><td>CBh</td><td>ATN (x)</td><td>Функция, арктангенс</td></tr>
+<tr><td>CCh</td><td>PEEK (адрес)</td><td>Функция, чтение опеативной памяти</td></tr>
+<tr><td>CDh</td><td>LEN (СТРОКА)</td><td>Функция, длина строки</td></tr>
+<tr><td>CEh</td><td>STR$ (ЧИСЛО)</td><td>Функция, преобразовать число в строку</td></tr>
+<tr><td>CFh</td><td>VAL (СТРОКА)</td><td>Функция, преобразовать строку в число</td></tr>
+<tr><td>D0h</td><td>ASC (СТРОКА)</td><td>Функция, код символа</td></tr>
+<tr><td>D1h</td><td>CHR$ (ЧИСЛО)</td><td>Функция, строка из одного символа с кодом</td></tr>
+<tr><td>D2h</td><td>LEFT$ (СТРОКА, ЧИСЛО)</td><td>Функция, несколько левых символов строки</td></tr>
+<tr><td>D3h</td><td>RIGHT$ (СТРОКА, ЧИСЛО)</td><td>Функция, несколько правых символов строки</td></tr>
+<tr><td>D4h</td><td>MID$ (СТРОКА, Ч НАЧАЛО, Ч ДЛИНА)</td><td>Функция, подстрока</td></tr>
+<tr><td>D5h</td><td>POINT (x, y)</td><td>Функция, цвет точки на экране</td></tr>
+</table>
+</body>
+</html>

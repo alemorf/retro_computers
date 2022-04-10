@@ -1,0 +1,11 @@
+Iskra 1080 Tartu (Искра 1080 Тарту)
+
+Year:	1990
+RAM:	64 kB
+ROM:	20 kB
+CPU:	i8080 2.2 MHz
+Graph:	768x256x2, 384x256x4, палитра 16 цв
+Sound:	1 bit
+In ROM:	Basic, Monitor, Disassembler, CP/M BIOS for local network
+
+TODO

@@ -1,0 +1,12 @@
+PK8010 Korvet (ПК8010 Корвет)
+
+Year:	1987
+RAM:	113-257 kB
+ROM:	24 kB
+CPU:	i8080 2.5 MHz
+Graph:	512x256x8, 16 colors palette
+Text:	64x16x2
+Sound:	i8253
+In ROM:	Basic
+
+TODO
