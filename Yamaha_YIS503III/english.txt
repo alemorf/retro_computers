@@ -1,0 +1,12 @@
+Yamaha YIS-503IIIR / KUVT 2 (Yamaha YIS-503IIIR / КУВТ 2)
+
+Year:	1985
+RAM:	256 kB
+ROM:	32 kB
+CPU:	Z80 3.6 MHz
+Graph:	512x414x16, 256x414x256, sprites, 512 colors palette
+Sound:	AY-3-8910
+In ROM:	Basic
+Group:	MSX
+
+TODO
