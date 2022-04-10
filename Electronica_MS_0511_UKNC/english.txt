@@ -1,0 +1,10 @@
+Electronica MS0511 UKNC (Электроника МС0511 УКНЦ)
+
+Year:	1987
+RAM:	192 kB
+ROM:	32 kB
+CPU:	KM1801VM2 8 MHz + KM1801VM2 6 MHz
+Graph:	640x288x8, 53 colors palette
+Group:	PDP11
+
+TODO
