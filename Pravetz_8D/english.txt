@@ -1,0 +1,12 @@
+Pravetz 8D (Правец 8D)
+
+Year:	≤1986
+RAM:	48 kB
+ROM:	16 kB
+CPU:	6502 1 MHz
+Graph:	240x200x8
+Sound:	AY-3-8910
+In ROM:	Basic
+Group:	Oric Atmos
+
+TODO
