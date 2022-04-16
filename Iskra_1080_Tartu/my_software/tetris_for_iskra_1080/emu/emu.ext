@@ -1,0 +1,33 @@
+rk*.filter="Tape&Rom files"
+vec.filter="Tape&Rom files"
+rom.filter="Tape&Rom files"
+r0m.filter="Tape&Rom files"
+bin.filter="Tape&Rom files"
+lvt.filter="Tape&Rom files"
+cpu.filter="AVSh files"
+mon.filter="AVSh files"
+sna.filter="ZX snapshot"
+sav.filter="Lvov snapshot"
+pt2.filter="Music files"
+pt3.filter="Music files"
+sqt.filter="Music files"
+stc.filter="Music files"
+stp.filter="Music files"
+zxs.filter="Music files"
+rmp.filter="Music files"
+bkd.filter="BK-001x disk"
+img.filter="BK-001x disk"
+
+lvt[0] : loader {
+  id="9:D0"
+  config="Iskra1080"
+  cmd[0].delay=3000
+  cmd[0].keymacro="PRINT{space}USR{lshift-on}8{lshift-off}62502{lshift-on}9{lshift-off}{enter}"
+  cmd[1].delay=3500
+  cmd[1].keymacro="R{enter}"
+  cmd[2].delay=1000
+  cmd[2].keymacro="R"
+  cmd[3].delay=2000
+  cmd[3].keymacro="100G{enter}"
+  mode=5
+}

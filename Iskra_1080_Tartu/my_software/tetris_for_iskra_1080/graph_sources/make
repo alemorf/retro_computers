@@ -1,0 +1,1 @@
+wine tasm -b -85 lab.asm lab.lvt

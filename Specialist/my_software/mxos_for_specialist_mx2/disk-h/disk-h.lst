@@ -1,0 +1,122 @@
+0001   0000             ;+---------------------------------------------------------------------------
+0002   0000             ; MXOS
+0003   0000             ; Драйвер внешнего ПЗУ
+0004   0000             ;
+0005   0000             ; Все регистры сохраняются
+0006   0000             ;
+0007   0000             ; 2013-12-12 Дизассемблировано vinxru
+0008   0000             ;----------------------------------------------------------------------------
+0009   0000             
+0010   0000             LETTER = 'H'	; Буква для накопителя
+0011   0000             ROM_SIZE = 0C0h	; Максимальный размер ПЗУ = 48 Кб
+0012   0000             
+0013   0000             IO_KEYB_MODE	= 0FFE3h
+0014   0000             IO_EXT_A	= 0FFE4h
+0015   0000             IO_EXT_B	= 0FFE5h
+0016   0000             IO_EXT_C	= 0FFE6h
+0017   0000             IO_EXT_MODE	= 0FFE7h
+0018   0000             
+0019   0000             sys_installDriver = 0C860h
+0020   0000             sys_fileGetSetDrive = 0C842h
+0021   0000             
+0022   FA00             .org 0FA00h
+0023   FA00             
+0024   FA00             start:		; Установить драйвер
+0025   FA00 3E 07       		mvi     a, LETTER-'A'
+0026   FA02 21 0F FA                    lxi     h, driver
+0027   FA05 C3 60 C8                    jmp     sys_installDriver
+0028   FA08             
+0029   FA08             ; ---------------------------------------------------------------------------
+0030   FA08             
+0031   FA08             		; Сделать активным диск H (этот код не используется)
+0032   FA08 1E 01                       mvi     e, 1
+0033   FA0A 3E 07                       mvi     a, 7
+0034   FA0C C3 42 C8                    jmp     sys_fileGetSetDrive
+0035   FA0F             
+0036   FA0F             ; ---------------------------------------------------------------------------
+0037   FA0F             
+0038   FA0F             driver:		; Запись не поддерживается
+0039   FA0F 7B                          mov     a, e
+0040   FA10 FE 01                       cpi     1
+0041   FA12 C8                          rz
+0042   FA13             
+0043   FA13             		; Сохраняем регистры
+0044   FA13 E5                          push    h
+0045   FA14 D5                          push    d
+0046   FA15 C5                          push    b
+0047   FA16             
+0048   FA16             		; Настройка портов
+0049   FA16 3E 90                       mvi     a, 90h
+0050   FA18 32 E7 FF                    sta     IO_EXT_MODE
+0051   FA1B             
+0052   FA1B             		; 6 вывод = 1
+0053   FA1B 3E 0D                       mvi     a, 0Dh
+0054   FA1D 32 E3 FF                    sta     IO_KEYB_MODE
+0055   FA20             
+0056   FA20             		; Определение размера
+0057   FA20 7B                          mov     a, e
+0058   FA21 FE 03                       cpi     3
+0059   FA23 CA 39 FA                    jz      fn3
+0060   FA26             
+0061   FA26             		; Неизвестная функция
+0062   FA26 FE 02                       cpi     2
+0063   FA28 C2 51 FA                    jnz     exit
+0064   FA2B             
+0065   FA2B             		; Читаем блок
+0066   FA2B AF                          xra     a
+0067   FA2C 5F                          mov     e, a
+0068   FA2D CD 61 FA    readLoop:	call    read
+0069   FA30 77                          mov     m, a
+0070   FA31 23                          inx     h
+0071   FA32 1C                          inr     e
+0072   FA33 CA 51 FA                    jz      exit
+0073   FA36 C3 2D FA                    jmp     readLoop
+0074   FA39             
+0075   FA39             ; ---------------------------------------------------------------------------
+0076   FA39             ; Определение обьема ПЗУ
+0077   FA39             
+0078   FA39             fn3:            ; Считаем блоки в FAT, чей номер не равен 0FFh
+0079   FA39 AF          		xra     a
+0080   FA3A 47                          mov     b, a
+0081   FA3B 57                          mov     d, a
+0082   FA3C 1E 04                       mvi     e, 4
+0083   FA3E CD 61 FA    loc_FA3E:       call    read
+0084   FA41 FE FF                       cpi     0FFh
+0085   FA43 C2 47 FA                    jnz     loc_FA47
+0086   FA46 04                          inr     b
+0087   FA47 1C          loc_FA47:       inr     e
+0088   FA48 7B                          mov     a, e
+0089   FA49 FE C0                       cpi     ROM_SIZE
+0090   FA4B C2 3E FA                    jnz     loc_FA3E
+0091   FA4E             
+0092   FA4E             		; И общий обьем ПЗУ получается ROM_SIZE-0FFh
+0093   FA4E 3E C0                       mvi     a, ROM_SIZE
+0094   FA50 90                          sub     b
+0095   FA51             
+0096   FA51 F5          exit:		push    psw
+0097   FA52             
+0098   FA52             		; 6 вывод = 0
+0099   FA52 3E 0C                       mvi     a, 0Ch
+0100   FA54 32 E3 FF                    sta     IO_KEYB_MODE
+0101   FA57             
+0102   FA57                             ; Восстановление режима портов
+0103   FA57 3E 9B                       mvi     a, 9Bh
+0104   FA59 32 E7 FF                    sta     IO_EXT_MODE
+0105   FA5C             
+0106   FA5C F1                          pop     psw
+0107   FA5D             
+0108   FA5D             		; Восстановление регистров
+0109   FA5D C1                          pop     b
+0110   FA5E D1                          pop     d
+0111   FA5F E1                          pop     h
+0112   FA60 C9                          ret
+0113   FA61             
+0114   FA61             ; ---------------------------------------------------------------------------
+0115   FA61             
+0116   FA61 EB          read:		xchg
+0117   FA62 22 E5 FF                    shld    IO_EXT_B
+0118   FA65 3A E4 FF                    lda     IO_EXT_A
+0119   FA68 EB                          xchg
+0120   FA69 C9                          ret
+0121   FA6A             
+0122   FA6A             .endtasm: Number of errors = 0

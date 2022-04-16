@@ -1,0 +1,26 @@
+; Опкоды процессора КР580ВМ80А
+
+OPCODE_NOP     = 000h
+OPCODE_STAX_D  = 012h
+OPCODE_LDAX_D  = 01Ah
+OPCODE_CMA     = 02Fh
+OPCODE_MVI_M   = 036h
+OPCODE_MOV_A_M = 07Eh
+OPCODE_MOV_M_A = 077h
+OPCODE_ANA_B   = 0A0h
+OPCODE_ANA_M   = 0A6h
+OPCODE_XRA_A   = 0AFh
+OPCODE_ORA_B   = 0B0h
+OPCODE_ORA_M   = 0B6h
+OPCODE_RET     = 0C9h
+OPCODE_ANI     = 0E6h
+OPCODE_XCHG    = 0EBh
+OPCODE_ORI     = 0F6h
+
+
+
+
+
+
+
+
