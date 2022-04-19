@@ -1,4 +1,4 @@
-Electronica MK-85 (Электроника МК-85)
+Electronica MK-85
 
 Year:	1986
 RAM:	2 - 6 kB

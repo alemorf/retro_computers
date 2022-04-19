@@ -1,4 +1,4 @@
-Microsha (Микроша)
+Microsha
 
 Year:	1987
 RAM:	32 kB

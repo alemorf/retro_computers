@@ -1,4 +1,4 @@
-Delta S 52 chips (Дельта С 52 микросхемы)
+Delta S 52 chips
 
 Year:	1989
 RAM:	48 kB

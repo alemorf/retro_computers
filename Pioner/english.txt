@@ -1,4 +1,4 @@
-Pioner (Пионер)
+Pioner
 
 Year:	≤1992
 RAM:	48 kB

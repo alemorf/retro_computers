@@ -1,4 +1,4 @@
-Orion 128 (Орион 128)
+Orion 128
 
 Year:	1990
 RAM:	128 - 256 kB

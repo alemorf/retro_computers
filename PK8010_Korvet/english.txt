@@ -1,4 +1,4 @@
-PK8010 Korvet (ПК8010 Корвет)
+PK8010 Korvet
 
 Year:	1987
 RAM:	113-257 kB

@@ -1,4 +1,4 @@
-Electronica KR-04 (Электроника КР-04)
+Electronica KR-04
 
 Year:	1990
 RAM:	48 kB

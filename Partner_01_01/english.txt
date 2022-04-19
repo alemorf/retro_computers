@@ -1,4 +1,4 @@
-Partner 01.01 (Партнер 01.01)
+Partner 01.01
 
 Year:	≤1990
 RAM:	64 kB

@@ -1,4 +1,4 @@
-Electronica MK-90 (Электроника МК-90)
+Electronica MK-90
 
 Year:	1988
 RAM:	16 kB

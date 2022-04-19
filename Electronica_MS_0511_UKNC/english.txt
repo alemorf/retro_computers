@@ -1,4 +1,4 @@
-Electronica MS0511 UKNC (Электроника МС0511 УКНЦ)
+Electronica MS0511 UKNC
 
 Year:	1987
 RAM:	192 kB

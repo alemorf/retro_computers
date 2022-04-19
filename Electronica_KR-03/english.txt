@@ -1,4 +1,4 @@
-Electronica KR-03 (Электроника КР-03)
+Electronica KR-03
 
 Year:	1987
 RAM:	16 kB

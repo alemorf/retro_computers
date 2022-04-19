@@ -1,4 +1,4 @@
-PK8000 Elf (ПК8002 Эльф)
+PK8000 Elf
 
 Year:	1989
 RAM:	64 kB

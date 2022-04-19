@@ -1,4 +1,4 @@
-Gamma (Гамма)
+Gamma
 
 Year:	≤1991
 RAM:	48 kB

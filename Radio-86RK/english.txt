@@ -1,4 +1,4 @@
-Radio-86RK (Радио-86РК)
+Radio-86RK
 
 Year:	1986
 RAM:	16 - 32 kB

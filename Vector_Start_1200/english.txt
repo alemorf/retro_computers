@@ -1,4 +1,4 @@
-Vector Start (Вектор Старт)
+Vector Start
 
 Year:	1987
 RAM:	64 kB

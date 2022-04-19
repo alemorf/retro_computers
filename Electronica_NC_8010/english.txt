@@ -1,4 +1,4 @@
-Electronica NC-8010 (Электроника НЦ-8010)
+Electronica NC-8010
 
 Year:	≤1981
 RAM:	32 kB

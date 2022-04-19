@@ -1,4 +1,4 @@
-Pengaton 128 (Пентагон 128)
+Pengaton 128
 
 Year:	1991
 RAM:	128 kB

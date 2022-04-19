@@ -1,4 +1,4 @@
-Spectr-001 (Спектр-001)
+Spectr-001
 
 Year:	≤1991
 RAM:	32 kB

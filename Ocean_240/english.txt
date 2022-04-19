@@ -1,4 +1,4 @@
-Ocean 240 (Океан 240)
+Ocean 240
 
 Year:	1986
 RAM:	128 kB

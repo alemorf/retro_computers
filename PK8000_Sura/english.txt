@@ -1,4 +1,4 @@
-PK8000 Sura (ПК8000 Сура)
+PK8000 Sura
 
 Year:	1987
 RAM:	64 kB

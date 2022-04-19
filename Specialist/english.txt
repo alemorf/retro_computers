@@ -1,4 +1,4 @@
-Specialist (Специалист)
+Specialist
 
 Year:	1987
 RAM:	48 kB

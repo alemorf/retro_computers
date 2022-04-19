@@ -1,4 +1,4 @@
-Vector 06C (Вектор 06Ц)
+Vector 06C
 
 Year:	1987
 RAM:	64-320 kB

@@ -1,4 +1,4 @@
-Electronica MS1502 (Электроника МС1502)
+Electronica MS1502
 
 Year:	≤1991
 RAM:	128 kB

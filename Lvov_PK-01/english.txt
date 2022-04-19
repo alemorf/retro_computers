@@ -1,4 +1,4 @@
-Lvov PK-01 (Львов ПК-01)
+Lvov PK-01
 
 Year:	1986
 RAM:	64 kB

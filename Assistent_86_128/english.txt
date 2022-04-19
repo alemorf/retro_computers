@@ -1,4 +1,4 @@
-Assistent 86 128 (Ассистент 86 128)
+Assistent 86 128
 
 Year:	1988
 RAM:	128 - 1024 kB

@@ -1,4 +1,4 @@
-Electronica MS5316 Floppy drive (Электроника МС5316 НГМД)
+Electronica MS5316 Floppy drive
 
 Year:	≤1992
 

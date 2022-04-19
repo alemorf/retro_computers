@@ -1,4 +1,4 @@
-Poisk (Поиск)
+Poisk
 
 Year:	1991
 RAM:	128 - 512 kB
@@ -8,3 +8,4 @@ Graph:	320x200x4, 560x200x3, 640x200x2
 Sound:	i8253
 Group:	IBM PC
 
+TODO

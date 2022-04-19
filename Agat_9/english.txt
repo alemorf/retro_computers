@@ -1,4 +1,4 @@
-Agat 9 (Агат 9)
+Agat 9
 
 Year:	1988
 RAM:	128 kB

@@ -1,15 +1,15 @@
-Krokha (Кроха)
+Kroha
 
 Year:	1990
 RAM:	2 kB
 CPU:	i8080 2 MHz
 Text:	48x25x2
 
-"Krokha" is a computer with a joystick instead of a keyboard. Programs for this
+"Kroha" is a computer with a joystick instead of a keyboard. Programs for this
 computer are stored in removable ROM.
 
 The circuit of this computer is similar to the "Specialist" computer. The main
-difference from the computer "Specialist" is that in "Krokha" is implemented a
+difference from the computer "Specialist" is that in "Kroha" is implemented a
 text video adapter, not a graphic one. Screen size 48x32 characters. All
 characters are black and white. The character generator contains 256 characters.
 The ROM of the character generator is installed on a replaceable PCB, a
@@ -19,7 +19,7 @@ cartridge. The use of two removable ROMs, for the program and for graphics
 Only one cartridge was produced for this computer. It contained games: Wall,
 Tetris, Caterpillar, Balls, Air Defense.
 
-In Krokha, the video frame sync is connected to a processor interrupt. A static
+In Kroha, the video frame sync is connected to a processor interrupt. A static
 memory is used, the information in which is stored after the power is turned off
 thanks to a galvanic cell. There are only 2048 bytes of RAM, of which 1536 bytes
 are used by video, and only 512 bytes remain for the programmer.
@@ -27,7 +27,7 @@ are used by video, and only 512 bytes remain for the programmer.
 From the author of the computer, Caro:
 
 There was a period in my life when I worked at SKB Kontur. That's when I
-developed this set-up box "Krokha". We then sat on the territory of the
+developed this set-up box "Kroha". We then sat on the territory of the
 Technosvyaz plant, which was supposed to assemble these devices for conversion
 (law of transition to a market economy). We made about 200 pieces. It did not
 get into the stores. It went to the workers of the plant and the SKB Kontur.

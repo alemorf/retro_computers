@@ -1,4 +1,4 @@
-Apogey BK01C (Апогей БК01Ц)
+Apogey BK01C
 
 Year:	1988
 RAM:	52 kB
