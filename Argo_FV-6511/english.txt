@@ -12,8 +12,8 @@ This is a very strange computer. It works with the tape as with a floppy disk.
 The tape has a CP/M file system, sectors, a list of files in the first sectors,
 and the files can be fragmented. The computer is able to detect sectors with
 damaged tape and dont use them. Argo uses the Z80 processor and this computer
-can run programs for the "ZX Spectrum 48K" computer. Argo has 128 kilobytes of
-RAM, but it can't run programs for the ZX Spectrum 128K. Argo's video adapter
+can run programs for the "ZX Spectrum 48" computer. Argo has 128 kilobytes of
+RAM, but it can't run programs for the ZX Spectrum 128. Argo's video adapter
 is built on the i8275 chip, on the same chip that built the Radio 86RK computer.
 Agro has a hardware text video mode 80x25x16 with variable character generator.
 Argo has 640x200x8, 320x200x16 graphics video modes. And it's all about the same
@@ -39,9 +39,9 @@ Tape recorder control is not unique to this computer. You can connect the tape
 recorder to any computer with a parallel port. Of interest here is the tape
 recorder driver for the TCP/M operating system. It controls the tape recorder.
 
-The computer's ROM does not contain the computer firmware "ZX Spectrum 48K",
+The computer's ROM does not contain the computer firmware "ZX Spectrum 48",
 which is needed by ZX programs. The ROM does not have a program for switching
-the computer to the compatibility mode with the computer "ZX Spectrum 48K". This
+the computer to the compatibility mode with the computer "ZX Spectrum 48". This
 program and firmware must be loaded from the cassette every time before starting
 any ZX Spectrum game.
 

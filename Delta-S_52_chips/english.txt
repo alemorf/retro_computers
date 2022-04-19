@@ -6,12 +6,12 @@ ROM:	16 kB
 CPU:	Z80 3.5 MHz
 Graph:	256x192x15
 In ROM:	Basic
-Group:	ZX Spectrum 48K
+Group:	ZX Spectrum 48
 
-Several ZX Spectrum 48K or ZX Spectrum 128K compatible computers were produced 
+Several ZX Spectrum 48 or ZX Spectrum 128 compatible computers were produced 
 under the name "Delta S". That computers differed in cases, keyboards,
 support for the russian language, speed, compatibility and memory capacity.
-My model is popularly called "Delta C 52 chips". This is a "ZX Spectrum 48K"
+My model is popularly called "Delta C 52 chips". This is a "ZX Spectrum 48"
 compatible computer.
 
 This Delta is the most beautiful ZX Spectrum compatible computer from the USSR.

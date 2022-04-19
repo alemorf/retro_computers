@@ -7,6 +7,6 @@ CPU:	Z80 7 Mhz
 Graph:	256x192x15
 Звук:	AY-3-8910
 In ROM:	Basic
-Group:	ZX Spectrum 128K
+Group:	ZX Spectrum 128
 
 TODO

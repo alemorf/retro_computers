@@ -6,6 +6,6 @@ ROM:	16 kB
 CPU:	Z80 3.5 MHz
 Graph:	256x192x15
 In ROM:	Basic
-Group:	ZX Spectrum 48K
+Group:	ZX Spectrum 48
 
 TODO
