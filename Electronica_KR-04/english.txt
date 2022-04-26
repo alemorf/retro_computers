@@ -1,7 +1,7 @@
 Electronica KR-04
 
 Year:	1990
-RAM:	48 kB
+RAM:	62 kB
 ROM:	6 kB
 CPU:	i8080 2.5 MHz
 Text:	60x28x2, 30x28x4
