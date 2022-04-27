@@ -1,12 +1,12 @@
 Argo FV-6511
 
-Year:	≤1992
-RAM:	128 kB
-ROM:	2 kB
-CPU:	Z80 3.5 MHz
-Text:	80x25x16
-Graph:	640x200x8, 320x200x16, 256x192x15
-Group:	ZX Spectrum
+Year	≤1992
+RAM	128 kB
+ROM	2 kB
+CPU	Z80 3.5 MHz
+Text	80x25x16
+Graph	640x200x8, 320x200x16, 256x192x15
+Group	ZX Spectrum
 
 This is a very strange computer. It works with the tape as with a floppy disk.
 The tape has a CP/M file system, sectors, a list of files in the first sectors,

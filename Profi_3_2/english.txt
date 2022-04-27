@@ -1,10 +1,10 @@
 Profi 3.2
 
-Year:	1991
-RAM:	512 - 1024 kB
-ROM:	64 kB
-CPU:	Z80 7 MГц
-Graph:	256x192x15, 512x240x2
-Group:	ZX Spectrum 128
+Year	1991
+RAM	512 - 1024 kB
+ROM	64 kB
+CPU	Z80 7 MГц
+Graph	256x192x15, 512x240x2
+Group	ZX Spectrum 128
 
 TODO

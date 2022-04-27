@@ -1,12 +1,12 @@
 Electronica KR-03
 
-Year:	1987
-RAM:	16 kB
-ROM:	2 kB
-CPU:	i8080 1.7 MHz
-Text:	64x25x2
-Graph:	128x62x2
-Group:	Radio 86RK
+Year	1987
+RAM	16 kB
+ROM	2 kB
+CPU	i8080 1.7 MHz
+Text	64x25x2, 64x31x2
+Graph	128x62x2
+Group	Radio 86RK
 
 Electronica KR-03 is a Radio 86RK with 16 kilobytes of RAM in a good metal case
 with a reliable power supply and an excellent keyboard.

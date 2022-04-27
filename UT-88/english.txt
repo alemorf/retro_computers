@@ -1,11 +1,11 @@
 UT-88
 
-Year:	1988
-RAM:	64 kB
-ROM:	2 kB
-CPU:	i8080 1.7 MHz
-Graph:	128x50x2
-Text:	64x25x2
+Year	1988
+RAM	64 kB
+ROM	2 kB
+CPU	i8080 1.7 MHz
+Graph	128x50x2
+Text	64x25x2
 
 "UT-88" is a self-assembly computer. In the 80s in the USSR in some magazines
 published a circuits of computers for self-assembly. These were very simple

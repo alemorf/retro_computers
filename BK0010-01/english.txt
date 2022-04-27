@@ -1,11 +1,12 @@
 BK0010.01
 
-Year:	1987
-RAM:	32 kB
-ROM:	32 kB
-CPU:	K1801VM1 3 MHz
-Graph:	512x256x2, 256x256x4
-Group:	BK0010
+Year	1987
+RAM	32 kB
+ROM	32 kB
+CPU	K1801VM1 3 MHz
+Graph	512x256x2, 256x256x4
+In ROM	Basic
+Group	BK0010
 
 BK0010.01 is a improved version of the BK0010 computer. Computer PCB, processor,
 performance, amount of RAM is not changed and new equipment did not appear. This

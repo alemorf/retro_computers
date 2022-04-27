@@ -1,12 +1,12 @@
 Spectr-001
 
-Year:	≤1991
-RAM:	32 kB
-ROM:	2 kB
-CPU:	i8080 1.7 MHz
-Text:	64x25x2
-Graph:	128x62x2
-Group:	Radio 86RK
+Year	≤1991
+RAM	32 kB
+ROM	2 kB
+CPU	i8080 1.7 MHz
+Text	64x25x2
+Graph	128x62x2
+Group	Radio 86RK
 
 This is a strandard "Radio 86RK" computer. This is a computer with very modest
 capabilities. It hasn't graphics, only black and white text mode with no

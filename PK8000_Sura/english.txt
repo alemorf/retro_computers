@@ -1,11 +1,11 @@
 PK8000 Sura
 
-Year:	1987
-RAM:	64 kB
-ROM:	16 kB
-CPU:	i8080 2.5 MHz
-Graph:	256x192x15
-Text:	40x24x15, 32x24x15
-In ROM:	Basic
+Year	1987
+RAM	64 kB
+ROM	16 kB
+CPU	i8080 2.5 MHz
+Graph	256x192x15
+Text	40x24x15, 32x24x15
+In ROM	Basic
 
 TODO

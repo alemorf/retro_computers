@@ -1,6 +1,6 @@
 Electronica MS6312
 
-Year:	≤1991
+Year	≤1991
 
 Elektronica MS6312 is a Soviet inkjet printer. Cartridge with liquid ink is used
 in inkjet printers. Ink is pushing out of the cartridge on the paper sheet. In

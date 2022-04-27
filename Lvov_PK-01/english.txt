@@ -1,10 +1,10 @@
 Lvov PK-01
 
-Year:	1986
-RAM:	64 kB
-ROM:	16 kB
-CPU:	К580ВМ80А 2.2 MHz
-Graph:	256x256x4, 8 colors palette
-In ROM:	Basic
+Year	1986
+RAM	64 kB
+ROM	16 kB
+CPU	К580ВМ80А 2.2 MHz
+Graph	256x256x4, 8 colors palette
+In ROM	Basic
 
 TODO

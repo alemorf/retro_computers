@@ -1,9 +1,9 @@
 Kroha
 
-Year:	1990
-RAM:	2 kB
-CPU:	i8080 2 MHz
-Text:	48x25x2
+Year	1990
+RAM	2 kB
+CPU	i8080 2 MHz
+Text	48x25x2
 
 "Kroha" is a computer with a joystick instead of a keyboard. Programs for this
 computer are stored in removable ROM.

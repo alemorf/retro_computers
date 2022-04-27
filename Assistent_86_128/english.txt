@@ -1,13 +1,13 @@
 Assistent 86 128
 
-Year:	1988
-RAM:	128 - 1024 kB
-ROM:	48 kB
-CPU:	i8086 4.7 MHz
-Graph:	320x200x4, 640x200x2
-Text:	80x25x16, 80x25x16
-Sound:	i8253
-Group:	IBM PC
+Year	1988
+RAM	128 - 1024 kB
+ROM	48 kB
+CPU	i8086 4.7 MHz
+Graph	320x200x4, 640x200x2
+Text	80x25x16, 80x25x16
+Sound	i8253
+Group	IBM PC
 
 Assistant 86 128 is an IBM PC-compatible Soviet home computer. All computer
 PCBs are in a single case with a keyboard. Assistant 128 is the coolest and

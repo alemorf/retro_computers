@@ -1,11 +1,11 @@
 PK8000 Elf
 
-Year:	1989
-RAM:	64 kB
-ROM:	4 kB
-CPU:	i8080 2.5 MHz
-Graph:	512x192x2, 256x192x16, sprites, 256 colors palette
-Text:	32x27x16, 64x27x2
-Sound:	i8253 (3 channels with volume)
+Year	1989
+RAM	64 kB
+ROM	4 kB
+CPU	i8080 2.5 MHz
+Graph	512x192x2, 256x192x16, sprites, 256 colors palette
+Text	32x27x16, 64x27x2
+Sound	i8253 (3 channels with volume)
 
 TODO

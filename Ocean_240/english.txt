@@ -1,10 +1,10 @@
 Ocean 240
 
-Year:	1986
-RAM:	128 kB
-ROM:	16 kB
-CPU:	i8080 2.4 MHz
-Graph:	512x256x2, 256x256x4 palette 8 colors
+Year	1986
+RAM	128 kB
+ROM	16 kB
+CPU	i8080 2.4 MHz
+Graph	512x256x2, 256x256x4 palette 8 colors
 
 "Ocean 240" is a rare Soviet computer. I wouldn't be surprised if only two
 computers were released. But at the same time this computer is known. Its

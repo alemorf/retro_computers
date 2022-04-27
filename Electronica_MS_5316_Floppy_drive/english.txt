@@ -1,6 +1,6 @@
 Electronica MS5316 Floppy drive
 
-Year:	≤1992
+Year	≤1992
 
 "Electronica MS5316" is a case with a power supply and a floppy drive. Inside
 the case different Soviet drives could be installed: MS5305, MS5311, MS5313 and

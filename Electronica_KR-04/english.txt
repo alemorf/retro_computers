@@ -1,12 +1,12 @@
 Electronica KR-04
 
-Year:	1990
-RAM:	62 kB
-ROM:	6 kB
-CPU:	i8080 2.5 MHz
-Text:	60x28x2, 30x28x4
-Graph:	480x224x2, 240x224x4, 64 colors palette
-Sound:	i8253
-Group:	Radio 86RK
+Year	1990
+RAM	62 kB
+ROM	6 kB
+CPU	i8080 2.5 MHz
+Text	60x28x2, 30x28x4
+Graph	480x224x2, 240x224x4
+Sound	i8253
+Group	Radio 86RK
 
 TODO

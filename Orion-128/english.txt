@@ -1,10 +1,10 @@
 Orion 128
 
-Year:	1990
-RAM:	128 - 256 kB
-ROM:	2 kB
-CPU:	i8080 2.5 MHz
-Graph:	384x256x16
+Year	1990
+RAM	128 - 256 kB
+ROM	2 kB
+CPU	i8080 2.5 MHz
+Graph	384x256x16
 
 "Orion 128" is a simple Soviet computer for self-assembly. Circuit of this 
 computer was published in 1990 in the magazine "Radio".

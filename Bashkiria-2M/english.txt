@@ -1,10 +1,10 @@
 Bashkiria
 
-Year:	1989
-RAM:	128 kB
-ROM:	8 kB
-CPU:	i8080 2 MHz
-Graph:	384x256x16, palette 64 colors
+Year	1989
+RAM	128 kB
+ROM	8 kB
+CPU	i8080 2 MHz
+Graph	384x256x16, palette 64 colors
 
 Bashkiria-2M was developed at the Bashkir Research and Production Association
 named of S. M. Kirov, in the Republic of Bashkiria, from which the computer got

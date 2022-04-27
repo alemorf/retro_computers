@@ -1,11 +1,11 @@
 Gamma
 
-Year:	≤1991
-RAM:	48 kB
-ROM:	16 kB
-CPU:	Z80 3.5 MHz
-Graph:	256x192x15
-In ROM:	Basic
-Group:	ZX Spectrum 48
+Year	≤1991
+RAM	48 kB
+ROM	16 kB
+CPU	Z80 3.5 MHz
+Graph	256x192x15
+In ROM	Basic
+Group	ZX Spectrum 48
 
 TODO

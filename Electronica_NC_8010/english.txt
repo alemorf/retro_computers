@@ -1,10 +1,10 @@
 Electronica NC-8010
 
-Year:	≤1981
-RAM:	32 kB
-CPU:	K1801VE1
-Graph:	512x256x2
-Grouph:	BK0010
+Year	≤1981
+RAM	32 kB
+CPU	K1801VE1
+Graph	512x256x2
+Grouph	BK0010
 
 Electronica NC-8010 is a prototype of the BK0010 computer. A computer 
 Electronica NC-8010 was produced in only a few copies. You can look at this

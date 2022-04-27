@@ -1,12 +1,12 @@
 Apogey BK01C
 
-Year:	1988
-RAM:	52 kB
-ROM:	4 kB
-CPU:	i8080 1.7 MHz
-Text:	64x25x8
-Graph:	128x62x8
-Group:	Radio 86RK
+Year	1988
+RAM	52 kB
+ROM	4 kB
+CPU	i8080 1.7 MHz
+Text	64x25x8
+Graph	128x62x8
+Group	Radio 86RK
 
 Apogee BK01C is a Soviet home computer, an improved version computer Radio 86RK.
 In Apogee the RAM was increased to 52 kB. Added three-channel sound generator

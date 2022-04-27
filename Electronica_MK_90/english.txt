@@ -1,11 +1,11 @@
 Electronica MK-90
 
-Year:	1988
-RAM:	16 kB
-ROM:	32 kB
-CPU:	KA588
-Graph:	120x64x2
-In ROM:	Basic
+Year	1988
+RAM	16 kB
+ROM	32 kB
+CPU	KA588
+Graph	120x64x2
+In ROM	Basic
 
 Electronica MK-90 is a Soviet portable computer. The computer contains 
 monochrome LCD display with a resolution of 120x64 pixels. Contains 

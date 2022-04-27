@@ -1,13 +1,13 @@
 ZX Evolution
 
-Year:	2009
-RAM:	4096 kB
-ROM:	512 kB
-CPU:	Z80 14 MHz
-Graph:	640x200x16, 320x200x16, 256x192x15, 64 colors palette, VGA
-Text:	80x25x16
-Sound:	AY-3-8910, Covox
-In ROM:	Basic
-Group:	ZX Spectrum 128
+Year	2009
+RAM	4096 kB
+ROM	512 kB
+CPU	Z80 14 MHz
+Графика	640x200x16, 320x200x16, 256x192x15, 64 colors palette, VGA
+Text	80x25x16
+Sound	AY-3-8910, Covox
+In ROM	Basic
+Group	ZX Spectrum 128
 
 TODO

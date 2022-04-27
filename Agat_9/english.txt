@@ -1,11 +1,11 @@
 Agat 9
 
-Year:	1988
-RAM:	128 kB
-ROM:	2 kB
-CPU:	6502 1 MHz
-Text:	64x32x2, 32x32x8, 40x24x2
-Graph:	512x256x2, 256x256x4, 128x128x16, 280x192x2
+Year	1988
+RAM	128 kB
+ROM	2 kB
+CPU	6502 1 MHz
+Text	64x32x2, 32x32x8, 40x24x2
+Graph	512x256x2, 256x256x4, 128x128x16, 280x192x2
 
 Computer "Agat 9" is a Soviet school computer. It is partially compatible with
 the "Apple II+" computer. The Agat 9 computer is not a copy of the Apple II+

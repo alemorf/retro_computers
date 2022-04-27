@@ -1,13 +1,13 @@
 Electronica MS1502
 
-Year:	≤1991
-RAM:	128 kB
-ROM:	16 kB
-CPU:	i8088 5.33 MHz
-Graph:	320x200x4, 640x200x2
-Text:	80x25x16, 80x25x16
-Sound:	i8253
-Group:	IBM PC
+Year	≤1991
+RAM	128 kB
+ROM	16 kB
+CPU	i8088 5.33 MHz
+Graph	320x200x4, 640x200x2
+Text	80x25x16, 80x25x16
+Sound	i8253
+Group	IBM PC
 
 TODO
 

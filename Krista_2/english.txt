@@ -1,12 +1,12 @@
 Krista 2
 
-Year:	≤1990
-RAM:	64 kB
-ROM:	0.5 kB
-CPU:	i8080 2.5 MHz
-Graph:	1024x256x2, 512x256x4, 256x256x16
-Sound:	i8253 x3
-Group:	Vector 06C
+Year	≤1990
+RAM	64 kB
+ROM	0.5 kB
+CPU	i8080 2.5 MHz
+Graph	1024x256x2, 512x256x4, 256x256x16
+Sound	i8253 x3
+Group	Vector 06C
 
 Krista 2 is a Soviet home computer. This computer is partially compatible with
 the Vector 06C computer. Unlike the Vector 06C computer, the Krista 2 computer

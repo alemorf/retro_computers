@@ -1,10 +1,11 @@
 Electronica MK-85
 
-Year:	1986
-RAM:	2 - 6 kB
-ROM:	16 kB
-CPU:	T36VM1-2 1 Mhz
-Graph:	60x7x2
-In ROM:	Basic
+Year	1986
+RAM	2 - 6 kB
+ROM	16 kB
+CPU	T36VM1-2 1 Mhz
+Text	12x1x2
+Graph	60x7x2
+In ROM	Basic
 
 TODO

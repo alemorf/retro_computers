@@ -1,12 +1,12 @@
 Radio-86RK
 
-Year:	1986
-RAM:	16 - 32 kB
-ROM:	2 kB
-CPU:	i8080 1.7 MHz
-Text:	64x25x2
-Graph:	128x62x2
-Group:	Radio 86RK
+Year	1986
+RAM	16 - 32 kB
+ROM	2 kB
+CPU	i8080 1.7 MHz
+Text	64x25x2
+Graph	128x62x2
+Group	Radio 86RK
 
 The Radio 86RK computer appeared in the form of diagrams in Radio magazine in
 1986 (No. 4-6). It was a very simple computer: 9 large chips, 11 small ones, and
