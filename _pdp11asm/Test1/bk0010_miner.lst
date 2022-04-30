@@ -1,0 +1,502 @@
+0004 0000                      				CONVERT1251TOKOI8R
+0005 0000                      		                DECIMALNUMBERS
+0006 0000                      			        ORG 01000
+0011 0200                      		EntryPoint:      ; Игра очень прожорлива до стека
+0012 0200 012706 040000        				MOV #16384, SP
+0015 0204 012700 000233        				MOV #0233, R0
+0016 0208 104016               				EMT 016
+0019 020A 012700 000232        				MOV #0232, R0
+0020 020E 104016               				EMT 016
+0023 0210 012737 001333 177706 				MOV #731, @#0177706
+0024 0216 012737 000160 177712 				MOV #0160, @#0177712
+0027 021C 012737 000100 177660 				MOV #64, @#0177660
+0030 0222 004737 003460        		Menu:		JSR PC, @#clearScreen
+0033 0226 012700 003656        				MOV #bmpLogo, R0
+0034 022A 012701 045020        				MOV #045020, R1
+0035 022E 012703 000045        				MOV #37, R3
+0036 0232 012702 000020        		drawLogo0:	MOV #16, R2
+0037 0236 012021               		drawLogo1:	MOV (R0)+,(R1)+
+0038 0238 077202               				SOB R2, drawLogo1
+0039 023A 062701 000040        				ADD #32, R1
+0040 023E 077307               				SOB R3, drawLogo0
+0043 0240 012700 001142        				MOV #txtMenu, R0
+0044 0244 004737 003620        				JSR PC, @#Print
+0046 0248                      		MenuLoop:	; Инициализируем генератор случайных чисел.
+0047 0248 004737 003034        		                JSR PC, @#rand
+0050 024C 013700 177662        				MOV @#0177662, R0
+0053 0250 012705 001320        				MOV #menuItems, R5
+0054 0254 012501               		Menu2:		MOV (R5)+, R1
+0055 0256 001770               				BEQ MenuLoop
+0056 0258 120001               				CMPB R0, R1
+0057 025A 001517               				BEQ StartGame
+0058 025C 062705 000010        				ADD #8, R5
+0059 0260 000771               				BR Menu2
+0064 0262 006012 030222 020056 		txtMenu:	DB 10,12,0222,"0. Лошара",0
+0065 026F 006412 030622 020056 				DB 10,13,0222,"1. Новичок",0
+0066 027D 007012 027062 166040 				DB 10,14,     "2. Любитель",0
+0067 028B 007412 027063 170040 				DB 10,15,     "3. Профессионал",0
+0068 029D 013011 024221 024543 				DB  9,22,0221,"(c) 2012 VINXRU",0
+0069 02B0 013403 060623 062554 				DB  3,23,0223,"aleksey.f.morozov@gmail.com",0,255
+0071 02D0 000060 000011 000011 		menuItems:	DW '0', 9, 9, 3, 21006	; клавиша, ширина, высота, кол-во бомб, положение на экране
+0072 02DA 000061 000011 000011 				DW '1', 9, 9, 10, 21006
+0073 02E4 000062 000015 000012 			 	DW '2', 13, 10, 20, 20486
+0074 02EE 000063 000020 000016 				DW '3', 16, 14, 43, 18432
+0075 02F8 000000               				DW 0
+0080 02FA                      		StartGame:      ; Параметры игрового поля
+0081 02FA 012567 010600        				MOV (R5)+, gameWidth
+0082 02FE 012567 010576        				MOV (R5)+, gameHeight
+0083 0302 012567 010604        				MOV (R5)+, bombsCnt
+0084 0306 012567 010576        				MOV (R5)+, playfieldVA
+0087 030A 004737 003460        				JSR PC, @#clearScreen
+0088 030E 004737 003504        				JSR PC, @#fillBlocks
+0091 0312 016700 010550        				MOV gameWidth, R0
+0092 0316 006200               				ASR R0
+0093 0318 010067 010550        				MOV R0, cursorX
+0094 031C 016700 010540        				MOV gameHeight, R0
+0095 0320 006200               				ASR R0
+0096 0322 010067 010540        				MOV R0, cursorY
+0099 0326 005067 010542        				CLR bombsPutted
+0100 032A 005067 010524        				CLR gameOverFlag
+0101 032E 005067 010534        				CLR time
+0104 0332 005000               				CLR R0
+0105 0334 012701 000376        				MOV #254, R1
+0106 0338 110160 012222        		StartGame1:	MOVB R1, playfield(R0)
+0107 033C 105060 012622        				CLRB userMarks(R0)
+0108 0340 105200               				INCB R0
+0109 0342 001372               				BNE StartGame1
+0112 0344 012700 010016        				MOV #bmpGood, R0
+0113 0348 004737 003356        				JSR PC, @#drawSmile
+0116 034C 004737 003404        				JSR PC, @#drawPlayField
+0119 0350 004737 003216        				JSR PC, @#leftNumber
+0120 0354 004737 003260        				JSR PC, @#rightNumber
+0123 0358 026727 010446 000001 		mainLoop:       CMP gameOverFlag, #1
+0124 035E 001422               				BEQ mainLoop1
+0125 0360 026727 010452 001747 				CMP time, #999
+0126 0366 001416               				BEQ mainLoop1
+0129 0368 005000               				CLR R0
+0130 036A 023727 177710 000555 				CMP @#0177710, #365
+0131 0370 005500               				ADC R0
+0132 0372 026700 010432        				CMP lastTimer, R0
+0133 0376 001406               				BEQ mainLoop1
+0134 0378 010067 010424        				MOV R0, lastTimer
+0137 037C 005267 010416        				INC time
+0138 0380 004737 003260        				JSR PC, @#rightNumber
+0140 0384                      		mainLoop1:      ; Нажата ли клавиша
+0141 0384 032737 000200 177660 				BIT #128, @#0177660
+0142 038A 001746               				BEQ mainLoop
+0145 038C 013700 177662        				MOV @#0177662, R0
+0146 0390 020027 000010        				CMP R0, #8
+0147 0394 001441               				BEQ cursorLeft
+0148 0396 020027 000031        				CMP R0, #0x19
+0149 039A 001451               				BEQ cursorRight
+0150 039C 020027 000032        				CMP R0, #0x1A
+0151 03A0 001463               				BEQ cursorUp
+0152 03A2 020027 000033        				CMP R0, #0x1B
+0153 03A6 001473               				BEQ cursorDown	
+0154 03A8 020027 000040        				CMP R0, #' '
+0155 03AC 001401               				BEQ leftClick
+0157 03AE 000504               				BR rightClick
+0162 03B0                      		leftClick:	; Если бомбы не установлены, установить бомбы
+0163 03B0 016700 010330        				MOV bombsPutted, R0
+0164 03B4 001534               				BEQ putBombs
+0167 03B6 026727 010310 000001 		putBombsRet:	CMP gameOverFlag, #1
+0168 03BC 001413               				BEQ MenuFar
+0171 03BE 016700 010302        				MOV cursorX, R0
+0172 03C2 016701 010300        				MOV cursorY, R1
+0173 03C6 004737 002600        				JSR PC, @#open
+0176 03CA 004737 002372        				JSR PC, @#drawCursor
+0179 03CE 004737 003126        				JSR PC, @#checkWin
+0182 03D2 000702               				BR mainLoop
+0186 03D4 000137 001042        		MenuFar:	JMP @#Menu
+0190 03D8 026727 010250 000000 		cursorLeft:     CMP cursorX, #0
+0191 03DE 001674               				BEQ mainLoop
+0192 03E0 004737 002272        				JSR PC, @#hideCursor
+0193 03E4 005367 010234        				DEC cursorX
+0194 03E8 004737 002372        				JSR PC, @#drawCursor
+0195 03EC 000665               				BR mainLoop
+0199 03EE 016700 010222        		cursorRight:    MOV cursorX, R0
+0200 03F2 005200               				INC R0
+0201 03F4 020067 010206        				CMP R0, gameWidth
+0202 03F8 001657               				BEQ mainLoop
+0203 03FA 004737 002272        				JSR PC, @#hideCursor
+0204 03FE 005267 010202        				INC cursorX
+0205 0402 004737 002372        				JSR PC, @#drawCursor
+0206 0406 000650               				BR mainLoop
+0210 0408 026727 010172 000000 		cursorUp:    	CMP cursorY, #0
+0211 040E 001644               				BEQ mainLoop
+0212 0410 004737 002272        				JSR PC, @#hideCursor
+0213 0414 005367 010156        				DEC cursorY
+0214 0418 004737 002372        				JSR PC, @#drawCursor
+0215 041C 000635               				BR mainLoop
+0219 041E 016700 010144        		cursorDown:	MOV cursorY, R0
+0220 0422 005200               				INC R0
+0221 0424 020067 010130        				CMP R0, gameHeight
+0222 0428 001627               				BEQ mainLoop
+0223 042A 004737 002272        				JSR PC, @#hideCursor
+0224 042E 005267 010124        				INC cursorY
+0225 0432 004737 002372        				JSR PC, @#drawCursor
+0226 0436 000620               				BR mainLoop
+0231 0438                      		rightClick:	; if(gameOver) return;
+0232 0438 026727 010106 000001 				CMP gameOverFlag, #1
+0233 043E 001614               				BEQ mainLoop
+0235 0440 016700 010100        				MOV cursorX, R0
+0236 0444 016701 010076        				MOV cursorY, R1
+0237 0448 004737 002562        				JSR PC, @#mul01
+0239 044C 116203 012622        				MOVB userMarks(R2), R3
+0240 0450 005203               				INC R3
+0241 0452 020327 000004        				CMP R3, #4
+0242 0456 001001               				BNE rightClick1
+0243 0458 005003               				  CLR R3 
+0244 045A 110362 012622        		rightClick1:	MOVB R3, userMarks(R2)
+0246 045E 004737 002272        				JSR PC, @#hideCursor
+0247 0462 004737 002372        				JSR PC, @#drawCursor
+0248 0466 004737 003216        		rightClickRet:	JSR PC, @#leftNumber
+0249 046A 000137 001530        			 	JMP @#mainLoop
+0254 046E 005267 010032        		putBombs:	INC bombsPutted
+0257 0472 016705 010024        				MOV bombsCnt, R5
+0258 0476 010546               		putBombs1:      MOV R5, -(SP)
+0261 0478 004737 003034        		putBombs2:	JSR PC, @#rand
+0262 047C 016701 010000        				MOV gameHeight, R1
+0263 0480 004737 003110        				JSR PC, @#div
+0264 0484 010005               				MOV R0, R5
+0267 0486 004737 003034        				JSR PC, @#rand
+0268 048A 016701 007760        				MOV gameWidth, R1
+0269 048E 004737 003110        				JSR PC, @#div
+0272 0492 026705 007760        				CMP cursorY, R5
+0273 0496 001003               				BNE putBombs3
+0274 0498 026700 007750        				CMP cursorX, R0
+0275 049C 001755               				BEQ putBombs2
+0278 049E 010501               		putBombs3:	MOV R5, R1
+0279 04A0 004737 002562        				JSR PC, @#mul01
+0282 04A4 122762 000377 012222 				CMPB #255, playfield(R2)
+0283 04AA 001746               				BEQ putBombs2
+0286 04AC 112762 000377 012222 				MOVB #255, playfield(R2)
+0288 04B2 012605               				MOV (SP)+, R5
+0289 04B4 077540               				SOB R5, putBombs1
+0291 04B6 000137 001666        				JMP @#putBombsRet
+0296 04BA 016700 007706        		hideCursor:	MOV cursorX, R0
+0297 04BE 016701 007704        				MOV cursorY, R1
+0298 04C2 004737 002562        				JSR PC, @#mul01		; R0+R1*16 -> R2
+0299 04C6 004737 002420        				JSR PC, @#calcCell2	; R0,R1 -> R1. Портит R3
+0300 04CA 116205 012622        				MOVB userMarks(R2), R5
+0301 04CE 116202 012222        				MOVB playfield(R2), R2
+0302 04D2 004737 002766        				JSR PC, @#getBitmap
+0303 04D6 020027 006516        				CMP R0, #bmpUn
+0304 04DA 001403               				BEQ drawCursor4
+0305 04DC 004737 003600        		drawCursor5:	JSR PC, @#drawImage ; Используется R0,R1. Портит R2.
+0306 04E0 000207               		                RTS PC
+0310 04E2 020527 000001        		drawCursor4:	CMP R5, #1
+0311 04E6 001406               				BEQ drawCursorF
+0312 04E8 020527 000002        				CMP R5, #2
+0313 04EC 001367               				BNE drawCursor5
+0314 04EE 012700 006416        				mov #bmpQ, R0
+0315 04F2 000764               				BR drawCursor5
+0319 04F4 012700 006316        		drawCursorF:	mov #bmpF, R0
+0320 04F8 000761               				BR drawCursor5
+0325 04FA 016700 007606        		drawCursor:	MOV cursorX, R0
+0326 04FE 016701 007604        				MOV cursorY, R1
+0327 0502 004737 002420        				JSR PC, @#calcCell2
+0328 0506 012700 006116        				MOV #bmpCursor, R0
+0329 050A 004737 003554        				JSR PC, @#drawTransImage
+0330 050E 000207               				RTS PC      
+0336 0510 010103               		calcCell2:	MOV R1, R3
+0337 0512 000303               				SWAB R3
+0338 0514 006103               				ROL R3
+0339 0516 006103               				ROL R3
+0340 0518 060003               				ADD R0, R3
+0341 051A 060003               				ADD R0, R3
+0342 051C 060003               				ADD R0, R3
+0343 051E 060003               				ADD R0, R3
+0344 0520 066703 007544        				ADD playfieldVA, R3		
+0345 0524 010301               				MOV R3, R1		
+0346 0526 000207               				RTS PC
+0352 0528                      		check:		; if(x>=8 || y>=8) return;
+0353 0528 020067 007522        				CMP R0, gameWidth
+0354 052C 103012               				BCC checkRet
+0355 052E 020167 007516        		                CMP R1, gameHeight
+0356 0532 103007               				BCC checkRet
+0358 0534 004737 002562        				JSR PC, @#Mul01
+0360 0538 126227 012222 000377 				CMPB playfield(R2), #255 
+0361 053E 001114               				BNE openRet
+0362 0540 005203               				INC R3
+0363 0542 000207               		checkRet:	RTS PC
+0368 0544 005301               		call8:		DEC R1
+0369 0546 004737 002542        				JSR PC, @#call81
+0370 054A 005300               				DEC R0
+0371 054C 005201               				INC R1
+0372 054E 004715               				JSR PC, (R5)
+0373 0550 005200               				INC R0
+0374 0552 005200               				INC R0
+0375 0554 004715               				JSR PC, (R5)
+0376 0556 005300               				DEC R0
+0377 0558 005201               				INC R1
+0378 055A 004737 002542        				JSR PC, @#call81
+0379 055E 005301               				DEC R1
+0380 0560 000207               				RTS PC
+0385 0562 005300               		call81:         DEC R0
+0386 0564 004715               				JSR PC, (R5)
+0387 0566 005200               				INC R0
+0388 0568 004715               				JSR PC, (R5)
+0389 056A 005200               				INC R0
+0390 056C 004715               				JSR PC, (R5)
+0391 056E 005300               				DEC R0
+0392 0570 000207               				RTS PC
+0397 0572 010102               		mul01:		MOV R1, R2
+0398 0574 006302               				ASL R2
+0399 0576 006302               				ASL R2
+0400 0578 006302               				ASL R2
+0401 057A 006302               				ASL R2
+0402 057C 060002               				ADD R0, R2
+0403 057E 000207               				RTS PC
+0408 0580 020067 007372        		open:		CMP R0, gameWidth
+0409 0584 103051               				BCC openRet
+0410 0586 020167 007366        		                CMP R1, gameHeight
+0411 058A 103046               				BCC openRet
+0413 058C 004737 002562        				JSR PC, @#Mul01
+0415 0590 126227 012222 000377 			        CMPB playfield(R2), #255
+0416 0596 001441               			        BEQ die
+0418 0598 126227 012222 000376 				CMPB playfield(R2), #254
+0419 059E 001034               				BNE openRet
+0421 05A0 010546               				MOV R5, -(SP)
+0422 05A2 010046               		                MOV R0, -(SP)
+0423 05A4 010146               		                MOV R1, -(SP)             
+0425 05A6 012705 002450        				MOV #check, R5
+0426 05AA 005003               				CLR R3
+0427 05AC 004737 002504        				JSR PC, @#call8
+0428 05B0 004737 002562        				JSR PC, @#mul01
+0429 05B4 110362 012222        				MOVB R3, playfield(R2)
+0431 05B8 010304               				MOV R3, R4
+0432 05BA 004737 002746        				JSR PC, @#redrawCell012
+0434 05BE 010404               				MOV R4, R4
+0435 05C0 001010               				BNE openRets
+0437 05C2 012601               		                MOV (SP)+, R1
+0438 05C4 012600               		                MOV (SP)+, R0
+0439 05C6 012705 002600        				MOV #open, R5
+0440 05CA 004737 002504        				JSR PC, @#call8
+0441 05CE 012605               		                MOV (SP)+, R5
+0442 05D0 000207               				RTS PC
+0444 05D2 012601               		openRets:       MOV (SP)+, R1
+0445 05D4 012600               		                MOV (SP)+, R0
+0446 05D6 012605               				MOV (SP)+, R5
+0447 05D8 000207               		openRet:        RTS PC
+0452 05DA                      		die:		; Вывод смайлика
+0453 05DA 012700 010236        				MOV #bmpBad, R0
+0454 05DE 004737 003356        				JSR PC, @#drawSmile
+0455 05E2 000137 003200        				JMP @#gameOver
+0461 05E6 010302               		redrawCell012:   MOV R3, R2
+0462 05E8 004737 002420        				 JSR PC, @#calcCell2 ; R0,R1 -> R1. Портит R3
+0463 05EC 004737 002766        				 JSR PC, @#getBitmap ; R2 -> R0		
+0464 05F0 004737 003600        				 JSR PC, @#drawImage ; Используется R0,R1. Портит R2.
+0465 05F4 000207               				 RTS PC
+0471 05F6 010200               		getBitmap:      MOV R2, R0
+0472 05F8 005200               				INC R0
+0473 05FA 005200               				INC R0
+0474 05FC 026727 007202 000001 				CMP gameOverFlag, #1
+0475 0602 001006               				BNE getBitmap3		
+0476 0604 000300               		getBitmap2:	SWAB R0
+0477 0606 006200               				ASR R0
+0478 0608 006200               				ASR R0
+0479 060A 062700 006516        				ADD #bmpUn, R0
+0480 060E 000207               		                RTS PC
+0482 0610 120027 000001        		getBitmap3:     CMPB R0, #1
+0483 0614 001367               				BNE getBitmap2
+0484 0616 005300               				DEC R0
+0485 0618 000765               				BR getBitmap2
+0491 061A 011105               		rand_state:	dw 0x1245
+0493 061C 016700 177772        		rand:           MOV rand_state, R0
+0494 0620 010001               				MOV R0, R1
+0495 0622 006300               				ASL R0
+0496 0624 006300               				ASL R0
+0497 0626 006201               				ASR R1                    
+0498 0628 006201               				ASR R1                    
+0499 062A 006201               				ASR R1                    
+0500 062C 006201               				ASR R1
+0501 062E 006201               				ASR R1
+0502 0630 074100               				XOR R1, R0
+0503 0632 010067 177744        				MOV R0, rand_state
+0505 0636 010001               				MOV R0, R1
+0506 0638 000300               				SWAB R0
+0507 063A 074100               				XOR R1, R0
+0508 063C 013701 177710        				MOV @#0177710, R1
+0509 0640 074100               				XOR R1, R0
+0510 0642 042700 177400        				BIC #0xFF00, R0
+0512 0646 000207               				RTS PC
+0518 0648 005002               		div:		CLR R2
+0519 064A 160100               		div1:		SUB R1, R0
+0520 064C 103402               				BCS div2
+0521 064E 005202               				INC R2
+0522 0650 000774               				BR div1
+0523 0652 060100               		div2:		ADD R1, R0
+0524 0654 000207               				RTS PC
+0530 0656                      		checkWin:	; Подсчет не открытых клеток без бомб.
+0531 0656 012703 000376        				MOV #254, R3
+0532 065A 005001               				CLR R1
+0533 065C 005000               		checkWin2:	 CLR R0
+0534 065E 004737 002562        		checkWin1:	  JSR PC, @#mul01
+0535 0662 126203 012222        				  CMPB playfield(R2), R3
+0536 0666 001422               				  BEQ checkWin3
+0537 0668 005200               			  	 INC R0
+0538 066A 026700 007020        		  	  	 CMP gameWidth, R0
+0539 066E 001367               			  	 BNE checkWin1
+0540 0670 005201               				INC R1
+0541 0672 026701 007012        				CMP gameHeight, R1
+0542 0676 001362               				BNE checkWin2
+0547 0678 012700 010456        				MOV #bmpWin, R0
+0548 067C 004737 003356        				JSR PC, @#drawSmile
+0550 0680                      		gameOver:	; Конец игры
+0551 0680 012700 000001        				MOV #1, R0
+0552 0684 010067 006772        				MOV R0, gameOverFlag
+0555 0688 004737 003404        				JSR PC, @#drawPlayField
+0557 068C 000207               		checkWin3:	RTS PC
+0563 068E                      		leftNumber:	; Подсчет кол-ва флагов
+0564 068E 005000               				CLR R0
+0565 0690 016701 006766        				MOV bombsCnt, R1
+0566 0694 126027 012622 000001 		leftNumber1:	 CMPB userMarks(R0), #1
+0567 069A 001002               				 BNE leftNumber3
+0568 069C 005301               				  DEC R1
+0569 069E 001402               				  BEQ leftNumber4
+0570 06A0 105200               		leftNumber3:	INCB R0
+0571 06A2 001370               				BNE leftNumber1
+0574 06A4 010100               		leftNumber4:	MOV R1, R0
+0575 06A6 012703 040510        			        MOV #040510, R3		; Адрес в видеопамяти
+0576 06AA 004737 003276        				JSR PC, @#drawNumber
+0578 06AE 000207               				RTS PC
+0584 06B0 016700 006732        		rightNumber:	MOV time, R0		; Исходное число
+0585 06B4 012703 040573        			        MOV #040573, R3		; Адрес в видеопамяти
+0586 06B8 004737 003276        				JSR PC, @#drawNumber
+0587 06BC 000207               				RTS PC
+0593 06BE 012705 000003        		drawNumber:	MOV #3, R5		; Кол-во чисел
+0595 06C2                      		drawNumber0:	; Получаем первую цифру
+0596 06C2 012701 000012        				MOV #10, R1		
+0597 06C6 004737 003110        				JSR PC, @#div
+0600 06CA 000300               				SWAB R0
+0601 06CC 006200               				ASR R0
+0602 06CE 006200               				ASR R0
+0603 06D0 062700 010676        				ADD #bmpN0, R0
+0606 06D4 012704 000025        				MOV #21, R4
+0607 06D8 112023               		drawNumber1:    MOVB (R0)+, (R3)+
+0608 06DA 112023               				MOVB (R0)+, (R3)+
+0609 06DC 112023               				MOVB (R0)+, (R3)+
+0610 06DE 062703 000075        				ADD #61, R3           
+0611 06E2 077406               				SOB R4, drawNumber1
+0614 06E4 162703 002503        				SUB #1347, R3
+0617 06E8 010200               				MOV R2, R0
+0618 06EA 077525               				SOB R5, drawNumber0
+0620 06EC 000207               				RTS PC
+0626 06EE 012701 040435        		drawSmile:	MOV #040435, R1
+0627 06F2 012702 000030        				MOV #24, R2
+0628 06F6 012021               		drawGood:	MOV (R0)+, (R1)+
+0629 06F8 012021               				MOV (R0)+, (R1)+
+0630 06FA 012021               				MOV (R0)+, (R1)+
+0631 06FC 062701 000072        				ADD #58, R1
+0632 0700 077206               				SOB R2, drawGood
+0633 0702 000207               				RTS PC
+0639 0704 005001               		drawPlayField:	CLR R1
+0640 0706 005000               		LOOP2:    	 CLR R0
+0641 0708 010046               		LOOP1:	    	  MOV R0, -(SP)
+0642 070A 010146               			    	  MOV R1, -(SP)
+0643 070C 004737 002562        		  	     	   JSR PC, @#mul01
+0644 0710 116203 012222        				   MOVB playfield(R2), R3
+0645 0714 004737 002746        		  	     	   JSR PC, @#redrawCell012
+0646 0718 012601               			    	  MOV (SP)+, R1
+0647 071A 012600               			    	  MOV (SP)+, R0
+0648 071C 005200               			  	 INC R0
+0649 071E 026700 006534        		  	  	 CMP gameWidth, R0
+0650 0722 001362               			  	 BNE LOOP1
+0651 0724 005201               				INC R1
+0652 0726 026701 006526        				CMP gameHeight, R1
+0653 072A 001355               				BNE LOOP2
+0655 072C 000137 002372        				JMP @#drawCursor
+0661 0730 012700 040000        		clearScreen:	MOV #040000, R0
+0662 0734 012702 004000        				MOV #2048, R2
+0663 0738 005020               		clearScreen1:	CLR (R0)+
+0664 073A 005020               				CLR (R0)+
+0665 073C 005020               				CLR (R0)+
+0666 073E 005020               				CLR (R0)+
+0667 0740 077205               				SOB R2, clearScreen1
+0668 0742 000207               				RTS PC
+0673 0744 012700 044000        		fillBlocks:	MOV #044000, R0
+0674 0748 012704 000016        				MOV #14, R4
+0675 074C 012701 012076        		fillBlocks3:	MOV #bmpBlock, R1
+0676 0750 012703 000020        				MOV #16, R3
+0677 0754 012702 000020        		fillBlocks2:	MOV #16, R2
+0678 0758 012120               		fillBlocks1:	MOV (R1)+, (R0)+
+0679 075A 012120               				MOV (R1)+, (R0)+
+0680 075C 162701 000004        				SUB #4, R1
+0681 0760 077205               				SOB R2, fillBlocks1
+0682 0762 062701 000004        				ADD #4, R1
+0683 0766 077312               				SOB R3, fillBlocks2
+0684 0768 077417               				SOB R4, fillBlocks3
+0685 076A 000207               				RTS PC
+0691 076C 012702 000020        		drawTransImage: MOV     #16, R2
+0692 0770 042011               		drawTransImag1:	BIC     (R0)+, (R1)
+0693 0772 052021               				BIS     (R0)+, (R1)+
+0694 0774 042011               				BIC     (R0)+, (R1)
+0695 0776 052021               				BIS     (R0)+, (R1)+
+0696 0778 062701 000074        		        	ADD     #60, R1                        
+0697 077C 077207               				SOB	R2, drawTransImag1
+0698 077E 000207               				RTS	PC
+0704 0780 012702 000020        		drawImage:      MOV     #16, R2
+0705 0784 012021               		drawImage1:	MOV     (R0)+, (R1)+
+0706 0786 012021               				MOV     (R0)+, (R1)+
+0707 0788 062701 000074        		        	ADD     #60, R1
+0708 078C 077205               				SOB	R2, drawImage1
+0709 078E 000207               				RTS	PC
+0714 0790                      		Print:		; Установка координат
+0715 0790 005001               				CLR R1
+0716 0792 112001               				MOVB (R0)+, R1
+0717 0794 005002               				CLR R2
+0718 0796 112002               				MOVB (R0)+, R2
+0719 0798 104024               				EMT 024		                       
+0722 079A 010001               				MOV R0, R1
+0723 079C 012702 000377        				MOV #0x00FF, R2
+0724 07A0 104020               				EMT 020
+0727 07A2 112001               		Print1:		MOVB (R0)+, R1
+0728 07A4 001376               				BNE Print1
+0729 07A6 121027 000377        				CMPB (R0), #255
+0730 07AA 001362               				BNE Print
+0732 07AC 000207               				RTS PC
+0737 07AE 000000 012000 000000 		bmpLogo:   	insert_bitmap2 "resources/logo.bmp",  128, 37
+0739 0C4E 000000 000000 000000 		bmpCursor:  	insert_bitmap2t "resources/cursor.bmp",  16, 16
+0741 0CCE 177777 037777 177777 		bmpF:    	insert_bitmap2 "resources/f.bmp", 16, 16
+0742 0D0E 177777 037777 177777 		bmpQ:    	insert_bitmap2 "resources/q.bmp", 16, 16
+0744 0D4E 177777 037777 177777 		bmpUn:   	insert_bitmap2 "resources/un.bmp", 16, 16
+0745 0D8E 052525 052525 000001 		bmpB:    	insert_bitmap2 "resources/b.bmp",  16, 16
+0746 0DCE 052525 052525 000001 		bmp0:    	insert_bitmap2 "resources/0.bmp",  16, 16
+0747 0E0E 052525 052525 000001 		bmp1:    	insert_bitmap2 "resources/1.bmp",  16, 16
+0748 0E4E 052525 052525 000001 		bmp2:    	insert_bitmap2 "resources/2.bmp",  16, 16
+0749 0E8E 052525 052525 000001 		bmp3:    	insert_bitmap2 "resources/3.bmp",  16, 16
+0750 0ECE 052525 052525 000001 		bmp4:    	insert_bitmap2 "resources/4.bmp",  16, 16
+0751 0F0E 052525 052525 000001 		bmp5:    	insert_bitmap2 "resources/5.bmp",  16, 16
+0752 0F4E 052525 052525 000001 		bmp6:    	insert_bitmap2 "resources/6.bmp",  16, 16
+0753 0F8E 052525 052525 000001 		bmp7:    	insert_bitmap2 "resources/7.bmp",  16, 16
+0754 0FCE 052525 052525 000001 		bmp8:    	insert_bitmap2 "resources/8.bmp",  16, 16
+0756 100E 177777 177777 037777 		bmpGood: 	insert_bitmap2 "resources/good.bmp", 24, 24
+0757 109E 177777 177777 037777 		bmpBad:  	insert_bitmap2 "resources/bad.bmp", 24, 24
+0758 112E 177777 177777 037777 		bmpWin:  	insert_bitmap2 "resources/win.bmp", 24, 24
+0760 11BE 177774 171417 031777 		bmpN0:   	insert_bitmap2 "resources/n0.bmp", 12, 21
+0761 11FE 010420 040401 030104 		bmpN1:   	insert_bitmap2 "resources/n1.bmp", 12, 21
+0762 123E 177774 170417 031777 		bmpN2:   	insert_bitmap2 "resources/n2.bmp", 12, 21
+0763 127E 177774 170417 031777 		bmpN3:   	insert_bitmap2 "resources/n3.bmp", 12, 21
+0764 12BE 010420 041401 030104 		bmpN4:   	insert_bitmap2 "resources/n4.bmp", 12, 21
+0765 12FE 177774 171417 011777 		bmpN5:   	insert_bitmap2 "resources/n5.bmp", 12, 21
+0766 133E 177774 171417 011777 		bmpN6:   	insert_bitmap2 "resources/n6.bmp", 12, 21
+0767 137E 177774 170417 031777 		bmpN7:   	insert_bitmap2 "resources/n7.bmp", 12, 21
+0768 13BE 177774 171417 031777 		bmpN8:   	insert_bitmap2 "resources/n8.bmp", 12, 21
+0769 13FE 177774 171417 031777 		bmpN9:   	insert_bitmap2 "resources/n9.bmp", 12, 21                          
+0771 143E 042104 042100 010421 		bmpBlock:   	insert_bitmap2 "resources/block.bmp", 16, 16                       
+0773 147E                      		endOfROM:              
+0777 147E                      		pfSize equ 256 ; Удобное число для буфера, хотя максимальный размер поля 16x14
+0779 147E 000000               		gameWidth:	dw 0
+0780 1480 000000               		gameHeight:	dw 0
+0781 1482 000000               		gameOverFlag:  	dw 0
+0782 1484 000000               		cursorX:    	dw 0
+0783 1486 000000               		cursorY:    	dw 0
+0784 1488 000000               		playfieldVA:	dw 0
+0785 148A 000000               		bombsCnt:   	dw 0
+0786 148C 000000               		bombsPutted:	dw 0
+0787 148E 000000               		time:	    	dw 0
+0788 1490 000000               		lastTimer:      dw 0
+0789 1492 000000 000000 000000 		playfield:    	db pfSize dup(0)
+0790 1592 000000 000000 000000 		userMarks:    	db pfSize dup(0)
+0794 1692 

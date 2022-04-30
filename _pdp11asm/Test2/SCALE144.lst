@@ -1,0 +1,864 @@
+0001 0000                      		.LINK	144000
+0002 C800                      		TSIN=37400
+0003 C800                      		EMAP=140000	;140000	C000	;1/4
+0004 C800                      		EBSCR=100000	;100000	8000	;2/4
+0005 C800                      		LINE1=7600
+0006 C800                      		LINE2=7600+4000
+0007 C800                      		EntryPoint:
+0008 C800 000005               			RESET
+0009 C802 012737 150220 000004 			MOV	#STOP,@#4	MOV	#17400,@#177716
+0009 C808 012737 017400 177716 			MOV	#17400,@#177716
+0010 C80E 012700 040000        			MOV	#40000,R0       MOV	R0,R1
+0010 C812 010001               		       MOV	R0,R1
+0011 C814 005020               			CLR	(R0)+
+0012 C816 077102               			SOB	R1,.+-2
+0013 C818 012737 016000 177716 			MOV	#16000,@#177716
+0014 C81E 004767 003536        			CALL	LOAD
+0015 C822 012737 144076 000100 			MOV	#TICK,@#100
+0016 C828 012737 000002 000102 			MOV	#2,@#102
+0017 C82E 012737 005400 177662 			MOV	#5400,@#177662
+0019 C834 004767 000034        		0:	CALL	EB
+0020 C838 004767 002376        			CALL	VYV
+0021 C83C 000773               			BR	0
+0022 C83E 005127 000000        		TICK:	COM	#0
+0023 C842 001004               			BNE	0
+0024 C844 012737 001331 177664 			MOV	#1331,@#177664
+0025 C84A 000002               			RTI
+0026 C84C 012737 001330 177664 		0:	MOV	#1330,@#177664
+0027 C852 000002               			RTI
+0029 C854 012737 005000 177716 		EB:	MOV	#5000,@#177716	;1/2
+0030 C85A 112700 000377        		EPOS1:	MOVB	#377,R0
+0031 C85E 105200               			INCB	R0
+0032 C860 105200               			INCB	R0
+0033 C862 142700 000340        			BICB	#340,R0
+0034 C866 110067 177762        			MOVB	R0,EPOS1+2
+0035 C86A 120027 000001        			CMPB	R0,#1
+0036 C86E 001014               			BNE	EC01
+0037 C870 116701 000060        			MOVB	EPTXR2+2,R1
+0038 C874 062701 000050        			ADD	#50,R1
+0039 C878 110167 000050        			MOVB	R1,EPTXR2+2
+0040 C87C 110167 000220        			MOVB	R1,EPTXR3+2
+0041 C880 062701 000050        			ADD	#50,R1
+0042 C884 110167 000022        			MOVB	R1,EPTXR1+2
+0043 C888 110004               		EC01:	MOVB	R0,R4
+0044 C88A 062700 000140        			ADD	#140,R0		;мл.байт от 60000 в ориг 160000
+0045 C88E 110067 000603        			MOVB	R0,HX
+0046 C892 112767 000000 000574 			MOVB	#0,LX
+0048 C898 112700 000050        		EPTXR1:	MOVB	#50,R0
+0049 C89C 110067 000473        			MOVB	R0,E1D14+3
+0050 C8A0 110400               			MOVB	R4,R0
+0051 C8A2 062700 000000        		EPTXR2:	ADD	#0,R0
+0052 C8A6 110067 000367        			MOVB	R0,E1D01+3
+0053 C8AA 110067 000431        			MOVB	R0,E1D11+3
+0054 C8AE 110400               			MOVB	R4,R0
+0055 C8B0 060000               			ADD	R0,R0
+0056 C8B2 060000               			ADD	R0,R0
+0057 C8B4 060000               			ADD	R0,R0
+0058 C8B6 160303               			SUB	R3,R3
+0059 C8B8 150003               			BISB	R0,R3
+0060 C8BA 012702 000400        			MOV	#400,R2
+0061 C8BE 160302               			SUB	R3,R2
+0062 C8C0 010267 000340        			MOV	R2,E1D02+2
+0063 C8C4 010267 000402        			MOV	R2,E1D12+2
+0064 C8C8 010267 000452        			MOV	R2,E1D18+2
+0065 C8CC 010246               			MOV	R2,-(SP)
+0066 C8CE 160202               			SUB	R2,R2
+0067 C8D0 150402               			BISB	R4,R2
+0068 C8D2 006202               			ASR	R2
+0069 C8D4 042702 177400        			BIC	#177400,R2
+0070 C8D8 060202               			ADD	R2,R2
+0071 C8DA 012703 145030        			MOV	#EDIVT,R3
+0072 C8DE 060302               			ADD	R3,R2
+0073 C8E0 112203               			MOVB	(R2)+,R3
+0074 C8E2 000303               			SWAB	R3
+0075 C8E4 142703 000377        			BICB	#377,R3
+0076 C8E8 151203               			BISB	(R2),R3
+0077 C8EA 000303               			SWAB	R3
+0078 C8EC 010367 000356        			MOV	R3,E1D15+2
+0080 C8F0 012603               			MOV	(SP)+,R3
+0081 C8F2 110467 003202        			MOVB	R4,PROM
+0082 C8F6 110467 003177        			MOVB	R4,PROM+1
+0083 C8FA 016704 003172        			MOV	PROM,R4
+0084 C8FE 012702 020000        			MOV	#20000,R2
+0085 C902 060302               		1:	ADD	R3,R2
+0086 C904 105304               			DECB	R4
+0087 C906 001375               			BNE	1
+0088 C908 000304               			SWAB	R4
+0089 C90A 010200               			MOV	R2,R0
+0090 C90C 000300               			SWAB	R0
+0091 C90E 062700 000000        		EPTXR3:	ADD	#0,R0
+0092 C912 000302               			SWAB	R2
+0093 C914 142702 000377        			BICB	#377,R2
+0094 C918 150002               			BISB	R0,R2
+0095 C91A 000302               			SWAB	R2
+0096 C91C 010267 000322        			MOV	R2,E1D17+2
+0098 C920 110400               			MOVB	R4,R0
+0099 C922 120027 000024        			CMPB	R0,#24
+0100 C926 103402               			BCS	0
+0101 C928 112700 000023        			MOVB	#23,R0
+0102 C92C 110067 000346        		0:	MOVB	R0,LY
+0103 C930 112700 000023        			MOVB	#23,R0
+0104 C934 116701 000336        			MOVB	LY,R1
+0105 C938 160100               			SUB	R1,R0
+0106 C93A 110067 000331        			MOVB	R0,HY
+0108 C93E 012702 145654        			MOV	#EREN32-14,R2
+0109 C942 110467 003062        			MOVB	R4,PROM
+0110 C946 110467 003057        			MOVB	R4,PROM+1
+0111 C94A 016704 003052        			MOV	PROM,R4
+0112 C94E 105204               			INCB	R4
+0113 C950 012703 000014        			MOV	#14,R3		;???
+0114 C954 060302               		4:	ADD	R3,R2
+0115 C956 105304               			DECB	R4
+0116 C958 001375               			BNE	4
+0117 C95A 000304               			SWAB	R4
+0118 C95C 010267 000166        			MOV	R2,E1D13+2
+0119 C960 010267 000236        			MOV	R2,E1D19+2
+0121 C964 012702 146520        			MOV	#RE+30,R2		;C9CF???
+0122 C968 110467 003014        			MOVB	R4,PROM
+0123 C96C 110467 003011        			MOVB	R4,PROM+1
+0124 C970 016704 003004        			MOV	PROM,R4
+0125 C974 000304               			SWAB	R4
+0126 C976 105204               			INCB	R4
+0127 C978 012703 000030        			MOV	#30,R3
+0128 C97C 160302               		2:	SUB	R3,R2
+0129 C97E 105304               			DECB	R4
+0130 C980 001375               			BNE	2
+0131 C982 000304               			SWAB	R4
+0132 C984 010267 000146        			MOV	R2,E1D16+2
+0134 C988 012704 155500        			MOV	#155500,R4
+0135 C98C 012701 177400        			MOV	#177400,R1
+0136 C990 042767 100000 000176 			BIC	#100000,IX
+0137 C996 116700 000175        			MOVB	HY,R0
+0138 C99A 105700               			TSTB	R0
+0139 C99C 001417               			BEQ	E1C1
+0140 C99E 012702 000000        		E1D01:	MOV	#0,R2
+0141 C9A2 012703 010421        		E1D02:	MOV	#10421,R3
+0142 C9A6 117705 145024        			MOVB	@IX,R5
+0143 C9AA 040105               			BIC	R1,R5
+0144 C9AC 000305               			SWAB	R5
+0145 C9AE 004767 000206        			CALL	ERENLN
+0146 C9B2 105267 000136        			INCB	LX
+0147 C9B6 105367 000135        			DECB	HY
+0148 C9BA 001361               			BNE	E1D01
+0150 C9BC 116700 000126        		E1C1:	MOVB	LY,R0
+0152 C9C0 001001               			BNE	0
+0153 C9C2 000207               			RET
+0154 C9C4                      		0:
+0156 C9C4 012702 000000        		E1D11:	MOV	#0,R2
+0157 C9C8 012703 010421        		E1D12:	MOV	#10421,R3
+0158 C9CC 117705 145024        			MOVB	@IX,R5
+0159 C9D0 040105               			BIC	R1,R5
+0160 C9D2 000305               			SWAB	R5
+0161 C9D4 004737 145070        		E1D13:	CALL	@#ERENLN
+0162 C9D8 012702 000000        		E1D14:	MOV	#0,R2
+0163 C9DC 012703 010421        		E1D15:	MOV	#10421,R3
+0164 C9E0 016700 000060        			MOV	IX,R0
+0165 C9E4 116005 000060        			MOVB	60(R0),R5
+0166 C9E8 040105               			BIC	R1,R5
+0167 C9EA 000305               			SWAB	R5
+0168 C9EC 004737 145070        		E1D16:	CALL	@#ERENLN
+0169 C9F0 012702 020441        		E1D17:	MOV	#20441,R2
+0170 C9F4 012703 010421        		E1D18:	MOV	#10421,R3
+0171 C9F8 117705 145024        			MOVB	@IX,R5
+0172 C9FC 040105               			BIC	R1,R5
+0173 C9FE 000305               			SWAB	R5
+0174 CA00 004737 145070        		E1D19:	CALL	@#ERENLN
+0175 CA04 105267 000014        			INCB	LX
+0176 CA08 105367 000012        			DECB	LY
+0177 CA0C 001333               			BNE	E1D11
+0178 CA0E 000207               			RET	
+0180 CA10                      		HL:L:	.BYTE	0
+0181 CA11                      		H:	.BYTE	0
+0182 CA12                      		BC:C:	.BYTE	0
+0183 CA13                      		B:	.BYTE	0
+0184 CA14                      		IX:LX:	.BYTE	0
+0185 CA15                      		HX:	.BYTE	0
+0186 CA16                      		IY:LY:	.BYTE	0
+0187 CA17                      		HY:	.BYTE	0
+0188 CA18 037777 006314 003434 		EDIVT:	.WORD	37777,6314,3434,2354
+0189 CA20 001703 001414 001217 			.WORD	1703,1414,1217,1064
+0190 CA28 000760 000672 000617 			.WORD	760,672,617,554
+0191 CA30 000516 000465 000437 			.WORD	516,465,437,414
+0194 CA38                      		ERENLN:
+0195 CA38 010200               			MOV	R2,R0
+0196 CA3A 000300               			SWAB	R0
+0197 CA3C 040100               			BIC	R1,R0
+0198 CA3E 050500               			BIS	R5,R0
+0199 CA40 111024               			MOVB	(R0),(R4)+
+0200 CA42 060302               			ADD	R3,R2
+0201 CA44 010200               			MOV	R2,R0
+0202 CA46 000300               			SWAB	R0
+0203 CA48 040100               			BIC	R1,R0
+0204 CA4A 050500               			BIS	R5,R0
+0205 CA4C 111024               			MOVB	(R0),(R4)+
+0206 CA4E 060302               			ADD	R3,R2
+0207 CA50 010200               			MOV	R2,R0
+0208 CA52 000300               			SWAB	R0
+0209 CA54 040100               			BIC	R1,R0
+0210 CA56 050500               			BIS	R5,R0
+0211 CA58 111024               			MOVB	(R0),(R4)+
+0212 CA5A 060302               			ADD	R3,R2
+0213 CA5C 010200               			MOV	R2,R0
+0214 CA5E 000300               			SWAB	R0
+0215 CA60 040100               			BIC	R1,R0
+0216 CA62 050500               			BIS	R5,R0
+0217 CA64 111024               			MOVB	(R0),(R4)+
+0218 CA66 060302               			ADD	R3,R2
+0219 CA68 010200               			MOV	R2,R0
+0220 CA6A 000300               			SWAB	R0
+0221 CA6C 040100               			BIC	R1,R0
+0222 CA6E 050500               			BIS	R5,R0
+0223 CA70 111024               			MOVB	(R0),(R4)+
+0224 CA72 060302               			ADD	R3,R2
+0225 CA74 010200               			MOV	R2,R0
+0226 CA76 000300               			SWAB	R0
+0227 CA78 040100               			BIC	R1,R0
+0228 CA7A 050500               			BIS	R5,R0
+0229 CA7C 111024               			MOVB	(R0),(R4)+
+0230 CA7E 060302               			ADD	R3,R2
+0231 CA80 010200               			MOV	R2,R0
+0232 CA82 000300               			SWAB	R0
+0233 CA84 040100               			BIC	R1,R0
+0234 CA86 050500               			BIS	R5,R0
+0235 CA88 111024               			MOVB	(R0),(R4)+
+0236 CA8A 060302               			ADD	R3,R2
+0237 CA8C 010200               			MOV	R2,R0
+0238 CA8E 000300               			SWAB	R0
+0239 CA90 040100               			BIC	R1,R0
+0240 CA92 050500               			BIS	R5,R0
+0241 CA94 111024               			MOVB	(R0),(R4)+
+0242 CA96 060302               			ADD	R3,R2
+0243 CA98 010200               			MOV	R2,R0
+0244 CA9A 000300               			SWAB	R0
+0245 CA9C 040100               			BIC	R1,R0
+0246 CA9E 050500               			BIS	R5,R0
+0247 CAA0 111024               			MOVB	(R0),(R4)+
+0248 CAA2 060302               			ADD	R3,R2
+0249 CAA4 010200               			MOV	R2,R0
+0250 CAA6 000300               			SWAB	R0
+0251 CAA8 040100               			BIC	R1,R0
+0252 CAAA 050500               			BIS	R5,R0
+0253 CAAC 111024               			MOVB	(R0),(R4)+
+0254 CAAE 060302               			ADD	R3,R2
+0255 CAB0 010200               			MOV	R2,R0
+0256 CAB2 000300               			SWAB	R0
+0257 CAB4 040100               			BIC	R1,R0
+0258 CAB6 050500               			BIS	R5,R0
+0259 CAB8 111024               			MOVB	(R0),(R4)+
+0260 CABA 060302               			ADD	R3,R2
+0261 CABC 010200               			MOV	R2,R0
+0262 CABE 000300               			SWAB	R0
+0263 CAC0 040100               			BIC	R1,R0
+0264 CAC2 050500               			BIS	R5,R0
+0265 CAC4 111024               			MOVB	(R0),(R4)+
+0266 CAC6 060302               			ADD	R3,R2
+0267 CAC8 010200               			MOV	R2,R0
+0268 CACA 000300               			SWAB	R0
+0269 CACC 040100               			BIC	R1,R0
+0270 CACE 050500               			BIS	R5,R0
+0271 CAD0 111024               			MOVB	(R0),(R4)+
+0272 CAD2 060302               			ADD	R3,R2
+0273 CAD4 010200               			MOV	R2,R0
+0274 CAD6 000300               			SWAB	R0
+0275 CAD8 040100               			BIC	R1,R0
+0276 CADA 050500               			BIS	R5,R0
+0277 CADC 111024               			MOVB	(R0),(R4)+
+0278 CADE 060302               			ADD	R3,R2
+0279 CAE0 010200               			MOV	R2,R0
+0280 CAE2 000300               			SWAB	R0
+0281 CAE4 040100               			BIC	R1,R0
+0282 CAE6 050500               			BIS	R5,R0
+0283 CAE8 111024               			MOVB	(R0),(R4)+
+0284 CAEA 060302               			ADD	R3,R2
+0285 CAEC 010200               			MOV	R2,R0
+0286 CAEE 000300               			SWAB	R0
+0287 CAF0 040100               			BIC	R1,R0
+0288 CAF2 050500               			BIS	R5,R0
+0289 CAF4 111024               			MOVB	(R0),(R4)+
+0290 CAF6 060302               			ADD	R3,R2
+0291 CAF8 010200               			MOV	R2,R0
+0292 CAFA 000300               			SWAB	R0
+0293 CAFC 040100               			BIC	R1,R0
+0294 CAFE 050500               			BIS	R5,R0
+0295 CB00 111024               			MOVB	(R0),(R4)+
+0296 CB02 060302               			ADD	R3,R2
+0297 CB04 010200               			MOV	R2,R0
+0298 CB06 000300               			SWAB	R0
+0299 CB08 040100               			BIC	R1,R0
+0300 CB0A 050500               			BIS	R5,R0
+0301 CB0C 111024               			MOVB	(R0),(R4)+
+0302 CB0E 060302               			ADD	R3,R2
+0303 CB10 010200               			MOV	R2,R0
+0304 CB12 000300               			SWAB	R0
+0305 CB14 040100               			BIC	R1,R0
+0306 CB16 050500               			BIS	R5,R0
+0307 CB18 111024               			MOVB	(R0),(R4)+
+0308 CB1A 060302               			ADD	R3,R2
+0309 CB1C 010200               			MOV	R2,R0
+0310 CB1E 000300               			SWAB	R0
+0311 CB20 040100               			BIC	R1,R0
+0312 CB22 050500               			BIS	R5,R0
+0313 CB24 111024               			MOVB	(R0),(R4)+
+0314 CB26 060302               			ADD	R3,R2
+0315 CB28 010200               			MOV	R2,R0
+0316 CB2A 000300               			SWAB	R0
+0317 CB2C 040100               			BIC	R1,R0
+0318 CB2E 050500               			BIS	R5,R0
+0319 CB30 111024               			MOVB	(R0),(R4)+
+0320 CB32 060302               			ADD	R3,R2
+0321 CB34 010200               			MOV	R2,R0
+0322 CB36 000300               			SWAB	R0
+0323 CB38 040100               			BIC	R1,R0
+0324 CB3A 050500               			BIS	R5,R0
+0325 CB3C 111024               			MOVB	(R0),(R4)+
+0326 CB3E 060302               			ADD	R3,R2
+0327 CB40 010200               			MOV	R2,R0
+0328 CB42 000300               			SWAB	R0
+0329 CB44 040100               			BIC	R1,R0
+0330 CB46 050500               			BIS	R5,R0
+0331 CB48 111024               			MOVB	(R0),(R4)+
+0332 CB4A 060302               			ADD	R3,R2
+0333 CB4C 010200               			MOV	R2,R0
+0334 CB4E 000300               			SWAB	R0
+0335 CB50 040100               			BIC	R1,R0
+0336 CB52 050500               			BIS	R5,R0
+0337 CB54 111024               			MOVB	(R0),(R4)+
+0338 CB56 060302               			ADD	R3,R2
+0339 CB58 010200               			MOV	R2,R0
+0340 CB5A 000300               			SWAB	R0
+0341 CB5C 040100               			BIC	R1,R0
+0342 CB5E 050500               			BIS	R5,R0
+0343 CB60 111024               			MOVB	(R0),(R4)+
+0344 CB62 060302               			ADD	R3,R2
+0345 CB64 010200               			MOV	R2,R0
+0346 CB66 000300               			SWAB	R0
+0347 CB68 040100               			BIC	R1,R0
+0348 CB6A 050500               			BIS	R5,R0
+0349 CB6C 111024               			MOVB	(R0),(R4)+
+0350 CB6E 060302               			ADD	R3,R2
+0351 CB70 010200               			MOV	R2,R0
+0352 CB72 000300               			SWAB	R0
+0353 CB74 040100               			BIC	R1,R0
+0354 CB76 050500               			BIS	R5,R0
+0355 CB78 111024               			MOVB	(R0),(R4)+
+0356 CB7A 060302               			ADD	R3,R2
+0357 CB7C 010200               			MOV	R2,R0
+0358 CB7E 000300               			SWAB	R0
+0359 CB80 040100               			BIC	R1,R0
+0360 CB82 050500               			BIS	R5,R0
+0361 CB84 111024               			MOVB	(R0),(R4)+
+0362 CB86 060302               			ADD	R3,R2
+0363 CB88 010200               			MOV	R2,R0
+0364 CB8A 000300               			SWAB	R0
+0365 CB8C 040100               			BIC	R1,R0
+0366 CB8E 050500               			BIS	R5,R0
+0367 CB90 111024               			MOVB	(R0),(R4)+
+0368 CB92 060302               			ADD	R3,R2
+0369 CB94 010200               			MOV	R2,R0
+0370 CB96 000300               			SWAB	R0
+0371 CB98 040100               			BIC	R1,R0
+0372 CB9A 050500               			BIS	R5,R0
+0373 CB9C 111024               			MOVB	(R0),(R4)+
+0374 CB9E 060302               			ADD	R3,R2
+0375 CBA0 010200               			MOV	R2,R0
+0376 CBA2 000300               			SWAB	R0
+0377 CBA4 040100               			BIC	R1,R0
+0378 CBA6 050500               			BIS	R5,R0
+0379 CBA8 111024               			MOVB	(R0),(R4)+
+0380 CBAA 060302               			ADD	R3,R2
+0381 CBAC 010200               			MOV	R2,R0
+0382 CBAE 000300               			SWAB	R0
+0383 CBB0 040100               			BIC	R1,R0
+0384 CBB2 050500               			BIS	R5,R0
+0385 CBB4 111024               			MOVB	(R0),(R4)+
+0386 CBB6 060302               			ADD	R3,R2
+0388 CBB8                      		EREN32:
+0389 CBB8 010200               			MOV	R2,R0
+0390 CBBA 000300               			SWAB	R0
+0391 CBBC 040100               			BIC	R1,R0
+0392 CBBE 050500               			BIS	R5,R0
+0393 CBC0 111024               			MOVB	(R0),(R4)+
+0394 CBC2 060302               			ADD	R3,R2
+0395 CBC4 010200               			MOV	R2,R0
+0396 CBC6 000300               			SWAB	R0
+0397 CBC8 040100               			BIC	R1,R0
+0398 CBCA 050500               			BIS	R5,R0
+0399 CBCC 111024               			MOVB	(R0),(R4)+
+0400 CBCE 060302               			ADD	R3,R2
+0401 CBD0 010200               			MOV	R2,R0
+0402 CBD2 000300               			SWAB	R0
+0403 CBD4 040100               			BIC	R1,R0
+0404 CBD6 050500               			BIS	R5,R0
+0405 CBD8 111024               			MOVB	(R0),(R4)+
+0406 CBDA 060302               			ADD	R3,R2
+0407 CBDC 010200               			MOV	R2,R0
+0408 CBDE 000300               			SWAB	R0
+0409 CBE0 040100               			BIC	R1,R0
+0410 CBE2 050500               			BIS	R5,R0
+0411 CBE4 111024               			MOVB	(R0),(R4)+
+0412 CBE6 060302               			ADD	R3,R2
+0413 CBE8 010200               			MOV	R2,R0
+0414 CBEA 000300               			SWAB	R0
+0415 CBEC 040100               			BIC	R1,R0
+0416 CBEE 050500               			BIS	R5,R0
+0417 CBF0 111024               			MOVB	(R0),(R4)+
+0418 CBF2 060302               			ADD	R3,R2
+0419 CBF4 010200               			MOV	R2,R0
+0420 CBF6 000300               			SWAB	R0
+0421 CBF8 040100               			BIC	R1,R0
+0422 CBFA 050500               			BIS	R5,R0
+0423 CBFC 111024               			MOVB	(R0),(R4)+
+0424 CBFE 060302               			ADD	R3,R2
+0425 CC00 010200               			MOV	R2,R0
+0426 CC02 000300               			SWAB	R0
+0427 CC04 040100               			BIC	R1,R0
+0428 CC06 050500               			BIS	R5,R0
+0429 CC08 111024               			MOVB	(R0),(R4)+
+0430 CC0A 060302               			ADD	R3,R2
+0431 CC0C 010200               			MOV	R2,R0
+0432 CC0E 000300               			SWAB	R0
+0433 CC10 040100               			BIC	R1,R0
+0434 CC12 050500               			BIS	R5,R0
+0435 CC14 111024               			MOVB	(R0),(R4)+
+0436 CC16 060302               			ADD	R3,R2
+0437 CC18 010200               			MOV	R2,R0
+0438 CC1A 000300               			SWAB	R0
+0439 CC1C 040100               			BIC	R1,R0
+0440 CC1E 050500               			BIS	R5,R0
+0441 CC20 111024               			MOVB	(R0),(R4)+
+0442 CC22 060302               			ADD	R3,R2
+0443 CC24 010200               			MOV	R2,R0
+0444 CC26 000300               			SWAB	R0
+0445 CC28 040100               			BIC	R1,R0
+0446 CC2A 050500               			BIS	R5,R0
+0447 CC2C 111024               			MOVB	(R0),(R4)+
+0448 CC2E 060302               			ADD	R3,R2
+0449 CC30 010200               			MOV	R2,R0
+0450 CC32 000300               			SWAB	R0
+0451 CC34 040100               			BIC	R1,R0
+0452 CC36 050500               			BIS	R5,R0
+0453 CC38 111024               			MOVB	(R0),(R4)+
+0454 CC3A 060302               			ADD	R3,R2
+0455 CC3C 010200               			MOV	R2,R0
+0456 CC3E 000300               			SWAB	R0
+0457 CC40 040100               			BIC	R1,R0
+0458 CC42 050500               			BIS	R5,R0
+0459 CC44 111024               			MOVB	(R0),(R4)+
+0460 CC46 060302               			ADD	R3,R2
+0461 CC48 010200               			MOV	R2,R0
+0462 CC4A 000300               			SWAB	R0
+0463 CC4C 040100               			BIC	R1,R0
+0464 CC4E 050500               			BIS	R5,R0
+0465 CC50 111024               			MOVB	(R0),(R4)+
+0466 CC52 060302               			ADD	R3,R2
+0467 CC54 010200               			MOV	R2,R0
+0468 CC56 000300               			SWAB	R0
+0469 CC58 040100               			BIC	R1,R0
+0470 CC5A 050500               			BIS	R5,R0
+0471 CC5C 111024               			MOVB	(R0),(R4)+
+0472 CC5E 060302               			ADD	R3,R2
+0473 CC60 010200               			MOV	R2,R0
+0474 CC62 000300               			SWAB	R0
+0475 CC64 040100               			BIC	R1,R0
+0476 CC66 050500               			BIS	R5,R0
+0477 CC68 111024               			MOVB	(R0),(R4)+
+0478 CC6A 060302               			ADD	R3,R2
+0479 CC6C 010200               			MOV	R2,R0
+0480 CC6E 000300               			SWAB	R0
+0481 CC70 040100               			BIC	R1,R0
+0482 CC72 050500               			BIS	R5,R0
+0483 CC74 111024               			MOVB	(R0),(R4)+
+0484 CC76 060302               			ADD	R3,R2
+0485 CC78 010200               			MOV	R2,R0
+0486 CC7A 000300               			SWAB	R0
+0487 CC7C 040100               			BIC	R1,R0
+0488 CC7E 050500               			BIS	R5,R0
+0489 CC80 111024               			MOVB	(R0),(R4)+
+0490 CC82 060302               			ADD	R3,R2
+0491 CC84 010200               			MOV	R2,R0
+0492 CC86 000300               			SWAB	R0
+0493 CC88 040100               			BIC	R1,R0
+0494 CC8A 050500               			BIS	R5,R0
+0495 CC8C 111024               			MOVB	(R0),(R4)+
+0496 CC8E 060302               			ADD	R3,R2
+0497 CC90 010200               			MOV	R2,R0
+0498 CC92 000300               			SWAB	R0
+0499 CC94 040100               			BIC	R1,R0
+0500 CC96 050500               			BIS	R5,R0
+0501 CC98 111024               			MOVB	(R0),(R4)+
+0502 CC9A 060302               			ADD	R3,R2
+0503 CC9C 010200               			MOV	R2,R0
+0504 CC9E 000300               			SWAB	R0
+0505 CCA0 040100               			BIC	R1,R0
+0506 CCA2 050500               			BIS	R5,R0
+0507 CCA4 111024               			MOVB	(R0),(R4)+
+0508 CCA6 060302               			ADD	R3,R2
+0509 CCA8 010200               			MOV	R2,R0
+0510 CCAA 000300               			SWAB	R0
+0511 CCAC 040100               			BIC	R1,R0
+0512 CCAE 050500               			BIS	R5,R0
+0513 CCB0 111024               			MOVB	(R0),(R4)+
+0514 CCB2 060302               			ADD	R3,R2
+0515 CCB4 010200               			MOV	R2,R0
+0516 CCB6 000300               			SWAB	R0
+0517 CCB8 040100               			BIC	R1,R0
+0518 CCBA 050500               			BIS	R5,R0
+0519 CCBC 111024               			MOVB	(R0),(R4)+
+0520 CCBE 060302               			ADD	R3,R2
+0521 CCC0 010200               			MOV	R2,R0
+0522 CCC2 000300               			SWAB	R0
+0523 CCC4 040100               			BIC	R1,R0
+0524 CCC6 050500               			BIS	R5,R0
+0525 CCC8 111024               			MOVB	(R0),(R4)+
+0526 CCCA 060302               			ADD	R3,R2
+0527 CCCC 010200               			MOV	R2,R0
+0528 CCCE 000300               			SWAB	R0
+0529 CCD0 040100               			BIC	R1,R0
+0530 CCD2 050500               			BIS	R5,R0
+0531 CCD4 111024               			MOVB	(R0),(R4)+
+0532 CCD6 060302               			ADD	R3,R2
+0533 CCD8 010200               			MOV	R2,R0
+0534 CCDA 000300               			SWAB	R0
+0535 CCDC 040100               			BIC	R1,R0
+0536 CCDE 050500               			BIS	R5,R0
+0537 CCE0 111024               			MOVB	(R0),(R4)+
+0538 CCE2 060302               			ADD	R3,R2
+0539 CCE4 010200               			MOV	R2,R0
+0540 CCE6 000300               			SWAB	R0
+0541 CCE8 040100               			BIC	R1,R0
+0542 CCEA 050500               			BIS	R5,R0
+0543 CCEC 111024               			MOVB	(R0),(R4)+
+0544 CCEE 060302               			ADD	R3,R2
+0545 CCF0 010200               			MOV	R2,R0
+0546 CCF2 000300               			SWAB	R0
+0547 CCF4 040100               			BIC	R1,R0
+0548 CCF6 050500               			BIS	R5,R0
+0549 CCF8 111024               			MOVB	(R0),(R4)+
+0550 CCFA 060302               			ADD	R3,R2
+0551 CCFC 010200               			MOV	R2,R0
+0552 CCFE 000300               			SWAB	R0
+0553 CD00 040100               			BIC	R1,R0
+0554 CD02 050500               			BIS	R5,R0
+0555 CD04 111024               			MOVB	(R0),(R4)+
+0556 CD06 060302               			ADD	R3,R2
+0557 CD08 010200               			MOV	R2,R0
+0558 CD0A 000300               			SWAB	R0
+0559 CD0C 040100               			BIC	R1,R0
+0560 CD0E 050500               			BIS	R5,R0
+0561 CD10 111024               			MOVB	(R0),(R4)+
+0562 CD12 060302               			ADD	R3,R2
+0563 CD14 010200               			MOV	R2,R0
+0564 CD16 000300               			SWAB	R0
+0565 CD18 040100               			BIC	R1,R0
+0566 CD1A 050500               			BIS	R5,R0
+0567 CD1C 111024               			MOVB	(R0),(R4)+
+0568 CD1E 060302               			ADD	R3,R2
+0569 CD20 010200               			MOV	R2,R0
+0570 CD22 000300               			SWAB	R0
+0571 CD24 040100               			BIC	R1,R0
+0572 CD26 050500               			BIS	R5,R0
+0573 CD28 111024               			MOVB	(R0),(R4)+
+0574 CD2A 060302               			ADD	R3,R2
+0575 CD2C 010200               			MOV	R2,R0
+0576 CD2E 000300               			SWAB	R0
+0577 CD30 040100               			BIC	R1,R0
+0578 CD32 050500               			BIS	R5,R0
+0579 CD34 111024               			MOVB	(R0),(R4)+
+0580 CD36 060302               			ADD	R3,R2
+0582 CD38 000207               		RE:	RET
+0583 CD3A 012700 041600        		VYV:	MOV	#41600,R0
+0584 CD3E 012703 042100        			MOV	#42100,R3
+0585 CD42 012704 075400        			MOV	#75400,R4
+0586 CD46 012705 075700        			MOV	#75700,R5
+0587 CD4A 012701 155500        			MOV	#155500,R1
+0590 CD4E 005127 000000        			COM	#0
+0591 CD52 001010               			BNE	0
+0592 CD54 012737 074000 177716 			MOV	#74000,@#177716	;6/1
+0593 CD5A 000001               			WAIT
+0594 CD5C 012737 003400 177662 			MOV	#3400,@#177662
+0595 CD62 000407               			BR	VYV0
+0597 CD64 012737 014000 177716 		0:	MOV	#14000,@#177716	;5/1
+0598 CD6A 000001               			WAIT
+0599 CD6C 012737 103400 177662 			MOV	#103400,@#177662
+0601 CD72 012102               		VYV0:	MOV	(R1)+,R2
+0602 CD74 106302               			ASLB	R2
+0603 CD76 106302               			ASLB	R2
+0604 CD78 011220               			MOV	(R2),(R0)+
+0605 CD7A 012224               			MOV	(R2)+,(R4)+
+0606 CD7C 011223               			MOV	(R2),(R3)+
+0607 CD7E 011225               			MOV	(R2),(R5)+
+0608 CD80 012102               			MOV	(R1)+,R2
+0609 CD82 106302               			ASLB	R2
+0610 CD84 106302               			ASLB	R2
+0611 CD86 011220               			MOV	(R2),(R0)+
+0612 CD88 012224               			MOV	(R2)+,(R4)+
+0613 CD8A 011223               			MOV	(R2),(R3)+
+0614 CD8C 011225               			MOV	(R2),(R5)+
+0615 CD8E 012102               			MOV	(R1)+,R2
+0616 CD90 106302               			ASLB	R2
+0617 CD92 106302               			ASLB	R2
+0618 CD94 011220               			MOV	(R2),(R0)+
+0619 CD96 012224               			MOV	(R2)+,(R4)+
+0620 CD98 011223               			MOV	(R2),(R3)+
+0621 CD9A 011225               			MOV	(R2),(R5)+
+0622 CD9C 012102               			MOV	(R1)+,R2
+0623 CD9E 106302               			ASLB	R2
+0624 CDA0 106302               			ASLB	R2
+0625 CDA2 011220               			MOV	(R2),(R0)+
+0626 CDA4 012224               			MOV	(R2)+,(R4)+
+0627 CDA6 011223               			MOV	(R2),(R3)+
+0628 CDA8 011225               			MOV	(R2),(R5)+
+0629 CDAA 012102               			MOV	(R1)+,R2
+0630 CDAC 106302               			ASLB	R2
+0631 CDAE 106302               			ASLB	R2
+0632 CDB0 011220               			MOV	(R2),(R0)+
+0633 CDB2 012224               			MOV	(R2)+,(R4)+
+0634 CDB4 011223               			MOV	(R2),(R3)+
+0635 CDB6 011225               			MOV	(R2),(R5)+
+0636 CDB8 012102               			MOV	(R1)+,R2
+0637 CDBA 106302               			ASLB	R2
+0638 CDBC 106302               			ASLB	R2
+0639 CDBE 011220               			MOV	(R2),(R0)+
+0640 CDC0 012224               			MOV	(R2)+,(R4)+
+0641 CDC2 011223               			MOV	(R2),(R3)+
+0642 CDC4 011225               			MOV	(R2),(R5)+
+0643 CDC6 012102               			MOV	(R1)+,R2
+0644 CDC8 106302               			ASLB	R2
+0645 CDCA 106302               			ASLB	R2
+0646 CDCC 011220               			MOV	(R2),(R0)+
+0647 CDCE 012224               			MOV	(R2)+,(R4)+
+0648 CDD0 011223               			MOV	(R2),(R3)+
+0649 CDD2 011225               			MOV	(R2),(R5)+
+0650 CDD4 012102               			MOV	(R1)+,R2
+0651 CDD6 106302               			ASLB	R2
+0652 CDD8 106302               			ASLB	R2
+0653 CDDA 011220               			MOV	(R2),(R0)+
+0654 CDDC 012224               			MOV	(R2)+,(R4)+
+0655 CDDE 011223               			MOV	(R2),(R3)+
+0656 CDE0 011225               			MOV	(R2),(R5)+
+0657 CDE2 012102               			MOV	(R1)+,R2
+0658 CDE4 106302               			ASLB	R2
+0659 CDE6 106302               			ASLB	R2
+0660 CDE8 011220               			MOV	(R2),(R0)+
+0661 CDEA 012224               			MOV	(R2)+,(R4)+
+0662 CDEC 011223               			MOV	(R2),(R3)+
+0663 CDEE 011225               			MOV	(R2),(R5)+
+0664 CDF0 012102               			MOV	(R1)+,R2
+0665 CDF2 106302               			ASLB	R2
+0666 CDF4 106302               			ASLB	R2
+0667 CDF6 011220               			MOV	(R2),(R0)+
+0668 CDF8 012224               			MOV	(R2)+,(R4)+
+0669 CDFA 011223               			MOV	(R2),(R3)+
+0670 CDFC 011225               			MOV	(R2),(R5)+
+0671 CDFE 012102               			MOV	(R1)+,R2
+0672 CE00 106302               			ASLB	R2
+0673 CE02 106302               			ASLB	R2
+0674 CE04 011220               			MOV	(R2),(R0)+
+0675 CE06 012224               			MOV	(R2)+,(R4)+
+0676 CE08 011223               			MOV	(R2),(R3)+
+0677 CE0A 011225               			MOV	(R2),(R5)+
+0678 CE0C 012102               			MOV	(R1)+,R2
+0679 CE0E 106302               			ASLB	R2
+0680 CE10 106302               			ASLB	R2
+0681 CE12 011220               			MOV	(R2),(R0)+
+0682 CE14 012224               			MOV	(R2)+,(R4)+
+0683 CE16 011223               			MOV	(R2),(R3)+
+0684 CE18 011225               			MOV	(R2),(R5)+
+0685 CE1A 012102               			MOV	(R1)+,R2
+0686 CE1C 106302               			ASLB	R2
+0687 CE1E 106302               			ASLB	R2
+0688 CE20 011220               			MOV	(R2),(R0)+
+0689 CE22 012224               			MOV	(R2)+,(R4)+
+0690 CE24 011223               			MOV	(R2),(R3)+
+0691 CE26 011225               			MOV	(R2),(R5)+
+0692 CE28 012102               			MOV	(R1)+,R2
+0693 CE2A 106302               			ASLB	R2
+0694 CE2C 106302               			ASLB	R2
+0695 CE2E 011220               			MOV	(R2),(R0)+
+0696 CE30 012224               			MOV	(R2)+,(R4)+
+0697 CE32 011223               			MOV	(R2),(R3)+
+0698 CE34 011225               			MOV	(R2),(R5)+
+0699 CE36 012102               			MOV	(R1)+,R2
+0700 CE38 106302               			ASLB	R2
+0701 CE3A 106302               			ASLB	R2
+0702 CE3C 011220               			MOV	(R2),(R0)+
+0703 CE3E 012224               			MOV	(R2)+,(R4)+
+0704 CE40 011223               			MOV	(R2),(R3)+
+0705 CE42 011225               			MOV	(R2),(R5)+
+0706 CE44 012102               			MOV	(R1)+,R2
+0707 CE46 106302               			ASLB	R2
+0708 CE48 106302               			ASLB	R2
+0709 CE4A 011220               			MOV	(R2),(R0)+
+0710 CE4C 012224               			MOV	(R2)+,(R4)+
+0711 CE4E 011223               			MOV	(R2),(R3)+
+0712 CE50 011225               			MOV	(R2),(R5)+
+0713 CE52 012102               			MOV	(R1)+,R2
+0714 CE54 106302               			ASLB	R2
+0715 CE56 106302               			ASLB	R2
+0716 CE58 011220               			MOV	(R2),(R0)+
+0717 CE5A 012224               			MOV	(R2)+,(R4)+
+0718 CE5C 011223               			MOV	(R2),(R3)+
+0719 CE5E 011225               			MOV	(R2),(R5)+
+0720 CE60 012102               			MOV	(R1)+,R2
+0721 CE62 106302               			ASLB	R2
+0722 CE64 106302               			ASLB	R2
+0723 CE66 011220               			MOV	(R2),(R0)+
+0724 CE68 012224               			MOV	(R2)+,(R4)+
+0725 CE6A 011223               			MOV	(R2),(R3)+
+0726 CE6C 011225               			MOV	(R2),(R5)+
+0727 CE6E 012102               			MOV	(R1)+,R2
+0728 CE70 106302               			ASLB	R2
+0729 CE72 106302               			ASLB	R2
+0730 CE74 011220               			MOV	(R2),(R0)+
+0731 CE76 012224               			MOV	(R2)+,(R4)+
+0732 CE78 011223               			MOV	(R2),(R3)+
+0733 CE7A 011225               			MOV	(R2),(R5)+
+0734 CE7C 012102               			MOV	(R1)+,R2
+0735 CE7E 106302               			ASLB	R2
+0736 CE80 106302               			ASLB	R2
+0737 CE82 011220               			MOV	(R2),(R0)+
+0738 CE84 012224               			MOV	(R2)+,(R4)+
+0739 CE86 011223               			MOV	(R2),(R3)+
+0740 CE88 011225               			MOV	(R2),(R5)+
+0741 CE8A 012102               			MOV	(R1)+,R2
+0742 CE8C 106302               			ASLB	R2
+0743 CE8E 106302               			ASLB	R2
+0744 CE90 011220               			MOV	(R2),(R0)+
+0745 CE92 012224               			MOV	(R2)+,(R4)+
+0746 CE94 011223               			MOV	(R2),(R3)+
+0747 CE96 011225               			MOV	(R2),(R5)+
+0748 CE98 012102               			MOV	(R1)+,R2
+0749 CE9A 106302               			ASLB	R2
+0750 CE9C 106302               			ASLB	R2
+0751 CE9E 011220               			MOV	(R2),(R0)+
+0752 CEA0 012224               			MOV	(R2)+,(R4)+
+0753 CEA2 011223               			MOV	(R2),(R3)+
+0754 CEA4 011225               			MOV	(R2),(R5)+
+0755 CEA6 012102               			MOV	(R1)+,R2
+0756 CEA8 106302               			ASLB	R2
+0757 CEAA 106302               			ASLB	R2
+0758 CEAC 011220               			MOV	(R2),(R0)+
+0759 CEAE 012224               			MOV	(R2)+,(R4)+
+0760 CEB0 011223               			MOV	(R2),(R3)+
+0761 CEB2 011225               			MOV	(R2),(R5)+
+0762 CEB4 012102               			MOV	(R1)+,R2
+0763 CEB6 106302               			ASLB	R2
+0764 CEB8 106302               			ASLB	R2
+0765 CEBA 011220               			MOV	(R2),(R0)+
+0766 CEBC 012224               			MOV	(R2)+,(R4)+
+0767 CEBE 011223               			MOV	(R2),(R3)+
+0768 CEC0 011225               			MOV	(R2),(R5)+
+0769 CEC2 012102               			MOV	(R1)+,R2
+0770 CEC4 106302               			ASLB	R2
+0771 CEC6 106302               			ASLB	R2
+0772 CEC8 011220               			MOV	(R2),(R0)+
+0773 CECA 012224               			MOV	(R2)+,(R4)+
+0774 CECC 011223               			MOV	(R2),(R3)+
+0775 CECE 011225               			MOV	(R2),(R5)+
+0776 CED0 012102               			MOV	(R1)+,R2
+0777 CED2 106302               			ASLB	R2
+0778 CED4 106302               			ASLB	R2
+0779 CED6 011220               			MOV	(R2),(R0)+
+0780 CED8 012224               			MOV	(R2)+,(R4)+
+0781 CEDA 011223               			MOV	(R2),(R3)+
+0782 CEDC 011225               			MOV	(R2),(R5)+
+0783 CEDE 012102               			MOV	(R1)+,R2
+0784 CEE0 106302               			ASLB	R2
+0785 CEE2 106302               			ASLB	R2
+0786 CEE4 011220               			MOV	(R2),(R0)+
+0787 CEE6 012224               			MOV	(R2)+,(R4)+
+0788 CEE8 011223               			MOV	(R2),(R3)+
+0789 CEEA 011225               			MOV	(R2),(R5)+
+0790 CEEC 012102               			MOV	(R1)+,R2
+0791 CEEE 106302               			ASLB	R2
+0792 CEF0 106302               			ASLB	R2
+0793 CEF2 011220               			MOV	(R2),(R0)+
+0794 CEF4 012224               			MOV	(R2)+,(R4)+
+0795 CEF6 011223               			MOV	(R2),(R3)+
+0796 CEF8 011225               			MOV	(R2),(R5)+
+0797 CEFA 012102               			MOV	(R1)+,R2
+0798 CEFC 106302               			ASLB	R2
+0799 CEFE 106302               			ASLB	R2
+0800 CF00 011220               			MOV	(R2),(R0)+
+0801 CF02 012224               			MOV	(R2)+,(R4)+
+0802 CF04 011223               			MOV	(R2),(R3)+
+0803 CF06 011225               			MOV	(R2),(R5)+
+0804 CF08 012102               			MOV	(R1)+,R2
+0805 CF0A 106302               			ASLB	R2
+0806 CF0C 106302               			ASLB	R2
+0807 CF0E 011220               			MOV	(R2),(R0)+
+0808 CF10 012224               			MOV	(R2)+,(R4)+
+0809 CF12 011223               			MOV	(R2),(R3)+
+0810 CF14 011225               			MOV	(R2),(R5)+
+0811 CF16 012102               			MOV	(R1)+,R2
+0812 CF18 106302               			ASLB	R2
+0813 CF1A 106302               			ASLB	R2
+0814 CF1C 011220               			MOV	(R2),(R0)+
+0815 CF1E 012224               			MOV	(R2)+,(R4)+
+0816 CF20 011223               			MOV	(R2),(R3)+
+0817 CF22 011225               			MOV	(R2),(R5)+
+0818 CF24 012102               			MOV	(R1)+,R2
+0819 CF26 106302               			ASLB	R2
+0820 CF28 106302               			ASLB	R2
+0821 CF2A 011220               			MOV	(R2),(R0)+
+0822 CF2C 012224               			MOV	(R2)+,(R4)+
+0823 CF2E 011223               			MOV	(R2),(R3)+
+0824 CF30 011225               			MOV	(R2),(R5)+
+0826 CF32 062700 000500        			ADD	#500,R0
+0827 CF36 062703 000500        			ADD	#500,R3
+0828 CF3A 162704 000700        			SUB	#700,R4
+0829 CF3E 162705 000700        			SUB	#700,R5
+0830 CF42 005327 000023        		VYV1:	DEC	#23
+0831 CF46 001402               			BEQ	0
+0832 CF48 012707 146562        			MOV	#VYV0,PC
+0833 CF4C 012767 000023 177762 		0:	MOV	#23,VYV1+2
+0834 CF52 000207               			RET
+0836 CF54 010267 000040        		EXX:	MOV	R2,PROM
+0837 CF58 010302               			MOV	R3,R2
+0838 CF5A 016703 000036        			MOV	RR3,R3
+0839 CF5E 010267 000032        			MOV	R2,RR3
+0840 CF62 010402               			MOV	R4,R2
+0841 CF64 016704 000026        			MOV	RR4,R4
+0842 CF68 010267 000022        			MOV	R2,RR4
+0843 CF6C 016702 000012        			MOV	RR2,R2
+0844 CF70 016767 000004 000004 			MOV	PROM,RR2
+0845 CF76 000207               			RET
+0847 CF78 000000               		PROM:	HALT
+0849 CF7A 000000               		RR2:	HALT
+0850 CF7C 000000               		RR3:	HALT
+0851 CF7E 000000               		RR4:	HALT
+0854 CF80 012701 147664        		LOAD:	MOV	#LL3,R1
+0855 CF84 104036               			EMT	36
+0856 CF86 012701 147740        			MOV	#LL4,R1
+0857 CF8A 104036               			EMT	36
+0858 CF8C 012737 026000 177716 			MOV	#26000,@#177716	;2/4
+0859 CF92 012701 150014        			MOV	#LL1,R1
+0860 CF96 104036               			EMT	36
+0861 CF98 012737 006000 177716 			MOV	#6000,@#177716	;1/4
+0862 CF9E 012701 150070        			MOV	#LL2,R1
+0863 CFA2 104036               			EMT	36
+0864 CFA4 000207               			RET
+0865 CFA6 012737 016000 177716 		SAVE:	MOV	#16000,@#177716
+0866 CFAC 012701 150144        			MOV	#SS1,R1
+0867 CFB0 104036               			EMT	36
+0868 CFB2 000000               			HALT
+0869 CFB4 000003 037400 000000 		LL3:	.WORD	3,TSIN,0
+0870 CFBA 051524 047111 042056 			.ASCII/TSIN.DAT        /
+0871 CFCA 000000 000000 000000 			.BLKB	26
+0872 CFE0 000003 140000 000000 		LL4:	.WORD	3,140000,0
+0873 CFE6 044103 047125 027113 			.ASCII/CHUNK.TAB       /
+0874 CFF6 000000 000000 000000 			.BLKB	26
+0875 D00C 000003 040000 000000 		LL1:	.WORD	3,40000,0
+0876 D012 034123 030060 027060 			.ASCII/S8000.DAT       /
+0877 D022 000000 000000 000000 			.BLKB	26
+0878 D038 000003 040000 000000 		LL2:	.WORD	3,40000,0
+0879 D03E 041523 030060 027060 			.ASCII/SC000.DAT       /
+0880 D04E 000000 000000 000000 			.BLKB	26
+0881 D064 000002 040000 040000 		SS1:	.WORD	2,40000,40000
+0882 D06A 051120 053117 050056 			.ASCII/PROV.PIC        /
+0883 D07A 000000 000000 000000 			.BLKB	26
+0884 D090 012737 016000 177716 		STOP:	MOV	#16000,@#177716
+0885 D096 012737 040000 177662 			MOV	#40000,@#177662
+0886 D09C 000137 100000        			JMP	@#100000
+0887 D0A0                      		.END
+0891 D0A0 
