@@ -1,0 +1,8 @@
+abstractfile.h
+trdfile.h
+trdfile.cpp
+fstools.cpp
+fstools.h
+maketrd.cpp
+sclfile.h
+sclfile.cpp
