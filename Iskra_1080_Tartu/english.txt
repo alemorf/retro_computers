@@ -4,7 +4,7 @@ Year	1990
 RAM	64 kB
 ROM	20 kB
 CPU	i8080 2.2 MHz
-Graph	768x256x2, 384x256x4, палитра 16 цв
+Graph	768x256x2, 384x256x4, 16 colors palette
 Sound	1 bit
 In ROM	Basic, Monitor, Disassembler, CP/M BIOS for local network
 
