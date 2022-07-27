@@ -1,0 +1,14 @@
+./make_pcm_wav_file.h
+./iskra_1080_tartu_tap_to_wav
+./.clang-format
+./make_pcm_wav_file.cpp
+./cppcheck.json
+./fs_tools.h
+./iskra_1080_tartu_tap_to_wav.creator
+./Makefile
+./iskra_1080_tartu_tap_to_wav.cflags
+./fs_tools.cpp
+./iskra_1080_tartu_tap_to_wav.exe
+./iskra_1080_tartu_tap_to_wav.cxxflags
+./iskra_1080_tartu_tap_to_wav.cpp
+./iskra_1080_tartu_tap_to_wav.files

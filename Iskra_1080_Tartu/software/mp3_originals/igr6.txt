@@ -1,0 +1,14 @@
+0:00 - foto1 - bianry
+2:15 - foto2 - bianry
+4:20 - lab - bianry
+5:38 - boa - bianry
+6:20 - TIME - basic - Демо - Часы
+6:45 - REW - basic - Крестики нолики
+7:45 - ARM - basic - Программа проверки знаний математики
+8:15 - KVADR - basic - решение квадратного уравнения
+8:36 - REK - basic - Рецепты
+9:10 - BOI - basic - Морской бой
+9:55 - ELEK - basic - Электрон
+10:40 - RGB - basic - Дема цвета
+11:00 - RGB - basic - Дема цвета
+
