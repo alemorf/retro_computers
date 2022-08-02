@@ -1,0 +1,150 @@
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+</head>
+<body onload="apogeeBk01Emu()" style="-webkit-user-select: none;-moz-user-select: none;-ms-user-select: none;-o-user-select: none;user-select: none;"> 
+
+<style>
+#loadmenu {
+    margin: 8px;
+    display: none;
+    background: gray;
+    color: white;
+    position: absolute;
+    padding: 8px;
+}
+#loadmenu > div {
+    padding-bottom: 4pt;
+    cursor: pointer;
+}
+#loadmenu > div:hover {
+    text-decoration: underline;
+}
+.keyb {
+    background: #F0F0F0;
+    margin: 2px;
+    margin-top: 6px;
+}
+.keyb td {
+    border-radius: 4px;
+    cursor: pointer;
+    background: #C0C0C0;
+    font-family: Arial;
+    font-size: 12px;
+    width: 36px;
+    height: 38px;
+    text-align: center;
+    padding: 2px;
+    vertical-align: middle;
+}
+.keyb th {
+    width: 16px;
+}
+</style>
+
+<script src="apogee_rom.js" type="application/javascript"></script>
+<script src="fileList.js" type="application/javascript"></script>
+<script src="i8080.js" type="application/javascript"></script>
+<script src="vg75.js" type="application/javascript"></script>
+<script src="vi53.js" type="application/javascript"></script>
+<script src="keyboardRk86.js" type="application/javascript"></script>
+<script src="apogeeBk01emu.js" type="application/javascript"></script>
+
+<div id="loadmenu"></div>
+<canvas style="border:1px solid black;border-radius:4px" id="apogeecanvas" width="840" height="580"></canvas>
+<img id="apogeefont" src="apogeefont.png" style="display:none">
+
+<table class="keyb" cellspacing="2">
+<tr>
+<td id="key27" colspan="2">;<br>+</td>
+<td id="key17" colspan="2">1<br>!</td>
+<td id="key18" colspan="2">2<br>"</td>
+<td id="key19" colspan="2">3<br>#</td>
+<td id="key20" colspan="2">4<br>$</td>
+<td id="key21" colspan="2">5<br>%</td>
+<td id="key22" colspan="2">6<br>&</td>
+<td id="key23" colspan="2">7<br>'</td>
+<td id="key24" colspan="2">8<br>(</td>
+<td id="key25" colspan="2">9<br>)</td>
+<td id="key16" colspan="2">0<br>&nbsp;</td>
+<td id="key29" colspan="2">-<br>=</td>
+<td id="key8" colspan="2">ТАБ</td>
+<td id="key9" colspan="2">ПС</td>
+<th></th>
+<td id="key0" colspan="2">↖</td>
+<td id="key3" colspan="2">F1</td>
+<td id="key1" colspan="2">СТР</td>
+<th></th>
+<td id="resetButton" style="background:#FFC0C0">Сброс</td>
+</tr>
+<tr>
+<th></th>
+<td id="key42" colspan="2">Й<br>J</td>
+<td id="key35" colspan="2">Ц<br>C</td>
+<td id="key53" colspan="2">У<br>U</td>
+<td id="key43" colspan="2">К<br>K</td>
+<td id="key37" colspan="2">Е<br>E</td>
+<td id="key46" colspan="2">Н<br>N</td>
+<td id="key39" colspan="2">Г<br>G</td>
+<td id="key59" colspan="2">Ш<br>[</td>
+<td id="key61" colspan="2">Щ<br>]</td>
+<td id="key58" colspan="2">З<br>Z</td>
+<td id="key40" colspan="2">Х<br>H</td>
+<td id="key26" colspan="2">:<br>*</td>
+<td id="key10" colspan="2">ВК</td>
+<th></th>
+<th></th>
+<td id="key12" colspan="2">←</td>
+<td id="key13" colspan="2">↑</td>
+<td id="key14" colspan="2">→</td>
+<th></th>
+<td id="loadButton">&nbsp;&nbsp;&nbsp;Загрузить&nbsp;&nbsp;&nbsp;</div>
+</td>
+</tr>
+<tr>
+<td id="key70" colspan="2">УС</td>
+<td id="key38" colspan="2">Ф<br>F</td>
+<td id="key57" colspan="2">Ы<br>Y</td>
+<td id="key55" colspan="2">В<br>W</td>
+<td id="key33" colspan="2">А<br>A</td>
+<td id="key48" colspan="2">П<br>P</td>
+<td id="key50" colspan="2">Р<br>R</td>
+<td id="key47" colspan="2">О<br>O</td>
+<td id="key44" colspan="2">Л<br>L</td>
+<td id="key36" colspan="2">Д<br>D</td>
+<td id="key54" colspan="2">Ж<br>V</td>
+<td id="key60" colspan="2">Э<br>\</td>
+<td id="key30" colspan="2">.<br>></td>
+<td id="key11" colspan="2">ЗБ</td>
+<th></th>
+<td id="key4" colspan="2">F2</td>
+<td id="key5" colspan="2">F3</td>
+<td id="key6" colspan="2">F4</td>
+</tr>
+<tr>
+<th></th>
+<td id="key69" colspan="2">СС</td>
+<td id="key49" colspan="2">Я<br>Q</td>
+<td id="key62" colspan="2">Ч<br>^</td>
+<td id="key51" colspan="2">С<br>S</td>
+<td id="key45" colspan="2">М<br>M</td>
+<td id="key41" colspan="2">И<br>I</td>
+<td id="key52" colspan="2">Т<br>T</td>
+<td id="key56" colspan="2">Ь<br>X</td>
+<td id="key34" colspan="2">Б<br>B</td>
+<td id="key32" colspan="2">Ю<br>@</td>
+<td id="key28" colspan="2">,<br>&lt;</td>
+<td id="key31" colspan="2">/<br>?</td>
+<td id="key71" colspan="2">РУС<br>ЛАТ</td>
+<th></th>
+<th></th>
+<td id="key15" colspan="4">↓</td>
+<td id="key2" colspan="2">AP2</td>
+<th></th>
+<td id="key63"></td>
+</tr>
+</table>
+
+</script>
+</body>
+</html>

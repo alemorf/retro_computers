@@ -1,0 +1,788 @@
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<style>
+#fontEditMenu {
+    display: table;
+    margin-bottom: 8px;
+}
+#fontEditMenu > a {
+    display: table-cell;    
+    padding-left:32px;
+    padding-right:8px;
+    height:28px;
+    vertical-align:middle;
+    cursor: pointer;
+    background:url() 2px center no-repeat;
+    border-radius: 4px;
+}
+#fontEditMenu > a:hover {
+    background-color: #F8F8F8;
+}
+#fontEditMenu > a[disabled=true] {
+    opacity: 0.3;
+    background-color: inherit;
+}
+#stateDiv {
+    padding-top: 32px;
+}
+#stateDiv input:hover {
+    background-color: #F8F8F8;
+}
+#stateDiv input {
+   border: 0px solid black;
+   background: none;
+   padding: 0;
+   margin: 0;
+   width: 100%;
+}
+#stateDiv table {    
+   width: 100%;
+   border-collapse: collapse;
+}
+#stateDiv tr > td:last-child {    
+    width: 100%;
+}
+#stateDiv td {    
+    margin: 0;
+    padding: 2px,4px,2px,4px;
+}
+.desc {
+    font-size: 10px;
+    color: #808080;
+    font-weight: bold;
+}
+#loadFromServerMenu {
+    display: none;
+    position: absolute;
+    background: white;
+    margin-top: 24px;
+    padding: 4px;
+    border: 1px solid silver;
+    box-shadow: 5px 5px 5px rgba(0,0,0,0.3);
+}
+#loadFromServerMenu a {
+    display: block;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+#loadFromServerMenu a:hover {
+    background-color: #E0E0E0;    
+}
+</style>
+</head>
+<body>
+<script language="JavaScript">document.deep=2;</script>
+<script language="JavaScript" src="../../common.js"></script>
+<script language="JavaScript">makeComp();</script>
+<div id="fontEditMenu"
+><a onclick="newFont()" style="background-image:url(icons/new.svg)">New font</a
+><a onclick="loadFromServer(event)" style="background-image:url(icons/open.svg)"><div id="loadFromServerMenu"></div>Load file from server</a
+><a onclick="load()" style="background-image:url(icons/open.svg)">Load file</a
+><a onclick="save()" style="background-image:url(icons/save.svg)">Save file</a
+><a onclick="swap()" style="background-image:url(icons/swap.svg)">Swap symbols</a
+><a onclick="undo()" id="undoButton" style="background-image:url(icons/undo.svg)">Undo</a
+><a onclick="redo()" id="redoButton" style="background-image:url(icons/redo.svg)">Redo</a
+></div>
+<table cellspacing="0" cellpadding="0"><tr>
+<td style="vertical-align:top"><div class="desc">Char <span id="selectedChar">0</span></div><canvas id="charEditCanvas"></canvas></td>
+<td style="vertical-align:top;padding-left:16px"><div class="desc">All chars</div><canvas id="fontListCanvas"></canvas></td>
+</tr></table>
+<div id="stateDiv">
+<div class="desc">Parameters</div>
+<div id="state"></div>
+</div>
+
+<script>
+
+//---------------------------------------------------------------------------------------------------------------------
+// save & restore state
+
+function emptyFont()
+{
+    var f = "0";
+    for(var i = 1; i < 256 * 8; i *= 2)
+        f = f + "," + f;
+    return f;
+}
+
+var defaultParams = {
+    font:            { value:emptyFont(), type:"integerarray", hidden:1 },
+    fontName:        { value:"font.bin", type:"string" },
+    charWidth:       { value:8,  minValue:1, maxValue:8,   type:"integer" },
+    charHeight:      { value:8,  minValue:1, maxValue:32,  type:"integer" },
+    charFileHeight:  { value:8,  minValue:1, maxValue:32,  type:"integer" },
+    editCellWidth:   { value:21, minValue:1, maxValue:128, type:"integer" },
+    editCellHeight:  { value:32, minValue:1, maxValue:128, type:"integer" },
+    editCellSpace:   { value:1,  minValue:0, maxValue:32,  type:"integer" },
+    viewCellWidth:   { value:2,  minValue:1, maxValue:32,  type:"integer" },
+    viewCellHeight:  { value:3,  minValue:1, maxValue:32,  type:"integer" },
+    viewCellSpace:   { value:1,  minValue:0, maxValue:32,  type:"integer" },
+    viewCharsInLine: { value:32, minValue:1, maxValue:256, type:"integer" },
+    hilightChars:    { value:"", type:"integerarray", index:1 },
+};
+
+function setParamIntInt(name, value)
+{
+    var d = defaultParams[name];
+    
+    // default value
+    if (value === undefined) value = d.value;
+        
+    // convert
+    if (d.type == "integer")
+    {
+        value = parseInt(value, 10);
+        if (value < d.minValue || value > d.maxValue) return false;
+    }
+    else if (d.type == "string")
+    {
+        value += "";
+    }
+    else if (d.type == "integerarray")
+    {
+        value = value.split(",");
+        for (var i in value)
+            value[i] = parseInt(value[i]);        
+    }
+    else return false;
+    
+    // save
+    params[name] = value;
+
+    // index
+    if (d.index)
+    {
+        var index = [];
+        for (var i in value)
+            index[value[i]] = 1;
+        params[name+"Index"] = index;
+    }
+
+    return true;
+}   
+
+function setParamFromApplication(name, value)
+{
+    setParamIntInt(name, value);
+    if (defaultParams[name].object)        
+        defaultParams[name].object.value = value;
+    saveParam(name);
+    onParamChange(name);
+}
+
+var params = [];
+
+for (var i in defaultParams)
+    setParamIntInt(i, localStorage["fontEdit_" + i]);
+
+function resetParams()
+{
+    for (var i in defaultParams)
+    {
+        setParamIntInt(i, undefined);
+        saveParam(i);
+        if (defaultParams[i].object)        
+            defaultParams[i].object.value = params[i];
+    }
+    onParamChange("");
+}
+
+function saveParam(name)
+{
+    localStorage["fontEdit_" + name] = params[name];
+}
+
+function setParamByUser(name, value)
+{
+    if (!setParamIntInt(name, value)) return false;
+    saveParam(name);
+    onParamChange(name);
+    return true;
+}
+
+//var f1 = [];
+//for (var i=0; i<2048; i++)
+//    f1[i] = params.font[i];
+//params.font = f1;
+
+//---------------------------------------------------------------------------------------------------------------------
+// edit state
+
+var html = "<table>";
+for (var i in defaultParams)
+    if (!defaultParams[i].hidden)
+        html += '<tr><td>' + i + ':</td><td><input id="state_' + i + '"></td></tr>';
+document.getElementById("state").innerHTML = html + "</table>";
+
+for (var i in defaultParams)
+{
+    var o = document.getElementById("state_" + i);
+    if (o)
+    {
+    
+        defaultParams[i].object = o;
+        o.value = params[i];
+        (function(i) {
+            o.onchange = function() {
+                this.style.color = setParamByUser(i, this.value) ? "" : "red";
+            };
+        })(i);
+    }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+// binary tools
+
+function arrayToBinary(a)
+{
+    var b = "";
+    for (var i in a)
+        b += String.fromCharCode(a[i]);
+    return b;
+}
+
+function binaryToArray(b)
+{
+    var a = [];
+    for (var i in b)
+        a[i] = b.charCodeAt(i);
+    return a;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+// file tools
+
+function saveAs(data, filename)
+{
+    var uri = "data:application/octet-stream;base64," + window.btoa(data);
+    var link = document.createElement('a');
+    if (typeof link.download === 'string')
+    {
+        link.href = uri;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        window.open(uri);
+    }
+}
+
+function loadAs(result)
+{
+    var link = document.createElement('div');
+    link.innerHTML = '<input type="file">';
+    var load = link.childNodes[0];
+    document.body.appendChild(link);
+    load.click();
+    document.body.removeChild(link);
+    load.onchange = function()
+    {
+        var fr = new FileReader;
+        fr.readAsBinaryString(load.files[0]);
+        fr.onload = function(event) {
+            result(load.files[0].name, event.target.result);
+        };
+    }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+// colors
+
+function calcColors()
+{
+    function parseColor(c)
+    {
+        return {
+            r: parseInt(c.substr(1, 2), 16),
+            g: parseInt(c.substr(3, 2), 16),
+            b: parseInt(c.substr(5, 2), 16)
+        };        
+    }
+
+    function makeColor1(a)
+    {
+        var n = Math.min(255, Math.max(0, Math.round(a)));
+        var s = n.toString(16);
+        return s.length == 1 ? "0" + s : s;
+    }
+
+    function makeColor(c)
+    {
+        return "#" + makeColor1(c.r) + makeColor1(c.g) + makeColor1(c.b);
+    }
+
+    function midColor(a, b, k)
+    {
+        var c = parseColor(a);
+        var d = parseColor(b);
+        var l = 1 - k;
+        return makeColor({
+            r: (c.r * k + d.r * l),
+            g: (c.g * k + d.g * l),
+            b: (c.b * k + d.b * l),
+        });        
+    }
+
+    function midColorA(a, b, k)
+    {
+        var c = [];
+        for (var i in a)
+            c[i] = midColor(a[i], b, k)
+        return c;
+    }    
+
+    function calcHover(x)
+    {
+        return midColorA(x, "#000000", 0.9);
+    }    
+
+    function calcSel(x)
+    {
+        return midColorA(x, "#FF0000", 0.8);
+    }
+
+    const std = [ "#F0F0F0", "#505050"];
+
+    const spec = midColorA(std, "#0080FF", 0.8);
+
+    return [
+        std,
+        calcHover(std),
+        calcSel(std),
+        calcHover(calcSel(std)),
+        spec,
+        calcHover(spec),
+        calcSel(spec),
+        calcHover(calcSel(spec)),
+    ];
+};
+
+const colors = calcColors();
+
+//---------------------------------------------------------------------------------------------------------------------
+// undo, redo
+
+var undoArray = [];
+var redoArray = [];
+
+var redoButton = document.getElementById("redoButton");
+var undoButton = document.getElementById("undoButton");
+
+function undoRedoUpdateInterface()
+{
+    redoButton.setAttribute("disabled", redoArray.length == 0);
+    undoButton.setAttribute("disabled", undoArray.length == 0);
+}
+
+function undoRedoReset()
+{
+    undoArray = [];
+    redoArray = [];
+    undoRedoUpdateInterface();
+}
+
+undoRedoReset();
+
+function undoBeginChange()
+{   
+    undoArray.push({});
+    redoArray = [];
+    undoRedoUpdateInterface();
+}
+
+function undoNextChange(y)
+{   
+    if (undoArray.length == 0) return;
+    var l = undoArray[undoArray.length - 1];
+    if (l[y] === undefined) l[y] = params.font[y];
+}
+
+function undoRedo(a, b)
+{
+    if (a.length == 0) return;
+    var u = a[a.length - 1];
+    var r = [];
+    for(var i in u)
+    {
+        if(r[i] === undefined) r[i] = params.font[i];
+        params.font[i] = u[i];        
+    }
+    b.push(r);
+    a.pop();
+    onCharChanged();
+}
+
+function undo()
+{
+    undoRedo(undoArray, redoArray);
+    undoRedoUpdateInterface();
+}
+
+function redo()
+{
+    undoRedo(redoArray, undoArray);
+    undoRedoUpdateInterface();
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+// font edit
+
+function createCharEdit(canvas)
+{
+    var fontOff = 0;
+    var fontEditMode = 0;
+    var hoverX = -1;
+    var hoverY = -1;
+    
+    const context = canvas.getContext("2d");
+
+    function redraw()
+    {    
+        if (fontOff + params.fontHeight > params.font.length) fontOff = 0;
+        
+        var xs = (params.editCellWidth + params.editCellSpace);
+        var ys = (params.editCellHeight + params.editCellSpace);
+        canvas.width  = params.charWidth * xs;
+        canvas.height = params.charHeight * ys;
+        context.fillStyle = "#fff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        for (var y = 0; y < params.charHeight; y++)
+        {
+            var l = y < params.charFileHeight ? params.font[y + fontOff] : 0;
+            for (var x = params.charWidth - 1; x >= 0; x--, l >>= 1)
+            {
+                context.fillStyle = colors[hoverX == x && hoverY == y ? 1 : 0][l & 1];
+                context.fillRect(x * xs, y * ys, xs - params.editCellSpace, ys - params.editCellSpace);
+            }
+        }
+    }
+
+    function getPixel(x, y)
+    {
+        if (y >= params.charFileHeight) return false;
+        if (y >= params.charHeight) return false;
+        var mask = (1 << (params.charWidth - 1 - x));
+        return (params.font[y + fontOff] & mask) != 0;
+    }
+
+    function setPixel(x, y, v)
+    {
+        if (y >= params.charFileHeight) return;
+        if (y >= params.charHeight) return;
+        var mask = (1 << (params.charWidth - 1 - x));
+        if (v) params.font[y + fontOff] |= mask;
+          else params.font[y + fontOff] &= ~mask;
+    }
+
+    function fontModify()
+    {
+        if (getPixel(hoverX, hoverY) != fontEditMode)
+        {
+            undoNextChange(hoverY + fontOff);
+            setPixel(hoverX, hoverY, fontEditMode);
+        }
+    }
+
+    function mouseMove(x, y, b)
+    {
+        if (x == hoverX && y == hoverY) return;
+        hoverX = x;
+        hoverY = y;
+        if (hoverX != -1 && b) fontModify();
+        redraw();
+    }
+
+    canvas.onmousedown = function(e)
+    {
+        if (hoverX == -1) return;
+        fontEditMode = !getPixel(hoverX, hoverY);
+        undoBeginChange();
+        fontModify(e, true);
+        redraw();
+    }
+
+    canvas.onmouseout = function(e)
+    {
+        mouseMove(-1, -1, false);
+    }
+
+    canvas.onmousemove = function(e)
+    {
+        var x = Math.trunc(e.offsetX / (params.editCellWidth + params.editCellSpace));
+        var y = Math.trunc(e.offsetY / (params.editCellHeight + params.editCellSpace));
+        if (x < 0 || y < 0 || x >= params.charWidth || y >= params.charHeight) x = -1, y = -1;
+        mouseMove(x, y, (e.buttons & 1) != 0);
+    }
+
+    function setChar(_fontOff)
+    {
+        fontOff = _fontOff;
+        redraw();
+    }
+
+    return { setChar:setChar, redraw:redraw };
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+// font list
+
+function createFontList(canvas, onselect)
+{        
+    var sel     = 0;
+    var prevSel = 0;
+    var hover   = -1;
+
+    const context = canvas.getContext("2d");
+
+    function redrawChar(ox, oy, oc, t)
+    {
+        for (var y = 0; y < params.charHeight; y++)
+        {
+            var l = y < params.charFileHeight ? params.font[y + oc] : 0;
+            for (var x = params.charWidth - 1; x >= 0; x--, l >>= 1)
+            {
+                context.fillStyle = colors[t][l & 1];
+                context.fillRect(ox + x * params.viewCellWidth, oy + y * params.viewCellHeight, 
+                                 params.viewCellWidth, params.viewCellHeight);
+            }
+        }
+    }
+
+    function redraw()
+    {
+        var charsCount = Math.trunc(params.font.length / params.charFileHeight);
+        var linesCount = Math.trunc((charsCount + params.viewCharsInLine - 1) / params.viewCharsInLine);
+        
+        // antibug
+        if (prevSel >= charsCount) prevSel = 0;
+        if (sel >= charsCount) sel = 0;
+
+        // update size
+        canvas.width = params.viewCharsInLine * params.viewCellWidth * (params.charWidth + params.viewCellSpace);
+        canvas.height = linesCount * (params.viewCellHeight * params.charHeight + params.viewCellSpace);
+        
+        context.fillStyle = "#fff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        var xs = (params.charWidth * params.viewCellWidth + params.viewCellSpace);
+        var ys = (params.charHeight * params.viewCellHeight + params.viewCellSpace);
+        for (var y = 0, c = 0; c < charsCount; y += ys)
+        {
+            for (var i = 0, x = 0; i < params.viewCharsInLine && c < charsCount; i++, x += xs, c++)
+            {
+                redrawChar(x, y, c * params.charFileHeight,
+                           (hover == c ? 1 : 0) +
+                           (sel == c ? 2 : 0) + 
+                           (params.hilightCharsIndex[c] ? 4 : 0));
+            }
+        }
+    }
+                
+    function mouseMove(n)
+    {
+        if (n == hover) return;
+        hover = n;
+        redraw();
+    }
+
+    canvas.onmousedown = function(e)
+    {
+        if (hover == -1) return;
+        if (sel == hover) return;
+        prevSel = sel;
+        sel = hover;
+        redraw();
+        onselect(sel);
+    }
+
+    canvas.onmouseout = function(e)
+    {
+        mouseMove(-1);
+    }
+
+    canvas.onmousemove = function(e)
+    {
+        var x = Math.trunc(e.offsetX / (params.viewCellWidth * params.charWidth + params.viewCellSpace));
+        var y = Math.trunc(e.offsetY / (params.viewCellHeight * params.charHeight + params.viewCellSpace));
+        var n = x + y * params.viewCharsInLine;
+        if (x < 0 || x >= params.viewCharsInLine || y < 0 || (n + 1) * params.charHeight > params.font.length) 
+            n = -1;
+        mouseMove(n);
+    }
+    
+    function getPrevSel()
+    {
+        return prevSel;
+    }
+
+    function getSel()
+    {
+        return sel;        
+    }
+    
+    return { redraw:redraw, getPrevSel:getPrevSel, getSel:getSel };
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
+var charEdit = createCharEdit(
+    document.getElementById("charEditCanvas")
+)
+
+function onFontLoaded()
+{
+    undoRedoReset();
+    fontList.redraw();
+    onCharSelect(0, true);
+}
+
+function onCharChanged()
+{
+    fontList.redraw();
+    charEdit.redraw();
+}
+
+function onCharSelect(n, dontSave)
+{
+    document.getElementById("selectedChar").innerHTML = n   ;
+    charEdit.setChar(n * params.charFileHeight);
+    if (!dontSave) saveParam("font");
+}
+
+var fontList = createFontList(
+    document.getElementById("fontListCanvas"),
+    onCharSelect
+)
+
+function onParamChange(name)
+{
+    charEdit.redraw();
+    fontList.redraw();
+}
+
+function swap()
+{
+    var a = fontList.getPrevSel() * params.charFileHeight;
+    var b = fontList.getSel() * params.charFileHeight;
+    if(a == b) return;
+    var f = params.font;
+    undoBeginChange();
+    for (var ae = a + params.charFileHeight; a != ae; a++, b++)
+    {
+        undoNextChange(a);
+        undoNextChange(b);
+        var t = f[a];
+        f[a] = f[b];
+        f[b] = t;
+    }
+    onCharChanged();
+}
+
+function save()
+{
+    saveAs(arrayToBinary(params.font), params.fontName);
+}
+
+function load()
+{
+    loadAs(function(fontName, data) 
+    {
+        f = binaryToArray(data);
+        if (f.length > 256*1024) { alert("Too big file!"); return; }
+        if(!newFont()) return;
+        params.font = f;
+        saveParam("font");
+        setParamFromApplication("fontName", fontName);        
+        onFontLoaded();
+    });
+}
+
+function newFont()
+{
+    if (confirm("Are you sure?"))
+    {
+        resetParams();
+        undoRedoReset();
+        return true;
+    }
+    return false;
+}
+
+function include(fileName)
+{
+    var script = document.createElement('script');
+    script.src = fileName;
+    document.head.appendChild(script);
+}
+
+function loadFromServer2(fontName, charWidth, charHeight, raito, data, charFileHeight)
+{
+    if (!charFileHeight) charFileHeight = charHeight;
+    if(!newFont()) return;
+    setParamFromApplication("charWidth", charWidth);
+    setParamFromApplication("charHeight", charHeight);
+    setParamFromApplication("charFileHeight", charFileHeight);
+
+    setParamFromApplication("editCellHeight", Math.round(params.editCellWidth * raito));
+    setParamFromApplication("viewCellHeight", Math.round(params.viewCellWidth * raito));
+    
+    if (data.length / charHeight > 512)
+        setParamFromApplication("viewCharsInLine", 64);
+    setParamFromApplication("fontName", fontName);        
+    params.font = data;
+    saveParam("font");
+    onFontLoaded();
+}
+
+var loadFromServerMenu = document.getElementById("loadFromServerMenu");
+
+function loadFromServer0(event)
+{
+    loadFromServerMenu.style.display = "none";
+    document.removeEventListener("click", loadFromServer0);
+    event.cancelBubble = true;
+}
+
+function loadFromServer1(event, fileName)
+{
+    loadFromServer0(event);
+    include("fonts/" + fileName + ".js");
+}
+
+function loadFromServer(event)
+{
+    var files = [
+        "agat_6x8",
+        "b2m_6x8",
+        "partner_6x8",
+        "galaxy_8x12",
+        "iskra_1080_8x8",
+        "korvet_8x16",
+        "dvk_8x8",
+        "dvk_ksm_8x8",
+        "unior_8x8",
+        "ut88_6x8",
+        "ut88_6x10",
+        "micro80_8x8",
+        "rk_com_8x8",
+        "rk_com_8x14",
+        "rk_com_8x16"
+    ];
+    files.sort();
+    var html = "";
+    for(var i in files)
+        html += "<a onclick='loadFromServer1(event, \"" + files[i] + "\")'>" + files[i] + "</a>";
+    loadFromServerMenu.innerHTML = html;
+    loadFromServerMenu.style.display = "block";
+    event.cancelBubble = true;
+    document.addEventListener("click", loadFromServer0);
+}
+
+onFontLoaded();
+
+</script>
+</body>
+</html>

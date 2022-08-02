@@ -1,0 +1,19 @@
+fileList = [
+"basic",
+"bdashall",
+"gonki",
+"graphred",
+"kosoban",
+"lines",
+"nesushka",
+"planeta",
+"robocop",
+"shmel",
+"simple1",
+"starwars",
+"stopkr",
+"trasina!",
+"vulkan!",
+"xonixzm!",
+"steelrat"
+];
