@@ -3,8 +3,8 @@
 <meta charset="utf-8">
 </head>
 <body>
-<h1>Башкрия-2М. Программирование.</h1>
-<div class="h2">Карта памяти</div>
+<h1>Башкирия-2М. Программирование.</h1>
+<h2>Карта памяти</h2>
 <style>
 th {
     text-align: inherit;
@@ -12,11 +12,15 @@ th {
 .tbl2 {
     border-collapse: collapse;
 }
+.tbl2 td, .tbl2 th {
+    padding: 2px 4px 2px 4px;
+}
 .tbl2 > tbody > tr > td, .tbl2 > tbody > tr > th {
     border: 1px solid black;
 }
-.tbl3 td {
+.tbl3 td, .tbl3 th th {
     text-align: center;
+    padding: 2px 4px 2px 4px;
 }
 .tbl5 th {
     text-align: left;
@@ -37,7 +41,7 @@ th {
 <p>Клавиатура - это матрица кнопок клавиатуры, где младшие 8 или 9 бит адреса подключены к строкам, а шина данных к рядам.</p>
 <p>Режим 7 устанавливается после включения или перезагрузки. В этом режиме ПЗУ размером 2000h повторяется по всём адресом пространстве.</p>
 
-<div class="h2">Клавиатура</div>
+<h2>Клавиатура</h2>
 
 <style>
 .tbl4 th {
@@ -67,7 +71,7 @@ th {
 <tr><th>2904h</th><td>F1</td><td>F2</td><td>F3</td><td>F4</td><td>F5</td></td><td></td><td></td><td></tr>
 </table>
 
-<div class="h2">Карта портов ввод-вывода</div>
+<h2>Карта портов ввод-вывода</h2>
 
 <table class="tbl2 tbl5">
 <tr><th>00h - 03h</th><th>КР580ВИ53, таймер</th></tr>
