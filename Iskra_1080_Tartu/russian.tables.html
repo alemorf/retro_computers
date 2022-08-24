@@ -15,11 +15,25 @@
 .tbl_gray td {
     color: #808080;
 }
+.tbl3 td, .tbl3 th {
+    vertical-align: middle;
+    text-align: center;
+}
 </style>
 <meta charset="utf-8">
 </head>
 <body>
 <h1>Искра 1080 Тарту. Таблицы.</h1>
+
+<h1>Переключение карт памяти.</h1>
+
+<table class="tbl2 tbl3">
+<tr><th rowspan=2>Код в</th><th colspan="5">Читает по адресам</th></tr>
+<tr><td>0000h - 00FFh</td><td>0000h - BFFFh</td><td>C000h - C7FFh</td><td>C800h - CFFFh</td><td>D000h - FFFFh</td></tr>
+<tr><td>0000h - С7FFh</td><td>ОЗУ / <b>ПЗУ</b></td><td>ОЗУ</td><td>ОЗУ</td><td>ОЗУ</td><td>ОЗУ</td></tr>
+<tr><td>C800h - СFFFh</td><td>ОЗУ / <b>ПЗУ</b></td><td>ОЗУ</td><td><b>ПЗУ</b></td><td><b>ПЗУ</b></td><td>ОЗУ</td></tr>
+<tr><td>D000h - FFFFh</td><td>ОЗУ / <b>ПЗУ</b></td><td>ОЗУ</td><td><b>ПЗУ</b></td><td>ОЗУ</td><td><b>ПЗУ</b></td></tr>
+</table>
 
 <h1>Карта памяти при работе CP/M.</h1>
 
@@ -38,8 +52,7 @@
 <tr><td>0B353h</td><td>8</td><td>Заголовок отправляемого или принимаемого пакета по локальной сети.</td></tr>
 <tr><td>0B35Bh</td><td>9</td><td>Временные переменные функций общения с дисковдом.</td></tr>
 <tr><td>0B364h</td><td>50</td><td>ALV, битовая маска используемых блоков.</td></tr>
-<tr><td>0B396h</td><td>3178</td><td><b>Не используется?</b></td></tr>
-<tr><td>0C000h</td><td>2029</td><td><b>Не используется? Только для данных.</b></td></tr>
+<tr><td>0B396h</td><td>5207</td><td><b>Не используется</b></td></tr>
 <tr><td>0C7EDh</td><td>2067</td><td>Системные переменные, текстовый экран.</td></tr>
 <tr><td>0D000h</td><td>12288</td><td>Графический экран 384x256.</td></tr>
 </table>
