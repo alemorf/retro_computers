@@ -1,0 +1,218 @@
+<html lang="ru">
+<head>
+<style>
+.tbl2 {
+    border-collapse: collapse;
+}
+.tbl2 td, .tbl2 th {
+	padding: 2px 4px 2px 4px;
+	border: 1px solid black;
+	vertical-align: top;
+}
+.tbl2 th:nth-child(1), .tbl2 td:nth-child(2)  {
+	white-space: nowrap;
+}
+.tbl_gray td {
+    color: #808080;
+}
+</style>
+<meta charset="utf-8">
+</head>
+<body>
+<h1>Искра 1080 Тарту. Таблицы.</h1>
+
+<h1>Карта памяти при работе CP/M.</h1>
+
+<table class="tbl2">
+<tr><th>Адрес</th><th>Размер</th><th>Описание</th></tr>
+<tr><td>00000h</td><td>256</td><td>Base Page.</td></tr>
+<tr><td>00100h</td><td>39680</td><td>TPA. Облась программ (39 кБ).</td></tr>
+<tr><td>09C00h</td><td>2048</td><td>CCP. Консольный процессор команд.</td></tr>
+<tr><td>0A400h</td><td>3584</td><td>CP/M. Операционная система.</td></tr>
+<tr><td>0B200h</td><td>51</td><td>BIOS. Перенаправление вызовов в ПЗУ.</td></tr>
+<tr><td>0B233h</td><td>16</td><td>DPH дисковода 0.</tr>
+<tr><td>0B243h</td><td>15</td><td>DPB дисковода 0, первые 16 байт загрузочного сектора дисковода 0.</td></tr>
+<tr><td>0B243h</td><td>113</td><td>Неиспользуемый остаток загрузочного сектора дисковода 0.</td></tr>
+<tr><td>0B2С3h</td><td>128</td><td>DIRBUF, буфер для операций с директорием, общий для всех дисководов.</td></tr>
+<tr><td>0B343h</td><td>16</td><td>CSV дисковода 0. Область для контроля смены диска.</td></tr>
+<tr><td>0B353h</td><td>8</td><td>Заголовок отправляемого или принимаемого пакета по локальной сети.</td></tr>
+<tr><td>0B35Bh</td><td>9</td><td>Временные переменные функций общения с дисковдом.</td></tr>
+<tr><td>0B364h</td><td>50</td><td>ALV, битовая маска используемых блоков.</td></tr>
+<tr><td>0B396h</td><td>3178</td><td><b>Не используется?</b></td></tr>
+<tr><td>0C000h</td><td>2029</td><td><b>Не используется? Только для данных.</b></td></tr>
+<tr><td>0C7EDh</td><td>2067</td><td>Системные переменные, текстовый экран.</td></tr>
+<tr><td>0D000h</td><td>12288</td><td>Графический экран 384x256.</td></tr>
+</table>
+
+<h1>Системные переменные</h1>
+
+<table class="tbl2">
+<tr><th>Адрес</th><th>Размер</th><th>Имя</th><th>Описание</th></tr>
+<tr class="tbl_gray"><td>0004Ch</td><td>1</td><td>vTempVideoInverse</td><td>Временно используется во время рисования на экране символа шириной 6 пикселей. Копия vVideoInverse.</td></tr>
+<tr class="tbl_gray"><td>0004Dh</td><td>1</td><td>vTempVideoCursorX</td><td>-//-. Копия vTempCursorX.</td></tr>
+<tr class="tbl_gray"><td>0004Eh</td><td>1</td><td>vTempVideoFontHeight10</td><td>-//-. Копия vTempVideoFontHeight10.</td></tr>
+<tr class="tbl_gray"><td>0004Fh</td><td>1</td><td>vTempVideoRom</td><td>-//-. Не ноль, если было включено ПЗУ в 0000.</td></tr>
+<tr><td>0C7EDh</td><td>1</td><td>vMonitorQuit</td><td>Подпрограмма выхода из Монитора, директива Q. Тут записан опкод JMP или RET.</td></tr>
+<tr><td>0C7EEh</td><td>2</td><td>vMonitorQuitAddress</td><td>Адрес выхода из Монитора</td></tr>
+<tr><td>0C7F0h</td><td>1</td><td>vPrint</td><td>Подпрограмма вывода в консоль. Тут записан опкод JMP.</td></tr>
+<tr><td>0C7F1h</td><td>2</td><td>vPrintAddress</td><td>Адрес функции вывода в консоль</td></tr>
+<tr><td>0C7F3h</td><td>1</td><td>vInput</td><td>Подпрограмма ввода из консоли. Тут записан опкод JMP.</td></tr>
+<tr><td>0C7F4h</td><td>2</td><td>vInputAddress</td><td>Адрес функции ввода из консоли</td></tr>
+<tr class="tbl_gray"><td>0C7F6h</td><td>1</td><td>vTempMonitorProgramm0</td><td>Временно используется при выполнении директив I, O. Тут записан опкод IN или OUT. </td></tr>
+<tr class="tbl_gray"><td>0C7F7h</td><td>1</td><td>vTempMonitorProgramm1</td><td>-//-. Тут записан первый параметр директивы I, O.</td></tr>
+<tr class="tbl_gray"><td>0C7F8h</td><td>1</td><td>vTempMonitorProgramm2</td><td>-//-. Тут записан опкод RET.</td></tr>
+<tr><td>0C7F9h</td><td>6</td><td></td><td><b>Не используется?</b></td></tr>
+<tr><td>0C7FFh</td><td>1</td><td>vBiosReadWrite</td><td>Подпрограмма выполяется после функций BiosRead, BiosWrite. Тут записан опкод RET.</td></tr>
+<tr><td>0C800h</td><td>2</td><td>vKeyboardLayout</td><td>Адрес таблицы раскладки клавиатуры. Латинская / русская.</td></tr>
+<tr><td>0C802h</td><td>1</td><td>vVideoTextWidth</td><td>Ширина текстового экрана. 64 / 48.</td></tr>
+<tr><td>0C803h</td><td>1</td><td>vVideoFontHeight10</td><td>Высота символа в знакогенераторе. Ноль это 8 пикслей, не ноль это 10 пикселей.</td></tr>
+<tr class="tbl_gray"><td>0C804h</td><td>2</td><td>vTempCall0000</td><td>Временно используется функцией вызова из ПЗУ по адресу 0000. Tут хранится адрес вызываемой функции.</td></tr>
+<tr class="tbl_gray"><td>0C806h</td><td>1</td><td>vTempInputPrint</td><td>Временно используется функциями ввода или вывода из консоли.</td></tr>
+<tr><td>0C807h</td><td>1</td><td>vVideoCursorX</td><td>Положение курсора по оси X</td></tr>
+<tr><td>0C808h</td><td>1</td><td>vVideoCursorН</td><td>Положение курсора по оси Y</td></tr>
+<tr><td>0C809h</td><td>1</td><td>vVideoInverse</td><td>Инверсия текста при выводе на экране. 0  это нет, 0FFh это есть.</td></tr>
+<tr><td>0C80Ah</td><td>2</td><td>vVideoCursorAddress</td><td>Адрес курсора на текстовом экране.</td></tr>
+<tr><td>0C80Ch</td><td>1</td><td>vUnused</td><td>При запуске компьютера заполняется нулем, но не используется.</td></tr>
+<tr><td>0C80Dh</td><td>1</td><td>vMonitorPrompt</td><td>Символ, который выводится Монитором перед вводом команды пользователем.</td></tr>
+<tr class="tbl_gray"><td>0C80Eh</td><td>2</td><td>vTempMonitorArgument1</td><td>Используется во время обработки директивы монитора.</td></tr>
+<tr class="tbl_gray"><td>0C810h</td><td>2</td><td>vTempMonitorArgument2</td><td>-//-</td></tr>
+<tr><td>0C812h</td><td>2</td><td>vMonitorArgument1</td><td>Тут сохраняется первый аругмент директивы, а затем используется, если пользователь его не ввел.</td></tr>
+<tr class="tbl_gray"><td>0C814h</td><td>2</td><td>vTempMonitorParse</td><td>Временно используется при обработке директивы монитора.</td></tr>
+<tr><td>0C816h</td><td>1</td><td>vKeyboardLast</td><td>Переменная алгоритма повторного ввода символа при длительном нажатии на клавишу.</td></tr>
+<tr><td>0C817h</td><td>2</td><td>vKeyboardDelay</td><td>-//-</td></tr>
+<tr><td>0C819h</td><td>2</td><td>vVideoFont</td><td>Адрес знакогенератора</td></tr>
+<tr class="tbl_gray"><td>0C81Bh</td><td>1</td><td>vTempMonitorAble1</td><td>Используется во время обработки директивы монитора.</td></tr>
+<tr><td>0C81Ch</td><td>1</td><td>vMonitorDirectiveIPort</td><td>Если первый параметр директивы I не указан, то он берется отсюда. Если он указан, то сохраняется сюда.</td></tr>
+<tr><td>0C81Dh</td><td>1</td><td>vMonitorDirectiveOPort</td><td>Если первый параметр директивы O не указан, то он берется отсюда. Если он указан, то сохраняется сюда.</td></tr>
+<tr class="tbl_gray"><td>0C81Eh</td><td>2</td><td>vTempSP</td><td>Временно используется при выполнени VideoScrollUp0 и VideoCopy0Up. Тут сохраняется SP.</td></tr>
+<tr><td>0C820h</td><td>1</td><td>vVideoEscState</td><td>0xFF = Следующий выведенный в консоль код будет обработан как ESС последовательность, 0 = следующий код будет обработан как обычно.</td></tr>
+<tr><td>0C821h</td><td>1</td><td>vVideoEscCursorState</td><td>1 = Следующий выведенный в консоль код это коодрината X курсора + 20h, 2 = коодрината Y + 20h, 0 = следующий код будет обработан как обычно. Это поле имеет приоритет перед 0C820h.</td></tr>
+<tr><td>0C822h</td><td>1</td><td>vKeyboardCapsLock</td><td>CAPS LOCK. 0 = выключен, 0xFF = включен.</td></tr>
+<tr><td>0C823h</td><td>1</td><td>vKeyboardNumLock</td><td>NUM LOCK. 0 = выключен, 0xFF = включен.</td></tr>
+<tr><td>0C824h</td><td>1</td><td>vKeyboardLeds</td><td>Светодиоды клавиатуры. Записывается в порт 0С0h.</td></tr>
+<tr><td>0C825h</td><td>1</td><td>vInited12</td><td>Если при перезагрузке компьютера не содержит 12h, то выполняется полная перезагрузка.</td></tr>
+<tr><td>0C826h</td><td>1</td><td>vInited34</td><td>Если при перезагрузке компьютера не содержит 34h, то выполняется полная перезагрузка.</td></tr>
+<tr class="tbl_gray"><td>0C827h</td><td>1</td><td>vTempRst38</td><td>Временно используется при обработке прерывания при подключенном ПЗУ в 0000. Тут сохраняется регистр A.</td></tr>
+<tr class="tbl_gray"><td>0C828h</td><td>1</td><td>vTempDisassembler</td><td>Временно используется при выполнении директивы L.</td></tr>
+<tr class="tbl_gray"><td>0C829h</td><td>6</td><td>vTempTapeName</td><td>Временно используется при работе с магнитной лентой.</td></tr>
+<tr class="tbl_gray"><td>0C82Fh</td><td>2</td><td>vTempTapeRequiredName</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C831h</td><td>1</td><td>vTempTapeRequiredType</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C832h</td><td>1</td><td>vTempTapeFoundType</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C833h</td><td>1</td><td>vTempTape1</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C835h</td><td>1</td><td>vTempTapeAsciiRead</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C837h</td><td>1</td><td>vTempTapeBegin</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C839h</td><td>1</td><td>vTempTapeEnd</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C83Bh</td><td>1</td><td>vTempTape2</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C83Dh</td><td>1</td><td>vTempTapeAscii</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C83Fh</td><td>1</td><td>vTempTapeFunction</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C841h</td><td>1</td><td>vTempTapeCounter</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C842h</td><td>1</td><td>vTempTape3</td><td>-//-</td></tr>
+<tr class="tbl_gray"><td>0C843h</td><td>1</td><td>vTempTape4</td><td>-//-</td></tr>
+<tr><td>0C844h</td><td>1</td><td>vKeyboardF?</td><td>Код символа для клавиши ?.</td></tr>
+<tr><td>0C845h</td><td>1</td><td>vKeyboardF?</td><td>Код символа для клавиши ?.</td></tr>
+<tr><td>0C846h</td><td>1</td><td>vKeyboardF?</td><td>Код символа для клавиши ?.</td></tr>
+<tr><td>0C847h</td><td>1</td><td>vKeyboardF?</td><td>Код символа для клавиши ?.</td></tr>
+<tr><td>0C848h</td><td>1</td><td>vKeyboardF?</td><td>Код символа для клавиши ?.</td></tr>
+<tr><td>0C849h</td><td>1</td><td>vKeyboardF?</td><td>Код символа для клавиши ?.</td></tr>
+<tr><td>0C84Ah</td><td>1</td><td>vUartWriteByte</td><td>Байт для отправки в UART.</td></tr>
+<tr><td>0C8FFh</td><td>1</td><td>vMonitorStackTop</td><td>Вершина стека Монитора.</td></tr>
+<tr class="tbl_gray"ы><td>0C900h</td><td>191</td><td>vMonitorStringLength</td><td>Используется при работе Монитора. Длина строки введенной пользователем.</td></tr>
+<tr class="tbl_gray"ы><td>0C901h</td><td>1</td><td>vMonitorString</td><td>Используется при работе Монитора. Строка введенная пользователем.</td></tr>
+<tr><td>0C9C0h</td><td>1600</td><td>vTextScreen</td><td>Текстовый экран 64*25 до 0CFFFh</td></tr>
+</table>
+
+<h1>Разъем контроллера дисковода</h1>
+
+<table class="tbl2">
+<tr><th>Номера контактов</th><th>Имена</th><th>Активный уровень</th><th>Направление</th><th>Описание</th></tr>
+<tr><td>B18</td><td>ODE</td><td>Активный 0</td><td>В компьютер</td><td>Включить выходы OD0 .. OD7. Замкнуть на землю.</td></tr>
+<tr><td>B3</td><td>CUE</td><td>Активный 0</td><td>В компьютер</td><td>Включить выходы CU1 .. CU4. Замкнуть на землю.</td></tr>
+<tr><td>B22</td><td>ID1-2</td><td>Активный 0</td><td>В компьютер</td><td>Загружать CP/M при перезагрузке или включении питания. Замкнуть на землю.</td></tr>
+<tr><td>A19, A5, A3, A6</td><td>ID2-2 .. ID5-2</td><td>Данные инвертированы</td><td>В компьютер</td><td>Адрес этого компьютера в сети. Адрес 0 запрещен.</td></tr>
+<tr><td>A5</td><td>ID3-2</td><td>Активный 0</td><td>В компьютер</td><td>Принтер подтверждает приём байта.
+Если контроллер видит CU3 = 1, CU4 = 0, то он должен установить ID3-2 = 0,
+подождать, прочитать с OD0 .. OD7 байт, проверить CU4 = 0,  установить ID3-2 = 1.
+</td></tr>
+<tr><td>B21</td><td>ID6-2</td><td>Фронт</td><td>В компьютер</td><td>Контроллер предлагает выполнить команду. Если на контактах OD0 .. OD7 свой адрес, то
+необходимо выдать короткий испульс на CU2 и передать пакет.</td></tr>
+<tr><td>A21</td><td>CU2</td><td>Активный 0, открытый коллектор</td><td>В дисковод</td><td>Компьютер соглашается выполнить команду. Компьютер отвечет коротким импульсом.</td></tr>
+<tr><td>B13, B15, B17, B12, B11, B10, B16, B14</td><td>OD0 .. OD7</td><td>Данные не инвертированы</td><td>В дисковод</td><td>Передаваемый из компьютера байт.</td></tr>
+<tr><td>B26</td><td>CU4</td><td>Фронт, открытый коллектор</td><td>В дисковод</td><td>Если CU3 = 0, это строб передаваемого из компьютера байта. Если CU3 = 1, это вывод байта на принтер.</td></tr>
+<tr><td>A29</td><td>CU3</td><td>Активный 0, открытый коллектор</td><td>В дисковод</td><td>Передача или приём пакета в процессе.</td></tr>
+<tr><td>A13, A15, A17, A12, A11, A10, A16, A14</td><td>ID0 .. ID7</td><td>Данные не инвертированы</td><td>В компьютер</td><td>Передаваемый в компьютер байт</td></tr>
+<tr><td>B20</td><td>ID7-2</td><td>Спад, открытый коллектор</td><td>В компьютер</td><td>Строб передаваемого в компьютер байта</td></tr>
+<tr><td>B29, B30</td><td>+5В</td><td></td><td>В дисковод</td><td>Питание</td></tr>
+<tr><td>A1 .. A9, A18, A19, A22 .. A25, B23</td><td>GND</td><td></td><td></td><td>Земля</td></tr>
+</table>
+
+<h1>Формат пакета.</h1>
+
+<p>Компьютер отправляет пакет контроллеру.</p>
+
+<table class="tbl2">
+<tr><th>Смещение</th><th>Размер</th><th>Описание</th></tr>
+<tr><td>0</td><td>1 байт</td><td>Размер пакета минус 1. 8 при чтении сектора. 136 при записи сектора.</td></tr>
+<tr><td>1</td><td>1 байт</td><td>0</td></tr>
+<tr><td>2</td><td>1 байт</td><td>Адрес компьютера</td></tr>
+<tr><td>3</td><td>1 байт</td><td>Команда: 0 - чтение сектора, 1 - запись сектора</td></tr>
+<tr><td>4</td><td>7 байт</td><td>Номер устройства, нумерация от 0, 7 бит может быть установлен в 1</td></tr>
+<tr><td>5</td><td>1 байт</td><td>Номер дорожки, младший байт, нумерация от 0</td></tr>
+<tr><td>6</td><td>1 байт</td><td>Номер дорожки, старший байт</td></tr>
+<tr><td>7</td><td>1 байт</td><td>Номер сектора, нумерация от 0</td></tr>
+<tr><td>8</td><td>128 байт</td><td>Данные сектора. Только при записи сектора.</td></tr>
+<tr><td>последний байт</td><td>1 байт</td><td>XOR всех байт пакета</td></tr>
+</table>
+
+<p>Контроллер отвечает компьютеру пакетом.</p>
+
+<table class="tbl2">
+<tr><th>Смещение</th><th>Размер</th><th>Описание</th></tr>
+<tr><td>0</td><td>1 байт</td><td>Размер пакета минус 1. 136 при чтении сектора. 8 при записи сектора.</td></tr>
+<tr><td>1</td><td>1 байт</td><td>1</td></tr>
+<tr><td>2</td><td>1 байт</td><td>Адрес компьютера</td></tr>
+<tr><td>3</td><td>1 байт</td><td>Код ошибки. Если нет ошибки, то 0</td></tr>
+<tr><td>4</td><td>1 байт</td><td>Номер устройства, нумерация от 0, 7 бит может быть установлен в 1</td></tr>
+<tr><td>5</td><td>1 байт</td><td>Номер дорожки, младший байт, нумерация от 0</td></tr>
+<tr><td>6</td><td>1 байт</td><td>Номер дорожки, старший байт</td></tr>
+<tr><td>7</td><td>1 байт</td><td>Номер сектора, нумерация от 0</td></tr>
+<tr><td>8</td><td>128 байт</td><td>Данные сектора. Только при чтении сектора.</td></tr>
+<tr><td>последний байт</td><td>1 байт</td><td>XOR всех байт пакета</td></tr>
+</table>
+
+<h1>Структура DPH и DPB.</h1>
+
+<p>Для каждого дисковода подключенного к компьютеру должна быть создана пара
+структур DPH и DPB. Компьютер Искра 1080 настраивает CP/M на работу только с одним дисководом.</p>
+
+<p>Структура DPH копируется из ПЗУ компьютера в ОЗУ по адресу 0B233h. Эта структура
+содержит адреса: XLT = 0, 0, 0, 0, DIRBUF = 0B2С3h, DPB = 0B243h, CSV = 0B343h,
+ALV = 0B364h.</p>
+
+<p>Структура DPB копируется из ПЗУ компьютера в ОЗУ по адресу 0B243h. Эти значения описывают характеристики диска.
+Описание структуры DPB:</p>
+
+<pre style="font-family:mono">
+DEFW spt = 0      ; Number of 128-byte records per track
+DEFB bsh = 3      ; Block shift. 3 => 1k, 4 => 2k, 5 => 4k....
+DEFB blm = 7      ; Block mask. 7 => 1k, 0Fh => 2k, 1Fh => 4k...
+DEFB exm = 0      ; Extent mask, see later
+DEFW dsm = 0      ; (no. of blocks on the disc)-1
+DEFW drm = 03Fh   ; (no. of directory entries)-1
+DEFB al0 = 0C0h   ; Directory allocation bitmap, first byte
+DEFB al1 = 0      ; Directory allocation bitmap, second byte
+DEFW cks = 10h    ; Checksum vector size, 0 for a fixed disc
+                  ; No. directory entries/4, rounded up.
+DEFW off = 2      ; Offset, number of reserved tracks
+</pre>
+
+<p>На первый взгляд они некорректны. Значения SPT и DSM равын 0.</p>
+
+<p>Скопированная из ПЗУ структура DPB используется для загрузки нулевого сеткора
+на нулевой дорожке нулевого диска. В этом секторе находится актуальная DPB
+для дальнейшей работы.</p>
+
+<p>Максимальный размер структуры CSV составяет 16 байт, так как по адресу
+0B353h находистя заголовок пакета передаваемого контроллеру. В документации
+на CP/M сказано, что размер CSV равен количеству засипей в директории / 4.
+Т.е. максимальное количество записей в дириктории равно 64. Это
+соответствует значениям DRM и CKS в таблице DPB размещенной в ПЗУ.</p>

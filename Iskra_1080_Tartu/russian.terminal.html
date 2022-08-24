@@ -1,0 +1,30 @@
+<html lang="ru">
+<head>
+<style>
+.tbl2 {
+    border-collapse: collapse;
+}
+.tbl2 td, .tbl2 th {
+	padding: 2px 4px 2px 4px;
+	border: 1px solid black
+}
+</style>
+<meta charset="utf-8">
+</head>
+<body>
+<h1>Искра 1080 Тарту. Коды терминала.</h1>
+<table class="tbl2">
+<tr><td>07h</td><td>Звуковой сигнал</td></tr>
+<tr><td>08h</td><td>Курсор влево</td></tr>
+<tr><td>0Bh</td><td>Курсор вверх</td></tr>
+<tr><td>0Сh</td><td>Курсор вправо</td></tr>
+<tr><td>0Dh</td><td>Курсор в начало следующей строки</td></tr>
+<tr><td>1Bh 2Ah</td><td>Очистить экран и курсор в верхний левый угол экрана</td></tr>
+<tr><td>1Bh 28h</td><td>Включить инверсию текста</td></tr>
+<tr><td>1Bh 29h</td><td>Выключить инверсию текста</td></tr>
+<tr><td>1Bh 3Dh 20h+Y 20h+X</td><td>Установить положение курсора</td></tr>
+<tr><td>1Bh 54h</td><td>Очистить строку начиная с курсора и до правого края экрана</td></tr>
+<tr><td>1Eh</td><td>Курсор в верхний левый угол экрана</td></tr>
+</table>
+</body>
+</html>
