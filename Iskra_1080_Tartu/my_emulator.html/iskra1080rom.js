@@ -1,4 +1,4 @@
-// Iskra 1080 Online emulator
+// Iskra 1080 Tartu online emulator
 // Copyright 26-Aug-2022 Alemorf, aleksey.f.morozov@yandex.ru
 
 const iskra1080Rom = [

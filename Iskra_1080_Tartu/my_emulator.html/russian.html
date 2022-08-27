@@ -62,12 +62,14 @@ body {
 </head>
 <body>
 <h1>Искра 1080 Тарту. Эмулятор. Еще не готов!</h1>
+<script src="disk0.js" type="application/javascript"></script>
 <script src="iskra1080rom.js" type="application/javascript"></script>
 <script src="filelist.js" type="application/javascript"></script>
 <script src="i8080.js" type="application/javascript"></script>
 <script src="iskra1080keyboard.js" type="application/javascript"></script>
 <script src="iskra1080video.js" type="application/javascript"></script>
 <script src="iskra1080emu.js" type="application/javascript"></script>
+<script src="iskra1080floppyController.js" type="application/javascript"></script>
 
 <center style="width:770px">
 
@@ -75,24 +77,18 @@ body {
 
 <canvas id="iskra1080canvas"></canvas><br>
 
+Настоящая клавиатура тоже работает.
+
 <table class="keyb" cellspacing="2">
 <tr>
 <th></th>
 <td colspan="6" id="loadButton">Загрузить</div>
 <th></th>
 <th></th>
+<td colspan="6" id="powerResetButton">Сброс в BASIC</div>
 <th></th>
 <th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
+<td colspan="6" id="powerResetCpmButton">Сброс в CP/M</div>
 <th></th>
 <th></th>
 <th></th>
@@ -132,9 +128,9 @@ body {
 <th></th>
 <th></th>
 <th></th>
-<td id="key" colspan="2">F<sub>1</sub></td>
-<td id="key" colspan="2">F<sub>2</sub></td>
-<td id="key" colspan="2">F<sub>3</sub></td>
+<td id="key74" colspan="2">F<sub>1</sub></td>
+<td id="key75" colspan="2">F<sub>2</sub></td>
+<td id="key72" colspan="2">F<sub>3</sub></td>
 </tr>
 <tr>
 <td id="key66" colspan="2">TAB</td>
@@ -217,8 +213,8 @@ body {
 <th></th>
 <th></th>
 <th></th>
-<td id="key" colspan="2">0</td>
-<td id="key45" colspan="2">.</td>
+<td id="key55" colspan="2">0</td>
+<td id="key49" colspan="2">.</td>
 </tr>
 </table>
 

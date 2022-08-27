@@ -45,7 +45,11 @@ document.addEventListener("DOMContentLoaded", function() {
     let memory = new Uint8Array(65536);
     let keyboard = new Iskra1080Keyboard();
     let video = new Iskra1080Video(canvas, memory, palette);
+    let floppyController = new Iskra1080FloppyController();
     let cpu = new I8080();
+    let cpmMode = false;
+    let rightPortL = 0;
+    let rightPortH = 0;
 
     function reset() {
         rom0000 = true;
@@ -53,6 +57,29 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     document.getElementById('resetButton').onclick = reset;
+
+    function powerResetInternal(cpm) {
+        rom0000 = true;
+        memory_map = 0;
+        rightPortL = 0;
+        rightPortH = 0;
+        cpmMode = cpm;
+        for (let i in memory)
+            memory[i] = 0xAA;
+        for (let i in palette)
+            palette[i] = 0;
+        for (let i in rg)
+            rg[i] = 0;
+        cpu.jump(0);
+    }
+
+    function powerReset() { powerResetInternal(false); }
+
+    document.getElementById('powerResetButton').onclick = powerReset;
+
+    function powerResetCpm() { powerResetInternal(true); }
+
+    document.getElementById('powerResetCpmButton').onclick = powerResetCpm;
 
     function loadFile(file) {
         let type = file[0];
@@ -64,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         let size = end - start + 1;
         // if (size > file.length - 13) return;
-        reset();
+        powerReset();
         keyboard.emulate(67, true);
         for (let i = 0; i < 300000; i++) {
             cpu.instruction();
@@ -111,12 +138,18 @@ document.addEventListener("DOMContentLoaded", function() {
         return memory_map !== 2 ? memory[addr] : iskra1080Rom[addr - romStart];
     };
 
-    cpu.writeMemory = function(addr, byte) { memory[addr] = byte; }
+    cpu.writeMemory = function(addr, byte) { memory[addr] = byte; };
 
-                      cpu.readIo = function(addr) {
+    cpu.readIo = function(addr) {
         // console.log("IN " + addr.toString(16));
         if ((addr & 0xF8) == 0xC0)
             return keyboard.read(addr);
+        switch (addr & 0xB8) {
+        case 0x98:
+            if (cpmMode)
+                return floppyController.read(addr & 1);
+            return (addr & 1) ? rightPortH : rightPortL;
+        }
         return 0;
     };
 
@@ -127,8 +160,20 @@ document.addEventListener("DOMContentLoaded", function() {
         switch (addr & 0xB8) {
         case 0x80:
             break; // UART
+        case 0x88:
+            if (cpmMode)
+                floppyController.write(byte ^ 0xFF);
+            break;
         case 0x90:
             palette[addr & 3] = byte;
+            break;
+        case 0x98:
+            if (cpmMode)
+                floppyController.write(addr & 1, byte);
+            break;
+        case 0xA0:
+            for (let i = 0; i < 8; i++)
+                cpu.writeIo(0xB8 + i, 0);
             break;
         case 0xA8:
             rom0000 = (byte & 0x80) == 0;
@@ -137,6 +182,8 @@ document.addEventListener("DOMContentLoaded", function() {
             rg[addr & 7] = (addr & 0x40) != 0;
             if ((addr & 7) <= 1)
                 video.setMode((rg[0] ? 1 : 0) | (rg[1] ? 2 : 0));
+            if (cpmMode)
+                floppyController.writeControl((rg[5] ? 1 : 0) | (rg[7] ? 2 : 0));
             break;
         }
     };
@@ -162,7 +209,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function videoTick() { video.make(); }
 
     window.setInterval(videoTick, 1000 / 50);
-    reset();
+    powerResetCpm();
 
     let fileInUrl = (document.URL + "").split("?");
     if (fileInUrl.length === 2)

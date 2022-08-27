@@ -1,6 +1,6 @@
 var fileList = [
-"lab",
-"dtank",
-"test",
-"tetris",
+    "lab",
+    "dtank",
+    "test",
+    "tetris",
 ];
