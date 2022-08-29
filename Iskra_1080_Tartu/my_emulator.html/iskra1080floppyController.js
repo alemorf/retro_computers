@@ -13,27 +13,6 @@ function Iskra1080FloppyController() {
     let outputPacket = [];
     let outputPacketPosition = 0;
 
-    // Машина состояний
-    // 0) Если control != 2, то outputL = 0xFF, outputH = 0x80 и переход на 10
-    //    Если control != 0, переход на 0
-    //    Иначе outputL = address, outputH = 0x40
-    // 1) Если control != 0, переход на 0
-    //    outputL = address
-    // 2) Если control != 1, переход на 0
-    // 3) Если control != 0, переход на 0
-    // 4) Если control != 4, переход на 0
-    // 5) Если control != 6, переход на 0
-    //    Сохранение байта из input
-    // 6) Если control != 4, переход на 0
-    //    Если получено не всё, переход на 5
-    // 7) Если control != 0, переход на 0
-    // 8) Если control != 4, переход на 0
-    //    outputL = байт, outputH = 0x80
-    // 9) Если control != 4, переход на 0
-    //    outputH = 0
-    //    Если передано не всё, переход на 8
-    // 10) outputH = 0, переход на 0
-
     function nextState(s) {
         stateTimeout = 100;
         state = s;
@@ -56,11 +35,11 @@ function Iskra1080FloppyController() {
             outputH = 0;
             nextState(2);
             break;
-        case 2: // Ожидание ответа
-            if (stateTimeout === 1) {
+        case 2:                       // Ожидание ответа
+            if (stateTimeout === 1) { // Не выводим ошибку
                 nextState(0);
                 break;
-            } // Не выводим ошибку
+            }
             if (control === 1) {
                 outputL = 0xFF;
                 nextState(3);

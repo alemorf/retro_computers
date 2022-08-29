@@ -92,13 +92,15 @@ document.addEventListener("DOMContentLoaded", function() {
         let size = end - start + 1;
         // if (size > file.length - 13) return;
         powerReset();
-        keyboard.emulate(67, true);
-        for (let i = 0; i < 300000; i++) {
+        for (let i = 0; i !== 3000000; i++) {
             cpu.instruction();
+            if (cpu.pc === 0xF463) // Вместо Бейсика запускаем монитор
+                cpu.pc = 0xF426;
             if (cpu.pc === 0xF44B)
                 break;
         }
-        keyboard.emulate(67, false);
+        if (cpu.pc !== 0xF44B)
+            alert("Load error 0x" + cpu.pc.toString(16));
         for (let i = 0; i < size; i++)
             memory[start + i] = file[13 + i];
         cpu.jump(start);
