@@ -218,7 +218,7 @@ DEFW cks = 10h    ; Checksum vector size, 0 for a fixed disc
 DEFW off = 2      ; Offset, number of reserved tracks
 </pre>
 
-<p>На первый взгляд они некорректны. Значения SPT и DSM равын 0.</p>
+<p>На первый взгляд они некорректны. Значения SPT и DSM равны 0.</p>
 
 <p>Скопированная из ПЗУ структура DPB используется для загрузки нулевого сеткора
 на нулевой дорожке нулевого диска. В этом секторе находится актуальная DPB
@@ -229,3 +229,28 @@ DEFW off = 2      ; Offset, number of reserved tracks
 на CP/M сказано, что размер CSV равен количеству засипей в директории / 4.
 Т.е. максимальное количество записей в дириктории равно 64. Это
 соответствует значениям DRM и CKS в таблице DPB размещенной в ПЗУ.</p>
+
+<p>В каждая запись может ссылаться на 8 блоков. На диске может быть 
+8 * 64 = 512 блоков. Размер блока в таблице из ПЗУ равен 1 кб. Следовательно
+максимальный размер диска равен 512 Кб.</p>
+
+<p>Это мало. Это меньше популярной то время дискеты 5,25" на 720 или 800 кБ.
+Поэтому я увеличил размер блока до 2048 кБ. Это изменение не повлияло
+на размеру буферов. Максимальный размер диска увеличился до 1 МБ.
+Я сделал аналогично компьютеру Корвет ПК8010: размер блока, количество дорожек,
+количество секторов на дорожке, объем диска. От Корвета ПК8010 отличается
+только количество записей в директории.</p>
+
+<pre style="font-family:mono">
+DEFW spt = 028h   ; Number of 128-byte records per track
+DEFB bsh = 4      ; Block shift. 3 => 1k, 4 => 2k, 5 => 4k....
+DEFB blm = 0Fh    ; Block mask. 7 => 1k, 0Fh => 2k, 1Fh => 4k...
+DEFB exm = 0      ; Extent mask, see later
+DEFW dsm = 018Ah  ; (no. of blocks on the disc)-1
+DEFW drm = 03Fh   ; (no. of directory entries)-1
+DEFB al0 = 080h   ; Directory allocation bitmap, first byte
+DEFB al1 = 0      ; Directory allocation bitmap, second byte
+DEFW cks = 10h    ; Checksum vector size, 0 for a fixed disc
+                  ; No. directory entries/4, rounded up.
+DEFW off = 2      ; Offset, number of reserved tracks
+</pre>
