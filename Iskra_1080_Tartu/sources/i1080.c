@@ -1,6 +1,6 @@
 // Реверс-инженеринг ПЗУ компьютера Искра 1080 Тарту
 // В процессе
-// (c) 24-09-2020 Aleksey Morozov
+// (c) 06-09-2020 Aleksey Morozov
 
 asm(" device zxspectrum48");
 
@@ -119,6 +119,7 @@ void UnusedFunction3() {
     a = *hl;
 }
 
+// Внутренняя функция. Используется функцией VideoScrollUp0.
 // Прокрутить на одну строку вверх графический черно-белый экран без очистки нижней строки
 
 const int VIDEO_COPY_UP_BLOCK = 8;
@@ -177,7 +178,7 @@ void VideoCopy0Up() {
     noreturn;
 }
 
-// Тестирование компьютера при включении. Эта функция вызывается функцией Test.
+// Самодиагностика при включении. Пустая внутренняя функция. Эта функция вызывается функцией Test.
 
 void TestRom() {
 }
@@ -357,8 +358,8 @@ uint8_t BasicC100[] = {
     0x32, 0xe0, 0x8f, 0xc9, 0x3a, 0xc2, 0x8f, 0x32, 0xe0, 0x8f, 0xc9, 0x3a, 0xc3, 0x8f, 0x32, 0xe0, 0x8f, 0xc9
 };
 
-// Вывод символа на экран в режиме 64 символа в строке
-// Вызывается функцией VideoPrintChar
+// Внутреняя функция. Вызывается функцией VideoPrintChar.
+// Вывод символа на экран в режиме 64 символа в строке.
 
 void VideoDrawChar64() {
     // Запоминаем, было ли подключено ПЗУ
@@ -531,7 +532,10 @@ uint8_t cZeroZero[2];
 
 asm(" org 0xCFF0"); // TODO: Заменить на массив
 
-void CopyFromHiddenRom1() {
+// Функция копирования из ПЗУ1 0C000h - 0CFFFh в ОЗУ
+// Вход: bc - откуда, de - конечный адрес откуда, hl - куда
+
+void CopyRom() {
     while () {
         if ((a = c) == e) {
             if ((a = b) == d) return;
@@ -1187,7 +1191,7 @@ loc_ECFB:
     noreturn;
 }
 
-// Чтение слова с ленты в регистр HL
+// Прочтить слово с ленты
 // Выход: hl - слово
 
 void TapeReadWord() {
@@ -1245,7 +1249,7 @@ void TapeWriteArray() {
     } while ((a = e) != l);
 }
 
-// Записать слово из регистра HL на ленту
+// Записать слово из на ленту
 // Вход: hl - значение для записи
 
 void TapeWriteWord() {
@@ -1476,7 +1480,7 @@ void MonitorDirectiveP() {
     noreturn;
 }
 
-// Эта функция вызывается MonitorDirectiveEmpty
+// Внутренняя функция. Вызывается функцией MonitorDirectiveEmpty.
 
 void MonitorDirectiveEmpty2() {
     push(bc, hl);
@@ -2726,6 +2730,30 @@ void KeyboardSetRussianLayout() {
     noreturn;
 }
 
+// Таблица из ПЗУ компьютера
+// 36 6   D3 г   DE о   EC ь   37 7   E8 ш   DB л   D1 б
+// 35 5   DD н   E0 р   E2 т   38 8   E9 щ   D4 д   EE ю
+// 34 4   D5 е   DF п   D8 и   39 9   D7 з   D6 ж   F1 ё
+// 8D     8C     8B     FF     8F      8     8E     20
+// 33 3   DA к   D0 а   DC м   30 0   E5 х   ED э   2C ,
+// 32 2   E3 у   D2 в   E1 с   2D -   EA ъ   3A :   2E .
+// 31 1   8A     E4 ф   EF я   5E ^   2F /   3B ;   80
+// FF     E6 ц   EB ы   E7 ч   7F     87     84     81
+// 0D     D9 й    9     FF     5C \   88     85     82
+// 92     FF     90     91     1B     89     86     83
+
+// 26 &   B3 Г   BE О   CC Ь   27 '   C8 Ш   BB Л   B1 Б
+// 25 %   BD Н   C0 Р   C2 Т   28 (   C9 Щ   B4 Д   CE Ю
+// 24 $   B5 Е   BF П   B8 И   29 )   B7 Х   B6 Ж   A1 Ё
+// 8D     8C     8B     FF     8F      8     8E     20
+// 23 #   BA К   B0 А   BC М   5F _   C5 Х   CD Э   3C <
+// 22 "   C3 У   B2 В   C1 С   3D =   CA Ъ   2A *   3E >
+// 21 !   8A     C4 Ф   CF Я   7E ~   3F ?   2B +   80
+// FF     C6 Ц   CB Ы   C7 Ч   7F     87     84     81
+// 0D     B9 Й    9     FF     7C |   88     85     82
+// 95     FF     93     94     1B     89     86     83
+
+
 // Внутренняя функция. Используется функциями KeyboardSetRussianLayout, KeyboardSetEnglishLayout.
 
 void KeyboardSetLayout() {
@@ -2740,6 +2768,29 @@ void KeyboardSetEnglishLayout() {
     return KeyboardSetLayout(hl = &bKeybaordEnglishLayout);
     noreturn;
 }
+
+// Таблица из ПЗУ компьютера
+// 36 6   75 u   6A j   6D m   37 7   69 i   6B k   60 `
+// 35 5   79 y   68 h   6E n   38 8   6F o   6C l   40 @
+// 34 4   74 t   67 g   62 b   39 9   70 p   5B [   9A
+// 8D     8C     8B     FF     8F      8     8E     20
+// 33 3   72 r   66 f   76 v   30 0   7B {   5D ]   2C ,
+// 32 2   65 e   64 d   63 c   2D -   7D }   3A :   2E .
+// 31 1   8A К   61 a   7A z   5E ^   2F /   3B ;   80
+// FF     77 w   73 s   78 x   7F     87 З   84 Д   81
+// 0D     71 q    9     0F     5C \   88 И   85 Е   82
+// 92     FF     90     91     1B     89     86     83
+
+// 26 &   55 U   4A J   4D M   27 '   49 I   4B K   60 `
+// 25 %   59 Y   48 H   4E N   28 (   4F O   4C L   40 @
+// 24 $   54 T   47 G   42 B   29 )   50 P   5B [   96
+// 8D     8C     8B     FF     8F      8     8E     20
+// 23 #   52 R   46 F   56 V   5F _   7B {   5D ]   3C <
+// 22 "   45 E   44 D   43 C   3D =   7D }   2A *   3E >
+// 21 !   8A К   41 A   5A Z   7E ~   3F ?   2B +   80
+// FF     57 W   53 S   58 X   7F     87     84     81
+// 0D     51 Q    9     FF     7C |   88     85     82
+// 95     FF     93     94     1B     89     86     83
 
 // Внутренняя функция. Используется функцией RealInput.
 // Замена скан кодов клавиш F1 - F3 на коды из переменных vKeyboardF?, vKeyboardShiftF?.
@@ -3108,7 +3159,7 @@ void VideoNextLine() {
         hl += (de = TEXT_SCREEN_ADDRESS);
         vVideoCursorAddress = hl;
 
-        waitUntilKeyPressed();
+        WaitIfKeyPressed();
         a ^= a;
     }
     noreturn;
@@ -3128,9 +3179,9 @@ void PrintSpace() {
     noreturn;
 }
 
-uint8_t data7[] = {0x3E, 0x20, 0xCD, 0xB0, 0xF8, 0xC3, 0x2E, 0xF9};
+uint8_t data7[] = {0x3E, 0x20, 0xCD, 0xB0, 0xF8, 0xC3, 0x2E, 0xF9}; // TODO
 
-void waitUntilKeyPressed() {
+void WaitIfKeyPressed() {
     KeyboardGet();
     if (flag_m) return;
 
@@ -3505,6 +3556,52 @@ void Enable0000Ram() {
     return Enable0000Internal();
     noreturn;
 }
+
+// Таблица из ПЗУ компьютера
+// 36 6   75 u   6A j   6D m   37 7   69 i   6B k   60 `
+// 35 5   79 y   68 h   6E n   38 8   6F o   6C l   40 @
+// 34 4   74 t   67 g   62 b   39 9   70 p   5B [   9A
+// 8D     8C     8B     FF     8F      8     8E     20
+// 33 3   72 r   66 f   76 v   30 0   7B {   5D ]   2C ,
+// 32 2   65 e   64 d   63 c   2D -   7D }   3A :   2E .
+// 31 1   8A К   61 a   7A z   5E ^   2F /   3B ;   80
+// FF     77 w   73 s   78 x   7F     87 З   84 Д   81
+// 0D     71 q    9     0F     5C \   88 И   85 Е   82
+// 92     FF     90     91     1B     89     86     83
+
+// 26 &   55 U   4A J   4D M   27 '   49 I   4B K   60 `
+// 25 %   59 Y   48 H   4E N   28 (   4F O   4C L   40 @
+// 24 $   54 T   47 G   42 B   29 )   50 P   5B [   96
+// 8D     8C     8B     FF     8F      8     8E     20
+// 23 #   52 R   46 F   56 V   5F _   7B {   5D ]   3C <
+// 22 "   45 E   44 D   43 C   3D =   7D }   2A *   3E >
+// 21 !   8A К   41 A   5A Z   7E ~   3F ?   2B +   80
+// FF     57 W   53 S   58 X   7F     87     84     81
+// 0D     51 Q    9     FF     7C |   88     85     82
+// 95     FF     93     94     1B     89     86     83
+
+// 36 6   D3 г   DE о   EC ь   37 7   E8 ш   DB л   D1 б
+// 35 5   DD н   E0 р   E2 т   38 8   E9 щ   D4 д   EE ю
+// 34 4   D5 е   DF п   D8 и   39 9   D7 з   D6 ж   F1 ё
+// 8D     8C     8B     FF     8F      8     8E     20
+// 33 3   DA к   D0 а   DC м   30 0   E5 х   ED э   2C ,
+// 32 2   E3 у   D2 в   E1 с   2D -   EA ъ   3A :   2E .
+// 31 1   8A     E4 ф   EF я   5E ^   2F /   3B ;   80
+// FF     E6 ц   EB ы   E7 ч   7F     87     84     81
+// 0D     D9 й    9     FF     5C \   88     85     82
+// 92     FF     90     91     1B     89     86     83
+
+// 26 &   B3 Г   BE О   CC Ь   27 '   C8 Ш   BB Л   B1 Б
+// 25 %   BD Н   C0 Р   C2 Т   28 (   C9 Щ   B4 Д   CE Ю
+// 24 $   B5 Е   BF П   B8 И   29 )   B7 Х   B6 Ж   A1 Ё
+// 8D     8C     8B     FF     8F      8     8E     20
+// 23 #   BA К   B0 А   BC М   5F _   C5 Х   CD Э   3C <
+// 22 "   C3 У   B2 В   C1 С   3D =   CA Ъ   2A *   3E >
+// 21 !   8A     C4 Ф   CF Я   7E ~   3F ?   2B +   80
+// FF     C6 Ц   CB Ы   C7 Ч   7F     87     84     81
+// 0D     B9 Й    9     FF     7C |   88     85     82
+// 95     FF     93     94     1B     89     86     83
+
 
 // Получить символ или скан-код нажатой клавиши с ожиданием.
 // Функция:
@@ -4114,7 +4211,7 @@ void UartSetModeSpeed0() {
 // Функция UART. Проверить буфер приёма микросхемы UART.
 // Выход: a = 0 если буфер пуст.
 
-void UartCheck1() {
+void UartRxReady() {
     a = in(PORT_UART_STATE);
     a &= VV51_STATE__RX_READY;
     a = 0xFF;
@@ -4125,7 +4222,7 @@ void UartCheck1() {
 // Функция UART. Проверить буфер передачи микросхемы UART.
 // Выход: a - 0 если буфер заполнен.
 
-void UartCheck2() {
+void UartTxReady() {
     a = in(PORT_UART_STATE);
     a &= VV51_STATE__TX_READY;
     a = 0xFF;
@@ -4239,121 +4336,111 @@ void TapeWritePeriod() {
     }
 }
 
+// Настройка констант скорости загрузки с ленты по пилот-тону
+// Выход: cf - ошшибка чтения или прервано нажатием F1
+
 void TapeReadPilot() {
-    hl = 0x457;
-loc_FEF4:
-    d = c;
-    readDblInterval();
-    if (flag_c) return;
-    a = c;
-    if (a >= 222) return TapeReadPilot();
-    if (a < 5) return TapeReadPilot();
-    a -= d;
-    if (flag_c) {
-        invert(a);
-        a++;
-    }
-    if (a >= 8) return TapeReadPilot();
-    hl--;
-    (a = h) |= l;
-    if (flag_nz) goto loc_FEF4;
+    hl = 1111;
+    do {
+        d = c;
+        TapeReadBit();
+        if (flag_c) return;
+        a = c;
+        if (a >= 222) return TapeReadPilot();
+        if (a < 5) return TapeReadPilot();
+        a -= d;
+        if (flag_c) {
+            invert(a);
+            a++;
+        }
+        if (a >= 8) return TapeReadPilot();
+        hl--;
+    } while(flag_nz (a = h) |= l);
+
     hl = 0;
     b = l;
     d = l;
+    do {
+        TapeReadBit();
+        if (flag_c) return;
+        hl += bc;
+    } while(flag_nz d--);
 
-loc_FF1A:
-    readDblInterval();
-    if (flag_c) return;
-    hl += bc;
-    d--;
-    if (flag_nz) goto loc_FF1A;
+    hl += (bc = 1710);
 
-    bc = 1710;
-    hl += bc;
-
-    a = h;
-    a >>@= 1;
-    a &= 0x7F;
-    d = a;
-
+    d = (((a = h) >>@= 1) &= 0x7F);
     hl += hl;
-
-    a = h;
-    a -= d;
-    d = a;
-
+    d = ((a = h) -= d);
     a -= 6;
     vTempTape3 = a;
 
-    a = d;
-    a += a;
-    a += d;
-    a &= 0xFC;
-    a >>r= 1;
-    a >>r= 1;
-    a -= 3;
-    vTempTape4 = a;
-    a |= a;
+    vTempTape4 = ((((((a = d) += a) += d) &= 0xFC) >>r= 2) -= 3);
+    a |= a; // return nc
 }
+
+// Чтение байта с ленты
+// Выход: а - байт, cf - ошшибка чтения или прервано нажатием F1
 
 void TapeReadByte() {
-    push(de, bc, hl);
-    d = a = vTempTape3;
+    push(de, bc, hl) {
+        d = a = vTempTape3;
 
-    do {
-        checkStop();
-        if (flag_c) goto loc_FF97;
-        a = in(PORT_TAPE_AND_IDX2);
-        a >>r= 1;
-    } while (flag_nc);
+        // Ждем, пока на входе 1
+        do {
+            KeyboardIsF1Pressed();
+            if (flag_c) goto TapeReadByteError;
+            a = in(PORT_TAPE_AND_IDX2);
+        } while (flag_nc a >>r= 1);
 
-    do {
-        checkStop();
-        if (flag_c) goto loc_FF97;
-        a = in(PORT_TAPE_AND_IDX2);
-        e = a;
-        a >>r= 1;
-    } while (flag_c);
+        // Ждем, пока на входе 0
+        do {
+            KeyboardIsF1Pressed();
+            if (flag_c) goto TapeReadByteError;
+            e = a = in(PORT_TAPE_AND_IDX2);
+        } while (flag_c a >>r= 1);
 
-    readInterval0S();
+        // Измеряем длительность, пока на входе 1
+        TapeReadHalfBitF1();
+        do {
+            b = c;
+            TapeReadHalfBitF1();
+            if (flag_c) goto TapeReadByteError;
+            (a = b) += c;
+            if (flag_c) continue;
+        } while (a < d);
 
-loc_FF66:
-    b = c;
-    readInterval0S();
-    if (flag_c) goto loc_FF97;
-    a = b;
-    a += c;
-    if (flag_c) goto loc_FF66;
-    a ? d;
-    if (flag_c) goto loc_FF66;
+        // Чтение 8 бит
+        l = BIT_PER_BYTE;
+        do {
+            // Измерение количества изменений полярности сигнала на входе с ленты за определенный интервал
+            TapeReadChanges();
 
-    l = 8;
-loc_FF78:
-    someReadWait();
-    a ? 4;
-    invert_flag_c();
-    if (flag_c) goto loc_FF97;
-    a ? 2;
-    invert_flag_c();
-    a = d;
-    a >>@= 1;
-    d = a;
-    a = c;
-    a >>r= 1;
-    if (flag_nc) readInterval0();
-    readInterval0S();
-    l--;
-    if (flag_nz) goto loc_FF78;
-    checkStop();
-    a = d;
+            // Если 4 или больше изменений, то выходим с ошибкой
+            a ? 4;
+            invert_flag_c();
+            if (flag_c) goto TapeReadByteError;
 
-loc_FF97:
-    pop(de, bc, hl);
+            // Если 2 или 3 изменения, сохраняем единичный бит, иначе нулевой
+            a ? 2;
+            invert_flag_c();
+            d = ((a = d) >>@= 1);
+
+            // Если 0 или 2 изменения, то ждем еще одно изменение
+            if (flag_nc (a = c) >>r= 1) TapeReadHalfBit();
+
+            // Ждем одно изменение
+            TapeReadHalfBitF1();
+        } while(flag_nz l--);
+        KeyboardIsF1Pressed();
+        a = d;
+TapeReadByteError:
+    }
 }
 
-// Сколько было преходов за заданный интервал
+// Измерение количества изменений полярности сигнала на входе с ленты за определенный интервал
+// Выход: с - количество изменений
 
-void someReadWait() {
+void TapeReadChanges() {
     b = a = vTempTape4;
     c = 0;
 
@@ -4361,63 +4448,83 @@ loc_FFA1:
     do {
         a = in(PORT_TAPE_AND_IDX2);
         a ^= e;
-        if (flag_z) return loc_FFB0();
-        a ^= e;
-        e = a;
+        if (flag_z) goto loc_FFB0;
+        e = (a ^= e);
         c++;
     } while (flag_nz b--);
     a = c;
-}
+    return;
 
-void loc_FFB0() {
+loc_FFB0:
     nop();
     nop();
     nop();
     a++;
-    b--;
-    if (flag_nz) return loc_FFA1();
+    if (flag_nz b--) goto loc_FFA1;
     a = c;
 }
 
-void readInterval0S() {
-    checkStop();
+// Измерение длительности полупериода колебания на входе с ленты с проверкой нажатия F1
+// Вход: e - прошлое состояние на входе
+// Выход: с - счетчик, e - прошлое состояние на входе, cf - ошшибка чтения или прервано нажатием F1
+
+void TapeReadHalfBitF1() {
+    KeyboardIsF1Pressed();
     if (flag_c) return;
     noreturn;
 }
 
-void readInterval0() {
+// Измерение длительности полупериода колебания на входе с ленты
+// Вход: e - прошлое состояние на входе
+// Выход: с - счетчик, e - прошлое состояние на входе, cf - ошшибка чтения
+
+void TapeReadHalfBit() {
     c = 0;
     noreturn;
 }
 
-void readIntervalEx() {
+// Измерение длительности полупериода колебания на входе с ленты без сброса счетчика
+// Вход: с - счетчик, e - прошлое состояние на входе
+// Выход: с - счетчик, e - прошлое состояние на входе, cf - ошшибка чтения
+
+void TapeReadEndBit() {
     do {
         c++;
-        if (flag_z) return loc_FFCD();
+        if (flag_z) return TapeReadEndBitOverflow();
         a = in(PORT_TAPE_AND_IDX2);
         a ^= e;
     } while (flag_z);
-    a ^= e;
-    e = a;
+    e = (a ^= e);
 }
 
-void loc_FFCD() {
+// Внутренняя функция. Испльзуется функцией TapeReadEndPeriod для установки флага CF
+
+void TapeReadEndBitOverflow() {
     c--;
 }
 
-void readDblInterval() {
+// Измерение длительности целого периода колебания на входе с ленты
+// Выход: с - счетчик, e - прошлое состояние на входе, cf - ошшибка чтения
+
+void TapeReadBit() {
+    // Ждем, пока на входе 1
     do {
-        checkStop();
+        KeyboardIsF1Pressed();
         if (flag_c) return;
         e = a = in(PORT_TAPE_AND_IDX2);
         a >>r= 1;
     } while (flag_c);
-    readInterval0();
-    return readIntervalEx();
+
+    // Измеряем длительность целого периода
+    TapeReadHalfBit();
+    return TapeReadEndBit();
     noreturn;
 }
 
-void checkStop() {
+// Проверка нажатия клавиши F1
+// Выход: cf - нажата
+
+void KeyboardIsF1Pressed() {
     out(PORT_KEYBOARD, a = 9);
     a = in(PORT_KEYBOARD);
     a >>r= 1;
@@ -4425,7 +4532,10 @@ void checkStop() {
 
 uint8_t unused[4];
 
-void CopyFromHiddenRom() {
+// Копирование из ПЗУ2 0C000h - 0C7FFh, ПЗУ 1 0D000h - 0FFFFh в ОЗУ
+// Вход: bc - откуда, de - конечный адрес откуда, hl - куда
+
+void CopyRom2() {
     while () {
         if ((a = c) == e) {
             if ((a = b) == d) return;
@@ -4439,6 +4549,8 @@ void CopyFromHiddenRom() {
     }
     noreturn;
 }
+
+// Последний байт ПЗУ
 
 uint8_t data8 = 0xFF;
 
