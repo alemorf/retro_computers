@@ -5,4 +5,5 @@ var fileList = [
     "dtank",
     "test",
     "tetris",
+    "lines"
 ];
