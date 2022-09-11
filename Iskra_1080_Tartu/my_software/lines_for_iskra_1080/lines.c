@@ -18,8 +18,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <cmm/delay.h>
-#include <cmm/div16mod.h>
+#include <c8080/delay.h>
+#include <c8080/div16mod.h>
 #include "lines.h"
 #include "hal.h"
 #include "path.h"
@@ -294,7 +294,6 @@ static void AddToHiScores() {
         memcpy(p, &tmp, sizeof(tmp));
         DrawHiScoresScreen(i - 1);
         Delay(HISCORE_ANIMATION_DELAY);
-        if (i == 0) break;
     }
 }
 
@@ -411,7 +410,7 @@ void main() {
     uint8_t keybTimeout = 0;
     for (;;) {
         // Детаем генератор случайных чисел более случайным
-        rand();
+        (void)rand();
 
         // Анимация выбранного шарика
         BouncingBallAnimation();

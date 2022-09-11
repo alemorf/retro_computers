@@ -16,7 +16,7 @@
  */
 
 #include "keyboard.h"
-#include <cmm/numberofbit.h>
+#include <c8080/numberofbit.h>
 
 // Таблица из ПЗУ компьютера
 // 36 6   75 u   6A j   6D m   37 7   69 i   6B k   60 `
@@ -123,11 +123,16 @@ static const uint8_t scanCodes[KEYBOARD_TOTAL_SCAN_SIZE] = {
     KEY_F1, KEY_UNKNOWN2, KEY_F2, KEY_F3, KEY_ESC, KEY_PGUP, KEY_RIGHT, KEY_PGDN,  // Ряд 9
 };
 
+// Номер клавиши в матрице (col + row * 8)
+static const uint8_t KEY_COORD_RUS = 24;
+static const uint8_t KEY_COORD_LAT = 25;
+static const uint8_t KEY_COORD_CAPS = 30;
+
 static const uint8_t MODE_RUS = 1;
 static const uint8_t MODE_CAPS = 2;
 
 static uint8_t keyboardMode = MODE_RUS;
-static uint8_t keybordPressedKey;
+static uint8_t keyboardPressedKey;
 
 static uint8_t ReadKeyboardRow(uint8_t row) {
     asm {
@@ -137,9 +142,9 @@ static uint8_t ReadKeyboardRow(uint8_t row) {
 }
 
 uint8_t ReadKeyboard(bool noWait) {
-    register uint8_t keyNumber;
+    uint8_t keyNumber;
     for (;;) {
-        register uint8_t i = KEYBOARD_ROWS;
+        uint8_t i = KEYBOARD_ROWS;
         for (;;) {
             --i;
             keyNumber = ReadKeyboardRow(i);  // TODO: Светодиоды
@@ -148,22 +153,22 @@ uint8_t ReadKeyboard(bool noWait) {
             }
             if (keyNumber != 0) break;
             if (i != 0) continue;
-            keybordPressedKey = 0;
-            if (noWait != 0) return 0;
+            keyboardPressedKey = 0;
+            if (noWait) return 0;
             i = KEYBOARD_ROWS;
         }
         keyNumber = NumberOfBit(keyNumber) + i * KEYBOARD_COLUMNS;
-        if (noWait != 0) break;
-        if (keybordPressedKey == keyNumber) continue;
-        keybordPressedKey = keyNumber;
+        if (noWait) break;
+        if (keyboardPressedKey == keyNumber) continue;
+        keyboardPressedKey = keyNumber;
         switch (keyNumber) {
-            case 24:  // Нажата клавиша RUS   // TODO: Заменить на константу
+            case KEY_COORD_RUS:
                 keyboardMode |= MODE_RUS;
                 continue;
-            case 25:  // Нажата клавиша LAT   // TODO: Заменить на константу
+            case KEY_COORD_LAT:
                 keyboardMode &= ~MODE_RUS;
                 continue;
-            case 30:  // Нажата клавиша CAPS LOCK   // TODO: Заменить на константу
+            case KEY_COORD_CAPS:
                 keyboardMode ^= MODE_CAPS;
                 continue;
         }

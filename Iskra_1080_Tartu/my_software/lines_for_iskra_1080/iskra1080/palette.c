@@ -16,7 +16,7 @@
  */
 
 #include "palette.h"
-#include <cmm/delay.h>
+#include <c8080/delay.h>
 
 static const uint8_t* currentPalette;
 

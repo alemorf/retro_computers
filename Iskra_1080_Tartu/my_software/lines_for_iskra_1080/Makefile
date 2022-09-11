@@ -1,17 +1,17 @@
-C_FILES=iskra1080/drawimage.c iskra1080/drawtext.c iskra1080/keyboard.c iskra1080/palette.c \
-	iskra1080/playtone.c iskra1080/fillrect.c\
-	graph/imgTitle.c graph/imgScreen.c graph/imgBalls.c graph/imgBoard.c\
-	graph/imgPlayer.c graph/imgPlayerWin.c graph/imgPlayerD.c graph/imgKingLose.c\
-	font.c lines.c path.c hal.c music.c unmlz.c
+C_FILES=$(wildcard *.c iskra1080/*.c graph/*.c)
+H_FILES=$(wildcard *.h iskra1080/*.h graph/*.h)
 
-H_FILES=iskra1080/drawimage.h iskra1080/drawtext.h iskra1080/keyboard.h iskra1080/palette.h\
-	iskra1080/playtone.h\
-	graph/imgTitle.h graph/imgScreen.h graph/imgBalls.h graph/imgBoard.h\
-	graph/imgPlayer.h graph/imgPlayerWin.h graph/imgPlayerD.h graph/imgKingLose.h\
-	chargen.h lines.h hal.h music.h unmlz.h
-
-all: $(C_FILES) $(H_FILES)
+all: check $(C_FILES) $(H_FILES)
 		./c8080/c8080 -Ic8080/include $(C_FILES)
+
+files:
+	find . -type f >lines_for_iskra_1080.files
+
+format:
+	clang-format -i $(C_FILES) $(H_FILES)
+
+check:
+	cppcheck -Ic8080/include --enable=all $(C_FILES) $(H_FILES)
 
 clean:
 	rm output.i1080 output.lst output.asm

@@ -6,72 +6,72 @@ entry:
 	jp main
 main:
 	; Stack correction reset
-; 408 );
+; 407 );
 	call Intro
-; 409     NewGame();
+; 408     NewGame();
 	call NewGame
-; 410     char previousPressedKey = 0;
+; 409     char previousPressedKey = 0;
 	xor a
 	ld (main_s + 0), a
-; 411     uint8_t keybTimeout = 0;
+; 410     uint8_t keybTimeout = 0;
 ; REMOVED
 	ld (main_s + 1), a
 l_0:
-; 412     for (;;) {
-; 413         // Детаем генератор случайных чисел более случайным
-; 414         rand();
+; 411     for (;;) {
+; 412         // Детаем генератор случайных чисел более случайным
+; 413         (void)rand();
 	call rand
-; 415 
-; 416         // Анимация выбранного шарика
-; 417         BouncingBallAnimation();
+; 414 
+; 415         // Анимация выбранного шарика
+; 416         BouncingBallAnimation();
 	call BouncingBallAnimation
-; 418 
-; 419         char pressedKey = ReadKeyboard(true);
-; 8 ;
+; 417 
+; 418         char pressedKey = ReadKeyboard(true);
+; 25 ;
 	ld a, 1
 	call ReadKeyboard
 	ld (main_s + 2), a
-; 422  != 0) {
+; 421  != 0) {
 	ld a, (main_s + 1)
 	or a
 	jp z, l_3
-; 423             keybTimeout--;
+; 422             keybTimeout--;
 ; REMOVED
 	dec a
 	ld (main_s + 1), a
 	jp l_0
 l_3:
-; 424             continue;
-; 425         }
-; 426 
-; 427         // Только факт нажатия
-; 428         if (pressedKey == previousPressedKey) {
+; 423             continue;
+; 424         }
+; 425 
+; 426         // Только факт нажатия
+; 427         if (pressedKey == previousPressedKey) {
 	ld a, (main_s + 0)
 	ld d, a
 	ld a, (main_s + 2)
 	cp d
 	jp nz, l_5
-; 429             Delay(50);
+; 428             Delay(50);
 	ld hl, 50
 	call Delay
 	jp l_0
 l_5:
-; 430             continue;
-; 431         }
-; 432         previousPressedKey = pressedKey;
+; 429             continue;
+; 430         }
+; 431         previousPressedKey = pressedKey;
 ; REMOVED
 	ld (main_s + 0), a
-; 433         if (pressedKey == 0) continue;
+; 432         if (pressedKey == 0) continue;
 	ld a, (main_s + 2)
 	or a
 	jp z, l_0
 ; REMOVED
 ; REMOVED
-; 434         keybTimeout = 50;  // TODO: magic
+; 433         keybTimeout = 50;  // TODO: magic
 	ld a, 50
 	ld (main_s + 1), a
-; 435 
-; 436         switch (pressedKey) {
+; 434 
+; 435         switch (pressedKey) {
 	ld a, (main_s + 2)
 	sub 13
 	jp z, l_12
@@ -101,176 +101,176 @@ l_5:
 	jp z, l_17
 	jp l_0
 l_22:
-; 437             case '1':
-; 438                 ChangePalette();
+; 436             case '1':
+; 437                 ChangePalette();
 	call ChangePalette
 	jp l_0
 l_21:
-; 439                 break;
-; 440             case '2':
-; 441                 showPath ^= 1;
+; 438                 break;
+; 439             case '2':
+; 440                 showPath ^= 1;
 	ld a, (showPath)
 	xor 1
 	ld (showPath), a
-; 442                 DrawButton(BUTTON_PATH, showPath);
-; 1 клавишу
+; 441                 DrawButton(BUTTON_PATH, showPath);
+; 1 *6000
 	ld hl, 61960
 	ld (DrawButton_1_a), hl
-; 442 );
+; 441 );
 ; REMOVED
 	call DrawButton
 	jp l_0
 l_20:
-; 443                 break;
-; 444             case '3':
-; 445                 soundEnabled ^= 1;
+; 442                 break;
+; 443             case '3':
+; 444                 soundEnabled ^= 1;
 	ld a, (soundEnabled)
 	xor 1
 	ld (soundEnabled), a
-; 446                 DrawButton(BUTTON_SOUND, soundEnabled);
-; 1 клавишу
+; 445                 DrawButton(BUTTON_SOUND, soundEnabled);
+; 1 *6000
 	ld hl, 59912
 	ld (DrawButton_1_a), hl
-; 446 );
+; 445 );
 ; REMOVED
 	call DrawButton
 	jp l_0
 l_19:
-; 447                 break;
-; 448             case '4':
-; 449                 showHelp ^= 1;
+; 446                 break;
+; 447             case '4':
+; 448                 showHelp ^= 1;
 	ld a, (showHelp)
 	xor 1
 	ld (showHelp), a
-; 450                 DrawButton(BUTTON_HELP, showHelp);
-; 1 клавишу
+; 449                 DrawButton(BUTTON_HELP, showHelp);
+; 1 *6000
 	ld hl, 57864
 	ld (DrawButton_1_a), hl
-; 450 );
+; 449 );
 ; REMOVED
 	call DrawButton
-; 451                 DrawHelp();
+; 450                 DrawHelp();
 	call DrawHelp
 	jp l_0
 l_18:
-; 452                 break;
-; 453             case '5':
-; 454                 DrawHiScores(0);
+; 451                 break;
+; 452             case '5':
+; 453                 DrawHiScores(0);
 	xor a
 	call DrawHiScores
-; 455                 ReadKeyboard(false);
-; 7 ;
+; 454                 ReadKeyboard(false);
+; 24 ;
 	xor a
 	call ReadKeyboard
-; 456 );
+; 455 );
 	call DrawScreen
 	jp l_0
 l_17:
-; 457                 break;
-; 458             case '6':
-; 459                 NewGame();
+; 456                 break;
+; 457             case '6':
+; 458                 NewGame();
 	call NewGame
 	jp l_0
 l_16:
-; 460                 break;
-; 461             case KEY_UP:
-; 462                 ClearCursor();
+; 459                 break;
+; 460             case KEY_UP:
+; 461                 ClearCursor();
 	call ClearCursor
-; 463                 if (cursorY == 0)
+; 462                 if (cursorY == 0)
 	ld a, (cursorY)
 	or a
 	jp nz, l_23
-; 464                     cursorY = GAME_HEIGHT - 1;
+; 463                     cursorY = GAME_HEIGHT - 1;
 	ld a, 8
 	ld (cursorY), a
 	jp l_24
 l_23:
-; 465                 else
-; 466                     cursorY--;
+; 464                 else
+; 465                     cursorY--;
 ; REMOVED
 	dec a
 	ld (cursorY), a
 l_24:
-; 467                 DrawCursor();
+; 466                 DrawCursor();
 	call DrawCursor
 	jp l_0
 l_15:
-; 468                 break;
-; 469             case KEY_DOWN:
-; 470                 ClearCursor();
+; 467                 break;
+; 468             case KEY_DOWN:
+; 469                 ClearCursor();
 	call ClearCursor
-; 471                 if (cursorY == GAME_HEIGHT - 1)
+; 470                 if (cursorY == GAME_HEIGHT - 1)
 	ld a, (cursorY)
 	cp 8
 	jp nz, l_25
-; 472                     cursorY = 0;
+; 471                     cursorY = 0;
 	xor a
 	ld (cursorY), a
 	jp l_26
 l_25:
-; 473                 else
-; 474                     cursorY++;
+; 472                 else
+; 473                     cursorY++;
 ; REMOVED
 	inc a
 	ld (cursorY), a
 l_26:
-; 475                 DrawCursor();
+; 474                 DrawCursor();
 	call DrawCursor
 	jp l_0
 l_14:
-; 476                 break;
-; 477             case KEY_LEFT:
-; 478                 ClearCursor();
+; 475                 break;
+; 476             case KEY_LEFT:
+; 477                 ClearCursor();
 	call ClearCursor
-; 479                 if (cursorX == 0)
+; 478                 if (cursorX == 0)
 	ld a, (cursorX)
 	or a
 	jp nz, l_27
-; 480                     cursorX = GAME_WIDTH - 1;
+; 479                     cursorX = GAME_WIDTH - 1;
 	ld a, 8
 	ld (cursorX), a
 	jp l_28
 l_27:
-; 481                 else
-; 482                     cursorX--;
+; 480                 else
+; 481                     cursorX--;
 ; REMOVED
 	dec a
 	ld (cursorX), a
 l_28:
-; 483                 DrawCursor();
+; 482                 DrawCursor();
 	call DrawCursor
 	jp l_0
 l_13:
-; 484                 break;
-; 485             case KEY_RIGHT:
-; 486                 ClearCursor();
+; 483                 break;
+; 484             case KEY_RIGHT:
+; 485                 ClearCursor();
 	call ClearCursor
-; 487                 if (cursorX == GAME_WIDTH - 1)
+; 486                 if (cursorX == GAME_WIDTH - 1)
 	ld a, (cursorX)
 	cp 8
 	jp nz, l_29
-; 488                     cursorX = 0;
+; 487                     cursorX = 0;
 	xor a
 	ld (cursorX), a
 	jp l_30
 l_29:
-; 489                 else
-; 490                     cursorX++;
+; 488                 else
+; 489                     cursorX++;
 ; REMOVED
 	inc a
 	ld (cursorX), a
 l_30:
-; 491                 DrawCursor();
+; 490                 DrawCursor();
 	call DrawCursor
 	jp l_0
 l_12:
 l_11:
 l_10:
-; 492                 break;
-; 493             case KEY_ENTER:
-; 494             case KEY_RIGHT_5:
-; 495             case ' ':
-; 496                 MoveBall();
+; 491                 break;
+; 492             case KEY_ENTER:
+; 493             case KEY_RIGHT_5:
+; 494             case ' ':
+; 495                 MoveBall();
 	call MoveBall
 ; REMOVED
 ; REMOVED
@@ -280,57 +280,57 @@ l_2:
 	ret
 Intro:
 	; Stack correction reset
-; 275 );
+; 271 );
 	call SetBlackPalette
-; 276     void* next = unmlz((uint8_t*)0xD000, imgTitle);  // TODO: replace magic
+; 272     void* next = unmlz((uint8_t*)0xD000, imgTitle);  // TODO: replace magic
 	ld hl, 53248
 	ld (unmlz_1_a), hl
 	ld hl, imgTitle
 	call unmlz
 	ld (Intro_s + 0), hl
-; 277     unmlz((uint8_t*)0x9000, next);                   // TODO: replace magic
+; 273     unmlz((uint8_t*)0x9000, next);                   // TODO: replace magic
 	ld hl, 36864
 	ld (unmlz_1_a), hl
 	ld hl, (Intro_s + 0)
 	call unmlz
-; 278     SetPaletteSlowly(introPalette);
+; 274     SetPaletteSlowly(introPalette);
 	ld hl, introPalette
 	call SetPaletteSlowly
-; 279 
-; 280     // Играем мелодию
-; 281     const uint16_t* p = music;
+; 275 
+; 276     // Играем мелодию
+; 277     const uint16_t* p = music;
 	ld hl, music
 	ld (Intro_s + 2), hl
 l_31:
-; 282     for (;;) {
-; 283         const uint8_t s = *p;
+; 278     for (;;) {
+; 279         const uint8_t s = *p;
 	ld hl, (Intro_s + 2)
 	ld a, (hl)
 	ld (Intro_s + 4), a
-; 284         p++;
+; 280         p++;
 ; REMOVED
 	inc hl
 	inc hl
 	ld (Intro_s + 2), hl
-; 285         if (s == 0) {
+; 281         if (s == 0) {
 ; REMOVED
 	or a
 	jp nz, l_34
-; 286             ReadKeyboard(false);
-; 7 ;
+; 282             ReadKeyboard(false);
+; 24 ;
 	xor a
 	call ReadKeyboard
 	jp l_33
 l_34:
-; 289 true) != 0) break;
-; 8 ;
+; 285 true) != 0) break;
+; 25 ;
 	ld a, 1
 	call ReadKeyboard
 	or a
 	jp nz, l_33
 ; REMOVED
 ; REMOVED
-; 290 *p, s);
+; 286 *p, s);
 	ld hl, (Intro_s + 2)
 	ld e, (hl)
 	inc hl
@@ -340,12 +340,12 @@ l_34:
 	ld hl, (Intro_s + 4)
 	ld h, 0
 	call PlayTone
-; 291         p++;
+; 287         p++;
 	ld hl, (Intro_s + 2)
 	inc hl
 	inc hl
 	ld (Intro_s + 2), hl
-; 292         rand();
+; 288         (void)rand();
 	call rand
 l_32:
 	jp l_31
@@ -353,29 +353,29 @@ l_33:
 	ret
 NewGame:
 	; Stack correction reset
-; 304  = GAME_WIDTH / 2;
+; 303  = GAME_WIDTH / 2;
 	ld a, 4
 	ld (cursorX), a
-; 305     cursorY = GAME_HEIGHT / 2;
+; 304     cursorY = GAME_HEIGHT / 2;
 ; REMOVED
 	ld (cursorY), a
-; 306     selX = NO_SEL;
+; 305     selX = NO_SEL;
 ; 28 ;  // Значение для selX
 	ld a, 255
 	ld (selX), a
-; 307  = 0;
+; 306  = 0;
 	ld hl, 0
 	ld (score), hl
-; 308 
-; 309     uint8_t x, y;
-; 310     for (y = 0; y != GAME_HEIGHT; ++y)
+; 307 
+; 308     uint8_t x, y;
+; 309     for (y = 0; y != GAME_HEIGHT; ++y)
 	xor a
 	ld (NewGame_s + 1), a
 l_38:
 	ld a, (NewGame_s + 1)
 	cp 9
 	jp z, l_40
-; 311         for (x = 0; x != GAME_WIDTH; ++x) game[x][y] = 0;
+; 310         for (x = 0; x != GAME_WIDTH; ++x) game[x][y] = 0;
 	xor a
 	ld (NewGame_s + 0), a
 l_41:
@@ -409,50 +409,124 @@ l_39:
 	ld (NewGame_s + 1), a
 	jp l_38
 l_40:
-; 312 
-; 313     GenerateNewBalls();
+; 311 
+; 312     GenerateNewBalls();
 	call GenerateNewBalls
-; 314     GameStep(true);
-; 8 ;
+; 313     GameStep(true);
+; 25 ;
 	ld a, 1
 	call GameStep
-; 315 );
+; 314 );
 	jp DrawScreen
 ; REMOVED
 rand:
 	; Stack correction reset
-; 6 void)rand_seed;
-	ld a, (rand_seed)
 
-        ld a, (rand_seed)
+rand_seed:
+        ld a, 0FAh
         ld b, a
         add a, a
         add a, a
         add a, b
         inc a
-        ld (rand_seed), a
+        ld (rand_seed + 1), a
     
 	ret
 BouncingBallAnimation:
 	; Stack correction reset
-; 391  == NO_SEL) return;
+; 315 }
+; 316 
+; 317 // Переместить шарик
+; 318 
+; 319 static void MoveBall() {
+; 320     if (game[cursorX][cursorY] != 0) {
+; 321         if (selX != NO_SEL) DrawCell(selX, selY, game[selX][selY]);
+; 322         selX = cursorX;
+; 323         selY = cursorY;
+; 324         return;
+; 325     }
+; 326 
+; 327     if (selX == NO_SEL) return;
+; 328 
+; 329     uint8_t c = game[selX][selY];
+; 330 
+; 331     // Алгоритм поиска поути
+; 332     if (!PathFind()) {
+; 333         if (soundEnabled) PlaySoundCantMove();
+; 334         return;
+; 335     }
+; 336 
+; 337     if (showPath) {
+; 338         // Рисуем шаги на экране
+; 339         for (;;) {
+; 340             uint8_t x = path_x;
+; 341             uint8_t y = path_y;
+; 342             uint8_t dir = PathGetNextStep();
+; 343             DrawSpriteStep(x, y, dir - 1);
+; 344             DrawCell(path_x, path_y, c);
+; 345             if (path_n == LAST_STEP) break;
+; 346             if (soundEnabled) PlaySoundJump();
+; 347             Delay(STEP_ANIMATION_DELAY);
+; 348         };
+; 349 
+; 350         // Удаляем нарисованные шаги с экрана
+; 351         PathRewind();
+; 352         do {
+; 353             DrawEmptyCell(path_x, path_y);
+; 354             PathGetNextStep();
+; 355         } while (path_n != LAST_STEP);
+; 356     } else {
+; 357         DrawEmptyCell(selX, selY);
+; 358         DrawCell(cursorX, cursorY, c);
+; 359     }
+; 360 
+; 361     // Очищаем игровое поле от временных значений
+; 362     PathFree();
+; 363 
+; 364     // Реально перемещаем шарик. Все выше было лишь анимацией.
+; 365     game[selX][selY] = 0;
+; 366     game[cursorX][cursorY] = c;
+; 367 
+; 368     // Снимаем выделение
+; 369     selX = NO_SEL;
+; 370 
+; 371     // Добавляем 3 шарика
+; 372     if (!GameStep(false)) return;
+; 373 
+; 374     // Если не получилось добавить, то конец игры.
+; 375 
+; 376     // Если игрок набал мало очков, то просто показываем таблицу
+; 377     if (score < hiScores[HISCORE_COUNT - 1].score) {
+; 378         DrawHiScores(0);
+; 379     } else {
+; 380         AddToHiScores();
+; 381     }
+; 382 
+; 383     ReadKeyboard(false);
+; 384     NewGame();
+; 385 }
+; 386 
+; 387 // Анимация прыгающего шарика
+; 388 
+; 389 static void BouncingBallAnimation() {
+; 390     if (selX == NO_SEL) return;
 	ld a, (selX)
 	cp 255
 	ret z
 ; REMOVED
 ; REMOVED
-; 392     selAnimationDelay++;
+; 391     selAnimationDelay++;
 	ld a, (selAnimationDelay)
 	inc a
 	ld (selAnimationDelay), a
-; 393     if (selAnimationDelay >= BOUNCE_ANIMATION_DELAY) {
+; 392     if (selAnimationDelay >= BOUNCE_ANIMATION_DELAY) {
 ; REMOVED
 	cp 50
 	jp c, l_46
-; 394         selAnimationDelay = 0;
+; 393         selAnimationDelay = 0;
 	xor a
 	ld (selAnimationDelay), a
-; 395         DrawBouncingBall(selX, selY, game[selX][selY], selAnimationFrame);
+; 394         DrawBouncingBall(selX, selY, game[selX][selY], selAnimationFrame);
 	ld a, (selX)
 	ld (DrawBouncingBall_1_a), a
 	ld a, (selY)
@@ -475,27 +549,27 @@ BouncingBallAnimation:
 	ld (DrawBouncingBall_3_a), a
 	ld a, (selAnimationFrame)
 	call DrawBouncingBall
-; 396         selAnimationFrame++;
+; 395         selAnimationFrame++;
 	ld a, (selAnimationFrame)
 	inc a
 	ld (selAnimationFrame), a
-; 397         if (selAnimationFrame >= BOUNCE_ANIMATION_COUNT) {
+; 396         if (selAnimationFrame >= BOUNCE_ANIMATION_COUNT) {
 ; REMOVED
 	cp 6
 	jp c, l_48
-; 398             selAnimationFrame = 0;
+; 397             selAnimationFrame = 0;
 	xor a
 	ld (selAnimationFrame), a
 	jp l_49
 l_48:
-; 399         } else if (soundEnabled && selAnimationFrame == 4) {
+; 398         } else if (soundEnabled && selAnimationFrame == 4) {
 	ld a, (soundEnabled)
 	or a
 	jp z, l_50
 	ld a, (selAnimationFrame)
 	cp 4
 	jp nz, l_50
-; 400             PlaySoundJump();
+; 399             PlaySoundJump();
 	call PlaySoundJump
 l_50:
 l_49:
@@ -503,64 +577,64 @@ l_46:
 	ret
 ReadKeyboard:
 	; Stack correction reset
-; 122  ReadKeyboard(bool noWait) {
+; 144  ReadKeyboard(bool noWait) {
 	ld (ReadKeyboard_1_a), a
 l_52:
-; 123     register uint8_t keyNumber;
-; 124     for (;;) {
-; 125         register uint8_t i = KEYBOARD_ROWS;
+; 145     uint8_t keyNumber;
+; 146     for (;;) {
+; 147         uint8_t i = KEYBOARD_ROWS;
 	ld a, 10
 	ld (ReadKeyboard_s + 1), a
 l_55:
-; 126         for (;;) {
-; 127             --i;
+; 148         for (;;) {
+; 149             --i;
 	ld a, (ReadKeyboard_s + 1)
 	dec a
 	ld (ReadKeyboard_s + 1), a
-; 128             keyNumber = ReadKeyboardRow(i);  // TODO: Светодиоды
+; 150             keyNumber = ReadKeyboardRow(i);  // TODO: Светодиоды
 ; REMOVED
 	call ReadKeyboardRow
 	ld (ReadKeyboard_s + 0), a
-; 129             if (i == SHIFT_ROW) {            // Удаляем SHIFT
+; 151             if (i == SHIFT_ROW) {            // Удаляем SHIFT
 	ld a, (ReadKeyboard_s + 1)
 	cp 3
 	jp nz, l_58
-; 130                 keyNumber &= ~SHIFT_MASK;
+; 152                 keyNumber &= ~SHIFT_MASK;
 	ld a, (ReadKeyboard_s + 0)
 	and 247
 	ld (ReadKeyboard_s + 0), a
 l_58:
-; 131             }
-; 132             if (keyNumber != 0) break;
+; 153             }
+; 154             if (keyNumber != 0) break;
 	ld a, (ReadKeyboard_s + 0)
 	or a
 	jp nz, l_57
 ; REMOVED
 ; REMOVED
-; 133             if (i != 0) continue;
+; 155             if (i != 0) continue;
 	ld a, (ReadKeyboard_s + 1)
 	or a
 	jp nz, l_55
 ; REMOVED
 ; REMOVED
-; 134             keybordPressedKey = 0;
+; 156             keyboardPressedKey = 0;
 	xor a
-	ld (keybordPressedKey), a
-; 135             if (noWait != 0) return 0;
+	ld (keyboardPressedKey), a
+; 157             if (noWait) return 0;
 	ld a, (ReadKeyboard_1_a)
 	or a
 	jp z, l_64
 	xor a
 	ret
 l_64:
-; 136             i = KEYBOARD_ROWS;
+; 158             i = KEYBOARD_ROWS;
 	ld a, 10
 	ld (ReadKeyboard_s + 1), a
 ; REMOVED
 	jp l_55
 l_57:
-; 137         }
-; 138         keyNumber = NumberOfBit(keyNumber) + i * KEYBOARD_COLUMNS;
+; 159         }
+; 160         keyNumber = NumberOfBit(keyNumber) + i * KEYBOARD_COLUMNS;
 ; REMOVED
 	call NumberOfBit
 	ld d, a
@@ -570,24 +644,24 @@ l_57:
 	add a
 	add d
 	ld (ReadKeyboard_s + 0), a
-; 139         if (noWait != 0) break;
+; 161         if (noWait) break;
 	ld a, (ReadKeyboard_1_a)
 	or a
 	jp nz, l_54
 ; REMOVED
 ; REMOVED
-; 140         if (keybordPressedKey == keyNumber) continue;
+; 162         if (keyboardPressedKey == keyNumber) continue;
 	ld a, (ReadKeyboard_s + 0)
 	ld d, a
-	ld a, (keybordPressedKey)
+	ld a, (keyboardPressedKey)
 	cp d
 	jp z, l_52
 ; REMOVED
 ; REMOVED
-; 141         keybordPressedKey = keyNumber;
+; 163         keyboardPressedKey = keyNumber;
 	ld a, (ReadKeyboard_s + 0)
-	ld (keybordPressedKey), a
-; 142         switch (keyNumber) {
+	ld (keyboardPressedKey), a
+; 164         switch (keyNumber) {
 	ld a, (ReadKeyboard_s + 0)
 	sub 24
 	jp z, l_73
@@ -597,24 +671,24 @@ l_57:
 	jp z, l_71
 	jp l_54
 l_73:
-; 143             case 24:  // Нажата клавиша RUS   // TODO: Заменить на константу
-; 144                 keyboardMode |= MODE_RUS;
+; 165             case KEY_COORD_RUS:
+; 166                 keyboardMode |= MODE_RUS;
 	ld a, (keyboardMode)
 	or 1
 	ld (keyboardMode), a
 	jp l_52
 l_72:
-; 145                 continue;
-; 146             case 25:  // Нажата клавиша LAT   // TODO: Заменить на константу
-; 147                 keyboardMode &= ~MODE_RUS;
+; 167                 continue;
+; 168             case KEY_COORD_LAT:
+; 169                 keyboardMode &= ~MODE_RUS;
 	ld a, (keyboardMode)
 	and 254
 	ld (keyboardMode), a
 	jp l_52
 l_71:
-; 148                 continue;
-; 149             case 30:  // Нажата клавиша CAPS LOCK   // TODO: Заменить на константу
-; 150                 keyboardMode ^= MODE_CAPS;
+; 170                 continue;
+; 171             case KEY_COORD_CAPS:
+; 172                 keyboardMode ^= MODE_CAPS;
 	ld a, (keyboardMode)
 	xor 2
 	ld (keyboardMode), a
@@ -624,24 +698,24 @@ l_71:
 ; REMOVED
 ; REMOVED
 l_54:
-; 151                 continue;
-; 152         }
-; 153         break;
-; 154     }
-; 155 
-; 156     // Преобразовать номер клавиши в код символа
-; 157     uint8_t shiftPressed = ReadKeyboardRow(SHIFT_ROW) & SHIFT_MASK;
+; 173                 continue;
+; 174         }
+; 175         break;
+; 176     }
+; 177 
+; 178     // Преобразовать номер клавиши в код символа
+; 179     uint8_t shiftPressed = ReadKeyboardRow(SHIFT_ROW) & SHIFT_MASK;
 	ld a, 3
 	call ReadKeyboardRow
 	and 8
 	ld (ReadKeyboard_s + 1), a
-; 158     const uint8_t* layout = scanCodes + keyNumber;
+; 180     const uint8_t* layout = scanCodes + keyNumber;
 	ld hl, (ReadKeyboard_s + 0)
 	ld h, 0
 	ld de, scanCodes
 	add hl, de
 	ld (ReadKeyboard_s + 2), hl
-; 159     if ((keyboardMode & MODE_RUS) != 0) layout += KEYBOARD_LANGUAGE_SIZE;
+; 181     if ((keyboardMode & MODE_RUS) != 0) layout += KEYBOARD_LANGUAGE_SIZE;
 	ld a, (keyboardMode)
 	and 1
 ; REMOVED
@@ -651,24 +725,24 @@ l_54:
 	add hl, de
 	ld (ReadKeyboard_s + 2), hl
 l_74:
-; 160     if ((*layout & L) != 0)                   // LETTERS
+; 182     if ((*layout & L) != 0)                   // LETTERS
 ; REMOVED
 	ld a, (hl)
 	and 128
 ; REMOVED
 	jp z, l_76
-; 161         if ((keyboardMode & MODE_CAPS) != 0)  // CAPS LOCK
+; 183         if ((keyboardMode & MODE_CAPS) != 0)  // CAPS LOCK
 	ld a, (keyboardMode)
 	and 2
 ; REMOVED
 	jp z, l_78
-; 162             shiftPressed ^= SHIFT_MASK;       // Применить/отменить SHIFT
+; 184             shiftPressed ^= SHIFT_MASK;       // Применить/отменить SHIFT
 	ld a, (ReadKeyboard_s + 1)
 	xor 8
 	ld (ReadKeyboard_s + 1), a
 l_78:
 l_76:
-; 163     if (shiftPressed != 0) layout += KEYBOARD_SCAN_SIZE;
+; 185     if (shiftPressed != 0) layout += KEYBOARD_SCAN_SIZE;
 	ld a, (ReadKeyboard_s + 1)
 	or a
 	jp z, l_80
@@ -677,30 +751,30 @@ l_76:
 	add hl, de
 	ld (ReadKeyboard_s + 2), hl
 l_80:
-; 164     char result = *layout;
+; 186     char result = *layout;
 ; REMOVED
 	ld a, (hl)
 	ld (ReadKeyboard_s + 4), a
-; 165     if ((keyboardMode & MODE_RUS) == 0)  // LAT
+; 187     if ((keyboardMode & MODE_RUS) == 0)  // LAT
 	ld a, (keyboardMode)
 	and 1
 ; REMOVED
 	jp nz, l_82
-; 166         result &= 0x7F;
+; 188         result &= 0x7F;
 	ld a, (ReadKeyboard_s + 4)
 	and 127
 	ld (ReadKeyboard_s + 4), a
 l_82:
-; 167     return result;
+; 189     return result;
 	ld a, (ReadKeyboard_s + 4)
 	ret
 ; REMOVED
 Delay:
 	; Stack correction reset
-; 5  Delay(uint16_t n) {
+; 22  Delay(uint16_t n) {
 	ld (Delay_1_a), hl
 l_84:
-; 6     while (--n != 0) {
+; 23     while (--n != 0) {
 	ld hl, (Delay_1_a)
 	dec hl
 	ld (Delay_1_a), hl
@@ -712,14 +786,14 @@ l_84:
 	ret
 ChangePalette:
 	; Stack correction reset
-; 268 gamePalette, gamePalette2, sizeof(gamePalette));
+; 264 gamePalette, gamePalette2, sizeof(gamePalette));
 	ld hl, gamePalette
 	ld (memswap_1_a), hl
 	ld hl, gamePalette2
 	ld (memswap_2_a), hl
 	ld hl, 4
 	call memswap
-; 269     SetPalette(gamePalette);
+; 265     SetPalette(gamePalette);
 	ld hl, gamePalette
 	jp SetPalette
 ; REMOVED
@@ -816,53 +890,53 @@ l_93:
 	ret
 DrawHiScores:
 	; Stack correction reset
-; 270 }
-; 271 
-; 272 // Заставка
-; 273 
-; 274 void Intro() {
-; 275     SetBlackPalette();
-; 276     void* next = unmlz((uint8_t*)0xD000, imgTitle);  // TODO: replace magic
-; 277     unmlz((uint8_t*)0x9000, next);                   // TODO: replace magic
-; 278     SetPaletteSlowly(introPalette);
-; 279 
-; 280     // Играем мелодию
-; 281     const uint16_t* p = music;
-; 282     for (;;) {
-; 283         const uint8_t s = *p;
-; 284         p++;
-; 285         if (s == 0) {
-; 286             ReadKeyboard(false);
-; 287             break;
-; 288         }
-; 289         if (ReadKeyboard(true) != 0) break;
-; 290         PlayTone(*p, s);
-; 291         p++;
-; 292         rand();
-; 293     }
-; 294 }
-; 295 
-; 296 // Таблица рекордов
-; 297 
-; 298 void DrawHiScoresScreen1(uint8_t i, uint8_t pos) {
-; 299     struct HiScore* h = hiScores + i;
-; 300     for (; i < HISCORE_COUNT; ++i) {
-; 301         char text[sizeof(h->name) + UINT16TOSTRING_OUTPUT_SIZE];
-; 302         memset(text, ' ', sizeof(h->name) - 1);
-; 303         memcpy(text, h->name, strlen(h->name));
-; 304         Uint16ToString(text + (sizeof(h->name) - 1), h->score);
-; 305         SetTextColor(pos == i ? 1 : 3);
-; 306         DrawText((TEXT_WIDTH - 14) / 2, (HISCORE_Y + 2) + i, 0x7F, text);
-; 307         h++;
-; 308     }
-; 309 }
-; 310 
-; 311 void DrawHiScores(bool enterNameMode) {
+; 266 }
+; 267 
+; 268 // Заставка
+; 269 
+; 270 void Intro() {
+; 271     SetBlackPalette();
+; 272     void* next = unmlz((uint8_t*)0xD000, imgTitle);  // TODO: replace magic
+; 273     unmlz((uint8_t*)0x9000, next);                   // TODO: replace magic
+; 274     SetPaletteSlowly(introPalette);
+; 275 
+; 276     // Играем мелодию
+; 277     const uint16_t* p = music;
+; 278     for (;;) {
+; 279         const uint8_t s = *p;
+; 280         p++;
+; 281         if (s == 0) {
+; 282             ReadKeyboard(false);
+; 283             break;
+; 284         }
+; 285         if (ReadKeyboard(true) != 0) break;
+; 286         PlayTone(*p, s);
+; 287         p++;
+; 288         (void)rand();
+; 289     }
+; 290 }
+; 291 
+; 292 // Таблица рекордов
+; 293 
+; 294 void DrawHiScoresScreen1(uint8_t i, uint8_t pos) {
+; 295     struct HiScore* h = hiScores + i;
+; 296     for (; i < HISCORE_COUNT; ++i) {
+; 297         char text[sizeof(h->name) + UINT16TOSTRING_OUTPUT_SIZE];
+; 298         memset(text, ' ', sizeof(h->name) - 1);
+; 299         memcpy(text, h->name, strlen(h->name));
+; 300         Uint16ToString(text + (sizeof(h->name) - 1), h->score);
+; 301         SetTextColor(pos == i ? 1 : 3);
+; 302         DrawText((TEXT_WIDTH - 14) / 2, (HISCORE_Y + 2) + i, 0x7F, text);
+; 303         h++;
+; 304     }
+; 305 }
+; 306 
+; 307 void DrawHiScores(bool enterNameMode) {
 	ld (DrawHiScores_1_a), a
-; 312     SetFillRectColor(0);
+; 308     SetFillRectColor(0);
 	xor a
 	call SetFillRectColor
-; 313     FillRect1(FILLRECTARGS(108, PLAYFIELD_Y + 18, 274, PLAYFIELD_Y + 156));
+; 309     FillRect1(FILLRECTARGS(108, PLAYFIELD_Y + 18, 274, PLAYFIELD_Y + 156));
 	ld hl, 62161
 	ld (FillRect1_1_a), hl
 	ld hl, 21
@@ -873,66 +947,62 @@ DrawHiScores:
 	ld (FillRect1_4_a), a
 	ld a, 139
 	call FillRect1
-; 314 2);
+; 310 2);
 	ld a, 2
 	call SetTextColor
-; 315     DrawText1(DRAWTEXTARGS((TEXT_WIDTH - 17) / 2, HISCORE_Y), 0x7F, "Лучшие результаты");
-; 1 (0)
+; 311     DrawText1(DRAWTEXTARGS((TEXT_WIDTH - 17) / 2, HISCORE_Y), 0x7F, "Лучшие результаты");
 	ld hl, 61133
 	ld (DrawText1_1_a), hl
 	ld a, 3
 	ld (DrawText1_2_a), a
-; 315 , "Лучшие результаты");
+; 311 , "Лучшие результаты");
 	ld a, 127
 	ld (DrawText1_3_a), a
 	ld hl, s_8
 	call DrawText1
-; 316     if (enterNameMode != 0) {
+; 312     if (enterNameMode != 0) {
 	ld a, (DrawHiScores_1_a)
 	or a
 	jp z, l_96
-; 317         DrawText1(DRAWTEXTARGS((TEXT_WIDTH - 16) / 2, HISCORE_Y + 4 + HISCORE_COUNT), 0x7F, "Введите своё имя");
-; 1 (0)
+; 313         DrawText1(DRAWTEXTARGS((TEXT_WIDTH - 16) / 2, HISCORE_Y + 4 + HISCORE_COUNT), 0x7F, "Введите своё имя");
 	ld hl, 60757
 	ld (DrawText1_1_a), hl
 	xor a
 	ld (DrawText1_2_a), a
-; 317 , "Введите своё имя");
+; 313 , "Введите своё имя");
 	ld a, 127
 	ld (DrawText1_3_a), a
 	ld hl, s_9
 	call DrawText1
-; 318         DrawHiScoresScreen1(0, HISCORE_COUNT - 1);
+; 314         DrawHiScoresScreen1(0, HISCORE_COUNT - 1);
 	xor a
 	ld (DrawHiScoresScreen1_1_a), a
 	ld a, 7
 	call DrawHiScoresScreen1
 	jp l_97
 l_96:
-; 319     } else {
-; 320         DrawText1(DRAWTEXTARGS((TEXT_WIDTH - 21) / 2, HISCORE_Y + 3 + HISCORE_COUNT), 0x7F, "Нажмите любую клавишу");
-; 1 (0)
+; 315     } else {
+; 316         DrawText1(DRAWTEXTARGS((TEXT_WIDTH - 21) / 2, HISCORE_Y + 3 + HISCORE_COUNT), 0x7F, "Нажмите любую клавишу");
 	ld hl, 61535
 	ld (DrawText1_1_a), hl
 	ld a, 1
 	ld (DrawText1_2_a), a
-; 320 , "Нажмите любую клавишу");
+; 316 , "Нажмите любую клавишу");
 	ld a, 127
 	ld (DrawText1_3_a), a
 	ld hl, s_10
 	call DrawText1
-; 321         DrawText1(DRAWTEXTARGS((TEXT_WIDTH - 15) / 2, HISCORE_Y + 4 + HISCORE_COUNT), 0x7F, "для продолжения");
-; 1 (0)
+; 317         DrawText1(DRAWTEXTARGS((TEXT_WIDTH - 15) / 2, HISCORE_Y + 4 + HISCORE_COUNT), 0x7F, "для продолжения");
 	ld hl, 60757
 	ld (DrawText1_1_a), hl
 	xor a
 	ld (DrawText1_2_a), a
-; 321 , "для продолжения");
+; 317 , "для продолжения");
 	ld a, 127
 	ld (DrawText1_3_a), a
 	ld hl, s_11
 	call DrawText1
-; 322         DrawHiScoresScreen1(0, HISCORE_COUNT);
+; 318         DrawHiScoresScreen1(0, HISCORE_COUNT);
 	xor a
 	ld (DrawHiScoresScreen1_1_a), a
 ; 25 ;
@@ -942,27 +1012,27 @@ l_97:
 	ret
 DrawScreen:
 	; Stack correction reset
-; 365 );
+; 361 );
 	call SetBlackPaletteSlowly
-; 366 
-; 367     // Рисуем фон
-; 368     void* next = unmlz((uint8_t*)0xD000, imgScreen);
+; 362 
+; 363     // Рисуем фон
+; 364     void* next = unmlz((uint8_t*)0xD000, imgScreen);
 	ld hl, 53248
 	ld (unmlz_1_a), hl
 	ld hl, imgScreen
 	call unmlz
 	ld (DrawScreen_s + 0), hl
-; 369     unmlz((uint8_t*)0x9000, next);
+; 365     unmlz((uint8_t*)0x9000, next);
 	ld hl, 36864
 	ld (unmlz_1_a), hl
 	ld hl, (DrawScreen_s + 0)
 	call unmlz
-; 370 
-; 371     // Ваше имя
-; 372     SetTextColor(3);
+; 366 
+; 367     // Ваше имя
+; 368     SetTextColor(3);
 	ld a, 3
 	call SetTextColor
-; 373     DrawText(56, 19, 0x7F, "Вы");
+; 369     DrawText(56, 19, 0x7F, "Вы");
 	ld a, 56
 	ld (DrawText_1_a), a
 	ld a, 19
@@ -971,47 +1041,42 @@ DrawScreen:
 	ld (DrawText_3_a), a
 	ld hl, s_12
 	call DrawText
-; 374 
-; 375     // Нужно перерисовать короля и претендента
-; 376     rightCreatureY = 0xFF;
+; 370 
+; 371     // Нужно перерисовать короля и претендента
+; 372     rightCreatureY = 0xFF;
 	ld a, 255
 	ld (rightCreatureY), a
-; 377 
-; 378     // Ваш результат и изображение бойца слева
-; 379     DrawScoreAndCreatures();
+; 373 
+; 374     // Ваш результат и изображение бойца слева
+; 375     DrawScoreAndCreatures();
 	call DrawScoreAndCreatures
-; 380 
-; 381     // Максимальный результат
-; 382     char buf[UINT16TOSTRING_OUTPUT_SIZE + 1];
-; 383     Uint16ToString(buf, hiScores[0].score);
+; 376 
+; 377     // Максимальный результат
+; 378     char buf[UINT16TOSTRING_OUTPUT_SIZE + 1];
+; 379     Uint16ToString(buf, hiScores[0].score);
 	ld hl, DrawScreen_s + 2
 	ld (Uint16ToString_1_a), hl
 	ld hl, (((hiScores) + (0)) + (10))
 	call Uint16ToString
-; 384     DrawText1(PIXELCOORDS(3, 7), 1, UINT16TOSTRING_OUTPUT_SIZE, buf);
-; 1  ((XX) * 256))
+; 380     DrawText1(PIXELCOORDS(3, 7), 1, UINT16TOSTRING_OUTPUT_SIZE, buf);
+; 1  ((XX)*256))
 	ld hl, 64760
 	ld (DrawText1_1_a), hl
-; 384 , UINT16TOSTRING_OUTPUT_SIZE, buf);
+; 380 , UINT16TOSTRING_OUTPUT_SIZE, buf);
 	ld a, 1
 	ld (DrawText1_2_a), a
 	ld a, 5
 	ld (DrawText1_3_a), a
 	ld hl, DrawScreen_s + 2
 	call DrawText1
-; 385 
-; 386     // Имя набравшено максимальный результат
-; 387     DrawText(3 + (9 - strlen(hiScores[0].name)) / 2, 19, 9, hiScores[0].name);
+; 381 
+; 382     // Имя набравшено максимальный результат
+; 383     DrawText(3 + (9 - strlen(hiScores[0].name)) / 2, 19, 9, hiScores[0].name);
 	ld hl, ((hiScores) + (0)) + (0)
 	call strlen
 	ld de, 9
 	ex hl, de
-	ld a, l
-	sub e
-	ld l, a
-	ld a, h
-	sbc d
-	ld h, a
+	call __o_sub_16
 	ld de, 1
 	call __o_shr_u16
 	ld a, l
@@ -1023,62 +1088,62 @@ DrawScreen:
 	ld (DrawText_3_a), a
 	ld hl, ((hiScores) + (0)) + (0)
 	call DrawText
-; 388 
-; 389     // Рисуем состояние кнопок
-; 390     if (showPath) DrawButton(BUTTON_PATH, true);
+; 384 
+; 385     // Рисуем состояние кнопок
+; 386     if (showPath) DrawButton(BUTTON_PATH, true);
 	ld a, (showPath)
 	or a
 	jp z, l_98
-; 1  ((XX) * 256))
+; 1  ((XX)*256))
 	ld hl, 61960
 	ld (DrawButton_1_a), hl
-; 8 ;
+; 25 ;
 	ld a, 1
 	call DrawButton
 l_98:
-; 391 ) DrawButton(BUTTON_SOUND, true);
+; 387 ) DrawButton(BUTTON_SOUND, true);
 	ld a, (soundEnabled)
 	or a
 	jp z, l_100
-; 1  ((XX) * 256))
+; 1  ((XX)*256))
 	ld hl, 59912
 	ld (DrawButton_1_a), hl
-; 8 ;
+; 25 ;
 	ld a, 1
 	call DrawButton
 l_100:
-; 392 ) {
+; 388 ) {
 	ld a, (showHelp)
 	or a
 	jp z, l_102
-; 393         DrawButton(BUTTON_HELP, true);
-; 1  ((XX) * 256))
+; 389         DrawButton(BUTTON_HELP, true);
+; 1  ((XX)*256))
 	ld hl, 57864
 	ld (DrawButton_1_a), hl
-; 8 ;
+; 25 ;
 	ld a, 1
 	call DrawButton
-; 394 );
+; 390 );
 	call DrawHelp
 l_102:
-; 395     }
-; 396 
-; 397     uint8_t x, y;
-; 398     for (y = 0; y < GAME_HEIGHT; y++) {
+; 391     }
+; 392 
+; 393     uint8_t x, y;
+; 394     for (y = 0; y < GAME_HEIGHT; y++) {
 	xor a
 	ld (DrawScreen_s + 9), a
 l_104:
 	ld a, (DrawScreen_s + 9)
 	cp 9
 	jp nc, l_106
-; 399         for (x = 0; x < GAME_WIDTH; x++) {
+; 395         for (x = 0; x < GAME_WIDTH; x++) {
 	xor a
 	ld (DrawScreen_s + 8), a
 l_107:
 	ld a, (DrawScreen_s + 8)
 	cp 9
 	jp nc, l_109
-; 400             uint8_t color = game[x][y];
+; 396             uint8_t color = game[x][y];
 	ld hl, (DrawScreen_s + 8)
 	ld h, 0
 	ld d, h
@@ -1095,7 +1160,7 @@ l_107:
 	add hl, de
 	ld a, (hl)
 	ld (DrawScreen_s + 10), a
-; 401             if (color != 0) DrawCell(x, y, color);
+; 397             if (color != 0) DrawCell(x, y, color);
 ; REMOVED
 	or a
 	jp z, l_110
@@ -1118,14 +1183,14 @@ l_105:
 	ld (DrawScreen_s + 9), a
 	jp l_104
 l_106:
-; 402         }
-; 403     }
-; 404 
-; 405     DrawCursor();
+; 398         }
+; 399     }
+; 400 
+; 401     DrawCursor();
 	call DrawCursor
-; 406 
-; 407     // Показываем графику
-; 408     SetPaletteSlowly(gamePalette);
+; 402 
+; 403     // Показываем графику
+; 404     SetPaletteSlowly(gamePalette);
 	ld hl, gamePalette
 	jp SetPaletteSlowly
 ; REMOVED
@@ -1143,7 +1208,7 @@ DrawCursor:
 ; REMOVED
 MoveBall:
 	; Stack correction reset
-; 321 cursorY] != 0) {
+; 320 cursorY] != 0) {
 	ld hl, (cursorX)
 	ld h, 0
 	ld d, h
@@ -1161,7 +1226,7 @@ MoveBall:
 	ld a, (hl)
 	or a
 	jp z, l_112
-; 322         if (selX != NO_SEL) DrawCell(selX, selY, game[selX][selY]);
+; 321         if (selX != NO_SEL) DrawCell(selX, selY, game[selX][selY]);
 	ld a, (selX)
 	cp 255
 	jp z, l_114
@@ -1186,25 +1251,25 @@ MoveBall:
 	ld a, (hl)
 	call DrawCell
 l_114:
-; 323         selX = cursorX;
+; 322         selX = cursorX;
 	ld a, (cursorX)
 	ld (selX), a
-; 324         selY = cursorY;
+; 323         selY = cursorY;
 	ld a, (cursorY)
 	ld (selY), a
 	ret
 l_112:
-; 325         return;
-; 326     }
-; 327 
-; 328     if (selX == NO_SEL) return;
+; 324         return;
+; 325     }
+; 326 
+; 327     if (selX == NO_SEL) return;
 	ld a, (selX)
 	cp 255
 	ret z
 ; REMOVED
 ; REMOVED
-; 329 
-; 330     uint8_t c = game[selX][selY];
+; 328 
+; 329     uint8_t c = game[selX][selY];
 	ld hl, (selX)
 	ld h, 0
 	ld d, h
@@ -1221,13 +1286,13 @@ l_112:
 	add hl, de
 	ld a, (hl)
 	ld (MoveBall_s + 0), a
-; 331 
-; 332     // Алгоритм поиска поути
-; 333     if (!PathFind()) {
+; 330 
+; 331     // Алгоритм поиска поути
+; 332     if (!PathFind()) {
 	call PathFind
 	or a
 	jp nz, l_118
-; 334         if (soundEnabled) PlaySoundCantMove();
+; 333         if (soundEnabled) PlaySoundCantMove();
 	ld a, (soundEnabled)
 	or a
 	call nz, PlaySoundCantMove
@@ -1235,26 +1300,26 @@ l_112:
 ; REMOVED
 	ret
 l_118:
-; 335         return;
-; 336     }
-; 337 
-; 338     if (showPath) {
+; 334         return;
+; 335     }
+; 336 
+; 337     if (showPath) {
 	ld a, (showPath)
 	or a
 	jp z, l_122
 l_124:
-; 339         // Рисуем шаги на экране
-; 340         for (;;) {
-; 341             uint8_t x = path_x;
+; 338         // Рисуем шаги на экране
+; 339         for (;;) {
+; 340             uint8_t x = path_x;
 	ld a, (path_x)
 	ld (MoveBall_s + 1), a
-; 342             uint8_t y = path_y;
+; 341             uint8_t y = path_y;
 	ld a, (path_y)
 	ld (MoveBall_s + 2), a
-; 343             uint8_t dir = PathGetNextStep();
+; 342             uint8_t dir = PathGetNextStep();
 	call PathGetNextStep
 	ld (MoveBall_s + 3), a
-; 344             DrawSpriteStep(x, y, dir - 1);
+; 343             DrawSpriteStep(x, y, dir - 1);
 	ld a, (MoveBall_s + 1)
 	ld (DrawSpriteStep_1_a), a
 	ld a, (MoveBall_s + 2)
@@ -1262,58 +1327,58 @@ l_124:
 	ld a, (MoveBall_s + 3)
 	dec a
 	call DrawSpriteStep
-; 345             DrawCell(path_x, path_y, c);
+; 344             DrawCell(path_x, path_y, c);
 	ld a, (path_x)
 	ld (DrawCell_1_a), a
 	ld a, (path_y)
 	ld (DrawCell_2_a), a
 	ld a, (MoveBall_s + 0)
 	call DrawCell
-; 346             if (path_n == LAST_STEP) break;
+; 345             if (path_n == LAST_STEP) break;
 	ld a, (path_n)
 	cp 9
 	jp z, l_126
 ; REMOVED
 ; REMOVED
-; 347             if (soundEnabled) PlaySoundJump();
+; 346             if (soundEnabled) PlaySoundJump();
 	ld a, (soundEnabled)
 	or a
 	call nz, PlaySoundJump
 ; REMOVED
 ; REMOVED
-; 348             Delay(STEP_ANIMATION_DELAY);
+; 347             Delay(STEP_ANIMATION_DELAY);
 ; 35 ; /* задерка в main */
 	ld hl, 2000
 	call Delay
 l_125:
 	jp l_124
 l_126:
-; 352 );
+; 351 );
 	call PathRewind
 l_131:
-; 353         do {
-; 354             DrawEmptyCell(path_x, path_y);
+; 352         do {
+; 353             DrawEmptyCell(path_x, path_y);
 	ld a, (path_x)
 	ld (DrawEmptyCell_1_a), a
 	ld a, (path_y)
 	call DrawEmptyCell
-; 355             PathGetNextStep();
+; 354             PathGetNextStep();
 	call PathGetNextStep
 l_132:
-; 356         } while (path_n != LAST_STEP);
+; 355         } while (path_n != LAST_STEP);
 	ld a, (path_n)
 	cp 9
 	jp nz, l_131
 l_133:
 	jp l_123
 l_122:
-; 357     } else {
-; 358         DrawEmptyCell(selX, selY);
+; 356     } else {
+; 357         DrawEmptyCell(selX, selY);
 	ld a, (selX)
 	ld (DrawEmptyCell_1_a), a
 	ld a, (selY)
 	call DrawEmptyCell
-; 359         DrawCell(cursorX, cursorY, c);
+; 358         DrawCell(cursorX, cursorY, c);
 	ld a, (cursorX)
 	ld (DrawCell_1_a), a
 	ld a, (cursorY)
@@ -1321,14 +1386,14 @@ l_122:
 	ld a, (MoveBall_s + 0)
 	call DrawCell
 l_123:
-; 360     }
-; 361 
-; 362     // Очищаем игровое поле от временных значений
-; 363     PathFree();
+; 359     }
+; 360 
+; 361     // Очищаем игровое поле от временных значений
+; 362     PathFree();
 	call PathFree
-; 364 
-; 365     // Реально перемещаем шарик. Все выше было лишь анимацией.
-; 366     game[selX][selY] = 0;
+; 363 
+; 364     // Реально перемещаем шарик. Все выше было лишь анимацией.
+; 365     game[selX][selY] = 0;
 	ld hl, (selX)
 	ld h, 0
 	ld d, h
@@ -1344,7 +1409,7 @@ l_123:
 	ld h, 0
 	add hl, de
 	ld (hl), 0
-; 367     game[cursorX][cursorY] = c;
+; 366     game[cursorX][cursorY] = c;
 	ld a, (MoveBall_s + 0)
 	ld hl, (cursorX)
 	ld h, 0
@@ -1361,47 +1426,47 @@ l_123:
 	ld h, 0
 	add hl, de
 	ld (hl), a
-; 368 
-; 369     // Снимаем выделение
-; 370     selX = NO_SEL;
+; 367 
+; 368     // Снимаем выделение
+; 369     selX = NO_SEL;
 ; 28 ;  // Значение для selX
 	ld a, 255
 	ld (selX), a
-; 373 false)) return;
-; 7 ;
+; 372 false)) return;
+; 24 ;
 	xor a
 	call GameStep
 	or a
 	ret z
 ; REMOVED
 ; REMOVED
-; 378 score) {
+; 377 score) {
 	ld hl, (((hiScores) + (84)) + (10))
 	ex hl, de
 	ld hl, (score)
-	call __o_cmp_u16
+	call __o_sub_16
 	jp nc, l_136
-; 379         DrawHiScores(0);
+; 378         DrawHiScores(0);
 	xor a
 	call DrawHiScores
 	jp l_137
 l_136:
-; 380     } else {
-; 381         AddToHiScores();
+; 379     } else {
+; 380         AddToHiScores();
 	call AddToHiScores
 l_137:
-; 382     }
-; 383 
-; 384     ReadKeyboard(false);
-; 7 ;
+; 381     }
+; 382 
+; 383     ReadKeyboard(false);
+; 24 ;
 	xor a
 	call ReadKeyboard
-; 385 );
+; 384 );
 	jp NewGame
 ; REMOVED
 SetBlackPalette:
 	; Stack correction reset
-; 30 0x0F);
+; 47 0x0F);
 	ld a, 15
 	call SetPaletteInternal
 
@@ -1560,40 +1625,40 @@ unmlz_20:
 	ret
 SetPaletteSlowly:
 	; Stack correction reset
-; 50  SetPaletteSlowly(const uint8_t* palette) {
+; 67  SetPaletteSlowly(const uint8_t* palette) {
 	ld (SetPaletteSlowly_1_a), hl
-; 51     currentPalette = palette;
+; 68     currentPalette = palette;
 ; REMOVED
 	ld (currentPalette), hl
-; 52 
-; 53     // Установка темной палитры
-; 54     SetPaletteInternal(0x08);
+; 69 
+; 70     // Установка темной палитры
+; 71     SetPaletteInternal(0x08);
 	ld a, 8
 	call SetPaletteInternal
 
         out (0F8h), a
         out (0B9h), a
     
-; 55 
-; 56     // Включение цветного режима. Процессор работает в 2 раза медленнее.
-; 57     asm {
-; 58         out (0F8h), a
-; 59         out (0B9h), a
-; 60     }
-; 61 
-; 62     // Задержка
-; 63     Delay(5000);
+; 72 
+; 73     // Включение цветного режима. Процессор работает в 2 раза медленнее.
+; 74     asm {
+; 75         out (0F8h), a
+; 76         out (0B9h), a
+; 77     }
+; 78 
+; 79     // Задержка
+; 80     Delay(5000);
 	ld hl, 5000
 	call Delay
-; 64 
-; 65     // Установка нормальной палитры
-; 66     SetPaletteInternal(0x00);
+; 81 
+; 82     // Установка нормальной палитры
+; 83     SetPaletteInternal(0x00);
 	xor a
 	jp SetPaletteInternal
 ; REMOVED
 PlayTone:
 	; Stack correction reset
-; 3  PlayTone(uint16_t time, uint16_t period) {
+; 20  PlayTone(uint16_t time, uint16_t period) {
 	ld (PlayTone_2_a), hl
 
         ex hl, de
@@ -1883,33 +1948,33 @@ l_170:
 ; REMOVED
 DrawBouncingBall:
 	; Stack correction reset
-; 150  DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
+; 146  DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
 	ld (DrawBouncingBall_4_a), a
-; 151     uint8_t* graphAddress = CellAddress(x, y);
+; 147     uint8_t* graphAddress = CellAddress(x, y);
 	ld a, (DrawBouncingBall_1_a)
 	ld (CellAddress_1_a), a
 	ld a, (DrawBouncingBall_2_a)
 	call CellAddress
 	ld (DrawBouncingBall_s + 0), hl
-; 152     if (phase == 1) {
+; 148     if (phase == 1) {
 	ld a, (DrawBouncingBall_4_a)
 	cp 1
 	jp nz, l_171
-; 153         graphAddress[0] = 0;
+; 149         graphAddress[0] = 0;
 ; REMOVED
 	ld (hl), 0
-; 154         graphAddress[-0x100] = 0;
+; 150         graphAddress[-0x100] = 0;
 ; REMOVED
 	ld de, 65280
 	add hl, de
 	ld (hl), 0
-; 155         graphAddress++;
+; 151         graphAddress++;
 	ld hl, (DrawBouncingBall_s + 0)
 	inc hl
 	ld (DrawBouncingBall_s + 0), hl
 l_171:
-; 156     }
-; 157     DrawBall1(graphAddress, bouncingAnimation[phase], color);
+; 152     }
+; 153     DrawBall1(graphAddress, bouncingAnimation[phase], color);
 ; REMOVED
 	ld (DrawBall1_1_a), hl
 	ld hl, (DrawBouncingBall_4_a)
@@ -1927,11 +1992,11 @@ l_171:
 ; REMOVED
 PlaySoundJump:
 	; Stack correction reset
- out (0xB0), a 
+ out (0xB0), a
 	ret
 ReadKeyboardRow:
 	; Stack correction reset
-; 115  uint8_t ReadKeyboardRow(uint8_t row) {
+; 137  uint8_t ReadKeyboardRow(uint8_t row) {
 	ld (ReadKeyboardRow_1_a), a
 
         out (0C0h), a
@@ -1940,7 +2005,7 @@ ReadKeyboardRow:
 	ret
 NumberOfBit:
 	; Stack correction reset
-; 3  NumberOfBit(uint8_t b) {
+; 20  NumberOfBit(uint8_t b) {
 	ld (NumberOfBit_1_a), a
 
         ld e, 0
@@ -1957,122 +2022,130 @@ NumberOfBit_1:
 	ret
 memswap:
 	; Stack correction reset
+; 22  __fastcall memswap(void* buffer1, void* buffer2, size_t size) {
 	ld (memswap_3_a), hl
+; 23     (void)buffer1;
+	ld hl, (memswap_1_a)
+; 24     (void)buffer2;
+	ld hl, (memswap_2_a)
+; 25     (void)size;
+	ld hl, (memswap_3_a)
 
-    push bc
-    ; de = count
-    ex hl, de
-    ; bc = from
-    ld hl, (memswap_2_a)
-    ld c, l
-    ld b, h
-    ; hl = to
-    ld hl, (memswap_1_a)
-memswap_l1:
-    ; if (cnt == 0) return
-    ld a, d
-    or a, e
-    jp z, memswap_l2
-    ; *dest = *src
-    ld a, (bc)
-    ld (memswap_v1), a
-    ld a, (hl)
-    ld (bc), a
-    .db 36h ; mov (hl), const
-memswap_v1:
-    .db 0
-    ; dest++, src++, cnt--
-    inc hl
-    inc bc
-    dec de
-    ; loop
-    jp memswap_l1
-memswap_l2:
-    pop bc
+        push bc
+        ex hl, de            ; de = size
+        ld hl, (memswap_2_a) ; bc = buffer2
+        ld c, l
+        ld b, h
+        ld hl, (memswap_1_a) ; hl = buffer1
+        inc d                ; enter loop
+        xor a
+        or e
+        jp z, memswap_3
+memswap_1:
+        ld a, (bc)
+        ld (memswap_2 + 1), a
+        ld a, (hl)
+        ld (bc), a
+memswap_2:
+        ld (hl), 0
+        inc hl
+        inc bc
+        dec e                ; end loop
+        jp nz, memswap_1
+memswap_3:
+        dec d
+        jp nz, memswap_1
+        pop bc
     
 	ret
 SetPalette:
 	; Stack correction reset
-; 69  SetPalette(const uint8_t* palette) {
+; 86  SetPalette(const uint8_t* palette) {
 	ld (SetPalette_1_a), hl
-; 70     currentPalette = palette;
+; 87     currentPalette = palette;
 ; REMOVED
 	ld (currentPalette), hl
-; 71     SetPaletteInternal(0x00);
+; 88     SetPaletteInternal(0x00);
 	xor a
 	jp SetPaletteInternal
 ; REMOVED
 memcpy:
 	; Stack correction reset
-; 3  __fastcall memcpy(void* arg1, const void* arg2, size_t arg3) {
+; 20 * __fastcall memcpy(void* destination, const void* source, size_t size) {
 	ld (memcpy_3_a), hl
+; 21     (void)destination;
+	ld hl, (memcpy_1_a)
+; 22     (void)source;
+	ld hl, (memcpy_2_a)
+; 23     (void)size;
+	ld hl, (memcpy_3_a)
 
-        ; if (cnt == 0) return
-        ld a, h
-        or l
-        ret z
-        ; de = count
-        ex hl, de
-        ; bc = from
-        ld hl, (memcpy_2_a)
+        push bc
+        ex hl, de           ; de = size
+        ld hl, (memcpy_2_a) ; bc = source
         ld c, l
         ld b, h
-        ; hl = to
-        ld hl, (memcpy_1_a)
-        ; enter loop
-        inc d
+        ld hl, (memcpy_1_a) ; hl = destination
+        inc d               ; enter loop
         xor a
         or e
-        jp z, memcpy_l2
-memcpy_l1:
-        ; *dest = *src
+        jp z, memcpy_2
+memcpy_1:
         ld a, (bc)
         ld (hl), a
-        ; dest++, src++
         inc hl
         inc bc
-        ; while(--cnt)
-        dec e
-        jp nz, memcpy_l1
-memcpy_l2:
+        dec e               ; end loop
+        jp nz, memcpy_1
+memcpy_2:
         dec d
-        jp nz, memcpy_l1
+        jp nz, memcpy_1
+        pop bc
+        ld hl, (memcpy_1_a) ; return destination
     
 	ret
 memset:
 	; Stack correction reset
+; 22 * __fastcall memset(void* destination, uint8_t byte, size_t size) {
 	ld (memset_3_a), hl
+; 23     (void)destination;
+	ld hl, (memset_1_a)
+; 24     (void)byte;
+	ld a, (memset_2_a)
+; 25     (void)size;
+	ld hl, (memset_3_a)
 
-    ld a, (memset_2_a)
-    ex hl, de
-    ld hl, (memset_1_a)
-    ex hl, de
-    ld bc, -1
-memset_l1:
-    add hl, bc
-    ret nc
-    ld (de), a
-    inc de
-    jp memset_l1
+        ex hl, de           ; de = size
+        ld hl, (memset_1_a) ; hl = destination
+        inc d               ; enter loop
+        xor a
+        or e
+        ld a, (memset_2_a)  ; bc = byte
+        jp z, memset_2
+memset_1:
+        ld (hl), a
+        inc hl
+        inc bc
+        dec e               ; end loop
+        jp nz, memset_1
+memset_2:
+        dec d
+        jp nz, memset_1
+        ld hl, (memset_1_a) ; return destination
     
 	ret
 DrawSpriteNew1:
 	; Stack correction reset
-; 127  DrawSpriteNew1(uint8_t* graphAddress, uint8_t color, uint8_t phase) {
+; 123  DrawSpriteNew1(uint8_t* graphAddress, uint8_t color, uint8_t phase) {
 	ld (DrawSpriteNew1_3_a), a
-; 128     DrawImage(graphAddress, imgBalls + (BALL_IMAGE_SIZEOF * 10) * (color - 1) + (4 - phase) * BALL_IMAGE_SIZEOF,
+; 124     DrawImage(graphAddress, imgBalls + (BALL_IMAGE_SIZEOF * 10) * (color - 1) + (4 - phase) * BALL_IMAGE_SIZEOF,
 	ld hl, (DrawSpriteNew1_1_a)
 	ld (DrawImage_1_a), hl
 	ld hl, (DrawSpriteNew1_3_a)
 	ld h, 0
 	ld de, 4
 	ex hl, de
-	ld a, l
-	sub e
-	ld l, a
-	ld a, h
-	sbc d
-	ld h, a
+	call __o_sub_16
 	add hl, hl
 	add hl, hl
 	add hl, hl
@@ -2115,7 +2188,7 @@ DrawEmptyCell1:
 ; REMOVED
 SetFillRectColor:
 	; Stack correction reset
-; 3  __fastcall SetFillRectColor(uint8_t color) {
+; 20  __fastcall SetFillRectColor(uint8_t color) {
 	ld (SetFillRectColor_1_a), a
 
         ld de, 0B200h  // OR A + NOP
@@ -2141,78 +2214,78 @@ SetFillRectColor_1:
 	ret
 FillRect1:
 	; Stack correction reset
-; 4     asm {
-; 5         ld de, 0B200h  // OR A + NOP
-; 6         rra
-; 7         jp c, SetFillRectColor_0
-; 8         ld de, 0A22Fh  // AND D + CMA
-; 9 SetFillRectColor_0:
-; 10         ld hl, FillRectCmd0
-; 11         ld (hl), e
-; 12         ld hl, FillRectCmd1
-; 13         ld (hl), d
-; 14 
-; 15         ld de, 0B200h  // OR A + NOP
-; 16         rra
-; 17         jp c, SetFillRectColor_1
-; 18         ld de, 0A22Fh  // AND D + CMA
-; 19 SetFillRectColor_1:
-; 20         ld hl, FillRectCmd2
-; 21         ld (hl), e
-; 22         ld hl, FillRectCmd3
-; 23         ld (hl), d
-; 24     }
-; 25 }
-; 26 
-; 27 static void __fastcall FillRectInternal(uint8_t height, uint8_t mask, uint8_t* graphAddress) {
-; 28     asm {
-; 29         push hl
-; 30         ld a, (FillRectInternal_2_a)
-; 31 FillRectCmd0:
-; 32         nop  // CMA = 2F, NOP = 00
-; 33         ld d, a
-; 34         ld a, (FillRectInternal_1_a)
-; 35         ld e, a
-; 36 FillRectInternal_0:
-; 37         ld a, (hl)
-; 38 FillRectCmd1:
-; 39         or d  // XRA D = AA, ANA D = A2, ORA D = B2
-; 40         ld (hl), a
-; 41         dec l
-; 42         dec e
-; 43         jp nz, FillRectInternal_0
-; 44         pop hl
-; 45 
-; 46         ld a, h
-; 47         sub 40h
-; 48         ld h, a
-; 49 
-; 50         ld a, (FillRectInternal_2_a)
-; 51 FillRectCmd2:
-; 52         nop  // CMA = 2F, NOP = 00
-; 53         ld d, a
-; 54 
-; 55         ld a, (FillRectInternal_1_a)
-; 56         ld e, a
-; 57 FillRectInternal_1:
-; 58         ld a, (hl)
-; 59 FillRectCmd3:
-; 60         or d  // XRA D = AA, ANA D = A2, ORA D = B2
-; 61         ld (hl), a
-; 62         dec l
-; 63         dec e
-; 64         jp nz, FillRectInternal_1
-; 65     }
-; 66 }
-; 67 
-; 68 void FillRect1(uint8_t* graphAddress, uint16_t width, uint8_t left, uint8_t right, uint8_t height) {
+; 21     asm {
+; 22         ld de, 0B200h  // OR A + NOP
+; 23         rra
+; 24         jp c, SetFillRectColor_0
+; 25         ld de, 0A22Fh  // AND D + CMA
+; 26 SetFillRectColor_0:
+; 27         ld hl, FillRectCmd0
+; 28         ld (hl), e
+; 29         ld hl, FillRectCmd1
+; 30         ld (hl), d
+; 31 
+; 32         ld de, 0B200h  // OR A + NOP
+; 33         rra
+; 34         jp c, SetFillRectColor_1
+; 35         ld de, 0A22Fh  // AND D + CMA
+; 36 SetFillRectColor_1:
+; 37         ld hl, FillRectCmd2
+; 38         ld (hl), e
+; 39         ld hl, FillRectCmd3
+; 40         ld (hl), d
+; 41     }
+; 42 }
+; 43 
+; 44 static void __fastcall FillRectInternal(uint8_t height, uint8_t mask, uint8_t* graphAddress) {
+; 45     asm {
+; 46         push hl
+; 47         ld a, (FillRectInternal_2_a)
+; 48 FillRectCmd0:
+; 49         nop  // CMA = 2F, NOP = 00
+; 50         ld d, a
+; 51         ld a, (FillRectInternal_1_a)
+; 52         ld e, a
+; 53 FillRectInternal_0:
+; 54         ld a, (hl)
+; 55 FillRectCmd1:
+; 56         or d  // XRA D = AA, ANA D = A2, ORA D = B2
+; 57         ld (hl), a
+; 58         dec l
+; 59         dec e
+; 60         jp nz, FillRectInternal_0
+; 61         pop hl
+; 62 
+; 63         ld a, h
+; 64         sub 40h
+; 65         ld h, a
+; 66 
+; 67         ld a, (FillRectInternal_2_a)
+; 68 FillRectCmd2:
+; 69         nop  // CMA = 2F, NOP = 00
+; 70         ld d, a
+; 71 
+; 72         ld a, (FillRectInternal_1_a)
+; 73         ld e, a
+; 74 FillRectInternal_1:
+; 75         ld a, (hl)
+; 76 FillRectCmd3:
+; 77         or d  // XRA D = AA, ANA D = A2, ORA D = B2
+; 78         ld (hl), a
+; 79         dec l
+; 80         dec e
+; 81         jp nz, FillRectInternal_1
+; 82     }
+; 83 }
+; 84 
+; 85 void FillRect1(uint8_t* graphAddress, uint16_t width, uint8_t left, uint8_t right, uint8_t height) {
 	ld (FillRect1_5_a), a
-; 69     if (width == 0) {
+; 86     if (width == 0) {
 	ld hl, (FillRect1_2_a)
 	ld a, h
 	or l
 	jp nz, l_173
-; 70         FillRectInternal(height, left & right, graphAddress);
+; 87         FillRectInternal(height, left & right, graphAddress);
 	ld a, (FillRect1_5_a)
 	ld (FillRectInternal_1_a), a
 	ld a, (FillRect1_4_a)
@@ -2224,38 +2297,38 @@ FillRect1:
 	jp FillRectInternal
 ; REMOVED
 l_173:
-; 71         return;
-; 72     }
-; 73     FillRectInternal(height, left, graphAddress);
+; 88         return;
+; 89     }
+; 90     FillRectInternal(height, left, graphAddress);
 	ld a, (FillRect1_5_a)
 	ld (FillRectInternal_1_a), a
 	ld a, (FillRect1_3_a)
 	ld (FillRectInternal_2_a), a
 	ld hl, (FillRect1_1_a)
 	call FillRectInternal
-; 74     graphAddress -= 0x100;
+; 91     graphAddress -= 0x100;
 	ld hl, (FillRect1_1_a)
 	ld de, 65280
 	add hl, de
 	ld (FillRect1_1_a), hl
-; 75     --width;
+; 92     --width;
 	ld hl, (FillRect1_2_a)
 	dec hl
 	ld (FillRect1_2_a), hl
 l_175:
-; 76     for (; width != 0; --width) {
+; 93     for (; width != 0; --width) {
 	ld hl, (FillRect1_2_a)
 	ld a, h
 	or l
 	jp z, l_177
-; 77         FillRectInternal(height, 0xFF, graphAddress);
+; 94         FillRectInternal(height, 0xFF, graphAddress);
 	ld a, (FillRect1_5_a)
 	ld (FillRectInternal_1_a), a
 	ld a, 255
 	ld (FillRectInternal_2_a), a
 	ld hl, (FillRect1_1_a)
 	call FillRectInternal
-; 78         graphAddress -= 0x100;
+; 95         graphAddress -= 0x100;
 	ld hl, (FillRect1_1_a)
 	ld de, 65280
 	add hl, de
@@ -2266,8 +2339,8 @@ l_176:
 	ld (FillRect1_2_a), hl
 	jp l_175
 l_177:
-; 79     }
-; 80     FillRectInternal(height, right, graphAddress);
+; 96     }
+; 97     FillRectInternal(height, right, graphAddress);
 	ld a, (FillRect1_5_a)
 	ld (FillRectInternal_1_a), a
 	ld a, (FillRect1_4_a)
@@ -2277,9 +2350,9 @@ l_177:
 ; REMOVED
 SetTextColor:
 	; Stack correction reset
-; 88  SetTextColor(uint8_t color) {
+; 105  SetTextColor(uint8_t color) {
 	ld (SetTextColor_1_a), a
-; 89     if (textColor == color) return;
+; 106     if (textColor == color) return;
 ; REMOVED
 	ld d, a
 	ld a, (textColor)
@@ -2287,10 +2360,10 @@ SetTextColor:
 	ret z
 ; REMOVED
 ; REMOVED
-; 90     textColor = color;
+; 107     textColor = color;
 	ld a, (SetTextColor_1_a)
 	ld (textColor), a
-; 91     SetTextColorInternal(0, color & 1, color & 4);
+; 108     SetTextColorInternal(0, color & 1, color & 4);
 	xor a
 	ld (SetTextColorInternal_1_a), a
 	ld a, (SetTextColor_1_a)
@@ -2299,7 +2372,7 @@ SetTextColor:
 	ld a, (SetTextColor_1_a)
 	and 4
 	call SetTextColorInternal
-; 92     SetTextColorInternal(1, color & 2, color & 8);
+; 109     SetTextColorInternal(1, color & 2, color & 8);
 	ld a, 1
 	ld (SetTextColorInternal_1_a), a
 	ld a, (SetTextColor_1_a)
@@ -2311,233 +2384,233 @@ SetTextColor:
 ; REMOVED
 DrawText1:
 	; Stack correction reset
-; 93 }
-; 94 
-; 95 static uint8_t DrawChar(uint8_t offset, const uint8_t* source, uint8_t* destination) {
-; 96     asm {
-; 97         push bc
-; 98         ex de, hl
-; 99         ld hl, (DrawChar_2_a)
-; 100         ex de, hl
-; 101         ld c, 8
-; 102         ld a, (DrawChar_1_a)
-; 103         dec a
-; 104         jp z, print_o1
-; 105         dec a
-; 106         jp z, print_o2
-; 107         dec a
-; 108         jp z, print_o3
-; 109 
-; 110         ; OFFSET 0
-; 111 print_o0:
-; 112         ld a, (de) ; Read
-; 113         add a
-; 114         add a
-; 115         ld b, a
-; 116         ld a, (hl) ; Copy
-; 117 print_m1:
-; 118         and 3
-; 119         xor b
-; 120         ld (hl), a
-; 121         ld a, h ; Plane 2
-; 122         xor 40h
-; 123         ld h, a
-; 124         ld a, (hl) ; Copy
-; 125 print_m2:
-; 126         and 3
-; 127         xor b
-; 128         ld (hl), a
-; 129         ld a, h ; Plane 1
-; 130         xor 40h
-; 131         ld h, a
-; 132         inc de ; Next
-; 133         dec l
-; 134         dec c
-; 135         jp nz, print_o0
-; 136         pop bc
-; 137         ld a, 1
-; 138         ret
-; 139 
-; 140         ; OFFSET 1
-; 141 print_o1:
-; 142         ld a, (de) ; Read
-; 143         add a
-; 144         adc a
-; 145         adc a
-; 146         adc a
-; 147         push af ; Left side
-; 148         adc a
-; 149         and 00000011b
-; 150         ld b, a
-; 151         ld a, (hl) ; Copy
-; 152 print_m3:
-; 153         and 0FCh
-; 154         xor b
-; 155         ld (hl), a
-; 156         ld a, h ; Plane 2
-; 157         xor 40h
-; 158         ld h, a
-; 159         ld a, (hl) ; Copy
-; 160 print_m4:
-; 161         and 0FCh
-; 162         xor b
-; 163         ld (hl), a
-; 164         ld a, h ; Plane 1
-; 165         xor 40h
-; 166         ld h, a
-; 167         pop af ; Right side
-; 168         dec h
-; 169         and 011110000b
-; 170         ld b, a
-; 171         ld a, (hl) ; Copy
-; 172 print_m5:
-; 173         and 00Fh
-; 174         xor b
-; 175         ld (hl), a
-; 176         ld a, h ; Plane 2
-; 177         xor 40h
-; 178         ld h, a
-; 179         ld a, (hl) ; Copy
-; 180 print_m6:
-; 181         and 00Fh
-; 182         xor b
-; 183         ld (hl), a
-; 184         ld a, h ; Plane 1
-; 185         xor 40h
-; 186         ld h, a
-; 187         inc h ; Next
-; 188         inc de
-; 189         dec l
-; 190         dec c
-; 191         jp nz, print_o1
-; 192         pop bc
-; 193         ld a, 2
-; 194         ret
-; 195 
-; 196         ; OFFSET 2
-; 197 print_o2:
-; 198         ld a, (de) ; Read
-; 199         rra
-; 200         rra
-; 201         and 00001111b
-; 202         ld b, a
-; 203         ld a, (hl) ; Copy
-; 204 print_m7:
-; 205         and 0F0h
-; 206         xor b
-; 207         ld (hl), a
-; 208         ld a, h ; Plane 2
-; 209         xor 40h
-; 210         ld h, a
-; 211         ld a, (hl) ; Copy
-; 212 print_m8:
-; 213         and 0F0h
-; 214         xor b
-; 215         ld (hl), a
-; 216         ld a, h ; Plane 1
-; 217         xor 40h
-; 218         ld h, a
-; 219         dec h ; Right side
-; 220         ld a, (de)
-; 221         rra
-; 222         rra
-; 223         rra
-; 224         and 11000000b
-; 225         ld b, a
-; 226         ld a, (hl)  ; Copy
-; 227 print_m9:
-; 228         and 03Fh
-; 229         xor b
-; 230         ld (hl), a
-; 231         ld a, h ; Plane 2
-; 232         xor 40h
-; 233         ld h, a
-; 234         ld a, (hl)  ; Copy
-; 235 print_m10:
-; 236         and 03Fh
-; 237         xor b
-; 238         ld (hl), a
-; 239         ld a, h ; Plane 1
-; 240         xor 40h
-; 241         ld h, a
-; 242         inc h ; Next
-; 243         inc de
-; 244         dec l
-; 245         dec c
-; 246         jp nz, print_o2
-; 247         pop bc
-; 248         ld a, 3
-; 249         ret
-; 250 
-; 251         ; OFFSET 3
-; 252 print_o3:
-; 253         ld a, (de) ; Read
-; 254         and 03Fh
-; 255         ld b, a
-; 256         ld a, (hl) ; Copy
-; 257 print_m11:
-; 258         and 0C0h
-; 259         xor b
-; 260         ld (hl), a
-; 261         ld a, h ; Plane 2
-; 262         xor 40h
-; 263         ld h, a
-; 264         ld a, (hl) ; Copy
-; 265 print_m12:
-; 266         and 0C0h
-; 267         xor b
-; 268         ld (hl), a
-; 269         ld a, h ; Plane 1
-; 270         xor 40h
-; 271         ld h, a
-; 272         inc de ; Next
-; 273         dec l
-; 274         dec c
-; 275         jp nz, print_o3
-; 276         pop bc
-; 277         xor a
-; 278     }
-; 279 }
-; 280 
-; 281 void DrawText1(uint8_t* d, uint8_t st, uint8_t n, const char* text) {
+; 110 }
+; 111 
+; 112 static uint8_t DrawChar(uint8_t offset, const uint8_t* source, uint8_t* destination) {
+; 113     asm {
+; 114         push bc
+; 115         ex de, hl
+; 116         ld hl, (DrawChar_2_a)
+; 117         ex de, hl
+; 118         ld c, 8
+; 119         ld a, (DrawChar_1_a)
+; 120         dec a
+; 121         jp z, print_o1
+; 122         dec a
+; 123         jp z, print_o2
+; 124         dec a
+; 125         jp z, print_o3
+; 126 
+; 127         ; OFFSET 0
+; 128 print_o0:
+; 129         ld a, (de) ; Read
+; 130         add a
+; 131         add a
+; 132         ld b, a
+; 133         ld a, (hl) ; Copy
+; 134 print_m1:
+; 135         and 3
+; 136         xor b
+; 137         ld (hl), a
+; 138         ld a, h ; Plane 2
+; 139         xor 40h
+; 140         ld h, a
+; 141         ld a, (hl) ; Copy
+; 142 print_m2:
+; 143         and 3
+; 144         xor b
+; 145         ld (hl), a
+; 146         ld a, h ; Plane 1
+; 147         xor 40h
+; 148         ld h, a
+; 149         inc de ; Next
+; 150         dec l
+; 151         dec c
+; 152         jp nz, print_o0
+; 153         pop bc
+; 154         ld a, 1
+; 155         ret
+; 156 
+; 157         ; OFFSET 1
+; 158 print_o1:
+; 159         ld a, (de) ; Read
+; 160         add a
+; 161         adc a
+; 162         adc a
+; 163         adc a
+; 164         push af ; Left side
+; 165         adc a
+; 166         and 00000011b
+; 167         ld b, a
+; 168         ld a, (hl) ; Copy
+; 169 print_m3:
+; 170         and 0FCh
+; 171         xor b
+; 172         ld (hl), a
+; 173         ld a, h ; Plane 2
+; 174         xor 40h
+; 175         ld h, a
+; 176         ld a, (hl) ; Copy
+; 177 print_m4:
+; 178         and 0FCh
+; 179         xor b
+; 180         ld (hl), a
+; 181         ld a, h ; Plane 1
+; 182         xor 40h
+; 183         ld h, a
+; 184         pop af ; Right side
+; 185         dec h
+; 186         and 011110000b
+; 187         ld b, a
+; 188         ld a, (hl) ; Copy
+; 189 print_m5:
+; 190         and 00Fh
+; 191         xor b
+; 192         ld (hl), a
+; 193         ld a, h ; Plane 2
+; 194         xor 40h
+; 195         ld h, a
+; 196         ld a, (hl) ; Copy
+; 197 print_m6:
+; 198         and 00Fh
+; 199         xor b
+; 200         ld (hl), a
+; 201         ld a, h ; Plane 1
+; 202         xor 40h
+; 203         ld h, a
+; 204         inc h ; Next
+; 205         inc de
+; 206         dec l
+; 207         dec c
+; 208         jp nz, print_o1
+; 209         pop bc
+; 210         ld a, 2
+; 211         ret
+; 212 
+; 213         ; OFFSET 2
+; 214 print_o2:
+; 215         ld a, (de) ; Read
+; 216         rra
+; 217         rra
+; 218         and 00001111b
+; 219         ld b, a
+; 220         ld a, (hl) ; Copy
+; 221 print_m7:
+; 222         and 0F0h
+; 223         xor b
+; 224         ld (hl), a
+; 225         ld a, h ; Plane 2
+; 226         xor 40h
+; 227         ld h, a
+; 228         ld a, (hl) ; Copy
+; 229 print_m8:
+; 230         and 0F0h
+; 231         xor b
+; 232         ld (hl), a
+; 233         ld a, h ; Plane 1
+; 234         xor 40h
+; 235         ld h, a
+; 236         dec h ; Right side
+; 237         ld a, (de)
+; 238         rra
+; 239         rra
+; 240         rra
+; 241         and 11000000b
+; 242         ld b, a
+; 243         ld a, (hl)  ; Copy
+; 244 print_m9:
+; 245         and 03Fh
+; 246         xor b
+; 247         ld (hl), a
+; 248         ld a, h ; Plane 2
+; 249         xor 40h
+; 250         ld h, a
+; 251         ld a, (hl)  ; Copy
+; 252 print_m10:
+; 253         and 03Fh
+; 254         xor b
+; 255         ld (hl), a
+; 256         ld a, h ; Plane 1
+; 257         xor 40h
+; 258         ld h, a
+; 259         inc h ; Next
+; 260         inc de
+; 261         dec l
+; 262         dec c
+; 263         jp nz, print_o2
+; 264         pop bc
+; 265         ld a, 3
+; 266         ret
+; 267 
+; 268         ; OFFSET 3
+; 269 print_o3:
+; 270         ld a, (de) ; Read
+; 271         and 03Fh
+; 272         ld b, a
+; 273         ld a, (hl) ; Copy
+; 274 print_m11:
+; 275         and 0C0h
+; 276         xor b
+; 277         ld (hl), a
+; 278         ld a, h ; Plane 2
+; 279         xor 40h
+; 280         ld h, a
+; 281         ld a, (hl) ; Copy
+; 282 print_m12:
+; 283         and 0C0h
+; 284         xor b
+; 285         ld (hl), a
+; 286         ld a, h ; Plane 1
+; 287         xor 40h
+; 288         ld h, a
+; 289         inc de ; Next
+; 290         dec l
+; 291         dec c
+; 292         jp nz, print_o3
+; 293         pop bc
+; 294         xor a
+; 295     }
+; 296 }
+; 297 
+; 298 void DrawText1(uint8_t* d, uint8_t st, uint8_t n, const char* text) {
 	ld (DrawText1_4_a), hl
-; 282     uint8_t insertSpaces = n & 0x80;
+; 299     uint8_t insertSpaces = n & 0x80;
 	ld a, (DrawText1_3_a)
 	and 128
 	ld (DrawText1_s + 0), a
-; 283     n &= 0x7F;
+; 300     n &= 0x7F;
 	ld a, (DrawText1_3_a)
 	and 127
 	ld (DrawText1_3_a), a
 l_180:
-; 284     while (n != 0) {
+; 301     while (n != 0) {
 	ld a, (DrawText1_3_a)
 	or a
 	jp z, l_181
-; 285         uint8_t c = *text;
+; 302         uint8_t c = *text;
 	ld hl, (DrawText1_4_a)
 	ld a, (hl)
 	ld (DrawText1_s + 1), a
-; 286         if (c != 0) {
+; 303         if (c != 0) {
 ; REMOVED
 	or a
 	jp z, l_182
-; 287             ++text;
+; 304             ++text;
 ; REMOVED
 	inc hl
 	ld (DrawText1_4_a), hl
 	jp l_183
 l_182:
-; 288         } else if (!insertSpaces) {
+; 305         } else if (!insertSpaces) {
 	ld a, (DrawText1_s + 0)
 	or a
 	ret z
 ; REMOVED
 ; REMOVED
 l_183:
-; 289             return;
-; 290         }
-; 291         st = DrawChar(st, font_bin + c * 8, d);
+; 306             return;
+; 307         }
+; 308         st = DrawChar(st, font_bin + c * 8, d);
 	ld a, (DrawText1_2_a)
 	ld (DrawChar_1_a), a
 	ld hl, (DrawText1_s + 1)
@@ -2551,7 +2624,7 @@ l_183:
 	ld hl, (DrawText1_1_a)
 	call DrawChar
 	ld (DrawText1_2_a), a
-; 292         if (st != 1) d -= 0x100;
+; 309         if (st != 1) d -= 0x100;
 ; REMOVED
 	cp 1
 	jp z, l_186
@@ -2560,7 +2633,7 @@ l_183:
 	add hl, de
 	ld (DrawText1_1_a), hl
 l_186:
-; 293         --n;
+; 310         --n;
 	ld a, (DrawText1_3_a)
 	dec a
 	ld (DrawText1_3_a), a
@@ -2569,9 +2642,9 @@ l_181:
 	ret
 DrawHiScoresScreen1:
 	; Stack correction reset
-; 298  DrawHiScoresScreen1(uint8_t i, uint8_t pos) {
+; 294  DrawHiScoresScreen1(uint8_t i, uint8_t pos) {
 	ld (DrawHiScoresScreen1_2_a), a
-; 299     struct HiScore* h = hiScores + i;
+; 295     struct HiScore* h = hiScores + i;
 	ld hl, (DrawHiScoresScreen1_1_a)
 	ld h, 0
 	ld d, h
@@ -2584,19 +2657,19 @@ DrawHiScoresScreen1:
 	add hl, de
 	ld (DrawHiScoresScreen1_s + 0), hl
 l_188:
-; 300     for (; i < HISCORE_COUNT; ++i) {
+; 296     for (; i < HISCORE_COUNT; ++i) {
 	ld a, (DrawHiScoresScreen1_1_a)
 	cp 8
 	jp nc, l_190
-; 301         char text[sizeof(h->name) + UINT16TOSTRING_OUTPUT_SIZE];
-; 302         memset(text, ' ', sizeof(h->name) - 1);
+; 297         char text[sizeof(h->name) + UINT16TOSTRING_OUTPUT_SIZE];
+; 298         memset(text, ' ', sizeof(h->name) - 1);
 	ld hl, DrawHiScoresScreen1_s + 2
 	ld (memset_1_a), hl
 	ld a, 32
 	ld (memset_2_a), a
 	ld hl, 9
 	call memset
-; 303         memcpy(text, h->name, strlen(h->name));
+; 299         memcpy(text, h->name, strlen(h->name));
 	ld hl, DrawHiScoresScreen1_s + 2
 	ld (memcpy_1_a), hl
 	ld hl, (DrawHiScoresScreen1_s + 0)
@@ -2604,7 +2677,7 @@ l_188:
 	ld hl, (DrawHiScoresScreen1_s + 0)
 	call strlen
 	call memcpy
-; 304         Uint16ToString(text + (sizeof(h->name) - 1), h->score);
+; 300         Uint16ToString(text + (sizeof(h->name) - 1), h->score);
 	ld hl, (DrawHiScoresScreen1_s + 2) + (9)
 	ld (Uint16ToString_1_a), hl
 	ld hl, (DrawHiScoresScreen1_s + 0)
@@ -2615,7 +2688,7 @@ l_188:
 	ld d, (hl)
 	ex hl, de
 	call Uint16ToString
-; 305         SetTextColor(pos == i ? 1 : 3);
+; 301         SetTextColor(pos == i ? 1 : 3);
 	ld a, (DrawHiScoresScreen1_1_a)
 	ld d, a
 	ld a, (DrawHiScoresScreen1_2_a)
@@ -2628,7 +2701,7 @@ l_191:
 l_192:
 	ld a, l
 	call SetTextColor
-; 306         DrawText((TEXT_WIDTH - 14) / 2, (HISCORE_Y + 2) + i, 0x7F, text);
+; 302         DrawText((TEXT_WIDTH - 14) / 2, (HISCORE_Y + 2) + i, 0x7F, text);
 	ld a, 25
 	ld (DrawText_1_a), a
 	ld a, (DrawHiScoresScreen1_1_a)
@@ -2638,7 +2711,7 @@ l_192:
 	ld (DrawText_3_a), a
 	ld hl, DrawHiScoresScreen1_s + 2
 	call DrawText
-; 307         h++;
+; 303         h++;
 	ld hl, (DrawHiScoresScreen1_s + 0)
 	ld de, 12
 	add hl, de
@@ -2652,25 +2725,24 @@ l_190:
 	ret
 SetBlackPaletteSlowly:
 	; Stack correction reset
-; 41 0x08);
+; 58 0x08);
 	ld a, 8
 	call SetPaletteInternal
-; 42 
-; 43     // Задержка
-; 44     Delay(5000);
+; 59 
+; 60     // Задержка
+; 61     Delay(5000);
 	ld hl, 5000
 	call Delay
-; 45 
-; 46     // Отключение изображения
-; 47     SetBlackPalette();
+; 62 
+; 63     // Отключение изображения
+; 64     SetBlackPalette();
 	jp SetBlackPalette
 ; REMOVED
 DrawText:
 	; Stack correction reset
-; 297  DrawText(uint8_t x, uint8_t y, uint8_t n, const char* text) {
+; 314  DrawText(uint8_t x, uint8_t y, uint8_t n, const char* text) {
 	ld (DrawText_4_a), hl
-; 298     DrawText1(DRAWTEXTARGS(x, y), n, text);
-; 1 hl, (PlayTone_1_a)
+; 315     DrawText1(DRAWTEXTARGS(x, y), n, text);
 	ld hl, (DrawText_1_a)
 	ld h, 0
 	ld d, h
@@ -2692,24 +2764,14 @@ DrawText:
 	add hl, hl
 	ld de, 65535
 	ex hl, de
-	ld a, l
-	sub e
-	ld l, a
-	ld a, h
-	sbc d
-	ld h, a
+	call __o_sub_16
 	pop de
-	ld a, l
-	sub e
-	ld l, a
-	ld a, h
-	sbc d
-	ld h, a
+	call __o_sub_16
 	ld (DrawText1_1_a), hl
 	ld a, (DrawText_1_a)
 	and 3
 	ld (DrawText1_2_a), a
-; 298 , text);
+; 315 , text);
 	ld a, (DrawText_3_a)
 	ld (DrawText1_3_a), a
 	ld hl, (DrawText_4_a)
@@ -2717,31 +2779,31 @@ DrawText:
 ; REMOVED
 DrawScoreAndCreatures:
 	; Stack correction reset
-; 338 scoreText, score);
+; 334 scoreText, score);
 	ld hl, DrawScoreAndCreatures_s + 0
 	ld (Uint16ToString_1_a), hl
 	ld hl, (score)
 	call Uint16ToString
-; 339     DrawText1(PIXELCOORDS(40, 7), 2, UINT16TOSTRING_OUTPUT_SIZE, scoreText);
-; 1  ((XX) * 256))
+; 335     DrawText1(PIXELCOORDS(40, 7), 2, UINT16TOSTRING_OUTPUT_SIZE, scoreText);
+; 1  ((XX)*256))
 	ld hl, 55288
 	ld (DrawText1_1_a), hl
-; 339 , UINT16TOSTRING_OUTPUT_SIZE, scoreText);
+; 335 , UINT16TOSTRING_OUTPUT_SIZE, scoreText);
 	ld a, 2
 	ld (DrawText1_2_a), a
 	ld a, 5
 	ld (DrawText1_3_a), a
 	ld hl, DrawScoreAndCreatures_s + 0
 	call DrawText1
-; 340 
-; 341     uint8_t n;
-; 342     if (score < hiScores[0].score) {
+; 336 
+; 337     uint8_t n;
+; 338     if (score < hiScores[0].score) {
 	ld hl, (((hiScores) + (0)) + (10))
 	ex hl, de
 	ld hl, (score)
-	call __o_cmp_u16
+	call __o_sub_16
 	jp nc, l_193
-; 343         n = score / (hiScores[0].score / (RIGHT_CREATURE_Y_MAX - 1));
+; 339         n = score / (hiScores[0].score / (RIGHT_CREATURE_Y_MAX - 1));
 	ld hl, (((hiScores) + (0)) + (10))
 	ld de, 13
 	call __o_div_u16
@@ -2750,7 +2812,7 @@ DrawScoreAndCreatures:
 	call __o_div_u16
 	ld a, l
 	ld (DrawScoreAndCreatures_s + 6), a
-; 344         if (n > RIGHT_CREATURE_Y_MAX - 1) n = RIGHT_CREATURE_Y_MAX - 1;
+; 340         if (n > RIGHT_CREATURE_Y_MAX - 1) n = RIGHT_CREATURE_Y_MAX - 1;
 ; REMOVED
 	cp 14
 	jp c, l_194
@@ -2759,29 +2821,29 @@ DrawScoreAndCreatures:
 ; REMOVED
 	jp l_194
 l_193:
-; 345     } else {
-; 346         n = RIGHT_CREATURE_Y_MAX;
+; 341     } else {
+; 342         n = RIGHT_CREATURE_Y_MAX;
 	ld a, 14
 	ld (DrawScoreAndCreatures_s + 6), a
 l_194:
-; 347     }
-; 348 
-; 349     if (rightCreatureY != n) {
+; 343     }
+; 344 
+; 345     if (rightCreatureY != n) {
 ; REMOVED
 	ld d, a
 	ld a, (rightCreatureY)
 	cp d
 	jp z, l_197
-; 350         rightCreatureY = n;
+; 346         rightCreatureY = n;
 	ld a, (DrawScoreAndCreatures_s + 6)
 	ld (rightCreatureY), a
-; 351         uint8_t* s;
-; 352         for (s = PIXELCOORDS(40, 168); n; --n, s += 4) DrawImage(s, imgPlayerD, 5 * 0x100 + 4);
-; 1  ((XX) * 256))
+; 347         uint8_t* s;
+; 348         for (s = PIXELCOORDS(40, 168); n; --n, s += 4) DrawImage(s, imgPlayerD, 5 * 0x100 + 4);
+; 1  ((XX)*256))
 	ld hl, 55127
 	ld (DrawScoreAndCreatures_s + 7), hl
 l_199:
-; 352 ; --n, s += 4) DrawImage(s, imgPlayerD, 5 * 0x100 + 4);
+; 348 ; --n, s += 4) DrawImage(s, imgPlayerD, 5 * 0x100 + 4);
 	ld a, (DrawScoreAndCreatures_s + 6)
 	or a
 	jp z, l_201
@@ -2801,7 +2863,7 @@ l_200:
 	ld (DrawScoreAndCreatures_s + 7), hl
 	jp l_199
 l_201:
-; 353         DrawImage(s + 46, imgPlayer, 5 * 0x100 + 50);
+; 349         DrawImage(s + 46, imgPlayer, 5 * 0x100 + 50);
 	ld hl, (DrawScoreAndCreatures_s + 7)
 	ld de, 46
 	add hl, de
@@ -2810,11 +2872,11 @@ l_201:
 	ld (DrawImage_2_a), hl
 	ld hl, 1330
 	call DrawImage
-; 354         if (rightCreatureY == 14) {
+; 350         if (rightCreatureY == 14) {
 	ld a, (rightCreatureY)
 	cp 14
 	jp nz, l_202
-; 355             DrawImage(s + 50 - 0x200, imgPlayerWin, 3 * 0x100 + 16);
+; 351             DrawImage(s + 50 - 0x200, imgPlayerWin, 3 * 0x100 + 16);
 	ld hl, (DrawScoreAndCreatures_s + 7)
 	ld de, 50
 	add hl, de
@@ -2825,11 +2887,11 @@ l_201:
 	ld (DrawImage_2_a), hl
 	ld hl, 784
 	call DrawImage
-; 356             DrawImage(PIXELCOORDS(3, 54), imgKingLose, 6 * 0x100 + 62);
-; 1  ((XX) * 256))
+; 352             DrawImage(PIXELCOORDS(3, 54), imgKingLose, 6 * 0x100 + 62);
+; 1  ((XX)*256))
 	ld hl, 64713
 	ld (DrawImage_1_a), hl
-; 356 , 6 * 0x100 + 62);
+; 352 , 6 * 0x100 + 62);
 	ld hl, imgKingLose
 	ld (DrawImage_2_a), hl
 	ld hl, 1598
@@ -2886,13 +2948,15 @@ l_206:
 	ret
 strlen:
 	; Stack correction reset
-; 3  __fastcall strlen(const char* string) {
+; 20  __fastcall strlen(const char string[]) {
 	ld (strlen_1_a), hl
+; 21     (void)string;
+; REMOVED
 
         ld de, -1
+        xor a
 strlen_1:
-        xor a, a
-        or (hl)
+        cp (hl)
         inc de
         inc hl
         jp nz, strlen_1
@@ -2901,9 +2965,9 @@ strlen_1:
 	ret
 DrawCell:
 	; Stack correction reset
-; 116  DrawCell(uint8_t x, uint8_t y, uint8_t color) {
+; 112  DrawCell(uint8_t x, uint8_t y, uint8_t color) {
 	ld (DrawCell_3_a), a
-; 117     DrawCell1(CellAddress(x, y), color);
+; 113     DrawCell1(CellAddress(x, y), color);
 	ld a, (DrawCell_1_a)
 	ld (CellAddress_1_a), a
 	ld a, (DrawCell_2_a)
@@ -2914,68 +2978,68 @@ DrawCell:
 ; REMOVED
 DrawCursorXor:
 	; Stack correction reset
-; 118 }
-; 119 
-; 120 static uint8_t* removeAnimationImages[3] = {imgBalls + 5 * BALL_IMAGE_SIZEOF, imgBalls + 6 * BALL_IMAGE_SIZEOF,
-; 121                                             imgBalls + 7 * BALL_IMAGE_SIZEOF};
+; 114 }
+; 115 
+; 116 static uint8_t* removeAnimationImages[3] = {imgBalls + 5 * BALL_IMAGE_SIZEOF, imgBalls + 6 * BALL_IMAGE_SIZEOF,
+; 117                                             imgBalls + 7 * BALL_IMAGE_SIZEOF};
+; 118 
+; 119 void DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t c, uint8_t n) {
+; 120     DrawImage(CellAddress(x, y), removeAnimationImages[n] + (BALL_IMAGE_SIZEOF * 10) * (c - 1), BALL_IMAGE_WH);
+; 121 }
 ; 122 
-; 123 void DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t c, uint8_t n) {
-; 124     DrawImage(CellAddress(x, y), removeAnimationImages[n] + (BALL_IMAGE_SIZEOF * 10) * (c - 1), BALL_IMAGE_WH);
-; 125 }
-; 126 
-; 127 void DrawSpriteNew1(uint8_t* graphAddress, uint8_t color, uint8_t phase) {
-; 128     DrawImage(graphAddress, imgBalls + (BALL_IMAGE_SIZEOF * 10) * (color - 1) + (4 - phase) * BALL_IMAGE_SIZEOF,
-; 129               BALL_IMAGE_WH);
+; 123 void DrawSpriteNew1(uint8_t* graphAddress, uint8_t color, uint8_t phase) {
+; 124     DrawImage(graphAddress, imgBalls + (BALL_IMAGE_SIZEOF * 10) * (color - 1) + (4 - phase) * BALL_IMAGE_SIZEOF,
+; 125               BALL_IMAGE_WH);
+; 126 }
+; 127 
+; 128 void DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
+; 129     DrawSpriteNew1(CellAddress(x, y), color, phase);
 ; 130 }
 ; 131 
-; 132 void DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
-; 133     DrawSpriteNew1(CellAddress(x, y), color, phase);
-; 134 }
-; 135 
-; 136 void DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color) {
-; 137     DrawImage(CellAddress(x, y), imgBoard + color * BALL_IMAGE_SIZEOF, BALL_IMAGE_WH);
-; 138     if (soundEnabled) {
-; 139         PLAY_SOUND_TICK
-; 140     }
-; 141 }
-; 142 
-; 143 static uint8_t* bouncingAnimation[6] = {imgBalls,
-; 144                                         imgBalls,
-; 145                                         imgBalls,
-; 146                                         imgBalls + BALL_IMAGE_SIZEOF * 8,
-; 147                                         imgBalls + BALL_IMAGE_SIZEOF * 9,
-; 148                                         imgBalls + BALL_IMAGE_SIZEOF * 8};
-; 149 
-; 150 void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
-; 151     uint8_t* graphAddress = CellAddress(x, y);
-; 152     if (phase == 1) {
-; 153         graphAddress[0] = 0;
-; 154         graphAddress[-0x100] = 0;
-; 155         graphAddress++;
-; 156     }
-; 157     DrawBall1(graphAddress, bouncingAnimation[phase], color);
-; 158 }
-; 159 
-; 160 static uint8_t* helpCoords[NEW_BALL_COUNT] = {
-; 161     PIXELCOORDS(20, 3),
-; 162     PIXELCOORDS(23, 3),
-; 163     PIXELCOORDS(26, 3),
-; 164 };
-; 165 
-; 166 void DrawHelp() {
-; 167     uint8_t i;
-; 168     for (i = 0; i < NEW_BALL_COUNT; i++) {
-; 169         if (showHelp != 0) {
-; 170             DrawSpriteNew1(helpCoords[i], newBalls[i], 3 /* Размер шарика */);
-; 171         } else {
-; 172             DrawEmptyCell1(helpCoords[i]);
-; 173         }
-; 174     }
-; 175 }
-; 176 
-; 177 // Курсор
-; 178 
-; 179 static void DrawCursorXor(void* hl) {
+; 132 void DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color) {
+; 133     DrawImage(CellAddress(x, y), imgBoard + color * BALL_IMAGE_SIZEOF, BALL_IMAGE_WH);
+; 134     if (soundEnabled) {
+; 135         PLAY_SOUND_TICK
+; 136     }
+; 137 }
+; 138 
+; 139 static uint8_t* bouncingAnimation[6] = {imgBalls,
+; 140                                         imgBalls,
+; 141                                         imgBalls,
+; 142                                         imgBalls + BALL_IMAGE_SIZEOF * 8,
+; 143                                         imgBalls + BALL_IMAGE_SIZEOF * 9,
+; 144                                         imgBalls + BALL_IMAGE_SIZEOF * 8};
+; 145 
+; 146 void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
+; 147     uint8_t* graphAddress = CellAddress(x, y);
+; 148     if (phase == 1) {
+; 149         graphAddress[0] = 0;
+; 150         graphAddress[-0x100] = 0;
+; 151         graphAddress++;
+; 152     }
+; 153     DrawBall1(graphAddress, bouncingAnimation[phase], color);
+; 154 }
+; 155 
+; 156 static uint8_t* helpCoords[NEW_BALL_COUNT] = {
+; 157     PIXELCOORDS(20, 3),
+; 158     PIXELCOORDS(23, 3),
+; 159     PIXELCOORDS(26, 3),
+; 160 };
+; 161 
+; 162 void DrawHelp() {
+; 163     uint8_t i;
+; 164     for (i = 0; i < NEW_BALL_COUNT; i++) {
+; 165         if (showHelp != 0) {
+; 166             DrawSpriteNew1(helpCoords[i], newBalls[i], 3 /* Размер шарика */);
+; 167         } else {
+; 168             DrawEmptyCell1(helpCoords[i]);
+; 169         }
+; 170     }
+; 171 }
+; 172 
+; 173 // Курсор
+; 174 
+; 175 static void DrawCursorXor(void* hl) {
 	ld (DrawCursorXor_1_a), hl
 
         ld de, 0x100 - 0x4000
@@ -3035,7 +3099,7 @@ DrawCursorXor:
 CellAddress:
 	; Stack correction reset
 	ld (CellAddress_2_a), a
-; 1  ((XX) * 256))
+; 1  ((XX)*256))
 	ld hl, (CellAddress_1_a)
 	ld h, 0
 	ld d, h
@@ -3060,20 +3124,10 @@ CellAddress:
 	add hl, de
 	ld de, 65535
 	ex hl, de
-	ld a, l
-	sub e
-	ld l, a
-	ld a, h
-	sbc d
-	ld h, a
+	call __o_sub_16
 	pop de
-	ld a, l
-	sub e
-	ld l, a
-	ld a, h
-	sbc d
-	ld h, a
-	ret
+	jp __o_sub_16
+; REMOVED
 ; REMOVED
 PathFind:
 	; Stack correction reset
@@ -3526,23 +3580,18 @@ l_250:
 	ld a, 4
 	ret
 l_256:
-; 146         }
-; 147         p -= GAME_HEIGHT;
-; REMOVED
-	ld de, 65527
-	add hl, de
-	ld (PathGetNextStep_s + 0), hl
 l_254:
-; 148     }
-; 149     return 0;
+; 146         }
+; 147     }
+; 148     return 0;
 	xor a
 	ret
 ; REMOVED
 DrawSpriteStep:
 	; Stack correction reset
-; 136  DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color) {
+; 132  DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color) {
 	ld (DrawSpriteStep_3_a), a
-; 137     DrawImage(CellAddress(x, y), imgBoard + color * BALL_IMAGE_SIZEOF, BALL_IMAGE_WH);
+; 133     DrawImage(CellAddress(x, y), imgBoard + color * BALL_IMAGE_SIZEOF, BALL_IMAGE_WH);
 	ld a, (DrawSpriteStep_1_a)
 	ld (CellAddress_1_a), a
 	ld a, (DrawSpriteStep_2_a)
@@ -3561,11 +3610,11 @@ DrawSpriteStep:
 	ld (DrawImage_2_a), hl
 	ld hl, 528
 	call DrawImage
-; 138     if (soundEnabled) {
+; 134     if (soundEnabled) {
 	ld a, (soundEnabled)
 	or a
 	jp z, l_258
- out (0xB0), a 
+ out (0xB0), a
 l_258:
 	ret
 PathRewind:
@@ -3585,9 +3634,9 @@ PathRewind:
 	ret
 DrawEmptyCell:
 	; Stack correction reset
-; 103  DrawEmptyCell(uint8_t x, uint8_t y) {
+; 99  DrawEmptyCell(uint8_t x, uint8_t y) {
 	ld (DrawEmptyCell_2_a), a
-; 104     DrawEmptyCell1(CellAddress(x, y));
+; 100     DrawEmptyCell1(CellAddress(x, y));
 	ld a, (DrawEmptyCell_1_a)
 	ld (CellAddress_1_a), a
 	ld a, (DrawEmptyCell_2_a)
@@ -3596,15 +3645,15 @@ DrawEmptyCell:
 ; REMOVED
 PathFree:
 	; Stack correction reset
-; 156  = &game[0][0]; p != &game[GAME_WIDTH - 1][GAME_HEIGHT - 1] + 1; ++p)
+; 155  = &game[0][0]; p != &game[GAME_WIDTH - 1][GAME_HEIGHT - 1] + 1; ++p)
 	ld hl, ((game) + (0)) + (0)
 	ld (PathFree_s + 0), hl
 l_260:
 	ld hl, (PathFree_s + 0)
 	ld de, (((game) + (72)) + (8)) + (1)
-	call __o_cmp_u16
+	call __o_cmp_16
 	jp z, l_262
-; 157         if (*p >= PATH_START_VAL) *p = PATH_EMPTY_VAL;
+; 156         if (*p >= PATH_START_VAL) *p = PATH_EMPTY_VAL;
 	ld hl, (PathFree_s + 0)
 	ld a, (hl)
 	cp 10
@@ -3618,7 +3667,7 @@ l_261:
 	ld (PathFree_s + 0), hl
 	jp l_260
 l_262:
-; 158     game[selX][selY] = path_c;
+; 157     game[selX][selY] = path_c;
 	ld a, (path_c)
 	ld hl, (selX)
 	ld h, 0
@@ -3647,7 +3696,7 @@ AddToHiScores:
 ; 262 
 ; 263     // Вывод таблицы на экран
 ; 264     DrawHiScores(true);
-; 8 ;
+; 25 ;
 	ld a, 1
 	call DrawHiScores
 ; 267  i = 0;
@@ -3656,7 +3705,7 @@ AddToHiScores:
 l_265:
 ; 268     for (;;) {
 ; 269         char c = ReadKeyboard(false);
-; 7 ;
+; 24 ;
 	xor a
 	call ReadKeyboard
 	ld (AddToHiScores_s + 1), a
@@ -3699,7 +3748,7 @@ l_270:
 ; 278         if (c < ' ') continue;
 ; REMOVED
 	cp 32
-	jp c, l_265
+	jp m, l_265
 ; REMOVED
 ; REMOVED
 ; 279         if (i == sizeof(hiScores[HISCORE_COUNT - 1].name) - 1) continue;
@@ -3762,7 +3811,7 @@ l_279:
 	ld d, (hl)
 	ex hl, de
 	pop de
-	call __o_cmp_u16
+	call __o_sub_16
 	jp c, l_281
 ; REMOVED
 ; REMOVED
@@ -3805,13 +3854,8 @@ l_279:
 ; 49 ; /* задерка в main */
 	ld hl, 2000
 	call Delay
-; 297  == 0) break;
-	ld a, (AddToHiScores_s + 0)
-	or a
-	jp z, l_281
-; REMOVED
-; REMOVED
 l_280:
+; 288 ) {
 	ld a, (AddToHiScores_s + 0)
 	dec a
 	ld (AddToHiScores_s + 0), a
@@ -3820,7 +3864,7 @@ l_281:
 	ret
 SetPaletteInternal:
 	; Stack correction reset
-; 6  void SetPaletteInternal(uint8_t mask) {
+; 23  void SetPaletteInternal(uint8_t mask) {
 	ld (SetPaletteInternal_1_a), a
 
         ld b, a
@@ -3852,10 +3896,10 @@ FindLines:
 ; 81     for (y = 0; y != GAME_HEIGHT; y++) {
 ; REMOVED
 	ld (FindLines_s + 1), a
-l_286:
+l_284:
 	ld a, (FindLines_s + 1)
 	cp 9
-	jp z, l_288
+	jp z, l_286
 ; 82         for (p = &game[0][y], x = 0; x < GAME_WIDTH;) {
 	ld hl, (FindLines_s + 1)
 	ld h, 0
@@ -3864,10 +3908,10 @@ l_286:
 	ld (FindLines_s + 7), hl
 	xor a
 	ld (FindLines_s + 0), a
-l_289:
+l_287:
 	ld a, (FindLines_s + 0)
 	cp 9
-	jp nc, l_291
+	jp nc, l_289
 ; 83             prevx = x;
 ; REMOVED
 	ld (FindLines_s + 2), a
@@ -3887,19 +3931,19 @@ l_289:
 ; 87             if (c == 0) continue;
 	ld a, (FindLines_s + 4)
 	or a
-	jp z, l_289
+	jp z, l_287
 ; REMOVED
 ; REMOVED
-l_294:
+l_292:
 ; 88             while (x != GAME_WIDTH && c == *p) {
 	ld a, (FindLines_s + 0)
 	cp 9
-	jp z, l_295
+	jp z, l_293
 	ld a, (FindLines_s + 4)
 	ld hl, (FindLines_s + 7)
 	ld d, (hl)
 	cp d
-	jp nz, l_295
+	jp nz, l_293
 ; 89                 p += GAME_WIDTH;
 ; REMOVED
 	ld de, 9
@@ -3909,8 +3953,8 @@ l_294:
 	ld a, (FindLines_s + 0)
 	inc a
 	ld (FindLines_s + 0), a
-	jp l_294
-l_295:
+	jp l_292
+l_293:
 ; 91             }
 ; 92             n = x - prevx;
 	ld a, (FindLines_s + 2)
@@ -3921,7 +3965,7 @@ l_295:
 ; 93             if (n < 5) continue;
 ; REMOVED
 	cp 5
-	jp c, l_289
+	jp c, l_287
 ; REMOVED
 ; REMOVED
 ; 94             ClearLine(prevx, y, 1, 0, n);
@@ -3941,26 +3985,26 @@ l_295:
 	ld a, (FindLines_s + 6)
 	add d
 	ld (FindLines_s + 6), a
-	jp l_291
+	jp l_289
 ; REMOVED
 ; REMOVED
-l_291:
-l_287:
+l_289:
+l_285:
 	ld a, (FindLines_s + 1)
 	inc a
 	ld (FindLines_s + 1), a
-	jp l_286
-l_288:
+	jp l_284
+l_286:
 ; 96             break;
 ; 97         }
 ; 98     }
 ; 99     for (x = 0; x != GAME_WIDTH; ++x) {
 	xor a
 	ld (FindLines_s + 0), a
-l_298:
+l_296:
 	ld a, (FindLines_s + 0)
 	cp 9
-	jp z, l_300
+	jp z, l_298
 ; 100         for (p = &game[x][0], y = 0; y < 5;) {
 	ld hl, (FindLines_s + 0)
 	ld h, 0
@@ -3975,10 +4019,10 @@ l_298:
 	ld (FindLines_s + 7), hl
 	xor a
 	ld (FindLines_s + 1), a
-l_301:
+l_299:
 	ld a, (FindLines_s + 1)
 	cp 5
-	jp nc, l_303
+	jp nc, l_301
 ; 101             c = *p;
 	ld hl, (FindLines_s + 7)
 	ld a, (hl)
@@ -3997,19 +4041,19 @@ l_301:
 ; 105             if (c == 0) continue;
 	ld a, (FindLines_s + 4)
 	or a
-	jp z, l_301
+	jp z, l_299
 ; REMOVED
 ; REMOVED
-l_306:
+l_304:
 ; 106             while (y != GAME_HEIGHT && c == *p) {
 	ld a, (FindLines_s + 1)
 	cp 9
-	jp z, l_307
+	jp z, l_305
 	ld a, (FindLines_s + 4)
 	ld hl, (FindLines_s + 7)
 	ld d, (hl)
 	cp d
-	jp nz, l_307
+	jp nz, l_305
 ; 107                 ++p;
 ; REMOVED
 	inc hl
@@ -4018,8 +4062,8 @@ l_306:
 	ld a, (FindLines_s + 1)
 	inc a
 	ld (FindLines_s + 1), a
-	jp l_306
-l_307:
+	jp l_304
+l_305:
 ; 109             }
 ; 110             n = y - prevy;
 	ld a, (FindLines_s + 3)
@@ -4030,7 +4074,7 @@ l_307:
 ; 111             if (n < 5) continue;
 ; REMOVED
 	cp 5
-	jp c, l_301
+	jp c, l_299
 ; REMOVED
 ; REMOVED
 ; 112             ClearLine(x, prevy, 0, 1, n);
@@ -4050,33 +4094,33 @@ l_307:
 	ld a, (FindLines_s + 6)
 	add d
 	ld (FindLines_s + 6), a
-	jp l_303
+	jp l_301
 ; REMOVED
 ; REMOVED
-l_303:
-l_299:
+l_301:
+l_297:
 	ld a, (FindLines_s + 0)
 	inc a
 	ld (FindLines_s + 0), a
-	jp l_298
-l_300:
+	jp l_296
+l_298:
 ; 114             break;
 ; 115         }
 ; 116     }
 ; 117     for (y = 0; y != 6; ++y) {
 	xor a
 	ld (FindLines_s + 1), a
-l_310:
+l_308:
 	ld a, (FindLines_s + 1)
 	cp 6
-	jp z, l_312
+	jp z, l_310
 ; 118         for (x = 0; x != 6; ++x) {
 	xor a
 	ld (FindLines_s + 0), a
-l_313:
+l_311:
 	ld a, (FindLines_s + 0)
 	cp 6
-	jp z, l_315
+	jp z, l_313
 ; 119             p = &game[x][y];
 	ld hl, (FindLines_s + 0)
 	ld h, 0
@@ -4100,7 +4144,7 @@ l_313:
 ; 121             if (c == 0) continue;
 ; REMOVED
 	or a
-	jp z, l_314
+	jp z, l_312
 ; REMOVED
 ; REMOVED
 ; 122             prevx = x;
@@ -4109,7 +4153,7 @@ l_313:
 ; 123             prevy = y;
 	ld a, (FindLines_s + 1)
 	ld (FindLines_s + 3), a
-l_318:
+l_316:
 ; 124             while (1) {
 ; 125                 ++prevy;
 	ld a, (FindLines_s + 3)
@@ -4127,13 +4171,13 @@ l_318:
 ; 128                 if (prevx == GAME_WIDTH) break;
 ; REMOVED
 	cp 9
-	jp z, l_319
+	jp z, l_317
 ; REMOVED
 ; REMOVED
 ; 129                 if (prevy == GAME_HEIGHT) break;
 	ld a, (FindLines_s + 3)
 	cp 9
-	jp z, l_319
+	jp z, l_317
 ; REMOVED
 ; REMOVED
 ; 130                 if (c != *p) break;
@@ -4141,11 +4185,11 @@ l_318:
 ; REMOVED
 	ld d, (hl)
 	cp d
-	jp z, l_318
+	jp z, l_316
 ; REMOVED
 ; REMOVED
 ; REMOVED
-l_319:
+l_317:
 ; 131             }
 ; 132             n = prevy - y;
 	ld a, (FindLines_s + 1)
@@ -4156,7 +4200,7 @@ l_319:
 ; 133             if (n < 5) continue;
 ; REMOVED
 	cp 5
-	jp c, l_314
+	jp c, l_312
 ; REMOVED
 ; REMOVED
 ; 134             ClearLine(x, y, 1, 1, n);
@@ -4176,34 +4220,34 @@ l_319:
 	ld a, (FindLines_s + 6)
 	add d
 	ld (FindLines_s + 6), a
-l_314:
+l_312:
 	ld a, (FindLines_s + 0)
 	inc a
 	ld (FindLines_s + 0), a
-	jp l_313
-l_315:
-l_311:
+	jp l_311
+l_313:
+l_309:
 	ld a, (FindLines_s + 1)
 	inc a
 	ld (FindLines_s + 1), a
-	jp l_310
-l_312:
+	jp l_308
+l_310:
 ; 136         }
 ; 137     }
 ; 138     for (y = 0; y != 6; ++y) {
 	xor a
 	ld (FindLines_s + 1), a
-l_328:
+l_326:
 	ld a, (FindLines_s + 1)
 	cp 6
-	jp z, l_330
+	jp z, l_328
 ; 139         for (x = 4; x != GAME_WIDTH; ++x) {
 	ld a, 4
 	ld (FindLines_s + 0), a
-l_331:
+l_329:
 	ld a, (FindLines_s + 0)
 	cp 9
-	jp z, l_333
+	jp z, l_331
 ; 140             p = &game[x][y];
 	ld hl, (FindLines_s + 0)
 	ld h, 0
@@ -4227,7 +4271,7 @@ l_331:
 ; 142             if (c == 0) continue;
 ; REMOVED
 	or a
-	jp z, l_332
+	jp z, l_330
 ; REMOVED
 ; REMOVED
 ; 143             prevx = x;
@@ -4236,7 +4280,7 @@ l_331:
 ; 144             prevy = y;
 	ld a, (FindLines_s + 1)
 	ld (FindLines_s + 3), a
-l_336:
+l_334:
 ; 145             while (1) {
 ; 146                 ++prevy;
 	ld a, (FindLines_s + 3)
@@ -4255,14 +4299,14 @@ l_336:
 	ld hl, (FindLines_s + 2)
 	ld h, 0
 	ld de, 65535
-	call __o_cmp_u16
-	jp z, l_337
+	call __o_cmp_16
+	jp z, l_335
 ; REMOVED
 ; REMOVED
 ; 150                 if (prevy == GAME_HEIGHT) break;
 	ld a, (FindLines_s + 3)
 	cp 9
-	jp z, l_337
+	jp z, l_335
 ; REMOVED
 ; REMOVED
 ; 151                 if (c != *p) break;
@@ -4270,11 +4314,11 @@ l_336:
 	ld hl, (FindLines_s + 7)
 	ld d, (hl)
 	cp d
-	jp z, l_336
+	jp z, l_334
 ; REMOVED
 ; REMOVED
 ; REMOVED
-l_337:
+l_335:
 ; 152             }
 ; 153             n = prevy - y;
 	ld a, (FindLines_s + 1)
@@ -4285,7 +4329,7 @@ l_337:
 ; 154             if (n < 5) continue;
 ; REMOVED
 	cp 5
-	jp c, l_332
+	jp c, l_330
 ; REMOVED
 ; REMOVED
 ; 155             ClearLine(x, y, -1, 1, n);
@@ -4305,27 +4349,27 @@ l_337:
 	ld a, (FindLines_s + 6)
 	add d
 	ld (FindLines_s + 6), a
-l_332:
+l_330:
 	ld a, (FindLines_s + 0)
 	inc a
 	ld (FindLines_s + 0), a
-	jp l_331
-l_333:
-l_329:
+	jp l_329
+l_331:
+l_327:
 	ld a, (FindLines_s + 1)
 	inc a
 	ld (FindLines_s + 1), a
-	jp l_328
-l_330:
+	jp l_326
+l_328:
 ; 157         }
 ; 158     }
 ; 159     if (total == 0) return 0;
 	ld a, (FindLines_s + 6)
 	or a
-	jp nz, l_346
+	jp nz, l_344
 	xor a
 	ret
-l_346:
+l_344:
 ; 160 
 ; 161     // Результат был изменен, перерисуем его
 ; 162     score += total * 2;
@@ -4360,29 +4404,29 @@ CalcFreeCellCount:
 ; 174     for (i = GAME_WIDTH * GAME_HEIGHT; i != 0; --i) {
 	ld a, 81
 	ld (CalcFreeCellCount_s + 3), a
-l_348:
+l_346:
 	ld a, (CalcFreeCellCount_s + 3)
 	or a
-	jp z, l_350
+	jp z, l_348
 ; 175         if (*cell == 0) freeCellCount++;
 	ld hl, (CalcFreeCellCount_s + 0)
 	ld a, (hl)
 	or a
-	jp nz, l_351
+	jp nz, l_349
 	ld a, (CalcFreeCellCount_s + 2)
 	inc a
 	ld (CalcFreeCellCount_s + 2), a
-l_351:
+l_349:
 ; 176         cell++;
 ; REMOVED
 	inc hl
 	ld (CalcFreeCellCount_s + 0), hl
-l_349:
+l_347:
 	ld a, (CalcFreeCellCount_s + 3)
 	dec a
 	ld (CalcFreeCellCount_s + 3), a
-	jp l_348
-l_350:
+	jp l_346
+l_348:
 ; 177     }
 ; 178     return freeCellCount;
 	ld a, (CalcFreeCellCount_s + 2)
@@ -4390,9 +4434,9 @@ l_350:
 ; REMOVED
 DrawSpriteNew:
 	; Stack correction reset
-; 132  DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
+; 128  DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
 	ld (DrawSpriteNew_4_a), a
-; 133     DrawSpriteNew1(CellAddress(x, y), color, phase);
+; 129     DrawSpriteNew1(CellAddress(x, y), color, phase);
 	ld a, (DrawSpriteNew_1_a)
 	ld (CellAddress_1_a), a
 	ld a, (DrawSpriteNew_2_a)
@@ -4432,7 +4476,7 @@ DrawBall1:
 ; REMOVED
 DrawImage:
 	; Stack correction reset
-; 3  DrawImage(uint8_t* destination, uint8_t* source, uint16_t width_height) {
+; 20  DrawImage(uint8_t* destination, uint8_t* source, uint16_t width_height) {
 	ld (DrawImage_3_a), hl
 
         push bc
@@ -4483,7 +4527,7 @@ DrawImage_l4:
 	ret
 FillRectInternal:
 	; Stack correction reset
-; 27  void __fastcall FillRectInternal(uint8_t height, uint8_t mask, uint8_t* graphAddress) {
+; 44  void __fastcall FillRectInternal(uint8_t height, uint8_t mask, uint8_t* graphAddress) {
 	ld (FillRectInternal_3_a), hl
 
         push hl
@@ -4526,7 +4570,7 @@ FillRectCmd3:
 	ret
 SetTextColorInternal:
 	; Stack correction reset
-; 6  void SetTextColorInternal(uint8_t plane, uint8_t text, uint8_t background) {
+; 23  void SetTextColorInternal(uint8_t plane, uint8_t text, uint8_t background) {
 	ld (SetTextColorInternal_3_a), a
 
         ; Background color
@@ -4610,95 +4654,95 @@ PrintColor_6:
 	ret
 DrawChar:
 	; Stack correction reset
-; 7     asm {
-; 8         ; Background color
-; 9         or a
-; 10         jp nz, PrintColor_2
-; 11             ld hl, 003E6h  // E6 = AND
-; 12             push hl
-; 13             ld h, 0FCh
-; 14             push hl
-; 15             ld h, 00Fh
-; 16             push hl
-; 17             ld h, 0F0h
-; 18             push hl
-; 19             ld h, 03Fh
-; 20             push hl
-; 21             ld h, 0C0h
-; 22             ld bc, 000A8h  // NOP + XOR B
-; 23             jp PrintColor_3
-; 24 PrintColor_2:
-; 25             ld hl, 0FCF6h  // F6 = OR
-; 26             push hl
-; 27             ld h, 003h
-; 28             push hl
-; 29             ld h, 0F0h
-; 30             push hl
-; 31             ld h, 00Fh
-; 32             push hl
-; 33             ld h, 0C0h
-; 34             push hl
-; 35             ld h, 03Fh
-; 36             ld bc, 0A800h  // NOP + XOR B
-; 37 PrintColor_3:
-; 38         ; Text color
-; 39         ld a, (SetTextColorInternal_2_a)
-; 40         or a
-; 41         jp z, PrintColor_4
-; 42             ld b, c
-; 43 PrintColor_4:
-; 44         ld a, (SetTextColorInternal_1_a)
-; 45         or a
-; 46         ld a, b
-; 47         jp nz, PrintColor_5
-; 48             ld (print_m1 + 2), a
-; 49             ld (print_m3 + 2), a
-; 50             ld (print_m5 + 2), a
-; 51             ld (print_m7 + 2), a
-; 52             ld (print_m9 + 2), a
-; 53             ld (print_m11 + 2), a
-; 54             ld (print_m11), hl
-; 55             pop hl
-; 56             ld (print_m9), hl
-; 57             pop hl
-; 58             ld (print_m7), hl
-; 59             pop hl
-; 60             ld (print_m5), hl
-; 61             pop hl
-; 62             ld (print_m3), hl
-; 63             pop hl
-; 64             ld (print_m1), hl
-; 65             jp PrintColor_6
-; 66 PrintColor_5:
-; 67             ld (print_m2 + 2), a
-; 68             ld (print_m4 + 2), a
-; 69             ld (print_m6 + 2), a
-; 70             ld (print_m8 + 2), a
-; 71             ld (print_m10 + 2), a
-; 72             ld (print_m12 + 2), a
-; 73             ld (print_m12), hl
+; 24     asm {
+; 25         ; Background color
+; 26         or a
+; 27         jp nz, PrintColor_2
+; 28             ld hl, 003E6h  // E6 = AND
+; 29             push hl
+; 30             ld h, 0FCh
+; 31             push hl
+; 32             ld h, 00Fh
+; 33             push hl
+; 34             ld h, 0F0h
+; 35             push hl
+; 36             ld h, 03Fh
+; 37             push hl
+; 38             ld h, 0C0h
+; 39             ld bc, 000A8h  // NOP + XOR B
+; 40             jp PrintColor_3
+; 41 PrintColor_2:
+; 42             ld hl, 0FCF6h  // F6 = OR
+; 43             push hl
+; 44             ld h, 003h
+; 45             push hl
+; 46             ld h, 0F0h
+; 47             push hl
+; 48             ld h, 00Fh
+; 49             push hl
+; 50             ld h, 0C0h
+; 51             push hl
+; 52             ld h, 03Fh
+; 53             ld bc, 0A800h  // NOP + XOR B
+; 54 PrintColor_3:
+; 55         ; Text color
+; 56         ld a, (SetTextColorInternal_2_a)
+; 57         or a
+; 58         jp z, PrintColor_4
+; 59             ld b, c
+; 60 PrintColor_4:
+; 61         ld a, (SetTextColorInternal_1_a)
+; 62         or a
+; 63         ld a, b
+; 64         jp nz, PrintColor_5
+; 65             ld (print_m1 + 2), a
+; 66             ld (print_m3 + 2), a
+; 67             ld (print_m5 + 2), a
+; 68             ld (print_m7 + 2), a
+; 69             ld (print_m9 + 2), a
+; 70             ld (print_m11 + 2), a
+; 71             ld (print_m11), hl
+; 72             pop hl
+; 73             ld (print_m9), hl
 ; 74             pop hl
-; 75             ld (print_m10), hl
+; 75             ld (print_m7), hl
 ; 76             pop hl
-; 77             ld (print_m8), hl
+; 77             ld (print_m5), hl
 ; 78             pop hl
-; 79             ld (print_m6), hl
+; 79             ld (print_m3), hl
 ; 80             pop hl
-; 81             ld (print_m4), hl
-; 82             pop hl
-; 83             ld (print_m2), hl
-; 84 PrintColor_6:
-; 85     }
-; 86 }
-; 87 
-; 88 void SetTextColor(uint8_t color) {
-; 89     if (textColor == color) return;
-; 90     textColor = color;
-; 91     SetTextColorInternal(0, color & 1, color & 4);
-; 92     SetTextColorInternal(1, color & 2, color & 8);
-; 93 }
-; 94 
-; 95 static uint8_t DrawChar(uint8_t offset, const uint8_t* source, uint8_t* destination) {
+; 81             ld (print_m1), hl
+; 82             jp PrintColor_6
+; 83 PrintColor_5:
+; 84             ld (print_m2 + 2), a
+; 85             ld (print_m4 + 2), a
+; 86             ld (print_m6 + 2), a
+; 87             ld (print_m8 + 2), a
+; 88             ld (print_m10 + 2), a
+; 89             ld (print_m12 + 2), a
+; 90             ld (print_m12), hl
+; 91             pop hl
+; 92             ld (print_m10), hl
+; 93             pop hl
+; 94             ld (print_m8), hl
+; 95             pop hl
+; 96             ld (print_m6), hl
+; 97             pop hl
+; 98             ld (print_m4), hl
+; 99             pop hl
+; 100             ld (print_m2), hl
+; 101 PrintColor_6:
+; 102     }
+; 103 }
+; 104 
+; 105 void SetTextColor(uint8_t color) {
+; 106     if (textColor == color) return;
+; 107     textColor = color;
+; 108     SetTextColorInternal(0, color & 1, color & 4);
+; 109     SetTextColorInternal(1, color & 2, color & 8);
+; 110 }
+; 111 
+; 112 static uint8_t DrawChar(uint8_t offset, const uint8_t* source, uint8_t* destination) {
 	ld (DrawChar_3_a), hl
 
         push bc
@@ -4886,20 +4930,20 @@ print_m12:
 	ret
 DrawCell1:
 	; Stack correction reset
-; 107  DrawCell1(uint8_t* graphAddr, uint8_t color) {
+; 103  DrawCell1(uint8_t* graphAddr, uint8_t color) {
 	ld (DrawCell1_2_a), a
-; 108     uint8_t* image;
-; 109     if (color == 0)
+; 104     uint8_t* image;
+; 105     if (color == 0)
 ; REMOVED
 	or a
-	jp nz, l_353
-; 110         image = imgBoard + BALL_IMAGE_SIZEOF * 4;
+	jp nz, l_351
+; 106         image = imgBoard + BALL_IMAGE_SIZEOF * 4;
 	ld hl, (imgBoard) + (256)
 	ld (DrawCell1_s + 0), hl
-	jp l_354
-l_353:
-; 111     else
-; 112         image = imgBalls + (BALL_IMAGE_SIZEOF * 10) * (color - 1);
+	jp l_352
+l_351:
+; 107     else
+; 108         image = imgBalls + (BALL_IMAGE_SIZEOF * 10) * (color - 1);
 	ld hl, (DrawCell1_2_a)
 	ld h, 0
 	dec hl
@@ -4918,8 +4962,8 @@ l_353:
 	ld de, imgBalls
 	add hl, de
 	ld (DrawCell1_s + 0), hl
-l_354:
-; 113     DrawImage(graphAddr, image, BALL_IMAGE_WH);
+l_352:
+; 109     DrawImage(graphAddr, image, BALL_IMAGE_WH);
 	ld hl, (DrawCell1_1_a)
 	ld (DrawImage_1_a), hl
 	ld hl, (DrawCell1_s + 0)
@@ -4950,7 +4994,7 @@ PathFounded:
 ; REMOVED
 DrawHiScoresLastLine:
 	; Stack correction reset
-; 331 HISCORE_COUNT - 1, HISCORE_COUNT - 1);
+; 327 HISCORE_COUNT - 1, HISCORE_COUNT - 1);
 	ld a, 7
 	ld (DrawHiScoresScreen1_1_a), a
 ; REMOVED
@@ -4991,10 +5035,10 @@ ClearLine:
 ; 51     for (o = 0; o < REMOVE_ANIMATION_COUNT; o++) {
 	xor a
 	ld (ClearLine_s + 2), a
-l_355:
+l_353:
 	ld a, (ClearLine_s + 2)
 	cp 3
-	jp nc, l_357
+	jp nc, l_355
 ; 52         x = x0;
 	ld a, (ClearLine_1_a)
 	ld (ClearLine_s + 0), a
@@ -5004,10 +5048,10 @@ l_355:
 ; 54         for (i = length; i != 0; --i) {
 	ld a, (ClearLine_5_a)
 	ld (ClearLine_s + 3), a
-l_358:
+l_356:
 	ld a, (ClearLine_s + 3)
 	or a
-	jp z, l_360
+	jp z, l_358
 ; 55             DrawSpriteRemove(x, y, color, o);
 	ld a, (ClearLine_s + 0)
 	ld (DrawSpriteRemove_1_a), a
@@ -5029,24 +5073,24 @@ l_358:
 	ld a, (ClearLine_s + 1)
 	add d
 	ld (ClearLine_s + 1), a
-l_359:
+l_357:
 	ld a, (ClearLine_s + 3)
 	dec a
 	ld (ClearLine_s + 3), a
-	jp l_358
-l_360:
+	jp l_356
+l_358:
 ; 58         }
 ; 59         Delay(REMOVE_ANIMATION_DELAY);
 ; 28 ; /* задерка в main */
 	ld hl, 2000
 	call Delay
-l_356:
+l_354:
 ; 51 ) {
 	ld a, (ClearLine_s + 2)
 	inc a
 	ld (ClearLine_s + 2), a
-	jp l_355
-l_357:
+	jp l_353
+l_355:
 ; 52         x = x0;
 ; 53         y = y0;
 ; 54         for (i = length; i != 0; --i) {
@@ -5067,10 +5111,10 @@ l_357:
 ; 65     for (i = length; i != 0; --i) {
 	ld a, (ClearLine_5_a)
 	ld (ClearLine_s + 3), a
-l_361:
+l_359:
 	ld a, (ClearLine_s + 3)
 	or a
-	jp z, l_363
+	jp z, l_361
 ; 66         game[x][y] = 0;
 	ld hl, (ClearLine_s + 0)
 	ld h, 0
@@ -5104,18 +5148,18 @@ l_361:
 	ld a, (ClearLine_s + 1)
 	add d
 	ld (ClearLine_s + 1), a
-l_362:
+l_360:
 	ld a, (ClearLine_s + 3)
 	dec a
 	ld (ClearLine_s + 3), a
-	jp l_361
-l_363:
+	jp l_359
+l_361:
 	ret
 DrawSpriteRemove:
 	; Stack correction reset
-; 123  DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t c, uint8_t n) {
+; 119  DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t c, uint8_t n) {
 	ld (DrawSpriteRemove_4_a), a
-; 124     DrawImage(CellAddress(x, y), removeAnimationImages[n] + (BALL_IMAGE_SIZEOF * 10) * (c - 1), BALL_IMAGE_WH);
+; 120     DrawImage(CellAddress(x, y), removeAnimationImages[n] + (BALL_IMAGE_SIZEOF * 10) * (c - 1), BALL_IMAGE_WH);
 	ld a, (DrawSpriteRemove_1_a)
 	ld (CellAddress_1_a), a
 	ld a, (DrawSpriteRemove_2_a)
@@ -7526,7 +7570,7 @@ scanCodes:
 	db 19
 keyboardMode:
 	db 1
-keybordPressedKey:
+keyboardPressedKey:
 	ds 1
 currentPalette:
 	ds 2
@@ -22258,14 +22302,38 @@ gamePalette2:
 	db 3
 	db 12
 	db 0
-rand_seed:
-	db 250
 DrawImage_1_a:
 	ds 2
 DrawImage_2_a:
 	ds 2
 DrawImage_3_a:
 	ds 2
+SetFillRectColor_1_a:
+	ds 1
+FillRectInternal_1_a:
+	ds 1
+FillRectInternal_2_a:
+	ds 1
+FillRectInternal_3_a:
+	ds 2
+FillRect1_1_a:
+	ds 2
+FillRect1_2_a:
+	ds 2
+FillRect1_3_a:
+	ds 1
+FillRect1_4_a:
+	ds 1
+FillRect1_5_a:
+	ds 1
+FillRect_1_a:
+	ds 2
+FillRect_2_a:
+	ds 1
+FillRect_3_a:
+	ds 2
+FillRect_4_a:
+	ds 1
 SetTextColorInternal_1_a:
 	ds 1
 SetTextColorInternal_2_a:
@@ -22314,32 +22382,6 @@ PlayTone_1_a:
 	ds 2
 PlayTone_2_a:
 	ds 2
-SetFillRectColor_1_a:
-	ds 1
-FillRectInternal_1_a:
-	ds 1
-FillRectInternal_2_a:
-	ds 1
-FillRectInternal_3_a:
-	ds 2
-FillRect1_1_a:
-	ds 2
-FillRect1_2_a:
-	ds 2
-FillRect1_3_a:
-	ds 1
-FillRect1_4_a:
-	ds 1
-FillRect1_5_a:
-	ds 1
-FillRect_1_a:
-	ds 2
-FillRect_2_a:
-	ds 1
-FillRect_3_a:
-	ds 2
-FillRect_4_a:
-	ds 1
 ClearLine_1_a:
 	ds 1
 ClearLine_2_a:
@@ -22422,14 +22464,6 @@ DrawBall1_2_a:
 	ds 2
 DrawBall1_3_a:
 	ds 1
-DrawBall_1_a:
-	ds 1
-DrawBall_2_a:
-	ds 1
-DrawBall_3_a:
-	ds 2
-DrawBall_4_a:
-	ds 1
 DrawEmptyCell1_1_a:
 	ds 2
 DrawCell1_1_a:
@@ -22510,7 +22544,15 @@ DrawCell1_s:
 	ds 2
 ClearLine_s:
 	ds 5
-__o_cmp_u16:
+__o_sub_16:
+    ld a, l
+    sub e
+    ld l, a
+    ld a, h
+    sbc d
+    ld h, a
+    ret
+__o_cmp_16:
     ld a, h
     cp d
     ret nz

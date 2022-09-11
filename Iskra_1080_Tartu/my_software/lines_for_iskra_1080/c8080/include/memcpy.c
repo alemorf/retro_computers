@@ -1,36 +1,48 @@
+/*
+ * i8080 stdlib
+ * Copyright (c) 2022 Aleksey Morozov
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <string.h>
 
-void __fastcall memcpy(void* arg1, const void* arg2, size_t arg3) {
+void* __fastcall memcpy(void* destination, const void* source, size_t size) {
+    (void)destination;
+    (void)source;
+    (void)size;
     asm {
-        ; if (cnt == 0) return
-        ld a, h
-        or l
-        ret z
-        ; de = count
-        ex hl, de
-        ; bc = from
-        ld hl, (memcpy_2_a)
+        push bc
+        ex hl, de           ; de = size
+        ld hl, (memcpy_2_a) ; bc = source
         ld c, l
         ld b, h
-        ; hl = to
-        ld hl, (memcpy_1_a)
-        ; enter loop
-        inc d
+        ld hl, (memcpy_1_a) ; hl = destination
+        inc d               ; enter loop
         xor a
         or e
-        jp z, memcpy_l2
-memcpy_l1:
-        ; *dest = *src
+        jp z, memcpy_2
+memcpy_1:
         ld a, (bc)
         ld (hl), a
-        ; dest++, src++
         inc hl
         inc bc
-        ; while(--cnt)
-        dec e
-        jp nz, memcpy_l1
-memcpy_l2:
+        dec e               ; end loop
+        jp nz, memcpy_1
+memcpy_2:
         dec d
-        jp nz, memcpy_l1
+        jp nz, memcpy_1
+        pop bc
+        ld hl, (memcpy_1_a) ; return destination
     }
 }

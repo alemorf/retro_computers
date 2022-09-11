@@ -17,8 +17,8 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <cmm/delay.h>
-#include <cmm/div16mod.h>
+#include <c8080/delay.h>
+#include <c8080/div16mod.h>
 #include <string.h>
 #include "unmlz.h"
 #include "music.h"
@@ -90,10 +90,6 @@ static uint8_t* CellAddress(uint8_t x, uint8_t y) {
 
 static void DrawBall1(uint8_t* graphAddr, uint8_t* image, uint8_t color) {
     DrawImage(graphAddr, image + (BALL_IMAGE_SIZEOF * 10) * (color - 1), BALL_IMAGE_WH);
-}
-
-static void DrawBall(uint8_t x, uint8_t y, uint8_t* image, uint8_t color) {
-    DrawBall1(CellAddress(x, y), image, color);
 }
 
 static void DrawEmptyCell1(uint8_t* graphAddr) {
@@ -289,7 +285,7 @@ void Intro() {
         if (ReadKeyboard(true) != 0) break;
         PlayTone(*p, s);
         p++;
-        rand();
+        (void)rand();
     }
 }
 

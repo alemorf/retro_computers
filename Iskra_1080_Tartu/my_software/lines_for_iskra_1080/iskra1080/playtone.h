@@ -21,5 +21,4 @@
 
 void PlayTone(uint16_t time, uint16_t period);
 
-#define PLAY_SOUND_TICK asm { out (0xB0), a }
-
+#define PLAY_SOUND_TICK asm { out (0xB0), a}

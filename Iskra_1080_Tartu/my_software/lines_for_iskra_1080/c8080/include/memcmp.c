@@ -1,37 +1,55 @@
-#include "string.h"
+/*
+ * i8080 stdlib
+ * Copyright (c) 2022 Aleksey Morozov
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <string.h>
 
 int8_t __fastcall memcmp(const void* buffer1, const void* buffer2, size_t size) {
+    (void)buffer1;
+    (void)buffer2;
+    (void)size;
     asm {
-        ; if (len == 0) return 0;
-        ld a, l
-        or h
-        ret z
         push bc
-        ; de = len
-        ex hl, de
-        ; bc = d
-        ld hl, (memcmp_1_a)
+        ex hl, de           ; de = size
+        ld hl, (memcmp_1_a) ; bc = buffer1
         ld b, h
         ld c, l
-        ; hl = s
-        ld hl, (memcmp_2_a)
-        ; loop
-memcmp_l1:
-        ld a, (bc)
+        ld hl, (memcmp_2_a) ; hl = buffer2
+        inc d               ; Enter loop
+        xor a
+        or e
+        jp z, memcmp_2
+memcmp_1:
+        ld a, (bc)          ; if (buffer1[i] != buffer2[i]) goto memcmp_3
         cp (hl)
-        jp nz, memcmp_stop
+        jp nz, memcmp_3
         inc hl
         inc bc
-        dec de
-        ld a, d
-        or e
-        jp nz, memcmp_l1
+        dec e               ; End loop
+        jp nz, memcmp_1
+memcmp_2:
+        dec d
+        jp nz, memcmp_1
+        xor a               ; return 0;
         pop bc
-        ; a=0
         ret
-memcmp_stop:
+
+memcmp_3:
         pop bc
-        sbc a
+        sbc a               ; return buffer1[i] < buffer2[i] ? -1 : 1;
         ret c
         inc a
     }

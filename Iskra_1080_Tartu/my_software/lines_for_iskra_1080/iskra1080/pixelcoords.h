@@ -17,4 +17,4 @@
 
 #pragma once
 
-#define PIXELCOORDS(XX, YY) ((uint8_t*)0xFFFF - (YY) - ((XX) * 256))
+#define PIXELCOORDS(XX, YY) ((uint8_t*)0xFFFF - (YY) - ((XX)*256))

@@ -144,7 +144,6 @@ uint8_t PathGetNextStep() {
             path_p = p;
             return 4;
         }
-        p -= GAME_HEIGHT;
     }
     return 0;
 }
