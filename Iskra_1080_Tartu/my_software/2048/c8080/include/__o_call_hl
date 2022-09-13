@@ -1,0 +1,2 @@
+__o_call_hl:
+    jp hl
