@@ -83,27 +83,43 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function loadFile(file) {
         let type = file[0];
-        // Name 1,2,3,4,5,6
-        let start = (file[8] << 8) | file[7];
-        let end = (file[10] << 8) | file[9];
-        // Unused 11,12
-        if (end < start)
+        
+        if (type == 0xD0) {
+            // Name 1,2,3,4,5,6
+            let start = (file[8] << 8) | file[7];
+            let end = (file[10] << 8) | file[9];
+            // Unused 11,12
+            if (end < start)
+                return;
+            let size = end - start + 1;
+            // if (size > file.length - 13) return;        
+            powerReset();
+            for (let i = 0; i !== 3000000; i++) {
+                cpu.instruction();
+                if (cpu.pc === 0xF463) // Вместо Бейсика запускаем монитор
+                    cpu.pc = 0xF426;
+                if (cpu.pc === 0xF44B)
+                    break;
+            }
+            if (cpu.pc !== 0xF44B)
+                alert("Load error 0x" + cpu.pc.toString(16));
+            for (let i = 0; i < size; i++)
+                memory[start + i] = file[13 + i];
+            cpu.jump(start);
             return;
-        let size = end - start + 1;
-        // if (size > file.length - 13) return;
-        powerReset();
-        for (let i = 0; i !== 3000000; i++) {
-            cpu.instruction();
-            if (cpu.pc === 0xF463) // Вместо Бейсика запускаем монитор
-                cpu.pc = 0xF426;
-            if (cpu.pc === 0xF44B)
-                break;
         }
-        if (cpu.pc !== 0xF44B)
-            alert("Load error 0x" + cpu.pc.toString(16));
-        for (let i = 0; i < size; i++)
-            memory[start + i] = file[13 + i];
-        cpu.jump(start);
+        if (type == 0xD3) {
+            powerReset();
+            for (let i = 0; i !== 3000000; i++) // TODO: Добавить условие выхода
+                cpu.instruction();
+            let pos = 0x301; // Value of C833h after CLOAD ""
+            for (let i = 7; i < file.length; i++)
+                memory[pos++] = file[i];
+            memory[0x236] = pos & 0xFF;
+            memory[0x237] = (pos >> 8) & 0xFF;
+            return;
+        }
+        alert("Unsupported file type");
     }
 
     window.loadFile = loadFile;
