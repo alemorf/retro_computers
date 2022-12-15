@@ -112,6 +112,7 @@ function Iskra1080Keyboard() {
             o._i = i;
             o.onmousedown = function() { processIskra1080Key(true, this._i); };
             o.onmouseup = function() { processIskra1080Key(false, this._i); };
+            o.onmouseout = function() { processIskra1080Key(false, this._i); };
         }
     }
 
@@ -145,12 +146,9 @@ function Iskra1080Keyboard() {
 
     let select = 0;
 
-    this.read = function(addr) { return matrix[select]; }
+    this.read = function(addr) { return matrix[select]; };
 
-                this.write = function(addr, data) {
-        select = data & 0x0F;
-        // TODO: LEDS
-    };
+    this.write = function(addr, data) { select = data & 0x0F; };
 
     document.onkeydown = function(e) { return processKey(true, e); };
 

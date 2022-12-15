@@ -13,6 +13,8 @@ Copyright 26-Aug-2022 Alemorf, aleksey.f.morozov@yandex.ru
     color: white;
     position: absolute;
     padding: 8px;
+    height: 480px;
+    overflow: auto;
 }
 #loadmenu > div {
     padding-bottom: 4pt;
@@ -58,10 +60,25 @@ body {
     -o-user-select: none;
     user-select: none;
 }
+.led {
+    font-family: Arial;
+    font-size: 11px;
+    color: silver;
+}
+.led > div {
+    margin:3 auto;
+    text-align: center;
+    border-radius: 16px;
+    background: silver;
+    width: 16px;
+    height: 16px;
+}
+.ledactive > div {
+    background: red;
+}
 </style>
 </head>
 <body>
-<h1>Искра 1080 Тарту. Эмулятор. Еще не готов!</h1>
 <script src="disk0.js" type="application/javascript"></script>
 <script src="iskra1080rom.js" type="application/javascript"></script>
 <script src="filelist.js" type="application/javascript"></script>
@@ -76,8 +93,6 @@ body {
 <div id="loadMenu"></div>
 
 <canvas id="iskra1080canvas"></canvas><br>
-
-Настоящая клавиатура тоже работает.
 
 <table class="keyb" cellspacing="2">
 <tr>
@@ -96,10 +111,8 @@ body {
 <th></th>
 <th></th>
 <th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
+<th id="led0" colspan="2" class="led"><div></div>Caps</th>
+<th id="led1" colspan="2" class="led"><div></div>Num</th>
 <th></th>
 <th></th>
 <td colspan="2" id="resetButton" style="background:#FFC0C0">RST</td>
@@ -189,9 +202,9 @@ body {
 <td id="key3" colspan="2">Ь<br>m</td>
 <td id="key7" colspan="2">Б<br>`</td>
 <td id="key15" colspan="2">Ю<br>@</td>
-<td id="key" colspan="2">Ё<br>&nbsp;</td>
-<td id="key" colspan="2">&lt;<br>,</td>
-<td id="key" colspan="2">><br>.</td>
+<td id="key23" colspan="2">Ё<br>&nbsp;</td>
+<td id="key39" colspan="2">&lt;<br>,</td>
+<td id="key47" colspan="2">><br>.</td>
 <td id="key12" colspan="2">↕</td>
 <th></th>
 <th></th>
@@ -209,7 +222,7 @@ body {
 <td id="key25" colspan="2">LAT</td>
 <td id="key28" colspan="2">NUM</td>
 <td id="key29" colspan="2">DEL</td>
-<td id="key" colspan="2">COP</td>
+<td id="key26" colspan="2">COP</td>
 <th></th>
 <th></th>
 <th></th>

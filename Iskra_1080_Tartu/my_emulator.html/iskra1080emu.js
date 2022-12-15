@@ -2,7 +2,66 @@
 // Copyright 26-Aug-2022 Alemorf, aleksey.f.morozov@yandex.ru
 
 document.addEventListener("DOMContentLoaded", function() {
-    // Динамичкская подгрузка
+    // Тайминги
+    const cpuFreq = 19062000 / 9; // = 2118000
+    const linePeriod = 68 * 2;
+    const visibleLinePeriod = 48 * 2;
+    const framePeriod = linePeriod * 312;
+
+    // Звук
+    let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let audioGain = audioContext.createGain();
+    audioGain.connect(audioContext.destination);
+    audioGain.gain.value = 0;
+    let audioConst = audioContext.createConstantSource(1);
+    audioConst.connect(audioGain);
+    let audioStarted = false;
+    let audioTime = 0;
+    let audioTick = 0;
+    let audioResyncCounter = 0;
+    const audioDelaySec = 0.2;
+
+    function AudioStart() {
+        if (audioStarted)
+            return;
+        audioConst.start();
+        audioStarted = true;
+        audioTime = audioContext.currentTime + audioDelaySec;
+        audioTick = 0;
+        removeEventListener("click", AudioStart);
+    }
+
+    document.addEventListener("click", AudioStart);
+
+    function AudioSync() {
+        if (!audioStarted)
+            return;
+
+        // Не даём переполнится счетчику audioTick
+        while (audioTick >= cpuFreq) {
+            audioTick -= cpuFreq;
+            audioTime += 1;
+        }
+
+        // Считаем разбег реального времени аудио и внутреннего
+        // Если мы обогнали на 1 секунду или нет запаса 0.2, то синхронизируемся
+        const audioNow = audioContext.currentTime;
+        const audioDelta = audioTime + audioTick / cpuFreq - audioNow;
+        if (audioDelta <= 0 || audioDelta > audioDelaySec * 2) {
+            audioTime = audioNow + audioDelaySec;
+            audioTick = 0;
+            audioResyncCounter++;
+        }
+        // debug: document.title = audioResyncCounter + " " + audioDelta;
+    }
+
+    function AudioLevel(level) {
+        if (!audioStarted)
+            return;
+        audioGain.gain.setValueAtTime(level, audioTime + audioTick / cpuFreq);
+    }
+
+    // Динамическая подгрузка
     window.include = function(file) {
         let script = document.createElement('script');
         // script.onload = function() { ... }
@@ -15,7 +74,10 @@ document.addEventListener("DOMContentLoaded", function() {
         let loadmenu = document.getElementById('loadMenu');
         let loadButton = document.getElementById('loadButton');
 
-        loadButton.onclick = function() { loadmenu.style.display = "block"; }
+        loadButton.onclick = function() {
+            const v = (loadmenu.style.display == "block");
+            loadmenu.style.display = v ? "none" : "block";
+        };
 
         function loadMenuClick(name) {
             loadmenu.style.display = "none";
@@ -73,6 +135,23 @@ document.addEventListener("DOMContentLoaded", function() {
         cpu.jump(0);
     }
 
+    let ledsState = 0;
+    let ledsStatePrev = 3;
+
+    let ledsObjects = [ document.getElementById("led0"), document.getElementById("led1") ];
+
+    function setLeds(code) { ledsState = code; }
+    function updateLeds() {
+        if (ledsStatePrev != ledsState) {
+            const change = ledsStatePrev ^ ledsState;
+            for (let i = 0; i < 2; i++)
+                if ((change & (1 << i)) != 0)
+                    ledsObjects[i].classList.toggle("ledactive", (ledsState & (1 << i)) == 0);
+            ledsStatePrev = ledsState;
+        }
+    }
+    updateLeds(0);
+
     function powerReset() { powerResetInternal(false); }
 
     document.getElementById('powerResetButton').onclick = powerReset;
@@ -83,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function loadFile(file) {
         let type = file[0];
-        
+
         if (type == 0xD0) {
             // Name 1,2,3,4,5,6
             let start = (file[8] << 8) | file[7];
@@ -92,7 +171,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (end < start)
                 return;
             let size = end - start + 1;
-            // if (size > file.length - 13) return;        
+            // if (size > file.length - 13) return;
             powerReset();
             for (let i = 0; i !== 3000000; i++) {
                 cpu.instruction();
@@ -124,15 +203,35 @@ document.addEventListener("DOMContentLoaded", function() {
 
     window.loadFile = loadFile;
 
+    let tickCount = 0;
+
+    function waitRam() {
+        const x = tickCount % linePeriod;
+        if (rg[0]) {
+            if (x < visibleLinePeriod) {
+                tickCount += visibleLinePeriod - x;
+                audioTick += visibleLinePeriod - x;
+            }
+        } else if (rg[1]) {
+            if ((x % 2) == 0) {
+                tickCount++;
+                audioTick++;
+            }
+        }
+    }
+
     cpu.readMemory = function(addr, flags) {
-        if (flags & 2)
+        if (flags & 2) {
+            waitRam();
             return memory[addr]; // stack
+        }
 
         if (addr < 0xC000) {
             if (flags & 1)
                 memory_map = 0; // m1
             if (addr < 0x100 && rom0000)
                 return iskra1080Rom[addr];
+            waitRam();
             return memory[addr];
         }
 
@@ -142,21 +241,31 @@ document.addEventListener("DOMContentLoaded", function() {
         if (addr < 0xC800) {
             if (flags & 1)
                 memory_map = 0; // m1
+            if (memory_map === 0)
+                waitRam();
             return memory_map === 0 ? memory[addr] : iskra1080Rom[addr - (rg[2] ? romStart2 : romStart)];
         }
 
         if (addr < 0xD000) {
             if (flags & 1)
                 memory_map = 1; // m1
+            if (memory_map !== 1)
+                waitRam();
             return memory_map !== 1 ? memory[addr] : iskra1080Rom[addr - (rg[2] ? romStart2 : romStart)];
         }
 
         if (flags & 1)
             memory_map = 2;
+
+        if (memory_map !== 2)
+            waitRam();
         return memory_map !== 2 ? memory[addr] : iskra1080Rom[addr - romStart];
     };
 
-    cpu.writeMemory = function(addr, byte) { memory[addr] = byte; };
+    cpu.writeMemory = function(addr, byte) {
+        waitRam();
+        memory[addr] = byte;
+    };
 
     cpu.readIo = function(addr) {
         // console.log("IN " + addr.toString(16));
@@ -171,10 +280,14 @@ document.addEventListener("DOMContentLoaded", function() {
         return 0;
     };
 
+    let tapeOut = false;
+
     cpu.writeIo = function(addr, byte) {
         // console.log("OUT " + addr.toString(16) + ", " + byte.toString(16));
-        if ((addr & 0xF8) == 0xC0)
+        if ((addr & 0xF8) == 0xC0) {
+            setLeds(byte >> 4);
             return keyboard.write(addr, byte);
+        }
         switch (addr & 0xB8) {
         case 0x80:
             break; // UART
@@ -203,28 +316,57 @@ document.addEventListener("DOMContentLoaded", function() {
             if (cpmMode)
                 floppyController.writeControl((rg[5] ? 1 : 0) | (rg[7] ? 2 : 0));
             break;
+        case 0xB0: // 0B0h - 0B7h, 0F0h - 0F7h
+            tapeOut = !tapeOut;
+            AudioLevel(tapeOut ? 1 : -1);
+            break;
         }
     };
 
-    let last_time = 0;
-    const cpuSpeed = 2000000 / 1000;
+    let lastTime = new Date().getTime();
+    let needTickCount = 0;
 
     function cpuTick() {
-        let now = new Date().getTime();
-        let delta = now - last_time;
+        // Сколько прошло времени
+        const now = new Date().getTime();
+        let delta = now - lastTime;
+        lastTime = now;
+
+        // Больше 500 мс за раз не работаем
         if (delta > 500)
             delta = 500;
-        last_time = now;
 
-        for (let i = 0, is = delta * cpuSpeed; i < is;) {
-            window._time = i / cpuSpeed / 1000;
-            i += cpu.instruction();
+        // До какого такта процессора работаем
+        needTickCount += Math.round(delta / 1000 * cpuFreq);
+
+        // Если по тактам получается больше 1 секунды работать, или больше 1
+        // секунды бездействовать, то вообще ничего не делаем.
+        if (Math.abs(needTickCount - tickCount) > cpuFreq)
+            needTickCount = tickCount;
+
+        // Синхронизация звука
+        AudioSync();
+
+        // Работа
+        while (tickCount < needTickCount) {
+            const t = cpu.instruction();
+            tickCount += t;
+            audioTick += t;
+        }
+
+        // Не даём переполнится счетчикам
+        if (tickCount >= framePeriod && needTickCount >= framePeriod) {
+            needTickCount -= framePeriod;
+            tickCount -= framePeriod;
         }
     }
 
     window.setInterval(cpuTick, 10);
 
-    function videoTick() { video.make(); }
+    function videoTick() {
+        updateLeds();
+        video.make();
+    }
 
     window.setInterval(videoTick, 1000 / 50);
     powerResetCpm();
