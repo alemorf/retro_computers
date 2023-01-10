@@ -1,9 +1,9 @@
 10 REM************************************************
-20 REM*     programma proverki znanij matematiki    * 
+20 REM*      programma proverki znanij matematiki    *
 30 REM*            u uchenikov mladshih klassov      *
-40 REM******************************************j*****
+40 REM************************************************
 50 CLS:PRINT:PRINT
-60 LOCATE 15,6:INPUT "К╫к тебя зовут ?";I$:PRINT:PRINT
+60 LOCATE 15,6:INPUT "Как тебя зовут ?";I$:PRINT:PRINT
 70 PRINT I$;" , я хочу проверить твои знания по арифметике."
 80 PRINT"Я буду предлагать примеры , а ты постарайся их решить."
 90 PRINT"Если готов, нажми на любую клавишу  "
@@ -46,7 +46,7 @@
 460 IF W=10 THEN PRINT"Молодец ,";I$;",ты знаешь арифметику на пять!"
 470 IF W=8 OR W=9 THEN  PRINT"Молодец ,";I$;",ты знаешь арифметику на 4 !" 
 480 IF W=6 OR W=7 THEN  PRINT I$;",ты знаешь арифметику на 3 ." 
-490 IF W&lt;6 THEN PRINT I$;",ты плохо знаешь арифметику." 
+490 IF W<6 THEN PRINT I$;",ты плохо знаешь арифметику." 
 500 STOP
 510 U$="прибавить"
 520 G=G*3:R=R*3
@@ -55,7 +55,7 @@
 550 U$="отнять"
 560 IF R THEN G=G+3
 570 G=G*3:R=R*3
-580 IF G&lt;R THEN G=G:G=R:R=Q
+580 IF G<R THEN G=G:G=R:R=Q
 590 P=G:Q=G-R:RETURN
 600 U$="умножить на " 
 610 P=G:Q=G*R
@@ -63,4 +63,3 @@
 630 U$="разделить на "   
 640 P=G*R:Q=G
 650 RETURN
-660 END
