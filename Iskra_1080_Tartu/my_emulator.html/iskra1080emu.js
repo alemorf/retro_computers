@@ -10,8 +10,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Звук
     let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const filter = audioContext.createBiquadFilter();
+    filter.type = "highpass";
+    filter.frequency.value = 50;
+    filter.Q.value = 0.7;
+    filter.gain.value = 0;
+    filter.connect(audioContext.destination);
     let audioGain = audioContext.createGain();
-    audioGain.connect(audioContext.destination);
+    audioGain.connect(filter);
     audioGain.gain.value = 0;
     let audioConst = audioContext.createConstantSource(1);
     audioConst.connect(audioGain);
