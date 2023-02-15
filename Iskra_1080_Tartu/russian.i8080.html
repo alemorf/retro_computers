@@ -1,0 +1,313 @@
+<head>
+<style>
+.tbl2 {
+    border-collapse: collapse;
+}
+.tbl2 td, .tbl2 th {
+	padding: 2px 4px 2px 4px;
+	border: 1px solid black
+}
+</style>
+<meta charset="utf-8">
+</head>
+<body>
+<h1>Система команд микропроцессора КР580ВМ80А</h1>
+
+<h2>Регистры процессора</h2>
+
+<table class="tbl2">
+  <tr>
+    <th>Регистр</th>
+    <th>Регистр</th>
+    <th>Регистровая пара</th>
+  </tr>
+  <tr>
+    <td>A</td>
+    <td>FLAGS</td>
+    <td>PSW</td>
+  </tr>
+  <tr>
+    <td>B</td>
+    <td>C</td>
+    <td>BC</td>
+  </tr>
+  <tr>
+    <td>D</td>
+    <td>E</td>
+    <td>DE</td>
+  </tr>
+  <tr>
+    <td>H</td>
+    <td>L</td>
+    <td>HL</td>
+  </tr>
+  <tr>
+    <td colspan="3"><p>PC (счётчик команд)</p></td>
+  </tr>
+  <tr>
+    <td colspan="3"><p>SP (указатель стека)</p></td>
+  </tr>
+</table>
+
+<h2>Регистр флагов (FLAGS)</h2>
+
+<table class="tbl2">
+<tr><th>Бит</th> <th>Обозначение</th>  <th>Описание</th></tr>
+<tr><td>0</td> <td>C</td>  <td>Перенос</td></tr>
+<tr><td>1</td> <td></td>   <td></td></tr>
+<tr><td>2</td> <td>P</td>  <td>Чётность</td></tr>
+<tr><td>3</td> <td></td>   <td></td></tr>
+<tr><td>4</td> <td>AC</td> <td>Вспомогательный перенос</td></tr>
+<tr><td>5</td> <td></td>   <td></td></tr>
+<tr><td>6</td> <td>Z</td>  <td>Нуль</td></tr>
+<tr><td>7</td> <td>S</td>  <td>Знак</td></tr>
+</table>
+
+<h2>Все команды</h2>
+
+<table class="tbl2">
+<tr><th>Код</th><th>Команда 8080</th><th>Команда Z80</th><th>Описание</th></tr>
+<tr><td>87</td> <td>ADD A</td>       <td>ADD A</td>        <td>A += A</td></tr>
+<tr><td>80</td> <td>ADD B</td>       <td>ADD B</td>        <td>A += B</td></tr>
+<tr><td>81</td> <td>ADD C</td>       <td>ADD C</td>        <td>A += C</td></tr>
+<tr><td>82</td> <td>ADD D</td>       <td>ADD D</td>        <td>A += D</td></tr>
+<tr><td>83</td> <td>ADD E</td>       <td>ADD E</td>        <td>A += E</td></tr>
+<tr><td>84</td> <td>ADD H</td>       <td>ADD H</td>        <td>A += H</td></tr>
+<tr><td>85</td> <td>ADD L</td>       <td>ADD L</td>        <td>A += L</td></tr>
+<tr><td>86</td> <td>ADD M</td>       <td>ADD (HL)</td>     <td>A += Память(HL)</td></tr>
+<tr><td>C6</td> <td>ADI d8</td>      <td>ADD d8</td>       <td>A += d8</td></tr>
+<tr><td>8F</td> <td>ADC A</td>       <td>ADC A</td>        <td>A += A + флаг C</td></tr>
+<tr><td>88</td> <td>ADC B</td>       <td>ADC B</td>        <td>A += B + флаг C</td></tr>
+<tr><td>89</td> <td>ADC C</td>       <td>ADC C</td>        <td>A += C + флаг C</td></tr>
+<tr><td>8A</td> <td>ADC D</td>       <td>ADC D</td>        <td>A += D + флаг C</td></tr>
+<tr><td>8B</td> <td>ADC E</td>       <td>ADC E</td>        <td>A += E + флаг C</td></tr>
+<tr><td>8C</td> <td>ADC H</td>       <td>ADC H</td>        <td>A += H + флаг C</td></tr>
+<tr><td>8D</td> <td>ADC L</td>       <td>ADC L</td>        <td>A += L + флаг C</td></tr>
+<tr><td>8E</td> <td>ADC M</td>       <td>ADC (HL)</td>     <td>A += Память(HL) + флаг C</td></tr>
+<tr><td>CE</td> <td>ACI d8</td>      <td>ADC d8</td>       <td>A += d8 + флаг C</td></tr>
+<tr><td>A7</td> <td>ANA A</td>       <td>AND A</td>        <td>A &= A</td></tr>
+<tr><td>A0</td> <td>ANA B</td>       <td>AND B</td>        <td>A &= B</td></tr>
+<tr><td>A1</td> <td>ANA C</td>       <td>AND C</td>        <td>A &= C</td></tr>
+<tr><td>A2</td> <td>ANA D</td>       <td>AND D</td>        <td>A &= D</td></tr>
+<tr><td>A3</td> <td>ANA E</td>       <td>AND E</td>        <td>A &= E</td></tr>
+<tr><td>A4</td> <td>ANA H</td>       <td>AND H</td>        <td>A &= H</td></tr>
+<tr><td>A5</td> <td>ANA L</td>       <td>AND L</td>        <td>A &= L</td></tr>
+<tr><td>A6</td> <td>ANA M</td>       <td>AND (HL)</td>     <td>A &= Память(HL)</td></tr>
+<tr><td>E6</td> <td>ANI d8</td>      <td>AND d8</td>       <td>A &= d8</td></tr>
+<tr><td>CD</td> <td>CALL d16</td>    <td>CALL d16</td>     <td>Вызвать подпрограмму</td></tr>
+<tr><td>CC</td> <td>CZ d16</td>      <td>CALL Z, d16</td>  <td>Вызвать подпрограмму, если флаг Z = 1</td></tr>
+<tr><td>C4</td> <td>СNZ d16</td>     <td>CALL NZ, d16</td> <td>Вызвать подпрограмму, если флаг Z = 0</td></tr>
+<tr><td>F4</td> <td>СP d16</td>      <td>CALL P, d16</td>  <td>Вызвать подпрограмму, если флаг S = 0</td></tr>
+<tr><td>FC</td> <td>СM d16</td>      <td>CALL M, d16</td>  <td>Вызвать подпрограмму, если флаг S = 1</td></tr>
+<tr><td>DC</td> <td>CC d16</td>      <td>CALL C, d16</td>  <td>Вызвать подпрограмму, если флаг C = 1</td></tr>
+<tr><td>D4</td> <td>CNC d16</td>     <td>CALL NC, d16</td> <td>Вызвать подпрограмму, если флаг C = 0</td></tr>
+<tr><td>EC</td> <td>CPE d16</td>     <td>CALL PE, d16</td> <td>Вызвать подпрограмму, если флаг P = 1</td></tr>
+<tr><td>E4</td> <td>CPO d16</td>     <td>CALL PO, d16</td> <td>Вызвать подпрограмму, если флаг P = 0</td></tr>
+<tr><td>2F</td> <td>CMA</td>         <td>CPL</td>          <td>A = ~A</td></tr>
+<tr><td>3F</td> <td>CMC</td>         <td>CCF</td>          <td>флаг C = !флаг C</td></tr>
+<tr><td>BF</td> <td>CMP A</td>       <td>CP A</td>         <td>A - A (изменяются флаги, но не A)</td></tr>
+<tr><td>B8</td> <td>CMP B</td>       <td>CP B</td>         <td>A - B</td></tr>
+<tr><td>B9</td> <td>CMP C</td>       <td>CP C</td>         <td>A - C</td></tr>
+<tr><td>BA</td> <td>CMP D</td>       <td>CP D</td>         <td>A - D</td></tr>
+<tr><td>BB</td> <td>CMP E</td>       <td>CP E</td>         <td>A - E</td></tr>
+<tr><td>BC</td> <td>CMP H</td>       <td>CP H</td>         <td>A - H</td></tr>
+<tr><td>BD</td> <td>CMP L</td>       <td>CP L</td>         <td>A - L</td></tr>
+<tr><td>BE</td> <td>CMP M</td>       <td>CP (HL)</td>      <td>A - Память(HL)</td></tr>
+<tr><td>FE</td> <td>CPI d8</td>      <td>CP d8</td>        <td>A - d8</td></tr>
+<tr><td>27</td> <td>DAA</td>         <td>DAA</td>          <td>Десятичная коррекция аккумулятора</td></tr>
+<tr><td>39</td> <td>DAD B</td>       <td>ADD HL, BC</td>   <td>HL += BC</td></tr>
+<tr><td>29</td> <td>DAD D</td>       <td>ADD HL, DE</td>   <td>HL += DE</td></tr>
+<tr><td>19</td> <td>DAD H</td>       <td>ADD HL, HL</td>   <td>HL += HL</td></tr>
+<tr><td>09</td> <td>DAD SP</td>      <td>ADD HL, SP</td>   <td>HL += SP</td></tr>
+<tr><td>3D</td> <td>DCR A</td>       <td>DEC A</td>        <td>A--</td></tr>
+<tr><td>05</td> <td>DCR B</td>       <td>DEC B</td>        <td>B--</td></tr>
+<tr><td>0D</td> <td>DCR C</td>       <td>DEC C</td>        <td>C--</td></tr>
+<tr><td>15</td> <td>DCR D</td>       <td>DEC D</td>        <td>D--</td></tr>
+<tr><td>1D</td> <td>DCR E</td>       <td>DEC E</td>        <td>E--</td></tr>
+<tr><td>25</td> <td>DCR H</td>       <td>DEC H</td>        <td>H--</td></tr>
+<tr><td>2D</td> <td>DCR L</td>       <td>DEC L</td>        <td>L--</td></tr>
+<tr><td>35</td> <td>DCR M</td>       <td>DEC (HL)</td>     <td>Память(HL)--</td></tr>
+<tr><td>0B</td> <td>DCX B</td>       <td>DEC BC</td>       <td>BC--</td></tr>
+<tr><td>1B</td> <td>DCX D</td>       <td>DEC DE</td>       <td>DE--</td></tr>
+<tr><td>2B</td> <td>DCX H</td>       <td>DEC HL</td>       <td>HL--</td></tr>
+<tr><td>3B</td> <td>DCX SP</td>      <td>DEC SP</td>       <td>SP--</td></tr>
+<tr><td>F3</td> <td>DI</td>          <td>DI</td>           <td>Запретить прерывания</td></tr>
+<tr><td>FB</td> <td>EI</td>          <td>EI</td>           <td>Разрешить прерывания</td></tr>
+<tr><td>76</td> <td>HLT</td>         <td>HALT</td>         <td>Остановка до прерывания</td></tr>
+<tr><td>DB</td> <td>IN d8</td>       <td>IN A, (d8)</td>   <td>A = Порт(d8)</td></tr>
+<tr><td>3C</td> <td>INR A</td>       <td>INC A</td>        <td>A++</td></tr>
+<tr><td>04</td> <td>INR B</td>       <td>INC B</td>        <td>B++</td></tr>
+<tr><td>0C</td> <td>INR C</td>       <td>INC C</td>        <td>C++</td></tr>
+<tr><td>14</td> <td>INR D</td>       <td>INC D</td>        <td>D++</td></tr>
+<tr><td>1C</td> <td>INR E</td>       <td>INC E</td>        <td>E++</td></tr>
+<tr><td>24</td> <td>INR H</td>       <td>INC H</td>        <td>H++</td></tr>
+<tr><td>2C</td> <td>INR L</td>       <td>INC L</td>        <td>L++</td></tr>
+<tr><td>34</td> <td>INR M</td>       <td>INC (HL)</td>     <td>Память(HL)++</td></tr>
+<tr><td>03</td> <td>INX B</td>       <td>INC BC</td>       <td>BС++</td></tr>
+<tr><td>13</td> <td>INX D</td>       <td>INC DE</td>       <td>DE++</td></tr>
+<tr><td>23</td> <td>INX H</td>       <td>INC HL</td>       <td>HL++</td></tr>
+<tr><td>33</td> <td>INX SP</td>      <td>INC SP</td>       <td>SP++</td></tr>
+<tr><td>C3</td> <td>JMP d16</td>     <td>JP d16</td>       <td>Перейти по адресу d16</td></tr>
+<tr><td>CA</td> <td>JZ d16</td>      <td>JP Z, d16</td>    <td>Перейти по адресу d16, если флаг Z=1</td></tr>
+<tr><td>C2</td> <td>JNZ d16</td>     <td>JP NZ, d16</td>   <td>Перейти по адресу d16, если флаг Z=0</td></tr>
+<tr><td>F2</td> <td>JP d16</td>      <td>JP P, d16</td>    <td>Перейти по адресу d16, если флаг S=0</td></tr>
+<tr><td>FA</td> <td>JM d16</td>      <td>JP M, d16</td>    <td>Перейти по адресу d16, если флаг S=1</td></tr>
+<tr><td>DA</td> <td>JC d16</td>      <td>JP C, d16</td>    <td>Перейти по адресу d16, если флаг C=1</td></tr>
+<tr><td>D2</td> <td>JNC d16</td>     <td>JP NC, d16</td>   <td>Перейти по адресу d16, если флаг C=0</td></tr>
+<tr><td>EA</td> <td>JPE d16</td>     <td>JP PE, d16</td>   <td>Перейти по адресу d16, если флаг P=1</td></tr>
+<tr><td>E2</td> <td>JPO d16</td>     <td>JP PO, d16</td>   <td>Перейти по адресу d16, если флаг P=0</td></tr>
+<tr><td>3A</td> <td>LDA d16</td>     <td>LD A, (d16)</td>  <td>A = Память(d16)</td></tr>
+<tr><td>0A</td> <td>LDAX B</td>      <td>LD A, (BC)</td>   <td>A = Память(BC)</td></tr>
+<tr><td>1A</td> <td>LDAX D</td>      <td>LD A, (DE)</td>   <td>A = Память(DE)</td></tr>
+<tr><td>2A</td> <td>LHLD d16</td>    <td>LD HL, (d16)</td> <td>HL = Память(d16)</td></tr>
+<tr><td>01</td> <td>LXI B, d16</td>  <td>LD BC, d16</td>   <td>BC = d16</td></tr>
+<tr><td>11</td> <td>LXI D, d16</td>  <td>LD DE, d16</td>   <td>DE = d16</td></tr>
+<tr><td>21</td> <td>LXI H, d16</td>  <td>LD HL, d16</td>   <td>HL = d16</td></tr>
+<tr><td>31</td> <td>LXI SP, d16</td> <td>LD SP, d16</td>   <td>SP = d16</td></tr>
+<tr><td>7F</td> <td>MOV A, A</td>    <td>LD A, A</td>      <td>A = A</td></tr>
+<tr><td>78</td> <td>MOV A, B</td>    <td>LD A, B</td>      <td>A = B</td></tr>
+<tr><td>79</td> <td>MOV A, C</td>    <td>LD A, C</td>      <td>A = C</td></tr>
+<tr><td>7A</td> <td>MOV A, D</td>    <td>LD A, D</td>      <td>A = D</td></tr>
+<tr><td>7B</td> <td>MOV A, E</td>    <td>LD A, E</td>      <td>A = E</td></tr>
+<tr><td>7C</td> <td>MOV A, H</td>    <td>LD A, H</td>      <td>A = H</td></tr>
+<tr><td>7D</td> <td>MOV A, L</td>    <td>LD A, L</td>      <td>A = L</td></tr>
+<tr><td>7E</td> <td>MOV A, M</td>    <td>LD A, (HL)</td>   <td>A = Память(HL)</td></tr>
+<tr><td>47</td> <td>MOV B, A</td>  <td>LD B, A</td>        <td>B = A</td></tr>
+<tr><td>40</td> <td>MOV B, B</td>  <td>LD B, B</td>        <td>B = B</td></tr>
+<tr><td>41</td> <td>MOV B, C</td>  <td>LD B, C</td>        <td>B = C</td></tr>
+<tr><td>42</td> <td>MOV B, D</td>  <td>LD B, D</td>        <td>B = D</td></tr>
+<tr><td>43</td> <td>MOV B, E</td>  <td>LD B, E</td>        <td>B = E</td></tr>
+<tr><td>44</td> <td>MOV B, H</td>  <td>LD B, H</td>        <td>B = H</td></tr>
+<tr><td>45</td> <td>MOV B, L</td>  <td>LD B, L</td>        <td>B = L</td></tr>
+<tr><td>46</td> <td>MOV B, M</td>  <td>LD B, (HL)</td>     <td>B = Память(HL)</td></tr>
+<tr><td>4F</td> <td>MOV C, A</td>  <td>LD C, A</td>        <td>C = A</td></tr>
+<tr><td>48</td> <td>MOV C, B</td>  <td>LD C, B</td>        <td>C = B</td></tr>
+<tr><td>49</td> <td>MOV C, C</td>  <td>LD C, C</td>        <td>C = C</td></tr>
+<tr><td>4A</td> <td>MOV C, D</td>  <td>LD C, D</td>        <td>C = D</td></tr>
+<tr><td>4B</td> <td>MOV C, E</td>  <td>LD C, E</td>        <td>C = E</td></tr>
+<tr><td>4C</td> <td>MOV C, H</td>  <td>LD C, H</td>        <td>C = H</td></tr>
+<tr><td>4D</td> <td>MOV C, L</td>  <td>LD C, L</td>        <td>C = L</td></tr>
+<tr><td>4E</td> <td>MOV C, M</td>  <td>LD C, (HL)</td>     <td>C = Память(HL)</td></tr>
+<tr><td>57</td> <td>MOV D, A</td>  <td>LD D, A</td>        <td>D = A</td></tr>
+<tr><td>50</td> <td>MOV D, B</td>  <td>LD D, B</td>        <td>D = B</td></tr>
+<tr><td>51</td> <td>MOV D, C</td>  <td>LD D, C</td>        <td>D = C</td></tr>
+<tr><td>52</td> <td>MOV D, D</td>  <td>LD D, D</td>        <td>D = D</td></tr>
+<tr><td>53</td> <td>MOV D, E</td>  <td>LD D, E</td>        <td>D = E</td></tr>
+<tr><td>54</td> <td>MOV D, H</td>  <td>LD D, H</td>        <td>D = H</td></tr>
+<tr><td>55</td> <td>MOV D, L</td>  <td>LD D, L</td>        <td>D = L</td></tr>
+<tr><td>56</td> <td>MOV D, M</td>  <td>LD D, (HL)</td>     <td>D = Память(HL)</td></tr>
+<tr><td>5F</td> <td>MOV E, A</td>  <td>LD E, A</td>        <td>E = A</td></tr>
+<tr><td>58</td> <td>MOV E, B</td>  <td>LD E, B</td>        <td>E = B</td></tr>
+<tr><td>59</td> <td>MOV E, C</td>  <td>LD E, C</td>        <td>E = C</td></tr>
+<tr><td>5A</td> <td>MOV E, D</td>  <td>LD E, D</td>        <td>E = D</td></tr>
+<tr><td>5B</td> <td>MOV E, E</td>  <td>LD E, E</td>        <td>E = E</td></tr>
+<tr><td>5C</td> <td>MOV E, H</td>  <td>LD E, H</td>        <td>E = H</td></tr>
+<tr><td>5D</td> <td>MOV E, L</td>  <td>LD E, L</td>        <td>E = L</td></tr>
+<tr><td>5E</td> <td>MOV E, M</td>  <td>LD E, (HL)</td>     <td>E = Память(HL)</td></tr>
+<tr><td>67</td> <td>MOV H, A</td>  <td>LD H, A</td>        <td>H = A</td></tr>
+<tr><td>60</td> <td>MOV H, B</td>  <td>LD H, B</td>        <td>H = B</td></tr>
+<tr><td>61</td> <td>MOV H, C</td>  <td>LD H, C</td>        <td>H = C</td></tr>
+<tr><td>62</td> <td>MOV H, D</td>  <td>LD H, D</td>        <td>H = D</td></tr>
+<tr><td>63</td> <td>MOV H, E</td>  <td>LD H, E</td>        <td>H = E</td></tr>
+<tr><td>64</td> <td>MOV H, H</td>  <td>LD H, H</td>        <td>H = H</td></tr>
+<tr><td>65</td> <td>MOV H, L</td>  <td>LD H, L</td>        <td>H = L</td></tr>
+<tr><td>66</td> <td>MOV H, M</td>  <td>LD H, (HL)</td>     <td>H = Память(HL)</td></tr>
+<tr><td>6F</td> <td>MOV L, A</td>  <td>LD L, A</td>        <td>L = A</td></tr>
+<tr><td>68</td> <td>MOV L, B</td>  <td>LD L, B</td>        <td>L = B</td></tr>
+<tr><td>69</td> <td>MOV L, C</td>  <td>LD L, C</td>        <td>L = C</td></tr>
+<tr><td>6A</td> <td>MOV L, D</td>  <td>LD L, D</td>        <td>L = D</td></tr>
+<tr><td>6B</td> <td>MOV L, E</td>  <td>LD L, E</td>        <td>L = E</td></tr>
+<tr><td>6C</td> <td>MOV L, H</td>  <td>LD L, H</td>        <td>L = H</td></tr>
+<tr><td>6D</td> <td>MOV L, L</td>  <td>LD L, L</td>        <td>L = L</td></tr>
+<tr><td>6E</td> <td>MOV L, M</td>  <td>LD L, (HL)</td>     <td>L = Память(HL)</td></tr>
+<tr><td>77</td> <td>MOV M, A</td>  <td>LD (HL), A</td>     <td>Память(HL) = A</td></tr>
+<tr><td>70</td> <td>MOV M, B</td>  <td>LD (HL), B</td>     <td>Память(HL) = B</td></tr>
+<tr><td>71</td> <td>MOV M, C</td>  <td>LD (HL), C</td>     <td>Память(HL) = C</td></tr>
+<tr><td>72</td> <td>MOV M, D</td>  <td>LD (HL), D</td>     <td>Память(HL) = D</td></tr>
+<tr><td>73</td> <td>MOV M, E</td>  <td>LD (HL), E</td>     <td>Память(HL) = E</td></tr>
+<tr><td>74</td> <td>MOV M, H</td>  <td>LD (HL), H</td>     <td>Память(HL) = H</td></tr>
+<tr><td>75</td> <td>MOV M, L</td>  <td>LD (HL), L</td>     <td>Память(HL) = L</td></tr>
+<tr><td>06</td> <td>MVI B, d8</td> <td>LD B, d8</td>       <td>B = d8</td></tr>
+<tr><td>3E</td> <td>MVI A, d8</td> <td>LD A, d8</td>       <td>A = d8</td></tr>
+<tr><td>0E</td> <td>MVI C, d8</td> <td>LD C, d8</td>       <td>C = d8</td></tr>
+<tr><td>16</td> <td>MVI D, d8</td> <td>LD D, d8</td>       <td>D = d8</td></tr>
+<tr><td>1E</td> <td>MVI E, d8</td> <td>LD E, d8</td>       <td>E = d8</td></tr>
+<tr><td>26</td> <td>MVI H, d8</td> <td>LD H, d8</td>       <td>H = d8</td></tr>
+<tr><td>2E</td> <td>MVI L, d8</td> <td>LD L, d8</td>       <td>L = d8</td></tr>
+<tr><td>36</td> <td>MVI M, d8</td> <td>LD (HL), d8</td>    <td>(HL) = d8</td></tr>
+<tr><td>00</td> <td>NOP</td>       <td>NOP</td>            <td>Нет операции</td></tr>
+<tr><td>B7</td> <td>ORA A</td>     <td>OR A</td>           <td>A |= A</td></tr>
+<tr><td>B0</td> <td>ORA B</td>     <td>OR B</td>           <td>A |= B</td></tr>
+<tr><td>B1</td> <td>ORA C</td>     <td>OR C</td>           <td>A |= C</td></tr>
+<tr><td>B2</td> <td>ORA D</td>     <td>OR D</td>           <td>A |= D</td></tr>
+<tr><td>B3</td> <td>ORA E</td>     <td>OR E</td>           <td>A |= E</td></tr>
+<tr><td>B4</td> <td>ORA H</td>     <td>OR H</td>           <td>A |= H</td></tr>
+<tr><td>B5</td> <td>ORA L</td>     <td>OR L</td>           <td>A |= L</td></tr>
+<tr><td>B6</td> <td>ORA M</td>     <td>OR (HL)</td>        <td>A |= Память(HL)</td></tr>
+<tr><td>F6</td> <td>ORI d8</td>    <td>OR d8</td>          <td>A |= d8</td></tr>
+<tr><td>D3</td> <td>OUT d8</td>    <td>OUT (d8), A</td>    <td>Порт(d8) = A</td></tr>
+<tr><td>E9</td> <td>PCHL</td>      <td>JP HL</td>          <td>Переход по адресу из HL</td></tr>
+<tr><td>C1</td> <td>POP B</td>     <td>POP BC</td>         <td>Извлечь слово из стека в BC</td></tr>
+<tr><td>D1</td> <td>POP D</td>     <td>POP DE</td>         <td>Извлечь слово из стека в DE</td></tr>
+<tr><td>E1</td> <td>POP H</td>     <td>POP HL</td>         <td>Извлечь слово из стека в HL</td></tr>
+<tr><td>F1</td> <td>POP PSW</td>   <td>POP PSW</td>        <td>Извлечь слово из стека в A и FLAGS</td></tr>
+<tr><td>C5</td> <td>PUSH B</td>    <td>PUSH BC</td>        <td>Поместить BC в стек</td></tr>
+<tr><td>D5</td> <td>PUSH D</td>    <td>PUSH DE</td>        <td>Поместить DE в стек</td></tr>
+<tr><td>E5</td> <td>PUSH H</td>    <td>PUSH HL</td>        <td>Поместить HL в стек</td></tr>
+<tr><td>F5</td> <td>PUSH PSW</td>  <td>PUSH PSW</td>       <td>Поместить A и FLAGS в стек</td></tr>
+<tr><td>17</td> <td>RAL</td>       <td>RAL</td>            <td>Циклической сдвиг A влево через флаг С</td></tr>
+<tr><td>1F</td> <td>RAR</td>       <td>RAR</td>            <td>Циклической сдвиг A вправо через флаг C</td></tr>
+<tr><td>07</td> <td>RLC</td>       <td>RLC</td>            <td>Циклической сдвиг A влево</td></tr>
+<tr><td>0F</td> <td>RRC</td>       <td>RRC</td>            <td>Циклической сдвиг A вправо</td></tr>
+<tr><td>C9</td> <td>RET</td>       <td>RET</td>            <td>Возврат из подпрограммы</td></tr>
+<tr><td>C8</td> <td>RZ</td>        <td>RET Z</td>          <td>Возврат из подпрограммы, если флаг Z = 1</td></tr>
+<tr><td>C0</td> <td>RNZ</td>       <td>RET NZ</td>         <td>Возврат из подпрограммы, если флаг Z = 0</td></tr>
+<tr><td>F0</td> <td>RP</td>        <td>RET P</td>          <td>Возврат из подпрограммы, если флаг S = 0</td></tr>
+<tr><td>F8</td> <td>RM</td>        <td>RET M</td>          <td>Возврат из подпрограммы, если флаг S = 1</td></tr>
+<tr><td>D8</td> <td>RC</td>        <td>RET C</td>          <td>Возврат из подпрограммы, если флаг C = 1</td></tr>
+<tr><td>D0</td> <td>RNC</td>       <td>RET NC</td>         <td>Возврат из подпрограммы, если флаг C = 0</td></tr>
+<tr><td>E8</td> <td>RPE</td>       <td>RET PE</td>         <td>Возврат из подпрограммы, если флаг P = 1</td></tr>
+<tr><td>E0</td> <td>RPO</td>       <td>RET PO</td>         <td>Возврат из подпрограммы, если флаг P = 0</td></tr>
+<tr><td>C7</td> <td>RST 0</td>     <td>RST 0</td>          <td>Запуск программы по адресу 0</td></tr>
+<tr><td>CF</td> <td>RST 8</td>     <td>RST 8</td>          <td>Запуск программы по адресу 8</td></tr>
+<tr><td>D7</td> <td>RST 10h</td>   <td>RST 10h</td>        <td>Запуск программы по адресу 10h</td></tr>
+<tr><td>DF</td> <td>RST 18h</td>   <td>RST 18h</td>        <td>Запуск программы по адресу 18h</td></tr>
+<tr><td>E7</td> <td>RST 20h</td>   <td>RST 20h</td>        <td>Запуск программы по адресу 20h</td></tr>
+<tr><td>EF</td> <td>RST 28h</td>   <td>RST 28h</td>        <td>Запуск программы по адресу 28h</td></tr>
+<tr><td>F7</td> <td>RST 30h</td>   <td>RST 30h</td>        <td>Запуск программы по адресу 30h</td></tr>
+<tr><td>FF</td> <td>RST 38h</td>   <td>RST 38h</td>        <td>Запуск программы по адресу 38h</td></tr>
+<tr><td>F9</td> <td>SPHL</td>      <td>LD SP, HL</td>      <td>SP = HL</td></tr>
+<tr><td>22</td> <td>SHLD d16</td>  <td>LD (d16), HL</td>   <td>Память(d16) = HL</td></tr>
+<tr><td>32</td> <td>STA d16</td>   <td>LD (d16), A</td>    <td>Память(d16) = A</td></tr>
+<tr><td>02</td> <td>STAX B</td>    <td>LD (BC), A</td>     <td>Память(BC) = A</td></tr>
+<tr><td>12</td> <td>STAX D</td>    <td>LD (DE), A</td>     <td>Память(DE) = A</td></tr>
+<tr><td>97</td> <td>SUB A</td>     <td>SUB A</td>          <td>A -= А</td></tr>
+<tr><td>90</td> <td>SUB B</td>     <td>SUB B</td>          <td>A -= B</td></tr>
+<tr><td>91</td> <td>SUB C</td>     <td>SUB C</td>          <td>A -= C</td></tr>
+<tr><td>92</td> <td>SUB D</td>     <td>SUB D</td>          <td>A -= D</td></tr>
+<tr><td>93</td> <td>SUB E</td>     <td>SUB E</td>          <td>A -= E</td></tr>
+<tr><td>94</td> <td>SUB H</td>     <td>SUB H</td>          <td>A -= H</td></tr>
+<tr><td>95</td> <td>SUB L</td>     <td>SUB L</td>          <td>A -= L</td></tr>
+<tr><td>96</td> <td>SUB M</td>     <td>SUB (HL)</td>       <td>A -= Память(HL)</td></tr>
+<tr><td>D6</td> <td>SUI d8</td>    <td>SUB d8</td>         <td>A -= d8</td></tr>
+<tr><td>9F</td> <td>SBB A</td>     <td>SBC A</td>          <td>A -= A + флаг C</td></tr>
+<tr><td>98</td> <td>SBB B</td>     <td>SBC B</td>          <td>A -= B + флаг C</td></tr>
+<tr><td>99</td> <td>SBB C</td>     <td>SBC C</td>          <td>A -= C + флаг C</td></tr>
+<tr><td>9A</td> <td>SBB D</td>     <td>SBC D</td>          <td>A -= D + флаг C</td></tr>
+<tr><td>9B</td> <td>SBB E</td>     <td>SBC E</td>          <td>A -= E + флаг C</td></tr>
+<tr><td>9C</td> <td>SBB H</td>     <td>SBC H</td>          <td>A -= H + флаг C</td></tr>
+<tr><td>9D</td> <td>SBB L</td>     <td>SBC L</td>          <td>A -= L + флаг C</td></tr>
+<tr><td>9E</td> <td>SBB M</td>     <td>SBC (HL)</td>       <td>A -= Память(HL) + флаг C</td></tr>
+<tr><td>DE</td> <td>SBI d8</td>    <td>SBC d8</td>         <td>A -= d8 + флаг C</td></tr>
+<tr><td>EB</td> <td>XCHG</td>      <td>EX DE, HL</td>      <td>Обмен значений HL и DE</td></tr>
+<tr><td>E3</td> <td>XTHL</td>      <td>EX (SP), HL</td>    <td>Обмен значений HL и памяти по адресу из SP</td></tr>
+<tr><td>AF</td> <td>XRA A</td>     <td>XOR A</td>          <td>A ^= A</td></tr>
+<tr><td>A8</td> <td>XRA B</td>     <td>XOR B</td>          <td>A ^= B</td></tr>
+<tr><td>A9</td> <td>XRA C</td>     <td>XOR C</td>          <td>A ^= C</td></tr>
+<tr><td>AA</td> <td>XRA D</td>     <td>XOR D</td>          <td>A ^= D</td></tr>
+<tr><td>AB</td> <td>XRA E</td>     <td>XOR E</td>          <td>A ^= E</td></tr>
+<tr><td>AC</td> <td>XRA H</td>     <td>XOR H</td>          <td>A ^= H</td></tr>
+<tr><td>AD</td> <td>XRA L</td>     <td>XOR L</td>          <td>A ^= L</td></tr>
+<tr><td>AE</td> <td>XRA M</td>     <td>XOR (HL)</td>       <td>A ^= Память(HL)</td></tr>
+<tr><td>EE</td> <td>XRI d8</td>    <td>XOR d8</td>         <td>A ^= d8</td></tr>
+</table>
