@@ -52,7 +52,8 @@ function makeMenu() {
                 clearTimeout(hideMenuTimer);
             hideMenuTimer = setTimeout(hideMenu, 1000);
             e.stopPropagation();
-        } a[i].onmouseover = function(e) {
+        };
+        a[i].onmouseover = function(e) {
             if (visibleMenuItem.length > 0) {
                 showMenu(this);
             }
@@ -61,7 +62,8 @@ function makeMenu() {
                 hideMenuTimer = 0;
             }
             e.stopPropagation();
-        } a[i].addEventListener("click", function(e) {
+        };
+        a[i].addEventListener("click", function(e) {
             if (!showMenu(this))
                 hideMenu();
             if (this.onclick1)

@@ -48,7 +48,8 @@ function Iskra1080SdController(floppy) {
             break;
         case 0:
             buffer[recvCounter] = byte;
-            recvCounter++ if (recvCounter >= recvTotal) {
+            recvCounter++;
+            if (recvCounter >= recvTotal) {
                 switch (buffer[0]) {
                 case COMMAND_READ: {
                     const drive = buffer[1];
