@@ -2,6 +2,51 @@
 // Copyright 26-Aug-2022 Alemorf, aleksey.f.morozov@yandex.ru
 
 document.addEventListener("DOMContentLoaded", function() {
+    // Работа с файлами
+    function saveAs(data, filename) {
+        let uri = "data:application/octet-stream;base64," + window.btoa(data);
+        let link = document.createElement('a');
+        if (typeof link.download === 'string') {
+            link.href = uri;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            window.open(uri);
+        }
+    }
+
+    function loadAs(result) {
+        let link = document.createElement('div');
+        link.innerHTML = '<input type="file">';
+        let load = link.childNodes[0];
+        document.body.appendChild(link);
+        load.click();
+        document.body.removeChild(link);
+        load.onchange = function() {
+            let fr = new FileReader;
+            fr.readAsBinaryString(load.files[0]);
+            fr.onload = function(event) {
+                result(load.files[0].name, event.target.result);
+            };
+        }
+    }
+
+    function arrayToBinary(a) {
+        let b = "";
+        for (let i in a)
+            b += String.fromCharCode(a[i]);
+        return b;
+    }
+
+    function binaryToArray(b) {
+        let a = [];
+        for (let i in b)
+            a[i] = b.charCodeAt(i);
+        return a;
+    }
+
     // Тайминги
     const cpuFreq = 19062000 / 9; // = 2118000
     const linePeriod = 68 * 2;
@@ -77,28 +122,38 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Меню загрузки
     function makeLoadMenu() {
-        let loadmenu = document.getElementById('loadMenu');
-        let loadButton = document.getElementById('loadButton');
+        let loadmenu = document.getElementById('menuLoad');
 
-        loadButton.onclick = function() {
-            const v = (loadmenu.style.display == "block");
-            loadmenu.style.display = v ? "none" : "block";
-        };
-
-        function loadMenuClick(name) {
-            loadmenu.style.display = "none";
-            include("file." + this.innerHTML + ".js");
+        function loadMenuClick() {
+            include("file." + this.childNodes[0].innerHTML + ".js");
         }
 
-        let html = "Выберите файл для загрузки<br><br>";
+        let html = "";
         for (let i in fileList)
-            html += "<div>" + fileList[i] + "</div>";
+            html += "<li><div>" + fileList[i] + "</div></li>";
         loadmenu.innerHTML = html;
 
-        for (let j in loadmenu.childNodes)
-            loadmenu.childNodes[j].onclick = loadMenuClick;
+        for (let j = 0; j < loadmenu.childNodes.length; j++)
+            loadmenu.childNodes[j].addEventListener("mousedown", loadMenuClick);
     }
     makeLoadMenu();
+
+    // Диски
+    let floppy = [
+        new Floppy(0),
+        new Floppy(1),
+    ];
+
+    // Загрузка дисков
+    for (let i in floppy) {
+        let j = i;
+        document.getElementById('loadFloppyMenuItem' + j).addEventListener("mousedown", function() {
+            loadAs(function(fileName, data) {
+                floppy[j].select(binaryToArray(data));
+            });
+        });
+    }
+    makeMenu();
 
     // Для отрисовки
     let canvas = document.getElementById("iskra1080canvas");
@@ -113,32 +168,46 @@ document.addEventListener("DOMContentLoaded", function() {
     let memory = new Uint8Array(65536);
     let keyboard = new Iskra1080Keyboard();
     let video = new Iskra1080Video(canvas, memory, palette);
-    let floppyController = new Iskra1080FloppyController();
+    let floppyController = new Iskra1080FloppyController(floppy);
+    let extensionCard = new Iskra1080ExtensionCard(iskra1080extrom, floppy);
     let cpu = new I8080();
+    let debugerEnabled = false; // Для оптимизации
+    let debuger = new Debuger(cpu, function() {
+        debugerEnabled = true;
+    });
     let cpmMode = false;
     let rightPortL = 0;
     let rightPortH = 0;
 
+    // Привязать меню отладчика
+    document.getElementById("debugerStop").onclick = function() {
+        debuger.stop();
+    };
+
     function reset() {
         rom0000 = true;
+        extensionCard.reset();
+        cpu.iff = 0;
         cpu.jump(0);
     }
 
-    document.getElementById('resetButton').onclick = reset;
+    document.getElementById('resetButton').addEventListener("click", reset);
 
-    function powerResetInternal(cpm) {
+    function powerResetInternal(mode) {
         rom0000 = true;
         memory_map = 0;
         rightPortL = 0;
         rightPortH = 0;
-        cpmMode = cpm;
+        cpmMode = (mode == 1);
         for (let i in memory)
             memory[i] = 0xAA;
         for (let i in palette)
             palette[i] = 0;
         for (let i in rg)
             rg[i] = 0;
-        cpu.jump(0);
+        extensionCard.romEnable(mode == 2);
+        extensionCard.powerReset();
+        reset();
     }
 
     let ledsState = 0;
@@ -146,7 +215,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let ledsObjects = [ document.getElementById("led0"), document.getElementById("led1") ];
 
-    function setLeds(code) { ledsState = code; }
+    function setLeds(code) {
+        ledsState = code;
+    }
     function updateLeds() {
         if (ledsStatePrev != ledsState) {
             const change = ledsStatePrev ^ ledsState;
@@ -158,13 +229,23 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     updateLeds(0);
 
-    function powerReset() { powerResetInternal(false); }
+    function powerReset() {
+        powerResetInternal(0);
+    }
 
-    document.getElementById('powerResetButton').onclick = powerReset;
+    document.getElementById('powerResetButton').onmousedown = powerReset;
 
-    function powerResetCpm() { powerResetInternal(true); }
+    function powerResetCpm() {
+        powerResetInternal(1);
+    }
 
-    document.getElementById('powerResetCpmButton').onclick = powerResetCpm;
+    document.getElementById('powerResetCpmButton').onmousedown = powerResetCpm;
+
+    function powerResetExt() {
+        powerResetInternal(2);
+    }
+
+    document.getElementById('powerResetExtButton').onmousedown = powerResetExt;
 
     function loadFile(file) {
         let type = file[0];
@@ -227,6 +308,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     cpu.readMemory = function(addr, flags) {
+        let result = extensionCard.read(addr);
+        if (result !== undefined)
+            return result;
+
         if (flags & 2) {
             waitRam();
             return memory[addr]; // stack
@@ -269,12 +354,16 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     cpu.writeMemory = function(addr, byte) {
+        if (extensionCard.write(addr, byte))
+            return;
         waitRam();
         memory[addr] = byte;
     };
 
     cpu.readIo = function(addr) {
-        // console.log("IN " + addr.toString(16));
+        let result = extensionCard.readIo(addr);
+        if (result !== undefined)
+            return result;
         if ((addr & 0xF8) == 0xC0)
             return keyboard.read(addr);
         switch (addr & 0xB8) {
@@ -289,7 +378,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let tapeOut = false;
 
     cpu.writeIo = function(addr, byte) {
-        // console.log("OUT " + addr.toString(16) + ", " + byte.toString(16));
+        if (extensionCard.writeIo(addr, byte))
+            return;
         if ((addr & 0xF8) == 0xC0) {
             setLeds(byte >> 4);
             return keyboard.write(addr, byte);
@@ -333,6 +423,9 @@ document.addEventListener("DOMContentLoaded", function() {
     let needTickCount = 0;
 
     function cpuTick() {
+        if (debugerEnabled && debuger.paused())
+            return;
+
         // Сколько прошло времени
         const now = new Date().getTime();
         let delta = now - lastTime;
@@ -355,15 +448,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Работа
         while (tickCount < needTickCount) {
-            const t = cpu.instruction();
+            const t = cpu.instruction(extensionCard.getInterrupt());
             tickCount += t;
             audioTick += t;
-        }
-
-        // Не даём переполнится счетчикам
-        if (tickCount >= framePeriod && needTickCount >= framePeriod) {
-            needTickCount -= framePeriod;
-            tickCount -= framePeriod;
+            while (tickCount >= framePeriod && needTickCount >= framePeriod) {
+                extensionCard.horzSync();
+                // Не даём переполнится счетчикам
+                needTickCount -= framePeriod;
+                tickCount -= framePeriod;
+            }
+            if (debugerEnabled && debuger.cpuTick())
+                break;
         }
     }
 
@@ -375,7 +470,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     window.setInterval(videoTick, 1000 / 50);
-    powerResetCpm();
+    powerResetExt();
 
     let fileInUrl = (document.URL + "").split("?");
     if (fileInUrl.length === 2)

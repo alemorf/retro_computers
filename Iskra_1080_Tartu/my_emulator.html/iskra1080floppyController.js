@@ -1,7 +1,7 @@
 // Iskra 1080 Tartu online emulator
 // Copyright 27-Aug-2022 Alemorf, aleksey.f.morozov@yandex.ru
 
-function Iskra1080FloppyController() {
+function Iskra1080FloppyController(floppy) {
     const address = 11;
     let state = 0;
     let stateTimeout = 0;
@@ -104,9 +104,11 @@ function Iskra1080FloppyController() {
         return 0;
     };
 
-    this.write = function(data) { input = data; }
+    this.write = function(data) {
+        input = data;
+    };
 
-                 this.writeControl = function(control_) {
+    this.writeControl = function(control_) {
         if (control !== control_) {
             control = control_;
             machine(3);
@@ -152,15 +154,15 @@ function Iskra1080FloppyController() {
                 console.log("Read floppy error, incorrect device " + device + "/" + track + "/" + sector);
                 return 1;
             }
-            const sectorPerTrack = disk0[0];
+            const sectorPerTrack = floppy[0][0];
             const offset = (sector + track * sectorPerTrack) * 128;
-            if (sector >= sectorPerTrack || offset + 128 > disk0.length) {
+            if (sector >= sectorPerTrack || offset + 128 > floppy[0].length) {
                 console.log("Read floppy error, invalid position " + device + "/" + track + "/" + sector);
                 return 1;
             }
             console.log("Read floppy " + device + "/" + track + "/" + sector);
             for (let i = 0; i < 128; i++)
-                outputPacket.push(disk0[offset + i]);
+                outputPacket.push(floppy[0][offset + i]);
             return 0;
         }
 
@@ -176,15 +178,15 @@ function Iskra1080FloppyController() {
                 console.log("Write floppy error, incorrect device " + device + "/" + track + "/" + sector);
                 return 1;
             }
-            const sectorPerTrack = disk0[0];
+            const sectorPerTrack = floppy[0][0];
             const offset = (sector + track * sectorPerTrack) * 128;
-            if (sector >= sectorPerTrack || offset + 128 > disk0.length) {
+            if (sector >= sectorPerTrack || offset + 128 > floppy[0].length) {
                 console.log("Write floppy error, invalid position " + device + "/" + track + "/" + sector);
                 return 1;
             }
             console.log("Write floppy " + device + "/" + track + "/" + sector);
             for (let i = 0; i < 128; i++)
-                disk0[offset + i] = inputPacket[8 + i];
+                floppy[0][offset + i] = inputPacket[8 + i];
             return 0;
         }
 

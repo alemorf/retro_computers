@@ -26,15 +26,9 @@
 #stateDiv {
     padding-top: 32px;
 }
-#stateDiv input:hover {
-    background-color: #F8F8F8;
-}
 #stateDiv input {
-   border: 0px solid black;
-   background: none;
-   padding: 0;
    margin: 0;
-   width: 100%;
+   width: 200px;
 }
 #stateDiv table {    
    width: 100%;
@@ -120,6 +114,7 @@ var defaultParams = {
     viewCellSpace:   { value:1,  minValue:0, maxValue:32,  type:"integer" },
     viewCharsInLine: { value:32, minValue:1, maxValue:256, type:"integer" },
     hilightChars:    { value:"", type:"integerarray", index:1 },
+    swapAddrXY:      { value:0, minValue:0, maxValue:1,   type:"integer" },
 };
 
 function setParamIntInt(name, value)
@@ -440,7 +435,8 @@ function createCharEdit(canvas)
 
     function redraw()
     {    
-        if (fontOff + params.fontHeight > params.font.length) fontOff = 0;
+        var fontBpl = params.swapAddrXY ? 256 : 1;
+        if (fontOff + params.fontHeight * fontBpl > params.font.length) fontOff = 0;
         
         var xs = (params.editCellWidth + params.editCellSpace);
         var ys = (params.editCellHeight + params.editCellSpace);
@@ -450,7 +446,7 @@ function createCharEdit(canvas)
         context.fillRect(0, 0, canvas.width, canvas.height);
         for (var y = 0; y < params.charHeight; y++)
         {
-            var l = y < params.charFileHeight ? params.font[y + fontOff] : 0;
+            var l = y < params.charFileHeight ? params.font[y * fontBpl + fontOff] : 0;
             for (var x = params.charWidth - 1; x >= 0; x--, l >>= 1)
             {
                 context.fillStyle = colors[hoverX == x && hoverY == y ? 1 : 0][l & 1];
@@ -461,26 +457,29 @@ function createCharEdit(canvas)
 
     function getPixel(x, y)
     {
+        var fontBpl = params.swapAddrXY ? 256 : 1;
         if (y >= params.charFileHeight) return false;
         if (y >= params.charHeight) return false;
         var mask = (1 << (params.charWidth - 1 - x));
-        return (params.font[y + fontOff] & mask) != 0;
+        return (params.font[y * fontBpl + fontOff] & mask) != 0;
     }
 
     function setPixel(x, y, v)
     {
+        var fontBpl = params.swapAddrXY ? 256 : 1;
         if (y >= params.charFileHeight) return;
         if (y >= params.charHeight) return;
         var mask = (1 << (params.charWidth - 1 - x));
-        if (v) params.font[y + fontOff] |= mask;
-          else params.font[y + fontOff] &= ~mask;
+        if (v) params.font[y * fontBpl + fontOff] |= mask;
+          else params.font[y * fontBpl + fontOff] &= ~mask;
     }
 
     function fontModify()
     {
+        var fontBpl = params.swapAddrXY ? 256 : 1;
         if (getPixel(hoverX, hoverY) != fontEditMode)
         {
-            undoNextChange(hoverY + fontOff);
+            undoNextChange(hoverY * fontBpl + fontOff);
             setPixel(hoverX, hoverY, fontEditMode);
         }
     }
@@ -540,7 +539,7 @@ function createFontList(canvas, onselect)
     {
         for (var y = 0; y < params.charHeight; y++)
         {
-            var l = y < params.charFileHeight ? params.font[y + oc] : 0;
+            var l = y < params.charFileHeight ? params.font[y * (params.swapAddrXY ? 256 : 1) + oc] : 0;
             for (var x = params.charWidth - 1; x >= 0; x--, l >>= 1)
             {
                 context.fillStyle = colors[t][l & 1];
@@ -567,11 +566,12 @@ function createFontList(canvas, onselect)
         context.fillRect(0, 0, canvas.width, canvas.height);
         var xs = (params.charWidth * params.viewCellWidth + params.viewCellSpace);
         var ys = (params.charHeight * params.viewCellHeight + params.viewCellSpace);
+        const fontBpl = params.swapAddrXY ? 1 : params.charFileHeight;
         for (var y = 0, c = 0; c < charsCount; y += ys)
         {
             for (var i = 0, x = 0; i < params.viewCharsInLine && c < charsCount; i++, x += xs, c++)
             {
-                redrawChar(x, y, c * params.charFileHeight,
+                redrawChar(x, y, c * fontBpl,
                            (hover == c ? 1 : 0) +
                            (sel == c ? 2 : 0) + 
                            (params.hilightCharsIndex[c] ? 4 : 0));
@@ -646,7 +646,7 @@ function onCharChanged()
 function onCharSelect(n, dontSave)
 {
     document.getElementById("selectedChar").innerHTML = n   ;
-    charEdit.setChar(n * params.charFileHeight);
+    charEdit.setChar(n * (params.swapAddrXY ? 1 : params.charFileHeight));
     if (!dontSave) saveParam("font");
 }
 

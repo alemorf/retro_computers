@@ -42,28 +42,38 @@ function I8080() {
     this.zf = 0;
     this.cf = 0;
 
-    this.readIo = function(addr) { return this.readMemory(addr | (addr << 8)); };
+    this.readIo = function(addr) {
+        return this.readMemory(addr | (addr << 8));
+    };
 
-    this.writeIo = function(addr, byte) { this.writeMemory(addr | (addr << 8), byte); };
+    this.writeIo = function(addr, byte) {
+        this.writeMemory(addr | (addr << 8), byte);
+    };
 
     // Registers: b, c, d, e, h, l, m, a
     //            0  1  2  3  4  5  6  7
     this.regs = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
 
-    this.memory_read_byte = function(addr, m1) { return this.readMemory(addr & 0xffff, m1) & 0xff; };
+    this.memory_read_byte = function(addr, m1) {
+        return this.readMemory(addr & 0xffff, m1) & 0xff;
+    };
 
-    this.memory_write_byte = function(addr, w8) { this.writeMemory(addr & 0xffff, w8 & 0xff); }
+    this.memory_write_byte = function(addr, w8) {
+        this.writeMemory(addr & 0xffff, w8 & 0xff);
+    };
 
-                             this.memory_read_word =
-        function(addr,
-                 flags) { return this.memory_read_byte(addr, flags) | (this.memory_read_byte(addr + 1, flags) << 8); }
+    this.memory_read_word = function(addr, flags) {
+        return this.memory_read_byte(addr, flags) | (this.memory_read_byte(addr + 1, flags) << 8);
+    };
 
-        this.memory_write_word = function(addr, w16, flags) {
+    this.memory_write_word = function(addr, w16, flags) {
         this.memory_write_byte(addr, w16 & 0xff, flags);
         this.memory_write_byte(addr + 1, w16 >> 8, flags);
     };
 
-    this.reg = function(r) { return r != 6 ? this.regs[r] : this.memory_read_byte(this.hl()); };
+    this.reg = function(r) {
+        return r != 6 ? this.regs[r] : this.memory_read_byte(this.hl());
+    };
 
     this.set_reg = function(r, w8) {
         w8 &= 0xff;
@@ -74,7 +84,9 @@ function I8080() {
     };
 
     // r - 00 (bc), 01 (de), 10 (hl), 11 (sp)
-    this.rp = function(r) { return r != 6 ? (this.regs[r] << 8) | this.regs[r + 1] : this.sp; };
+    this.rp = function(r) {
+        return r != 6 ? (this.regs[r] << 8) | this.regs[r + 1] : this.sp;
+    };
 
     this.set_rp = function(r, w16) {
         if (r != 6) {
@@ -142,25 +154,59 @@ function I8080() {
         this.cf = f & F_CARRY ? 1 : 0;
     };
 
-    this.bc = function() { return this.rp(0); };
-    this.de = function() { return this.rp(2); };
-    this.hl = function() { return this.rp(4); };
+    this.bc = function() {
+        return this.rp(0);
+    };
+    this.de = function() {
+        return this.rp(2);
+    };
+    this.hl = function() {
+        return this.rp(4);
+    };
 
-    this.b = function() { return this.reg(0); };
-    this.c = function() { return this.reg(1); };
-    this.d = function() { return this.reg(2); };
-    this.e = function() { return this.reg(3); };
-    this.h = function() { return this.reg(4); };
-    this.l = function() { return this.reg(5); };
-    this.a = function() { return this.reg(7); };
+    this.b = function() {
+        return this.reg(0);
+    };
+    this.c = function() {
+        return this.reg(1);
+    };
+    this.d = function() {
+        return this.reg(2);
+    };
+    this.e = function() {
+        return this.reg(3);
+    };
+    this.h = function() {
+        return this.reg(4);
+    };
+    this.l = function() {
+        return this.reg(5);
+    };
+    this.a = function() {
+        return this.reg(7);
+    };
 
-    this.set_b = function(v) { this.set_reg(0, v); };
-    this.set_c = function(v) { this.set_reg(1, v); };
-    this.set_d = function(v) { this.set_reg(2, v); };
-    this.set_e = function(v) { this.set_reg(3, v); };
-    this.set_h = function(v) { this.set_reg(4, v); };
-    this.set_l = function(v) { this.set_reg(5, v); };
-    this.set_a = function(v) { this.set_reg(7, v); };
+    this.set_b = function(v) {
+        this.set_reg(0, v);
+    };
+    this.set_c = function(v) {
+        this.set_reg(1, v);
+    };
+    this.set_d = function(v) {
+        this.set_reg(2, v);
+    };
+    this.set_e = function(v) {
+        this.set_reg(3, v);
+    };
+    this.set_h = function(v) {
+        this.set_reg(4, v);
+    };
+    this.set_l = function(v) {
+        this.set_reg(5, v);
+    };
+    this.set_a = function(v) {
+        this.set_reg(7, v);
+    };
 
     this.next_pc_byte = function(m1) {
         var v = this.memory_read_byte(this.pc, m1);
@@ -168,7 +214,9 @@ function I8080() {
         return v;
     };
 
-    this.next_pc_word = function() { return this.next_pc_byte() | (this.next_pc_byte() << 8); };
+    this.next_pc_word = function() {
+        return this.next_pc_byte() | (this.next_pc_byte() << 8);
+    };
 
     this.inr = function(r) {
         var v = this.reg(r);
@@ -203,7 +251,9 @@ function I8080() {
         this.set_a(a);
     };
 
-    this.add = function(r, carry) { this.add_im8(this.reg(r), carry); };
+    this.add = function(r, carry) {
+        this.add_im8(this.reg(r), carry);
+    };
 
     this.sub_im8 = function(v, carry) {
         var a = this.a();
@@ -218,7 +268,9 @@ function I8080() {
         this.set_a(a);
     };
 
-    this.sub = function(r, carry) { this.sub_im8(this.reg(r), carry); };
+    this.sub = function(r, carry) {
+        this.sub_im8(this.reg(r), carry);
+    };
 
     this.cmp_im8 = function(v) {
         var a = this.a(); // Store the accumulator before substraction.
@@ -226,7 +278,9 @@ function I8080() {
         this.set_a(a); // Ignore the accumulator value after substraction.
     };
 
-    this.cmp = function(r) { this.cmp_im8(this.reg(r)); };
+    this.cmp = function(r) {
+        this.cmp_im8(this.reg(r));
+    };
 
     this.ana_im8 = function(v) {
         var a = this.a();
@@ -239,7 +293,9 @@ function I8080() {
         this.set_a(a);
     };
 
-    this.ana = function(r) { this.ana_im8(this.reg(r)); };
+    this.ana = function(r) {
+        this.ana_im8(this.reg(r));
+    };
 
     this.xra_im8 = function(v) {
         var a = this.a();
@@ -252,7 +308,9 @@ function I8080() {
         this.set_a(a);
     };
 
-    this.xra = function(r) { this.xra_im8(this.reg(r)); };
+    this.xra = function(r) {
+        this.xra_im8(this.reg(r));
+    };
 
     this.ora_im8 = function(v) {
         var a = this.a();
@@ -265,7 +323,9 @@ function I8080() {
         this.set_a(a);
     };
 
-    this.ora = function(r) { this.ora_im8(this.reg(r)); };
+    this.ora = function(r) {
+        this.ora_im8(this.reg(r));
+    };
 
     // r - 0 (bc), 2 (de), 4 (hl), 6 (sp)
     this.dad = function(r) {
@@ -280,7 +340,9 @@ function I8080() {
         this.pc = w16;
     };
 
-    this.ret = function() { this.pc = this.pop(); };
+    this.ret = function() {
+        this.pc = this.pop();
+    };
 
     this.pop = function() {
         var v = this.memory_read_word(this.sp, 2);
@@ -913,7 +975,15 @@ function I8080() {
         return cpu_cycles;
     };
 
-    this.instruction = function() { return this.execute(this.next_pc_byte(1)); };
+    this.instruction = function(interrupt) {
+        if (this.iff != 0 && interrupt) {
+            this.iff = 0;
+            return this.execute(0xFF);
+        }
+        return this.execute(this.next_pc_byte(1));
+    };
 
-    this.jump = function(addr) { this.pc = addr & 0xffff; };
+    this.jump = function(addr) {
+        this.pc = addr & 0xffff;
+    };
 }

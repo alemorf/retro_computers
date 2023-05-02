@@ -1,0 +1,55 @@
+/* Стиль меню */
+
+ul.menu, ul.menu ul {
+  margin: 0;
+  padding: 0;
+  font-family: Arial;
+  background: #CCC;
+  color: black;
+}
+ul.menu { /* Главное меню */
+  margin-bottom: 8px;
+  margin-top: 8px;
+}
+ul.menu ul { /* Выпадающее меню */
+  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.3), inset 0 0 10px #EEE;
+  border-radius: 2px;
+  padding: 3px;
+}
+ul.menu li { /* Элемент меню */
+  list-style: none;
+  padding: 0;
+}
+ul.menu div { /* Элемент меню */
+  padding: 4px 10px 4px 10px;
+}
+ul.menu div:hover { /* Элемент меню при наведении курсора мыши */
+  background: #AAF;
+}
+.menu hr { /* Разделитель меню */
+  border: none;
+  border-top: 1px solid #888;
+  margin: 3px 0 6px 0;
+}
+
+/* Расположение элементов */
+
+ul.menu, ul.menu ul {
+  display: inline-block; /* Выпадающее меню по ширине содержимого */
+}
+ul.menu {
+  display: block; /* Главное меню по ширине экрана главное меню */
+}
+ul.menu ul {
+  position: absolute; /* Вычисляемое положение */
+}
+ul.menu li {
+  display: inline-block; /* Элементы главного меню расположены по горизонтали */
+}
+ul.menu ul li {
+  display: block; /* Элементы выпадающего менб расположены по вертикали */
+}
+ul.menu ul { /* Выпадающее меню по умолчанию скрыто */
+  visibility: hidden;
+}
+

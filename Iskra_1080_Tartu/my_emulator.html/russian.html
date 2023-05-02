@@ -5,42 +5,52 @@
 Iskra 1080 Tartu online emulator
 Copyright 26-Aug-2022 Alemorf, aleksey.f.morozov@yandex.ru
 --->
+<link href="menu.css" rel="stylesheet">
+<link href="iskra1080debuger.css" rel="stylesheet">
 <style>
-#loadmenu {
-    margin: 8px;
-    display: none;
-    background: gray;
-    color: white;
-    position: absolute;
-    padding: 8px;
-    height: 480px;
-    overflow: auto;
-}
-#loadmenu > div {
-    padding-bottom: 4pt;
-    cursor: pointer;
+.button {
     text-align: left;
+    margin-left: 8px;
 }
-#loadmenu > div:hover {
-    text-decoration: underline;
+.button > span {
+    display: table-cell;
 }
-.keyb {
-    margin-top: 6px;
-}
-.keyb td {
+.button > div {
+    display: table-cell;
+    border: 2px solid white;
     border-radius: 4px;
     cursor: pointer;
     background: #C0C0C0;
     font-family: Arial;
     font-size: 11px;
-    width: 35px;
-    height: 38px;
+    min-width: 32px;
+    width: 32px;
+    min-height: 40px;
+    height: 40px;
     text-align: center;
     padding: 2px;
     vertical-align: middle;
 }
-.keyb th {
+.led {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    font-family: Arial;
+    font-size: 11px;
+    min-width: 40px;
+}
+.led > div {
+    margin:3 auto;
+    text-align: center;
+    border-radius: 16px;
+    background: #CCC;
     width: 16px;
+    height: 16px;
+    box-shadow: inset -1px -1px 8px #888;
+}
+.ledactive > div {
+    background: #F88;
+    box-shadow: inset -1px -1px 8px #800;
 }
 #iskra1080canvas {
     image-rendering: optimizeSpeed;             /* Older versions of FF          */
@@ -60,177 +70,166 @@ body {
     -o-user-select: none;
     user-select: none;
 }
-.led {
-    font-family: Arial;
-    font-size: 11px;
-    color: silver;
-}
-.led > div {
-    margin:3 auto;
-    text-align: center;
-    border-radius: 16px;
-    background: silver;
-    width: 16px;
-    height: 16px;
-}
-.ledactive > div {
-    background: red;
-}
 </style>
 </head>
 <body>
 <h1>Эмулятор Искра 1080 Тарту</h1>
-<script src="disk0.js" type="application/javascript"></script>
+
+<div id="debuger"></div>
+
+<ul class="menu"  style="width:768px">
+  <li><div>Перезагрузка</div>
+    <ul>
+      <li id="powerResetButton"><div>Бейсик</div></li>
+      <li id="powerResetCpmButton"><div>Локальная сеть</div></li>
+      <li id="powerResetExtButton"><div>Плата расширения</div></li>
+      <hr>
+      <li><div>Программа с сервера</div>
+        <ul id="menuLoad">
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><div>Загрузить диск</div>
+    <ul>
+      <li id="loadFloppyMenuItem0"><div>Диск A:</div></li>
+      <li id="loadFloppyMenuItem1"><div>Диск B:</div></li>
+    </ul>
+  </li>
+  <li><div>Отладка</div>
+    <ul>
+      <li id="debugerStop"><div>Остановить программу</div></li>
+    </ul>
+  </li>
+</ul>
+
 <script src="iskra1080rom.js" type="application/javascript"></script>
 <script src="filelist.js" type="application/javascript"></script>
+<script src="menu.js" type="application/javascript"></script>
 <script src="i8080.js" type="application/javascript"></script>
+<script src="iskra1080debuger.js" type="application/javascript"></script>
+<script src="iskra1080floppy.js" type="application/javascript"></script>
 <script src="iskra1080keyboard.js" type="application/javascript"></script>
 <script src="iskra1080video.js" type="application/javascript"></script>
+<script src="iskra1080extboot.js" type="application/javascript"></script>
+<script src="iskra1080extrom.js" type="application/javascript"></script>
+<script src="iskra1080ext.js" type="application/javascript"></script>
 <script src="iskra1080emu.js" type="application/javascript"></script>
 <script src="iskra1080floppyController.js" type="application/javascript"></script>
 
 <center style="width:770px">
 
-<div id="loadMenu"></div>
-
 <canvas id="iskra1080canvas"></canvas><br>
 
-<table class="keyb" cellspacing="2">
-<tr>
-<th></th>
-<td colspan="6" id="loadButton">Загрузить</div>
-<th></th>
-<th></th>
-<td colspan="6" id="powerResetButton">Сброс в BASIC</div>
-<th></th>
-<th></th>
-<td colspan="6" id="powerResetCpmButton">Сброс в CP/M</div>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-<th id="led0" colspan="2" class="led"><div></div>Caps</th>
-<th id="led1" colspan="2" class="led"><div></div>Num</th>
-<th></th>
-<th></th>
-<td colspan="2" id="resetButton" style="background:#FFC0C0">RST</td>
-</tr>
+<div class="button" style="margin-top:8px;margin-bottom:8px">
+<span style="min-width:636px"></span>
+<span id="led0" class="led"><div></div>Caps</span>
+<span id="led1" class="led"><div></div>Num</span>
+<div id="resetButton" style="background:#FFC0C0">RST</div>
+</div>
 
-<tr>
-<th>&nbsp;</th>
-</tr>
+<div class="button">
+<span style="min-width:24px"></span>
+<div id="key48">!<br>1</div>
+<div id="key40">"<br>2</div>
+<div id="key32">#<br>3</div>
+<div id="key16">¤<br>4</div>
+<div id="key8">%<br>5</div>
+<div id="key0">&<br>6</div>
+<div id="key4">'<br>7</div>
+<div id="key12">(<br>8</div>
+<div id="key20">)<br>9</div>
+<div id="key36">_<br>0</div>
+<div id="key44">=<br>-</div>
+<div id="key52">~<br>^</div>
+<div id="key68">|<br>\</div>
+<div id="key60">RUB</div>
+<span style="min-width:52px"></span>
+<div id="key74">F<sub>1</sub></div>
+<div id="key75">F<sub>2</sub></div>
+<div id="key72">F<sub>3</sub></div>
+</div>
 
-<tr>
-<th></th>
-<td id="key48" colspan="2">!<br>1</td>
-<td id="key40" colspan="2">"<br>2</td>
-<td id="key32" colspan="2">#<br>3</td>
-<td id="key16" colspan="2">¤<br>4</td>
-<td id="key8" colspan="2">%<br>5</td>
-<td id="key0" colspan="2">&<br>6</td>
-<td id="key4" colspan="2">'<br>7</td>
-<td id="key12" colspan="2">(<br>8</td>
-<td id="key20" colspan="2">)<br>9</td>
-<td id="key36" colspan="2">_<br>0</td>
-<td id="key44" colspan="2">=<br>-</td>
-<td id="key52" colspan="2">~<br>^</td>
-<td id="key68" colspan="2">|<br>\</td>
-<td id="key60" colspan="2">RUB</td>
-<th></th>
-<th></th>
-<th></th>
-<td id="key74" colspan="2">F<sub>1</sub></td>
-<td id="key75" colspan="2">F<sub>2</sub></td>
-<td id="key72" colspan="2">F<sub>3</sub></td>
-</tr>
-<tr>
-<td id="key66" colspan="2">TAB</td>
-<td id="key65" colspan="2">Й<br>q</td>
-<td id="key57" colspan="2">Ц<br>w</td>
-<td id="key41" colspan="2">У<br>e</td>
-<td id="key33" colspan="2">К<br>r</td>
-<td id="key17" colspan="2">Е<br>t</td>
-<td id="key9"  colspan="2">Н<br>y</td>
-<td id="key1"  colspan="2">Г<br>u</td>
-<td id="key5"  colspan="2">Ш<br>i</td>
-<td id="key13" colspan="2">Щ<br>o</td>
-<td id="key21" colspan="2">З<br>p</td>
-<td id="key37" colspan="2">Х<br>{</td>
-<td id="key45" colspan="2">Ъ<br>}</td>
-<td id="key53" colspan="2">?<br>/</td>
-<td id="key76" colspan="2">ESC</td>
-<th></th>
-<th></th>
-<td id="key61" colspan="2">7<br>&nbsp;</td>
-<td id="key69" colspan="2">8<br>↑</td>
-<td id="key77" colspan="2">9<br>&nbsp;</td>
-</tr>
-<tr>
-<th></th>
-<td id="key67" colspan="2">CTR</td>
-<td id="key50" colspan="2">Ф<br>a</td>
-<td id="key58" colspan="2">Ы<br>s</td>
-<td id="key42" colspan="2">В<br>d</td>
-<td id="key34" colspan="2">А<br>f</td>
-<td id="key18" colspan="2">П<br>g</td>
-<td id="key10" colspan="2">Р<br>h</td>
-<td id="key2" colspan="2">О<br>j</td>
-<td id="key6" colspan="2">Л<br>k</td>
-<td id="key14" colspan="2">Д<br>l</td>
-<td id="key22" colspan="2">Ж<br>[</td>
-<td id="key38" colspan="2">Э<br>]</td>
-<td id="key46" colspan="2">*<br>:</td>
-<td id="key54" colspan="2">+<br>;</td>
-<td id="key64" colspan="2">ВК</td>
-<th></th>
-<td id="key62" colspan="2">4<br>←</td>
-<td id="key70" colspan="2">5</td>
-<td id="key78" colspan="2">6<br>→</td>
-</tr>
-<tr>
-<th></th>
-<th></th>
-<td id="key27" colspan="2">↕</td>
-<td id="key51" colspan="2">Я<br>z</td>
-<td id="key59" colspan="2">Ч<br>x</td>
-<td id="key43" colspan="2">С<br>c</td>
-<td id="key35" colspan="2">М<br>v</td>
-<td id="key19" colspan="2">И<br>b</td>
-<td id="key11" colspan="2">Т<br>n</td>
-<td id="key3" colspan="2">Ь<br>m</td>
-<td id="key7" colspan="2">Б<br>`</td>
-<td id="key15" colspan="2">Ю<br>@</td>
-<td id="key23" colspan="2">Ё<br>&nbsp;</td>
-<td id="key39" colspan="2">&lt;<br>,</td>
-<td id="key47" colspan="2">><br>.</td>
-<td id="key12" colspan="2">↕</td>
-<th></th>
-<th></th>
-<td id="key63" colspan="2">1<br>&nbsp;</td>
-<td id="key71" colspan="2">2<br>↓</td>
-<td id="key79" colspan="2">3<br>&nbsp;</td>
-</tr>
-<tr>
-<th></th>
-<th></th>
-<th></th>
-<td id="key30" colspan="2">CAP</td>
-<td id="key24" colspan="2">RUS</td>
-<td id="key31" colspan="14">&nbsp;</td>
-<td id="key25" colspan="2">LAT</td>
-<td id="key28" colspan="2">NUM</td>
-<td id="key29" colspan="2">DEL</td>
-<td id="key26" colspan="2">COP</td>
-<th></th>
-<th></th>
-<th></th>
-<td id="key55" colspan="2">0</td>
-<td id="key49" colspan="2">.</td>
-</tr>
-</table>
+<div class="button">
+<div id="key66">TAB</div>
+<div id="key65">Й<br>q</div>
+<div id="key57">Ц<br>w</div>
+<div id="key41">У<br>e</div>
+<div id="key33">К<br>r</div>
+<div id="key17">Е<br>t</div>
+<div id="key9" >Н<br>y</div>
+<div id="key1" >Г<br>u</div>
+<div id="key5" >Ш<br>i</div>
+<div id="key13">Щ<br>o</div>
+<div id="key21">З<br>p</div>
+<div id="key37">Х<br>{</div>
+<div id="key45">Ъ<br>}</div>
+<div id="key53">?<br>/</div>
+<div id="key76">ESC</div>
+<span style="min-width:36px"></span>
+<div id="key61">7<br>&nbsp;</div>
+<div id="key69">8<br>↑</div>
+<div id="key77">9<br>&nbsp;</div>
+</div>
+
+<div class="button">
+<span style="min-width:12px"></span>
+<div id="key67">CTR</div>
+<div id="key50">Ф<br>a</div>
+<div id="key58">Ы<br>s</div>
+<div id="key42">В<br>d</div>
+<div id="key34">А<br>f</div>
+<div id="key18">П<br>g</div>
+<div id="key10">Р<br>h</div>
+<div id="key2">О<br>j</div>
+<div id="key6">Л<br>k</div>
+<div id="key14">Д<br>l</div>
+<div id="key22">Ж<br>[</div>
+<div id="key38">Э<br>]</div>
+<div id="key46">*<br>:</div>
+<div id="key54">+<br>;</div>
+<div id="key64">ВК</div>
+<span style="min-width:24px"></span>
+<div id="key62">4<br>←</div>
+<div id="key70">5</div>
+<div id="key78">6<br>→</div>
+</div>
+
+<div class="button">
+<span style="min-width:24px"></span>
+<div id="key27">↕</div>
+<div id="key51">Я<br>z</div>
+<div id="key59">Ч<br>x</div>
+<div id="key43">С<br>c</div>
+<div id="key35">М<br>v</div>
+<div id="key19">И<br>b</div>
+<div id="key11">Т<br>n</div>
+<div id="key3">Ь<br>m</div>
+<div id="key7">Б<br>`</div>
+<div id="key15">Ю<br>@</div>
+<div id="key23">Ё<br>&nbsp;</div>
+<div id="key39">&lt;<br>,</div>
+<div id="key47">><br>.</div>
+<div id="key12">↕</div>
+<span style="min-width:52px"></span>
+<div id="key63">1<br>&nbsp;</div>
+<div id="key71">2<br>↓</div>
+<div id="key79">3<br>&nbsp;</div>
+</div>
+
+<div class="button">
+<span style="min-width:36px"></span>
+<div id="key30">CAP</div>
+<div id="key24">RUS</div>
+<div id="key31" style="min-width:284px">&nbsp;</div>
+<div id="key25">LAT</div>
+<div id="key28">NUM</div>
+<div id="key29">DEL</div>
+<div id="key26">COP</div>
+<span style="min-width:108px"></span>
+<div id="key55">0</div>
+<div id="key49">.</div>
+</div>
 
 </center>
 

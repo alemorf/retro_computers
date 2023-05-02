@@ -13,7 +13,9 @@ function Iskra1080Video(canvas, memory, palette) {
 
     let mode = 0;
 
-    this.setMode = function(m) { mode = m; };
+    this.setMode = function(m) {
+        mode = m;
+    };
 
     const palette16 = [
         [

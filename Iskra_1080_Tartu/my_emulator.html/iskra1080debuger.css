@@ -1,0 +1,42 @@
+#debuger {
+    width: 768px;
+}
+
+#debuger > table {
+    width: 100%;
+    background: #000080;
+    border-collapse: collapse;
+}
+
+#debuger > table > tbody > tr > td {
+    vertical-align: top;
+    font-family: monospace;
+    font-size: 14px;
+    color: white;
+    white-space: nowrap;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-right: 8px;
+}
+
+#debuger > table > tbody > tr > td:first-child {
+    width: 80%;
+}
+
+#debuger > table > tbody > tr:first-child > td {
+    border-bottom: 2px solid #C0C0C0;
+}
+
+#debuger > table > tbody > tr > td:last-child {
+    border-left: 2px solid #C0C0C0;
+}
+
+#debuger .pc {
+    color: yellow;
+}
+
+#debuger .cur {
+    background: #C0C0C0;
+    color: black;
+}
+

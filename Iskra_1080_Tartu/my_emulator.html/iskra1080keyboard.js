@@ -32,10 +32,10 @@ function Iskra1080Keyboard() {
 
         115 : 24, // RUS
         116 : 25, // LAT
-        45 : 26,  // COP на Insert
+        109 : 26, // COP на правый -
         16 : 27,  // SHIFT
         111 : 28, // NUM LOCK на правом /*
-        8 : 29,   // BKSPC
+        8 : 60,   // 29 BKSPC
         20 : 30,  // CAPS
         32 : 31,  // SPACE
 
@@ -52,7 +52,8 @@ function Iskra1080Keyboard() {
         69 : 41,  // E
         68 : 42,  // D
         67 : 43,  // C
-        173 : 44, // -= на -_
+        173 : 44, // -= на -_ (Firefox)
+        189 : 44, // -= на -_ (Chrome)
         221 : 45, // }Ъ
         106 : 46, // :* на правой *
         190 : 47, // .>
@@ -63,14 +64,16 @@ function Iskra1080Keyboard() {
         90 : 51,  // Z
         107 : 52, // +; на правом +
         191 : 53, // /?
-        61 : 54,  // ~^ на +=
+        61 : 54,  // ~^ на += (Firefox)
+        187 : 54, // ~^ на += (Chrome)
         96 : 55,  // Правый 0
+        45 : 55,  // Правый 0
 
         // : 56, // Неизвестная клавиша!
         87 : 57, // W
         83 : 58, // S
         88 : 59, // X
-        46 : 60, // DEL
+        46 : 29, // 60 DEL
         36 : 61,
         103 : 61, // 7 HOME
         37 : 62,
@@ -110,9 +113,15 @@ function Iskra1080Keyboard() {
         if (o) {
             ui[i] = o;
             o._i = i;
-            o.onmousedown = function() { processIskra1080Key(true, this._i); };
-            o.onmouseup = function() { processIskra1080Key(false, this._i); };
-            o.onmouseout = function() { processIskra1080Key(false, this._i); };
+            o.onmousedown = function() {
+                processIskra1080Key(true, this._i);
+            };
+            o.onmouseup = function() {
+                processIskra1080Key(false, this._i);
+            };
+            o.onmouseout = function() {
+                processIskra1080Key(false, this._i);
+            };
         }
     }
 
@@ -146,11 +155,19 @@ function Iskra1080Keyboard() {
 
     let select = 0;
 
-    this.read = function(addr) { return matrix[select]; };
+    this.read = function(addr) {
+        return matrix[select];
+    };
 
-    this.write = function(addr, data) { select = data & 0x0F; };
+    this.write = function(addr, data) {
+        select = data & 0x0F;
+    };
 
-    document.onkeydown = function(e) { return processKey(true, e); };
+    document.onkeydown = function(e) {
+        return processKey(true, e);
+    };
 
-    document.onkeyup = function(e) { return processKey(false, e); };
+    document.onkeyup = function(e) {
+        return processKey(false, e);
+    };
 }
