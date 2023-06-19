@@ -1,0 +1,2 @@
+#!/bin/bash
+st-flash --reset --format ihex write build/iskra_1080_ext.hex

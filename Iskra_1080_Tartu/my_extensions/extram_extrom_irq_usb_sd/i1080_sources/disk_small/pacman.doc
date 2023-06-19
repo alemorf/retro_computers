@@ -1,0 +1,46 @@
+(Updated and corrected 04/03/82)
+
+  The compiled version of PACMAN (PACMAN95.OBJ) can be easily 
+patched any terminal that has the following characteristics:
+
+1.  A CLEAR SCREEN command of 2 characters of less
+
+2.  A CURSOR ADDRESSING command that is of the form:
+     <ESC> <char> <ROW> <COLUMN>    with offset = 32
+
+3.  A CURSOR ON and CURSOR OFF command that is of the form:
+     <char> <char> <char>
+    (This is not necessary however)
+
+
+  The points to patch for CLEAR SCREEN are:
+Address: 2FDAH ====> First character    (Currently ESC)
+         2FDBH ====> Second character   (Currently ";")
+
+  The points to patch for CURSOR ADDRESSING are:
+Address: 37F3H ====> First character    (Currently ESC)
+         37FCH ====> Second character   (Currently "=")
+
+  The points to patch for CURSOR ON are:
+Address: 3D9EH ====> First character    (Currently ESC)
+         3D9FH ====> Second character   (Currently ".")
+         3DA0H ====> Third character    (Currently "1")
+
+  The points to patch for CURSOR OFF are:
+Address: 27DCH ====> First character    (Currently ESC)
+         27DDH ====> Second character   (Currently ".")
+         27DEH ====> Third character    (Currently "0")
+
+  The direction keys are located:
+Address: 347BH ====> Move LEFT          (Currently "S")
+         34ABH ====> Move DOWN          (Currently "X")
+         3493H ====> Move UP            (Currently "E")
+         3487H ====> Move RIGHT         (Currently "D")
+
+  The QUIT character ("Q") is located at address 34E7H.
+
+This version is set-up to work with a TeleVideo 950 terminal.
+PACMAN89.OBJ is set-up to work with an H89 terminal.  Both
+files are the same, except for the patching information.
+
+

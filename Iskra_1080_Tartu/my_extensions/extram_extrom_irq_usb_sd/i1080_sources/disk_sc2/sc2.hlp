@@ -1,0 +1,254 @@
++ Hotflash notes.
+* General Operation
+A Initial Character Meanings:
+
+ /  -- Starts a command entry.
+ "  -- Starts text entry.
+ '  -- Starts Repeating Text entry.
+ =  -- Specifies a cell to jump to.
+ !  -- Forces recalculation.
+ ;  -- Puts cursor in other window.
+ &  -- Resumes Execute (.XQT) file control.
+
+ Four arrow keys move the Spreadsheet Cursor.
+ Four CTRL+key combinations also move the cursor:
+        CTRL/E   CTRL/X   CTRL/S   CTRL/D
+        UP       DOWN     LEFT     RIGHT
+
+ Any other character starts formula entry.
+B File Name Specification:
+
+ A file name identifies a file (such as a spreadsheet) on disk.  File names may contain from 1 to 8 characters (but NOT . , : ; [ ] * ?).
+
+ If the file you name is not (or should not be) on the SuperCalc2 disk, the file name must be preceded by the letter of the disk drive and a colon [:].
+
+ Ordinarily SuperCalc2 spreadsheets are automatically assigned an extension of .CAL, which follows the file name.  You do not need to enter this extension.  If you need a file with a different extension (such as .XQT for execute files), you must specify it with a period [.] and up to three characters.
+
+   Examples:
+         BALANCE
+         1Exempt
+         B:Feb24
+         B:GROUP.XQT
+
+  [CR] allows you to look at the disk directory or list of available files. 
+ [ESC] supplies the name of the last file loaded in the command line.
+C Range Designators:
+
+Many commands require you to specify what cells are affected by the command.  The middle status line prompts you (depending on the command and use) for a 'Row', 'Column', 'Cell', 'Row Range', 'Column Range', or 'Range'.
+
+   RANGE --- any of the following.
+   ROW ----- a row number from 1 through 254, referring to the entire row.
+   COLUMN -- a column letter from A through BK, referring to the entire column.
+   CELL  --- a column letter followed by a row number, such as J10.
+   ROW RANGE ---- two row numbers, separated by a colon [:], e.g. 43:210.
+   COLUMN RANGE - two column letters separated by a colon [:], e.g. A:BC.
+   BLOCK --- two 'cell's, separated by a colon [:], for example A7:F12, referring to all cells between the two designated.
+
+ In addition:
+   Entering just [CR] (empty range) means the current cell, row or column.
+   ALL  means the range A1:<Last Col/Row>.
+   Entering [ESC] allows the arrow keys to be used to "point" to a desired cell  ([CR] enters that cell designation).
+D  Slash Commands:
+   A(rrange)--- Sorts cells in ascending or descending order.
+   B(lank)----- Removes (empties) contents of cells.
+   C(opy)------ Duplicates contents and display format of cells.
+   D(elete)---- Erases entire rows or columns.
+   E(dit)------ Allows editing of cell contents.
+   F(ormat)---- Sets display format at Entry, Row, Column, or Global levels.
+   G(lobal)---- Changes global display or calculation options.
+   I(nsert)---- Adds empty rows or columns.
+   L(oad)------ Reads spreadsheet (or portion) from disk into the workspace.
+   M(ove)------ Inserts existing rows or columns at new positions.
+   O(utput)---- Sends display or cell contents to printer, screen or disk.
+   P(rotect)--- Prevents future alteration of cells.
+   Q(uit)------ Ends the SuperCalc2 program.
+   R(eplicate)- Reproduces contents of partial rows or columns.
+   S(ave)------ Stores the current spreadsheet on disk.
+   T(itle)----- Locks upper rows or left-hand columns from scrolling.
+   U(nprotect)- Allows alteration of protected cells.
+   W(indow)---- Splits the screen display.
+   X(eXecute)-- Accepts commands and data from an .XQT file.
+   Z(ap)------- Erases spreadsheet and format settings from workspace.
+E Formula Adjustment Options:
+
+ Formula Adjustment determines how cell references in formulas change when moved to new positions.
+
+   N(o adjust) - Leaves all cell references (like J10) unchanged.
+   A(sk) ------- Asks you whether to change or leave each cell reference in each source cell.
+   V(alues) ---- Transfers cell values, rather than cell contents (formulas).
+   +  -- Adds the source cell value to the destination cell value and places the resulting value in the destination cell.
+   -  -- Subtracts the source cell value from the destination cell  value and places the resulting value in the destination cell.
+   *  -- Multiplies the source cell value by the destination cell  value and places the resulting value in the destination cell.
+   /  -- Divides the destination cell value by the source cell value and  places the resulting value in the destination cell.
+
+ If no option is specified (back up and type [CR] instead of [,]) all cell references adjust automatically.
+F Title Lock:
+
+ Tells SuperCalc2 to "lock" the leftmost columns and/or uppermost rows so that they are not scrolled.
+
+ Options:
+
+     H(orizontal) - Locks current row and all rows above it.
+
+     V(ertical) --- Locks current column and all those to the left.
+
+     B(oth) --- Locks both H (rows) and V (columns).
+
+     C(lear) -- Erases all title locks.
+G Global Command Options:
+
+    R(ow-wise) ---- Recalculation by rows from left to right.  All of Row 1 is calculated, then all of Row 2, etc. (default).
+    C(olumn-wise) - Recalculation by columns from top to bottom.  Column A is calculated, then all of Column B, etc.
+    A(utomatic Recalculation) - The entire spreadsheet recalculates each time a number or formula is entered (default).
+    M(anual Recalculation) - The spreadsheet recalculates only when you enter "!".
+
+ Select the following options to change them from Yes to No or No to Yes:
+
+    T(ab) --- The Spreadsheet Cursor skips any empty or protected cell as it advances.  Default is No.
+    B(orders) - The row number and column letter borders display.  Default is Yes.
+    F(ormula Display) - The contents (formulas rather than calculated values) display.  Default is No (values show).
+    N(ext) ---- The Spreadsheet Cursor automatically advances (in the same direction as it last moved) when you press [CR].  Default is Yes.
+H Scope of Formats:
+
+Format controls the display of cell values.  It does not affect cell contents.
+
+    E(ntry) -- Sets display format for a cell or group of cells (range).
+
+    R(ow) ---- Sets display format for all cells in a range of rows which are not formatted as Entries.
+
+    C(olumn) - Sets display format (or width) for a range of columns.  Affects cells with no Entry or Row format.
+
+    G(lobal) - Sets display format and column width for all cells not formatted by Entry, Row, or Column formats.
+
+    D(efine) - Sets User-defined format table.
+I Quit Options:
+
+     Y(es) -- Exits SuperCalc2.  This discards all spreadsheet data not /S(aved) on disk.
+
+     N(o) --- Returns to the current spreadsheet.
+
+     T(o) --- Asks what program you want to run next.  SuperCalc2 ends (as if you answered Y) and automatically starts the program you named.
+J Zap Options:
+
+     Y(es) -- Erases the spreadsheet, including all formats, definitions and settings.
+
+     N(o) --- Returns to the current spreadsheet.
+
+     C(ontents) Erases the contents and formats of the spreadsheet, but leaves the User-Defined Format Table as currently set.
+K Window (Split-Screen) Options:
+
+     H(orizontal) -- Splits display into two windows at current row.
+
+     V(ertical) ---- Splits display into two windows at current column.
+
+     C(lear) ------- Erases split display (returns to single window).
+
+     S(ynchronize) - Causes both windows to scroll simultaneously when moving parallel to split.
+
+     U(nsynch.) ---- Causes only current window to scroll, regardless of direction.
+L Format Options:
+ Enter one of the following types to change the current format setting:
+     I(nteger) -- Displays numbers rounded to a whole number.
+     $ ---------- Displays numbers with two digits after decimal.
+     E(xponent) - Displays numbers in scientific notation.
+     G(eneral) -- Displays numbers as they "best fit" in cell.
+     * ---------- Displays numbers as a string of asterisks for graphing.
+     U(ser-defined) 1-8 - Selects the specified user-defined format option (set by /Format,Define).
+     H(ide) ----- Hides spreadsheet data (choosing one of the above settings redisplays a 'hidden' range).
+
+ Enter these settings for additional format control:
+     R(ight) -- Displays numbers right-justified.
+     L(eft) --- Displays numbers left-justified.
+     T(ext)L(eft) - Displays text left-justified. Text longer than cell width, and repeating text is displayed in unoccupied cells to the right.
+     T(ext)R(ight)- Displays text strings right-justified.  The beginning of text longer than cell width is truncated, and repeating text is not repeated.
+     0 - 127 -- Column width for Global or Column formats.
+     D(efault)- Clears specified format level.
+M Load Options:
+
+     A(ll) ---- Loads the complete spreadsheet from disk and resets all format settings, definitions, and global display settings from the newly loaded spreadsheet.
+
+     P(art) --- Loads the specified portion of a spreadsheet from disk into the specified portion of the current spreadsheet. Global settings are not changed.
+
+     C(onsolidate) - Adds values of cells from a spreadsheet from disk to the corresponding cells of the current spreadsheet.  (Equivalent to /Load,[file],Part,All,A1,+.)
+N Output Report Options:
+
+     D(isplay) -- Generates report formatted in rows and columns, essentially like the spreadsheet is displayed.
+
+     C(ontents) - Lists the exact contents (text or formulas) of all occupied cells, one per line.
+O Save Spreadsheet on Disk Options:
+
+     A(ll) ---- Text, formulas, current values, and all format settings and definitions for the spreadsheet are saved on disk.
+
+     V(alues) - Only text and current values of formulas (not the formulas themselves) are saved.
+
+     P(art) --- Allows choice of the above options on a portion of the spreadsheet.
+P Entry/Edit Options:
+
+ The first character determines whether you are entering a formula or a text string (label).  A quote mark (") starts a text string. An apostrophe (') starts a repeating text string. Any other character starts a formula.
+
+ While entering data, the arrow keys (which normally scroll around the spreadsheet) become editing keys:
+      Left arrow  - Backspace one character.
+          (or CTRL/S) 
+      Right arrow - Move right one character.
+          (or CTRL/D)
+      Up arrow    - Insert one blank.
+          (or CTRL/E)
+      Down arrow  - Delete one character.
+          (or CTRL/X)
+ Other keys also aid in editing the entry line:
+      [TAB]  - Moves the Entry Cursor to the beginning or alternately to the end of the entry.
+      [ESC]  - Enters the location of the Spreadsheet Cursor in the entry.  After pressing [ESC], the arrow keys can move the Spreadsheet Cursor to the desired cell, and any other key (such as +,-,*,/,etc.) fixes that current cell position in the entry.  To leave this mode, press [ESC] again and edit the line or press [CR] to enter the entry line.
+      CTRL/Z - Erases the entry.
+Q Output Destinations:
+
+      P(rinter) - Prints a report of the spreadsheet, using the setup codes entered when you installed SuperCalc2.
+
+      S(etup) --- Prints the report (as "P"), but allows you to specify special printer setup codes, paper width, page length, automatic form feeds or double spacing.
+
+      C(onsole) - Displays the report on screen as it would be printed (for a preview).
+
+      D(isk) ---- Outputs the report to a disk file (with a .PRN extension, unless another extension is specified) for later use.
+R Delete Options:
+
+      R(ow) ---- to delete a range of entire rows from the spreadsheet.
+
+      C(olumn) - to delete a range of entire columns.
+
+      F(ile) --- to delete (forever) a file that currently exists on disk.  (Pressing [ESC] enters the current file name on the command line.)
+S Arrange Options:
+
+      Sort Order - Rows and columns are always sorted (regardless of Ascending or Descending choice) in the following order of cell contents:
+                  Text cells
+                  Text Values
+                  Date Values
+                  Numeric Values
+                  Blank cells
+
+       Ascending -- sorts the range in ascending order (space; symbols in ASCII order; text a,A,...,z,Z; numbers 0,1,...)
+
+       Descending - sorts the range in descending order (numbers 9-0; text Z,z,...,A,a; symbols in reverse ASCII order; space)
+
+ A(djust)?
+
+       Y(es) --- Adjust cell references after the sort.
+       N(o) ---- Leave all cell references unchanged.
+T Welcome to SuperCalc2!
+
+SuperCalc2 is a powerful and easy-to-use electronic spreadsheet program.  It gives you the power to solve all types of financial, business, engineering and scientific problems.
+
+When you start into the program, you see an empty SuperCalc2 spreadsheet.  The spreadsheet is a grid of cells, rows and columns.  Each cell can hold one item of information.  Cells are identified by their column and row positions (such as A1 or BK254).
+
+You can enter several different types of information or data in any cell.  You can enter (one per cell):
+
+    NUMBERS or numeric values;
+    FORMULAS or mathematical calculations.  These formulas can consist of numbers or cell identifications, mathematical symbols and functions;
+    TEXT for labels and descriptions.
+
+When you start to type some data, it first appears at the bottom of your screen in one of the three status lines.  When you press [CR], the Return or Enter key, that data is put into the spreadsheet at the Spreadsheet Cursor position.
+
+If you have questions about what you can enter, ask for help.  When you press the question mark, SuperCalc2 tells you what the prompts mean or what command options are available.  Pressing any other key returns you to the program where you left it.
+
+The best way to learn SuperCalc2 is practice.  Try the exercises in the booklet "10 Minutes to SuperCalc2" and the lessons in the SuperCalc2 Users' Guide.
+!      Notes:  positions (such as A1 or BK254).
+
+You can enter 
