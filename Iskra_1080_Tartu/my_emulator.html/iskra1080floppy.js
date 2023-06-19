@@ -38,12 +38,11 @@ function Floppy(n) {
         this.save();
     };
 
-    this.get0 =
-        function() {
+    this.get0 = function() {
         return 40; // TODO: data[0];
-    }
+    };
 
-        this.read = function(offset) {
+    this.read = function(offset) {
         let o = offset * sector_size;
         if (o + sector_size > data.length)
             return [];

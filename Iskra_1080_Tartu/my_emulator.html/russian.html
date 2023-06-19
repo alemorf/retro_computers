@@ -92,8 +92,22 @@ body {
   </li>
   <li><div>Загрузить диск</div>
     <ul>
-      <li id="loadFloppyMenuItem0"><div>Диск A:</div></li>
-      <li id="loadFloppyMenuItem1"><div>Диск B:</div></li>
+      <li><div>Диск A:</div>
+        <ul>
+          <li id="loadFloppyMenuItem0"><div>Загрузить из файла</div></li>
+          <li><div>Загрузкить с сервера</div>
+            <ul id="menuFloppy0"></ul>
+          </li>
+        </ul>
+      </li>
+      <li><div>Диск B:</div>
+        <ul>
+          <li id="loadFloppyMenuItem1"><div>Загрузить из файла</div></li>
+          <li><div>Загрузкить с сервера</div>
+            <ul id="menuFloppy1"></ul>
+          </li>
+        </ul>
+      </li>
     </ul>
   </li>
   <li><div>Отладка</div>
@@ -105,6 +119,7 @@ body {
 
 <script src="iskra1080rom.js" type="application/javascript"></script>
 <script src="filelist.js" type="application/javascript"></script>
+<script src="floppylist.js" type="application/javascript"></script>
 <script src="menu.js" type="application/javascript"></script>
 <script src="i8080.js" type="application/javascript"></script>
 <script src="iskra1080debuger.js" type="application/javascript"></script>

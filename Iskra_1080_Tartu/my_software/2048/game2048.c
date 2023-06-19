@@ -1,5 +1,5 @@
-#define ESC_HOME_CURSOR  "\x1B\x3D\x20\x20"
-#define ESC_CLEAR_SCREEN "\x1B\x2A"
+#define ESC_HOME_CURSOR  "\x1B[H"
+#define ESC_CLEAR_SCREEN "\x1B[H\x1B[2J"
 
 //#pragma output noprotectmsdos
 //#pragma output nostreams
@@ -322,6 +322,8 @@ int test() {
 int main(int argc, char *argv[]) {
 	asm {
 		ld sp, 9000h
+		ld hl, 0
+		push hl
 	}
 	char c;
 	bool success;
@@ -333,22 +335,40 @@ int main(int argc, char *argv[]) {
 	initBoard();
 	while (true) {
 		c=getchar();
+		if (c == 27) {
+    		c = getchar();
+    		if (c == '[') {
+        		c = getchar();
+		        switch(c) {
+			        case 'A':
+			            c = 'W';
+			            break;
+			        case 'B':
+			            c = 'S';
+			            break;
+			        case 'D':
+			            c = 'A';
+			            break;
+			        case 'C':
+			            c = 'D';
+			            break;
+			        default:
+			            continue;
+		        }
+    		}
+        }		
 		switch(c) {
-			case 97:	// 'a' key
-			case 104:	// 'h' key
-			case 68:	// left arrow
+			case 'a':
+			case 'A':
 				success = moveLeft();  break;
-			case 100:	// 'd' key
-			case 108:	// 'l' key
-			case 67:	// right arrow
+			case 'd':
+			case 'D':
 				success = moveRight(); break;
-			case 119:	// 'w' key
-			case 107:	// 'k' key
-			case 65:	// up arrow
+			case 'w':
+			case 'W':
 				success = moveUp();    break;
-			case 115:	// 's' key
-			case 106:	// 'j' key
-			case 66:	// down arrow
+			case 's':
+			case 'S':
 				success = moveDown();  break;
 			default: success = false;
 		}
@@ -362,18 +382,18 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 		}
-		if (c=='q') {
+		if (c=='q' || c=='Q') {
 			printf("            QUIT? (y/n)         \n");
 			c=getchar();
-			if (c=='y') {
+			if (c=='y' || c=='Y') {
 				break;
 			}
 			prepareScreen();
 		}
-		if (c=='r') {
+		if (c=='r' || c=='R') {
 			printf("          RESTART? (y/n)       \n");
 			c=getchar();
-			if (c=='y') {
+			if (c=='y' || c=='Y') {
 				initBoard();
 			}
 			prepareScreen();

@@ -35,7 +35,7 @@ function Iskra1080Keyboard() {
         109 : 26, // COP на правый -
         16 : 27,  // SHIFT
         111 : 28, // NUM LOCK на правом /*
-        8 : 60,   // 29 BKSPC
+        8 : 29,   // 29 BKSPC
         20 : 30,  // CAPS
         32 : 31,  // SPACE
 
@@ -73,7 +73,7 @@ function Iskra1080Keyboard() {
         87 : 57, // W
         83 : 58, // S
         88 : 59, // X
-        46 : 29, // 60 DEL
+        46 : 60, // 60 DEL
         36 : 61,
         103 : 61, // 7 HOME
         37 : 62,

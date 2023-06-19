@@ -147,12 +147,34 @@ document.addEventListener("DOMContentLoaded", function() {
     // Загрузка дисков
     for (let i in floppy) {
         let j = i;
-        document.getElementById('loadFloppyMenuItem' + j).addEventListener("mousedown", function() {
+        document.getElementById('loadFloppyMenuItem' + j).onclick1 = function() {
             loadAs(function(fileName, data) {
                 floppy[j].select(binaryToArray(data));
             });
-        });
+        };
     }
+
+    // Загрузка дисков с сервера
+    function makeFloppyLoadMenu() {
+        for (let i in floppy) {
+            const ii = i;
+            let loadmenu = document.getElementById('menuFloppy' + i);
+            let html = "";
+            for (let i in floppyList)
+                html += "<li><div>" + floppyList[i].text + "</div></li>";
+            loadmenu.innerHTML = html;
+
+            for (let j = 0; j < loadmenu.childNodes.length; j++) {
+                const jj = j;
+                loadmenu.childNodes[j].onclick1 = function() {
+                    window.loadFloppyNumber = ii;
+                    include("floppy/" + floppyList[jj].file + ".js");
+                };
+            }
+        }
+    }
+    makeFloppyLoadMenu();
+
     makeMenu();
 
     // Для отрисовки
@@ -289,6 +311,13 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     window.loadFile = loadFile;
+
+    function loadFloppy(data) {
+        floppy[window.loadFloppyNumber].select(data);
+    }
+
+    window.loadFloppyNumber = 0;
+    window.loadFloppy = loadFloppy;
 
     let tickCount = 0;
 

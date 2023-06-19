@@ -22,6 +22,7 @@ ul.menu li { /* Элемент меню */
 }
 ul.menu div { /* Элемент меню */
   padding: 4px 10px 4px 10px;
+  white-space: nowrap;
 }
 ul.menu div:hover { /* Элемент меню при наведении курсора мыши */
   background: #AAF;

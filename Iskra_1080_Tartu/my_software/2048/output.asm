@@ -8,172 +8,233 @@ main:
 	ld (main_2_a), hl
 
 		ld sp, 9000h
+		ld hl, 0
+		push hl
 	
 ; 323 	asm {
 ; 324 		ld sp, 9000h
-; 325 	}
-; 326 	char c;
-; 327 	bool success;
-; 328 
-; 329     // TODO: if (argc == 2 && strcmp(argv[1],"test")==0) {
-; 330     // TODO: 	return test();
-; 331     // TODO: }
-; 332 
-; 333 	initBoard();
+; 325 		ld hl, 0
+; 326 		push hl
+; 327 	}
+; 328 	char c;
+; 329 	bool success;
+; 330 
+; 331     // TODO: if (argc == 2 && strcmp(argv[1],"test")==0) {
+; 332     // TODO: 	return test();
+; 333     // TODO: }
+; 334 
+; 335 	initBoard();
 	call initBoard
 l_0:
-; 334 	while (true) {
-; 335 		c=getchar();
+; 336 	while (true) {
+; 337 		c=getchar();
 	call getchar
 	ld a, l
 	ld (main_s + 0), a
-; 336 		switch(c) {
+; 338 		if (c == 27) {
+	cp 27
+	jp nz, l_2
+; 339     		c = getchar();
+	call getchar
+	ld a, l
+	ld (main_s + 0), a
+; 340     		if (c == '[') {
+	cp 91
+	jp nz, l_4
+; 341         		c = getchar();
+	call getchar
+	ld a, l
+	ld (main_s + 0), a
+; 342 		        switch(c) {
 	sub 65
-	jp z, l_6
-	dec a
-	jp z, l_3
+	jp z, l_10
 	dec a
 	jp z, l_9
 	dec a
-	jp z, l_12
-	sub 29
-	jp z, l_14
-	sub 3
-	jp z, l_11
-	sub 4
-	jp z, l_13
-	sub 2
-	jp z, l_4
-	dec a
 	jp z, l_7
 	dec a
-	jp z, l_10
-	sub 7
-	jp z, l_5
-	sub 4
 	jp z, l_8
-	jp l_15
-l_14:
-l_13:
-l_12:
-; 337 			case 97:	// 'a' key
-; 338 			case 104:	// 'h' key
-; 339 			case 68:	// left arrow
-; 340 				success = moveLeft();  break;
+	jp l_0
+l_10:
+; 343 			        case 'A':
+; 344 			            c = 'W';
+	ld a, 87
+	ld (main_s + 0), a
+	jp l_6
+l_9:
+; 345 			            break;
+; 346 			        case 'B':
+; 347 			            c = 'S';
+	ld a, 83
+	ld (main_s + 0), a
+	jp l_6
+l_8:
+; 348 			            break;
+; 349 			        case 'D':
+; 350 			            c = 'A';
+	ld a, 65
+	ld (main_s + 0), a
+	jp l_6
+l_7:
+; 351 			            break;
+; 352 			        case 'C':
+; 353 			            c = 'D';
+	ld a, 68
+	ld (main_s + 0), a
+	jp l_6
+l_6:
+l_4:
+l_2:
+; 354 			            break;
+; 355 			        default:
+; 356 			            continue;
+; 357 		        }
+; 358     		}
+; 359         }		
+; 360 		switch(c) {
+	sub 65
+	jp z, l_19
+	sub 3
+	jp z, l_17
+	sub 15
+	jp z, l_13
+	sub 4
+	jp z, l_15
+	sub 10
+	jp z, l_20
+	sub 3
+	jp z, l_18
+	sub 15
+	jp z, l_14
+	sub 4
+	jp z, l_16
+	jp l_21
+l_20:
+l_19:
+; 361 			case 'a':
+; 362 			case 'A':
+; 363 				success = moveLeft();  break;
 	call moveLeft
 	ld (main_s + 1), a
-	jp l_2
-l_11:
-l_10:
-l_9:
-; 341 			case 100:	// 'd' key
-; 342 			case 108:	// 'l' key
-; 343 			case 67:	// right arrow
-; 344 				success = moveRight(); break;
+	jp l_12
+l_18:
+l_17:
+; 364 			case 'd':
+; 365 			case 'D':
+; 366 				success = moveRight(); break;
 	call moveRight
 	ld (main_s + 1), a
-	jp l_2
-l_8:
-l_7:
-l_6:
-; 345 			case 119:	// 'w' key
-; 346 			case 107:	// 'k' key
-; 347 			case 65:	// up arrow
-; 348 				success = moveUp();    break;
+	jp l_12
+l_16:
+l_15:
+; 367 			case 'w':
+; 368 			case 'W':
+; 369 				success = moveUp();    break;
 	call moveUp
 	ld (main_s + 1), a
-	jp l_2
-l_5:
-l_4:
-l_3:
-; 349 			case 115:	// 's' key
-; 350 			case 106:	// 'j' key
-; 351 			case 66:	// down arrow
-; 352 				success = moveDown();  break;
+	jp l_12
+l_14:
+l_13:
+; 370 			case 's':
+; 371 			case 'S':
+; 372 				success = moveDown();  break;
 	call moveDown
 	ld (main_s + 1), a
-	jp l_2
-l_15:
-; 353 			default: success = false;
+	jp l_12
+l_21:
+; 373 			default: success = false;
 ; 24 ;
 	xor a
 	ld (main_s + 1), a
-l_2:
-; 355 ) {
+l_12:
+; 375 ) {
 	or a
-	jp z, l_16
-; 356 			drawBoard();
+	jp z, l_22
+; 376 			drawBoard();
 	call drawBoard
-; 357 			sleep(2);
+; 377 			sleep(2);
 	ld hl, 2
 	call sleep
-; 358 			addRandom();
+; 378 			addRandom();
 	call addRandom
-; 359 			drawBoard();
+; 379 			drawBoard();
 	call drawBoard
-; 360 			if (gameEnded()) {
+; 380 			if (gameEnded()) {
 	call gameEnded
 	or a
-	jp z, l_18
-; 361 				printf("            GAME OVER          \n");
+	jp z, l_24
+; 381 				printf("            GAME OVER          \n");
 	ld hl, s_18
 	push hl
 	call printf
 	pop bc
 	jp l_1
-l_18:
-l_16:
-; 362 				break;
-; 363 			}
-; 364 		}
-; 365 		if (c=='q') {
+l_24:
+l_22:
+; 382 				break;
+; 383 			}
+; 384 		}
+; 385 		if (c=='q' || c=='Q') {
 	ld a, (main_s + 0)
 	cp 113
-	jp nz, l_20
-; 366 			printf("            QUIT? (y/n)         \n");
+	jp z, l_28
+	cp 81
+	jp nz, l_26
+l_28:
+; 386 			printf("            QUIT? (y/n)         \n");
 	ld hl, s_19
 	push hl
 	call printf
 	pop bc
-; 367 			c=getchar();
+; 387 			c=getchar();
 	call getchar
 	ld a, l
 	ld (main_s + 0), a
-; 368 			if (c=='y') {
+; 388 			if (c=='y' || c=='Y') {
 	cp 121
 	jp z, l_1
-; 369 				break;
-; 370 			}
-; 371 			prepareScreen();
+	cp 89
+	jp z, l_1
+; 389 				break;
+; 390 			}
+; 391 			prepareScreen();
 	call prepareScreen
-l_20:
-; 372 		}
-; 373 		if (c=='r') {
+l_26:
+; 392 		}
+; 393 		if (c=='r' || c=='R') {
 	ld a, (main_s + 0)
 	cp 114
+	jp z, l_34
+	cp 82
 	jp nz, l_0
-; 374 			printf("          RESTART? (y/n)       \n");
+l_34:
+; 394 			printf("          RESTART? (y/n)       \n");
 	ld hl, s_20
 	push hl
 	call printf
 	pop bc
-; 375 			c=getchar();
+; 395 			c=getchar();
 	call getchar
 	ld a, l
 	ld (main_s + 0), a
-; 376 			if (c=='y') {
+; 396 			if (c=='y' || c=='Y') {
 	cp 121
-	call z, initBoard
-; 377 				initBoard();
-; 378 			}
-; 379 			prepareScreen();
+	jp z, l_37
+	cp 89
+	jp nz, l_35
+l_37:
+; 397 				initBoard();
+	call initBoard
+l_35:
+; 398 			}
+; 399 			prepareScreen();
 	call prepareScreen
 	jp l_0
 l_1:
-; 380 		}
-; 381 	}
-; 382 
-; 383 	printf(ESC_CLEAR_SCREEN);
+; 400 		}
+; 401 	}
+; 402 
+; 403 	printf(ESC_CLEAR_SCREEN);
 	ld hl, s_7
 	push hl
 	call printf
@@ -187,17 +248,17 @@ initBoard:
 ; 248 	for (x=0;x<SIZE;x++) {
 	xor a
 	ld (initBoard_s + 0), a
-l_28:
+l_38:
 	ld a, (initBoard_s + 0)
 	cp 4
-	jp nc, l_30
+	jp nc, l_40
 ; 249 		for (y=0;y<SIZE;y++) {
 	xor a
 	ld (initBoard_s + 1), a
-l_31:
+l_41:
 	ld a, (initBoard_s + 1)
 	cp 4
-	jp nc, l_33
+	jp nc, l_43
 ; 250 			board[x][y]=0;
 	ld hl, (initBoard_s + 0)
 	ld h, 0
@@ -210,18 +271,18 @@ l_31:
 	ld h, 0
 	add hl, de
 	ld (hl), 0
-l_32:
+l_42:
 	ld a, (initBoard_s + 1)
 	inc a
 	ld (initBoard_s + 1), a
-	jp l_31
-l_33:
-l_29:
+	jp l_41
+l_43:
+l_39:
 	ld a, (initBoard_s + 0)
 	inc a
 	ld (initBoard_s + 0), a
-	jp l_28
-l_30:
+	jp l_38
+l_40:
 ; 251 		}
 ; 252 	}
 ; 253     addRandom();
@@ -291,10 +352,10 @@ moveUp:
 	ld (moveUp_s + 0), a
 ; 144 =0;x<SIZE;x++) {
 	ld (moveUp_s + 1), a
-l_34:
+l_44:
 	ld a, (moveUp_s + 1)
 	cp 4
-	jp nc, l_36
+	jp nc, l_46
 ; 145 		success |= slideArray(board[x]);
 	ld hl, (moveUp_s + 1)
 	ld h, 0
@@ -306,12 +367,12 @@ l_34:
 	ld hl, moveUp_s + 0
 	or (hl)
 	ld (moveUp_s + 0), a
-l_35:
+l_45:
 	ld a, (moveUp_s + 1)
 	inc a
 	ld (moveUp_s + 1), a
-	jp l_34
-l_36:
+	jp l_44
+l_46:
 ; 146 	}
 ; 147 	return success;
 	ld a, (moveUp_s + 0)
@@ -340,7 +401,6 @@ drawBoard:
 ; 32 	uint8_t x,y;
 ; 33 	uint8_t t;
 ; 34     printf(ESC_HOME_CURSOR);
-; 1 al.c
 	ld hl, s_0
 	push hl
 	call printf
@@ -360,10 +420,10 @@ drawBoard:
 ; 37     for (y=0;y<SIZE;y++) {
 	xor a
 	ld (drawBoard_s + 1), a
-l_37:
+l_47:
 	ld a, (drawBoard_s + 1)
 	cp 4
-	jp nc, l_39
+	jp nc, l_49
 ; 38         printf("\n\n\n\n");
 	ld hl, s_2
 	push hl
@@ -372,10 +432,10 @@ l_37:
 ; 39         for (x=0;x<SIZE;x++) {
 	xor a
 	ld (drawBoard_s + 0), a
-l_40:
+l_50:
 	ld a, (drawBoard_s + 0)
 	cp 4
-	jp nc, l_42
+	jp nc, l_52
 ; 40             if (board[x][y]!=0) {
 	ld hl, (drawBoard_s + 0)
 	ld h, 0
@@ -389,7 +449,7 @@ l_40:
 	add hl, de
 	ld a, (hl)
 	or a
-	jp z, l_43
+	jp z, l_53
 ; 41                 char s[8];
 ; 42                 snprintf(s,8,"%u",1<<board[x][y]);
 	ld hl, (drawBoard_s + 0)
@@ -453,27 +513,27 @@ l_40:
 	ld hl, 12
 	add hl, sp
 	ld sp, hl
-	jp l_44
-l_43:
+	jp l_54
+l_53:
 ; 45             } else {
 ; 46                 printf("|       ");
 	ld hl, s_6
 	push hl
 	call printf
 	pop bc
-l_44:
-l_41:
+l_54:
+l_51:
 	ld a, (drawBoard_s + 0)
 	inc a
 	ld (drawBoard_s + 0), a
-	jp l_40
-l_42:
-l_38:
+	jp l_50
+l_52:
+l_48:
 	ld a, (drawBoard_s + 1)
 	inc a
 	ld (drawBoard_s + 1), a
-	jp l_37
-l_39:
+	jp l_47
+l_49:
 ; 47             }
 ; 48         }
 ; 49     }
@@ -487,20 +547,20 @@ sleep:
 ; 25  sleep(unsigned seconds) {
 	; Stack correction reset
 	ld (sleep_1_a), hl
-l_45:
+l_55:
 ; 26     while (seconds != 0) {
 	ld hl, (sleep_1_a)
 	ld a, h
 	or l
-	jp z, l_46
+	jp z, l_56
 ; 27         seconds--;
 	dec hl
 	ld (sleep_1_a), hl
 ; 28         Delay(C8080_SECOND_DELAY);
 	ld hl, 5000
 	call Delay
-	jp l_45
-l_46:
+	jp l_55
+l_56:
 ; 30 ;
 	ld hl, 0
 	ret
@@ -517,27 +577,27 @@ addRandom:
 ; 222 	if (!initialized) {
 	ld a, (initialized)
 	or a
-	jp nz, l_47
+	jp nz, l_57
 ; 223 		//srand(time(NULL));
 ; 224 		initialized = true;
 ; 25 ;
 	ld a, 1
 	ld (initialized), a
-l_47:
+l_57:
 ; 227 =0;x<SIZE;x++) {
 	xor a
 	ld (addRandom_s + 0), a
-l_49:
+l_59:
 	ld a, (addRandom_s + 0)
 	cp 4
-	jp nc, l_51
+	jp nc, l_61
 ; 228 		for (y=0;y<SIZE;y++) {
 	xor a
 	ld (addRandom_s + 1), a
-l_52:
+l_62:
 	ld a, (addRandom_s + 1)
 	cp 4
-	jp nc, l_54
+	jp nc, l_64
 ; 229 			if (board[x][y]==0) {
 	ld hl, (addRandom_s + 0)
 	ld h, 0
@@ -551,7 +611,7 @@ l_52:
 	add hl, de
 	ld a, (hl)
 	or a
-	jp nz, l_55
+	jp nz, l_65
 ; 230 				list[len][0]=x;
 	ld a, (addRandom_s + 0)
 	ld hl, (addRandom_s + 3)
@@ -572,19 +632,19 @@ l_52:
 	ld a, (addRandom_s + 3)
 	inc a
 	ld (addRandom_s + 3), a
-l_55:
-l_53:
+l_65:
+l_63:
 	ld a, (addRandom_s + 1)
 	inc a
 	ld (addRandom_s + 1), a
-	jp l_52
-l_54:
-l_50:
+	jp l_62
+l_64:
+l_60:
 	ld a, (addRandom_s + 0)
 	inc a
 	ld (addRandom_s + 0), a
-	jp l_49
-l_51:
+	jp l_59
+l_61:
 ; 233 			}
 ; 234 		}
 ; 235 	}
@@ -654,29 +714,29 @@ gameEnded:
 ; 206 )>0) return false;
 	call countEmpty
 	or a
-	jp z, l_59
+	jp z, l_69
 ; 24 ;
 	xor a
 	ret
-l_59:
+l_69:
 ; 207 )) return false;
 	call findPairDown
 	or a
-	jp z, l_61
+	jp z, l_71
 ; 24 ;
 	xor a
 	ret
-l_61:
+l_71:
 ; 208 );
 	call rotateBoard
 ; 209 	if (findPairDown()) ended = false;
 	call findPairDown
 	or a
-	jp z, l_63
+	jp z, l_73
 ; 24 ;
 	xor a
 	ld (gameEnded_s + 0), a
-l_63:
+l_73:
 ; 210 );
 	call rotateBoard
 ; 211 	rotateBoard();
@@ -746,21 +806,21 @@ prepareScreen:
 ; 58     for (x=0;x<SIZE;x++)
 	xor a
 	ld (prepareScreen_s + 0), a
-l_66:
+l_76:
 	ld a, (prepareScreen_s + 0)
 	cp 4
-	jp nc, l_68
+	jp nc, l_78
 ; 59         printf("+-------");
 	ld hl, s_9
 	push hl
 	call printf
 	pop bc
-l_67:
+l_77:
 	ld a, (prepareScreen_s + 0)
 	inc a
 	ld (prepareScreen_s + 0), a
-	jp l_66
-l_68:
+	jp l_76
+l_78:
 ; 60     printf("+\n");
 	ld hl, s_10
 	push hl
@@ -769,76 +829,76 @@ l_68:
 ; 61     for (y=0;y<SIZE;y++) {
 	xor a
 	ld (prepareScreen_s + 1), a
-l_69:
+l_79:
 	ld a, (prepareScreen_s + 1)
 	cp 4
-	jp nc, l_71
+	jp nc, l_81
 ; 62         for (i=0;i<3;i++) {
 	xor a
 	ld (prepareScreen_s + 2), a
-l_72:
+l_82:
 	ld a, (prepareScreen_s + 2)
 	cp 3
-	jp nc, l_74
+	jp nc, l_84
 ; 63             for (x=0;x<SIZE;x++)
 	xor a
 	ld (prepareScreen_s + 0), a
-l_75:
+l_85:
 	ld a, (prepareScreen_s + 0)
 	cp 4
-	jp nc, l_77
+	jp nc, l_87
 ; 64                 printf("|       ");
 	ld hl, s_6
 	push hl
 	call printf
 	pop bc
-l_76:
+l_86:
 	ld a, (prepareScreen_s + 0)
 	inc a
 	ld (prepareScreen_s + 0), a
-	jp l_75
-l_77:
+	jp l_85
+l_87:
 ; 65             printf("|\n");
 	ld hl, s_11
 	push hl
 	call printf
 	pop bc
-l_73:
+l_83:
 	ld a, (prepareScreen_s + 2)
 	inc a
 	ld (prepareScreen_s + 2), a
-	jp l_72
-l_74:
+	jp l_82
+l_84:
 ; 66         }
 ; 67         for (x=0;x<SIZE;x++)
 	xor a
 	ld (prepareScreen_s + 0), a
-l_78:
+l_88:
 	ld a, (prepareScreen_s + 0)
 	cp 4
-	jp nc, l_80
+	jp nc, l_90
 ; 68             printf("+-------");
 	ld hl, s_9
 	push hl
 	call printf
 	pop bc
-l_79:
+l_89:
 	ld a, (prepareScreen_s + 0)
 	inc a
 	ld (prepareScreen_s + 0), a
-	jp l_78
-l_80:
+	jp l_88
+l_90:
 ; 69         printf("+\n");
 	ld hl, s_10
 	push hl
 	call printf
 	pop bc
-l_70:
+l_80:
 	ld a, (prepareScreen_s + 1)
 	inc a
 	ld (prepareScreen_s + 1), a
-	jp l_69
-l_71:
+	jp l_79
+l_81:
 ; 70     }
 ; 71     printf("\n          w,a,s,d or r,q       \n");
 	ld hl, s_12
@@ -860,13 +920,12 @@ rotateBoard:
 ; 127  rotateBoard() {
 	; Stack correction reset
 ; 128 	uint8_t i,j,n=SIZE;
-; 1 £>ëúU
 	ld a, 4
 	ld (rotateBoard_s + 2), a
 ; 130 =0; i<n/2; i++) {
 	xor a
 	ld (rotateBoard_s + 0), a
-l_81:
+l_91:
 	ld hl, (rotateBoard_s + 2)
 	ld h, 0
 	ld de, 1
@@ -879,7 +938,7 @@ l_81:
 ; 131 		for (j=i; j<n-i-1; j++) {
 	ld a, (rotateBoard_s + 0)
 	ld (rotateBoard_s + 1), a
-l_84:
+l_94:
 	ld hl, (rotateBoard_s + 0)
 	ld h, 0
 	ex hl, de
@@ -891,7 +950,7 @@ l_84:
 	ld hl, (rotateBoard_s + 1)
 	ld h, 0
 	call __o_sub_16
-	jp nc, l_86
+	jp nc, l_96
 ; 132 			tmp = board[i][j];
 	ld hl, (rotateBoard_s + 0)
 	ld h, 0
@@ -1035,17 +1094,17 @@ l_84:
 	add hl, de
 	ld a, (rotateBoard_s + 3)
 	ld (hl), a
-l_85:
+l_95:
 	ld a, (rotateBoard_s + 1)
 	inc a
 	ld (rotateBoard_s + 1), a
-	jp l_84
-l_86:
-l_82:
+	jp l_94
+l_96:
+l_92:
 	ld a, (rotateBoard_s + 0)
 	inc a
 	ld (rotateBoard_s + 0), a
-	jp l_81
+	jp l_91
 slideArray:
 ; 99  slideArray(uint8_t array[SIZE]) {
 	; Stack correction reset
@@ -1059,10 +1118,10 @@ slideArray:
 ; 102 
 ; 103 	for (x=0;x<SIZE;x++) {
 	ld (slideArray_s + 1), a
-l_87:
+l_97:
 	ld a, (slideArray_s + 1)
 	cp 4
-	jp nc, l_89
+	jp nc, l_99
 ; 104 		if (array[x]!=0) {
 	ld hl, (slideArray_s + 1)
 	ld h, 0
@@ -1071,7 +1130,7 @@ l_87:
 	add hl, de
 	ld a, (hl)
 	or a
-	jp z, l_90
+	jp z, l_100
 ; 105 			t = findTarget(array,x,stop);
 	ld hl, (slideArray_1_a)
 	ld (findTarget_1_a), hl
@@ -1085,7 +1144,7 @@ l_87:
 	ld a, (slideArray_s + 1)
 	ld hl, slideArray_s + 2
 	cp (hl)
-	jp z, l_92
+	jp z, l_102
 ; 108 				// if target is zero, this is a move
 ; 109 				if (array[t]==0) {
 	ld hl, (slideArray_s + 2)
@@ -1095,7 +1154,7 @@ l_87:
 	add hl, de
 	ld a, (hl)
 	or a
-	jp nz, l_94
+	jp nz, l_104
 ; 110 					array[t]=array[x];
 	ld hl, (slideArray_s + 1)
 	ld h, 0
@@ -1109,8 +1168,8 @@ l_87:
 	ld hl, (slideArray_1_a)
 	add hl, de
 	ld (hl), a
-	jp l_95
-l_94:
+	jp l_105
+l_104:
 ; 111 				} else if (array[t]==array[x]) {
 	ld hl, (slideArray_s + 1)
 	ld h, 0
@@ -1124,7 +1183,7 @@ l_94:
 	ld hl, (slideArray_1_a)
 	add hl, de
 	cp (hl)
-	jp nz, l_96
+	jp nz, l_106
 ; 112 					// merge (increase power of two)
 ; 113 					array[t]++;
 	ld hl, (slideArray_s + 2)
@@ -1166,8 +1225,8 @@ l_94:
 	ld a, (slideArray_s + 2)
 	inc a
 	ld (slideArray_s + 3), a
-l_96:
-l_95:
+l_106:
+l_105:
 ; 118 				}
 ; 119 				array[x]=0;
 	ld hl, (slideArray_s + 1)
@@ -1180,15 +1239,15 @@ l_95:
 ; 25 ;
 	ld a, 1
 	ld (slideArray_s + 0), a
-l_92:
-l_90:
-l_88:
+l_102:
+l_100:
+l_98:
 ; 103 ) {
 	ld a, (slideArray_s + 1)
 	inc a
 	ld (slideArray_s + 1), a
-	jp l_87
-l_89:
+	jp l_97
+l_99:
 ; 104 		if (array[x]!=0) {
 ; 105 			t = findTarget(array,x,stop);
 ; 106 			// if target is not original position, then move or merge
@@ -1279,14 +1338,14 @@ Delay:
 ; 22  Delay(uint16_t n) {
 	; Stack correction reset
 	ld (Delay_1_a), hl
-l_99:
+l_109:
 ; 23     while (--n != 0) {
 	ld hl, (Delay_1_a)
 	dec hl
 	ld (Delay_1_a), hl
 	ld a, h
 	or l
-	jp nz, l_99
+	jp nz, l_109
 	ret
 rand:
 ; 20  __fastcall rand() {
@@ -1311,17 +1370,17 @@ countEmpty:
 	ld (countEmpty_s + 2), a
 ; 194 	for (x=0;x<SIZE;x++) {
 	ld (countEmpty_s + 0), a
-l_101:
+l_111:
 	ld a, (countEmpty_s + 0)
 	cp 4
-	jp nc, l_103
+	jp nc, l_113
 ; 195 		for (y=0;y<SIZE;y++) {
 	xor a
 	ld (countEmpty_s + 1), a
-l_104:
+l_114:
 	ld a, (countEmpty_s + 1)
 	cp 4
-	jp nc, l_106
+	jp nc, l_116
 ; 196 			if (board[x][y]==0) {
 	ld hl, (countEmpty_s + 0)
 	ld h, 0
@@ -1335,24 +1394,24 @@ l_104:
 	add hl, de
 	ld a, (hl)
 	or a
-	jp nz, l_107
+	jp nz, l_117
 ; 197 				count++;
 	ld a, (countEmpty_s + 2)
 	inc a
 	ld (countEmpty_s + 2), a
-l_107:
-l_105:
+l_117:
+l_115:
 	ld a, (countEmpty_s + 1)
 	inc a
 	ld (countEmpty_s + 1), a
-	jp l_104
-l_106:
-l_102:
+	jp l_114
+l_116:
+l_112:
 	ld a, (countEmpty_s + 0)
 	inc a
 	ld (countEmpty_s + 0), a
-	jp l_101
-l_103:
+	jp l_111
+l_113:
 ; 198 			}
 ; 199 		}
 ; 200 	}
@@ -1368,17 +1427,17 @@ findPairDown:
 	ld (findPairDown_s + 0), a
 ; 183 =0;x<SIZE;x++) {
 	ld (findPairDown_s + 1), a
-l_109:
+l_119:
 	ld a, (findPairDown_s + 1)
 	cp 4
-	jp nc, l_111
+	jp nc, l_121
 ; 184 		for (y=0;y<SIZE-1;y++) {
 	xor a
 	ld (findPairDown_s + 2), a
-l_112:
+l_122:
 	ld a, (findPairDown_s + 2)
 	cp 3
-	jp nc, l_114
+	jp nc, l_124
 ; 185 			if (board[x][y]==board[x][y+1]) return true;
 	ld hl, (findPairDown_s + 1)
 	ld h, 0
@@ -1403,24 +1462,24 @@ l_112:
 	ld h, 0
 	add hl, de
 	cp (hl)
-	jp nz, l_115
+	jp nz, l_125
 ; 25 ;
 	ld a, 1
 	ret
-l_115:
-l_113:
+l_125:
+l_123:
 ; 184 ) {
 	ld a, (findPairDown_s + 2)
 	inc a
 	ld (findPairDown_s + 2), a
-	jp l_112
-l_114:
-l_110:
+	jp l_122
+l_124:
+l_120:
 	ld a, (findPairDown_s + 1)
 	inc a
 	ld (findPairDown_s + 1), a
-	jp l_109
-l_111:
+	jp l_119
+l_121:
 ; 185 			if (board[x][y]==board[x][y+1]) return true;
 ; 186 		}
 ; 187 	}
@@ -1449,7 +1508,7 @@ printfInternal:
 ; 47     printfOutTotal = 0;
 	ld hl, 0
 	ld (printfOutTotal), hl
-l_117:
+l_127:
 ; 48     char buf[UINT16_TO_STRING_SIZE];
 ; 49     for (;;) {
 ; 50         uint8_t c = *format;
@@ -1460,9 +1519,9 @@ l_117:
 	or a
 	ret z
 	sub 37
-	jp z, l_121
-	jp l_123
-l_121:
+	jp z, l_131
+	jp l_133
+l_131:
 ; 52             case 0:
 ; 53                 return;
 ; 54             case '%':
@@ -1478,7 +1537,7 @@ l_121:
 	ld (printfInternal_s + 6), a
 ; 58                 if (c == '*') {
 	cp 42
-	jp nz, l_124
+	jp nz, l_134
 ; 59                     width = va_arg(va, unsigned);
 	ld hl, (printfInternal_2_a)
 	inc hl
@@ -1498,18 +1557,18 @@ l_121:
 ; 61                     c = *format;
 	ld a, (hl)
 	ld (printfInternal_s + 6), a
-	jp l_125
-l_124:
-l_126:
+	jp l_135
+l_134:
+l_136:
 ; 62                 } else {
 ; 63                     while (c >= '0' && c <= '9') {
 	ld a, (printfInternal_s + 6)
 	cp 48
-	jp c, l_127
+	jp c, l_137
 	ld a, 57
 	ld hl, printfInternal_s + 6
 	cp (hl)
-	jp c, l_127
+	jp c, l_137
 ; 64                         width = width * 10 + (c - '0');
 	ld hl, (printfInternal_s + 6)
 	ld h, 0
@@ -1533,9 +1592,9 @@ l_126:
 ; 66                         c = *format;
 	ld a, (hl)
 	ld (printfInternal_s + 6), a
-	jp l_126
-l_127:
-l_125:
+	jp l_136
+l_137:
+l_135:
 ; 67                     }
 ; 68                 }
 ; 69                 switch (c) {
@@ -1543,17 +1602,17 @@ l_125:
 	or a
 	ret z
 	sub 100
-	jp z, l_131
+	jp z, l_141
 	sub 5
-	jp z, l_130
+	jp z, l_140
 	sub 10
-	jp z, l_129
+	jp z, l_139
 	sub 2
-	jp z, l_132
-	jp l_120
-l_132:
-l_131:
-l_130:
+	jp z, l_142
+	jp l_130
+l_142:
+l_141:
+l_140:
 ; 70                     case 0:
 ; 71                         return;
 ; 72                     case 'u':
@@ -1574,10 +1633,10 @@ l_130:
 ; 76  != 'u' && (int16_t)i < 0) {
 	ld a, (printfInternal_s + 6)
 	cp 117
-	jp z, l_134
+	jp z, l_144
 	ld de, 0
 	call __o_sub_16
-	jp p, l_134
+	jp p, l_144
 ; 77                             printfOut('-');
 	ld hl, 45
 	push hl
@@ -1590,7 +1649,7 @@ l_130:
 	ex hl, de
 	call __o_sub_16
 	ld (printfInternal_s + 9), hl
-l_134:
+l_144:
 ; 79                         }
 ; 80                         char* text = Uint16ToString(buf, (uint16_t)i);
 	ld hl, printfInternal_s + 0
@@ -1609,8 +1668,8 @@ l_134:
 ; 82                         printfText(text);
 	ld hl, (printfInternal_s + 11)
 	call printfText
-	jp l_120
-l_129:
+	jp l_130
+l_139:
 ; 83                         break;
 ; 84                     }
 ; 85                     case 's': {
@@ -1637,8 +1696,8 @@ l_129:
 	ld hl, (printfOutTotal)
 	call __o_sub_16
 	call printSpaces
-	jp l_120
-l_123:
+	jp l_130
+l_133:
 ; 89                         break;
 ; 90                     }
 ; 91                 }
@@ -1651,15 +1710,15 @@ l_123:
 	ld hl, (printfOut)
 	call __o_call_hl
 	pop bc
-l_120:
+l_130:
 ; 95         }
 ; 96         format++;
 	ld hl, (printfInternal_1_a)
 	inc hl
 	ld (printfInternal_1_a), hl
-l_118:
-	jp l_117
-l_119:
+l_128:
+	jp l_127
+l_129:
 	ret
 findTarget:
 ; 75  findTarget(uint8_t array[SIZE],uint8_t x,uint8_t stop) {
@@ -1670,15 +1729,15 @@ findTarget:
 ; 78 	if (x==0) {
 	ld a, (findTarget_2_a)
 	or a
-	jp nz, l_136
+	jp nz, l_146
 ; 79 		return x;
 	ret
-l_136:
+l_146:
 ; 80 	}
 ; 81 	for(t=x-1;;t--) {
 	dec a
 	ld (findTarget_s + 0), a
-l_138:
+l_148:
 ; 82 		if (array[t]!=0) {
 	ld hl, (findTarget_s + 0)
 	ld h, 0
@@ -1687,7 +1746,7 @@ l_138:
 	add hl, de
 	ld a, (hl)
 	or a
-	jp z, l_141
+	jp z, l_151
 ; 83 			if (array[t]!=array[x]) {
 	ld hl, (findTarget_2_a)
 	ld h, 0
@@ -1701,35 +1760,35 @@ l_138:
 	ld hl, (findTarget_1_a)
 	add hl, de
 	cp (hl)
-	jp z, l_143
+	jp z, l_153
 ; 84 				// merge is not possible, take next position
 ; 85 				return t+1;
 	ld a, (findTarget_s + 0)
 	inc a
 	ret
-l_143:
+l_153:
 ; 86 			}
 ; 87 			return t;
 	ld a, (findTarget_s + 0)
 	ret
-l_141:
+l_151:
 ; 88 		} else {
 ; 89 			// we should not slide further, return this one
 ; 90 			if (t==stop) {
 	ld a, (findTarget_3_a)
 	ld hl, findTarget_s + 0
 	cp (hl)
-	jp nz, l_145
+	jp nz, l_155
 ; 91 				return t;
 	ld a, (findTarget_s + 0)
 	ret
-l_145:
-l_139:
+l_155:
+l_149:
 	ld a, (findTarget_s + 0)
 	dec a
 	ld (findTarget_s + 0), a
-	jp l_138
-l_140:
+	jp l_148
+l_150:
 ; 92 			}
 ; 93 		}
 ; 94 	}
@@ -1748,10 +1807,10 @@ snprintfInternal:
 	ld hl, (snprintfInternal_2_a)
 	ld a, h
 	or l
-	jp z, l_147
+	jp z, l_157
 	dec hl
 	ld (snprintfInternal_2_a), hl
-l_147:
+l_157:
 ; 32     printfOutPointer = buffer;
 	ld hl, (snprintfInternal_1_a)
 	ld (printfOutPointer), hl
@@ -1777,10 +1836,10 @@ putchar:
 ; 46     if (c == 0x0A) cpmBiosConOut(0x0D);
 	ld de, 10
 	call __o_cmp_16
-	jp nz, l_149
+	jp nz, l_159
 	ld a, 13
 	call cpmBiosConOut
-l_149:
+l_159:
 ; 47     cpmBiosConOut(c);
 	ld a, (putchar_1_a)
 	call cpmBiosConOut
@@ -1798,7 +1857,7 @@ Uint16ToString:
 	ld (Uint16ToString_1_a), hl
 ; 23     *outputBuffer = 0;
 	ld (hl), 0
-l_151:
+l_161:
 ; 24     do {
 ; 25         value /= 10;
 	ld hl, (Uint16ToString_2_a)
@@ -1813,13 +1872,13 @@ l_151:
 	ld a, (__div_16_mod)
 	add 48
 	ld (hl), a
-l_152:
+l_162:
 ; 28     } while (value != 0);
 	ld hl, (Uint16ToString_2_a)
 	ld a, h
 	or l
-	jp nz, l_151
-l_153:
+	jp nz, l_161
+l_163:
 ; 29     return outputBuffer;
 	ld hl, (Uint16ToString_1_a)
 	ret
@@ -1839,7 +1898,7 @@ printSpaces:
 	ld hl, (printSpaces_1_a)
 	call __o_sub_16
 	ld (printSpaces_1_a), hl
-l_156:
+l_166:
 ; 40     do {
 ; 41         printfOut(' ');
 	ld hl, 32
@@ -1851,19 +1910,19 @@ l_156:
 	ld hl, (printSpaces_1_a)
 	dec hl
 	ld (printSpaces_1_a), hl
-l_157:
+l_167:
 ; 43     } while(need != 0);
 	ld hl, (printSpaces_1_a)
 	ld a, h
 	or l
-	jp nz, l_156
-l_158:
+	jp nz, l_166
+l_168:
 	ret
 printfText:
 ; 28  printfText(const char *text) {
 	; Stack correction reset
 	ld (printfText_1_a), hl
-l_159:
+l_169:
 ; 29     for (;;) {
 ; 30         uint8_t c = *text;
 	ld hl, (printfText_1_a)
@@ -1883,8 +1942,8 @@ l_159:
 	ld hl, (printfText_1_a)
 	inc hl
 	ld (printfText_1_a), hl
-l_160:
-	jp l_159
+l_170:
+	jp l_169
 printfOutString:
 ; 21  __stdcall printfOutString(int c) { // TODO: static
 	; Stack correction reset
@@ -2158,8 +2217,8 @@ __div_16_mod:
 s_5: db 0
 s_2: db 10, 10, 10, 10, 0
 s_12: db 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 119, 44, 97, 44, 115, 44, 100, 32, 111, 114, 32, 114, 44, 113, 32, 32, 32, 32, 32, 32, 32, 10, 0
-s_7: db 27, 42, 0
-s_0: db 27, 61, 32, 32, 0
+s_0: db 27, 91, 72, 0
+s_7: db 27, 91, 72, 27, 91, 50, 74, 0
 s_18: db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 71, 65, 77, 69, 32, 79, 86, 69, 82, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 0
 s_19: db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 81, 85, 73, 84, 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 0
 s_20: db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 82, 69, 83, 84, 65, 82, 84, 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 10, 0

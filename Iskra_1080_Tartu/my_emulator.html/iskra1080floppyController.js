@@ -154,15 +154,16 @@ function Iskra1080FloppyController(floppy) {
                 console.log("Read floppy error, incorrect device " + device + "/" + track + "/" + sector);
                 return 1;
             }
-            const sectorPerTrack = floppy[0][0];
-            const offset = (sector + track * sectorPerTrack) * 128;
-            if (sector >= sectorPerTrack || offset + 128 > floppy[0].length) {
+            const sectorPerTrack = floppy[0].get0(0);
+            const offset = sector + track * sectorPerTrack;
+            const packet = floppy[device].read(offset);
+            if (packet.length == 0 || sector >= sectorPerTrack) {
                 console.log("Read floppy error, invalid position " + device + "/" + track + "/" + sector);
                 return 1;
             }
             console.log("Read floppy " + device + "/" + track + "/" + sector);
             for (let i = 0; i < 128; i++)
-                outputPacket.push(floppy[0][offset + i]);
+                outputPacket.push(packet[i]);
             return 0;
         }
 
@@ -180,13 +181,14 @@ function Iskra1080FloppyController(floppy) {
             }
             const sectorPerTrack = floppy[0][0];
             const offset = (sector + track * sectorPerTrack) * 128;
-            if (sector >= sectorPerTrack || offset + 128 > floppy[0].length) {
+            let tmp = [];
+            for (let i = 0; i < 128; i++)
+                tmp[i] = inputPacket[8 + i];
+            if (!floppy[device].write(offset, tmp)) {
                 console.log("Write floppy error, invalid position " + device + "/" + track + "/" + sector);
                 return 1;
             }
             console.log("Write floppy " + device + "/" + track + "/" + sector);
-            for (let i = 0; i < 128; i++)
-                floppy[0][offset + i] = inputPacket[8 + i];
             return 0;
         }
 

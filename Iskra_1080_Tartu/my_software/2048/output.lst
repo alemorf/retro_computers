@@ -5,2185 +5,2245 @@
 0005   0100             main: 
 0006   0100             ; 322  main(int argc, char *argv[]) {
 0007   0100             	; Stack correction reset
-0008   0100 22 F5 0B    	ld (main_2_a), hl
+0008   0100 22 4D 0C    	ld (main_2_a), hl
 0009   0103             
 0010   0103 31 00 90    		ld sp, 9000h
-0011   0106             	
-0012   0106             ; 323 	asm {
-0013   0106             ; 324 		ld sp, 9000h
-0014   0106             ; 325 	}
-0015   0106             ; 326 	char c;
-0016   0106             ; 327 	bool success;
-0017   0106             ; 328 
-0018   0106             ; 329     // TODO: if (argc == 2 && strcmp(argv[1],"test")==0) {
-0019   0106             ; 330     // TODO: 	return test();
-0020   0106             ; 331     // TODO: }
-0021   0106             ; 332 
-0022   0106             ; 333 	initBoard();
-0023   0106 CD E4 01    	call initBoard
-0024   0109             l_0: 
-0025   0109             ; 334 	while (true) {
-0026   0109             ; 335 		c=getchar();
-0027   0109 CD 3D 02    	call getchar
-0028   010C 7D          	ld a, l
-0029   010D 32 14 0C    	ld (main_s + 0), a
-0030   0110             ; 336 		switch(c) {
-0031   0110 D6 41       	sub 65
-0032   0112 CA 5C 01    	jp z, l_6
-0033   0115 3D          	dec a
-0034   0116 CA 65 01    	jp z, l_3
-0035   0119 3D          	dec a
-0036   011A CA 53 01    	jp z, l_9
-0037   011D 3D          	dec a
-0038   011E CA 4A 01    	jp z, l_12
-0039   0121 D6 1D       	sub 29
-0040   0123 CA 4A 01    	jp z, l_14
-0041   0126 D6 03       	sub 3
-0042   0128 CA 53 01    	jp z, l_11
-0043   012B D6 04       	sub 4
-0044   012D CA 4A 01    	jp z, l_13
-0045   0130 D6 02       	sub 2
-0046   0132 CA 65 01    	jp z, l_4
-0047   0135 3D          	dec a
-0048   0136 CA 5C 01    	jp z, l_7
-0049   0139 3D          	dec a
-0050   013A CA 53 01    	jp z, l_10
-0051   013D D6 07       	sub 7
-0052   013F CA 65 01    	jp z, l_5
-0053   0142 D6 04       	sub 4
-0054   0144 CA 5C 01    	jp z, l_8
-0055   0147 C3 6E 01    	jp l_15
-0056   014A             l_14: 
-0057   014A             l_13: 
-0058   014A             l_12: 
-0059   014A             ; 337 			case 97:	// 'a' key
-0060   014A             ; 338 			case 104:	// 'h' key
-0061   014A             ; 339 			case 68:	// left arrow
-0062   014A             ; 340 				success = moveLeft();  break;
-0063   014A CD 44 02    	call moveLeft
-0064   014D 32 15 0C    	ld (main_s + 1), a
-0065   0150 C3 72 01    	jp l_2
-0066   0153             l_11: 
-0067   0153             l_10: 
-0068   0153             l_9: 
-0069   0153             ; 341 			case 100:	// 'd' key
-0070   0153             ; 342 			case 108:	// 'l' key
-0071   0153             ; 343 			case 67:	// right arrow
-0072   0153             ; 344 				success = moveRight(); break;
-0073   0153 CD 5A 02    	call moveRight
-0074   0156 32 15 0C    	ld (main_s + 1), a
-0075   0159 C3 72 01    	jp l_2
-0076   015C             l_8: 
-0077   015C             l_7: 
-0078   015C             l_6: 
-0079   015C             ; 345 			case 119:	// 'w' key
-0080   015C             ; 346 			case 107:	// 'k' key
-0081   015C             ; 347 			case 65:	// up arrow
-0082   015C             ; 348 				success = moveUp();    break;
-0083   015C CD 70 02    	call moveUp
-0084   015F 32 15 0C    	ld (main_s + 1), a
-0085   0162 C3 72 01    	jp l_2
-0086   0165             l_5: 
-0087   0165             l_4: 
-0088   0165             l_3: 
-0089   0165             ; 349 			case 115:	// 's' key
-0090   0165             ; 350 			case 106:	// 'j' key
-0091   0165             ; 351 			case 66:	// down arrow
-0092   0165             ; 352 				success = moveDown();  break;
-0093   0165 CD A2 02    	call moveDown
-0094   0168 32 15 0C    	ld (main_s + 1), a
-0095   016B C3 72 01    	jp l_2
-0096   016E             l_15: 
-0097   016E             ; 353 			default: success = false;
-0098   016E             ; 24 ;
-0099   016E AF          	xor a
-0100   016F 32 15 0C    	ld (main_s + 1), a
-0101   0172             l_2: 
-0102   0172             ; 355 ) {
-0103   0172 B7          	or a
-0104   0173 CA 97 01    	jp z, l_16
-0105   0176             ; 356 			drawBoard();
-0106   0176 CD B8 02    	call drawBoard
-0107   0179             ; 357 			sleep(2);
-0108   0179 21 02 00    	ld hl, 2
-0109   017C CD AA 03    	call sleep
-0110   017F             ; 358 			addRandom();
-0111   017F CD C6 03    	call addRandom
-0112   0182             ; 359 			drawBoard();
-0113   0182 CD B8 02    	call drawBoard
-0114   0185             ; 360 			if (gameEnded()) {
-0115   0185 CD 98 04    	call gameEnded
-0116   0188 B7          	or a
-0117   0189 CA 97 01    	jp z, l_18
-0118   018C             ; 361 				printf("            GAME OVER          \n");
-0119   018C 21 38 0D    	ld hl, s_18
-0120   018F E5          	push hl
-0121   0190 CD CA 04    	call printf
-0122   0193 C1          	pop bc
-0123   0194 C3 D8 01    	jp l_1
-0124   0197             l_18: 
-0125   0197             l_16: 
-0126   0197             ; 362 				break;
-0127   0197             ; 363 			}
-0128   0197             ; 364 		}
-0129   0197             ; 365 		if (c=='q') {
-0130   0197 3A 14 0C    	ld a, (main_s + 0)
-0131   019A FE 71       	cp 113
-0132   019C C2 B6 01    	jp nz, l_20
-0133   019F             ; 366 			printf("            QUIT? (y/n)         \n");
-0134   019F 21 59 0D    	ld hl, s_19
-0135   01A2 E5          	push hl
-0136   01A3 CD CA 04    	call printf
-0137   01A6 C1          	pop bc
-0138   01A7             ; 367 			c=getchar();
-0139   01A7 CD 3D 02    	call getchar
-0140   01AA 7D          	ld a, l
-0141   01AB 32 14 0C    	ld (main_s + 0), a
-0142   01AE             ; 368 			if (c=='y') {
-0143   01AE FE 79       	cp 121
-0144   01B0 CA D8 01    	jp z, l_1
-0145   01B3             ; 369 				break;
-0146   01B3             ; 370 			}
-0147   01B3             ; 371 			prepareScreen();
-0148   01B3 CD F8 04    	call prepareScreen
-0149   01B6             l_20: 
-0150   01B6             ; 372 		}
-0151   01B6             ; 373 		if (c=='r') {
-0152   01B6 3A 14 0C    	ld a, (main_s + 0)
-0153   01B9 FE 72       	cp 114
-0154   01BB C2 09 01    	jp nz, l_0
-0155   01BE             ; 374 			printf("          RESTART? (y/n)       \n");
-0156   01BE 21 7B 0D    	ld hl, s_20
-0157   01C1 E5          	push hl
-0158   01C2 CD CA 04    	call printf
-0159   01C5 C1          	pop bc
-0160   01C6             ; 375 			c=getchar();
-0161   01C6 CD 3D 02    	call getchar
-0162   01C9 7D          	ld a, l
-0163   01CA 32 14 0C    	ld (main_s + 0), a
-0164   01CD             ; 376 			if (c=='y') {
-0165   01CD FE 79       	cp 121
-0166   01CF CC E4 01    	call z, initBoard
-0167   01D2             ; 377 				initBoard();
-0168   01D2             ; 378 			}
-0169   01D2             ; 379 			prepareScreen();
-0170   01D2 CD F8 04    	call prepareScreen
-0171   01D5 C3 09 01    	jp l_0
-0172   01D8             l_1: 
-0173   01D8             ; 380 		}
-0174   01D8             ; 381 	}
-0175   01D8             ; 382 
-0176   01D8             ; 383 	printf(ESC_CLEAR_SCREEN);
-0177   01D8 21 30 0D    	ld hl, s_7
-0178   01DB E5          	push hl
-0179   01DC CD CA 04    	call printf
-0180   01DF C1          	pop bc
-0181   01E0 21 00 00    	ld hl, 0
-0182   01E3 C9          	ret
-0183   01E4             initBoard: 
-0184   01E4             ; 246  initBoard() {
-0185   01E4             	; Stack correction reset
-0186   01E4             ; 247 	uint8_t x,y;
-0187   01E4             ; 248 	for (x=0;x<SIZE;x++) {
-0188   01E4 AF          	xor a
-0189   01E5 32 16 0C    	ld (initBoard_s + 0), a
-0190   01E8             l_28: 
-0191   01E8 3A 16 0C    	ld a, (initBoard_s + 0)
-0192   01EB FE 04       	cp 4
-0193   01ED D2 24 02    	jp nc, l_30
-0194   01F0             ; 249 		for (y=0;y<SIZE;y++) {
-0195   01F0 AF          	xor a
-0196   01F1 32 17 0C    	ld (initBoard_s + 1), a
-0197   01F4             l_31: 
-0198   01F4 3A 17 0C    	ld a, (initBoard_s + 1)
-0199   01F7 FE 04       	cp 4
-0200   01F9 D2 1A 02    	jp nc, l_33
-0201   01FC             ; 250 			board[x][y]=0;
-0202   01FC 2A 16 0C    	ld hl, (initBoard_s + 0)
-0203   01FF 26 00       	ld h, 0
-0204   0201 29          	add hl, hl
-0205   0202 29          	add hl, hl
-0206   0203 11 D2 0B    	ld de, board
-0207   0206 19          	add hl, de
-0208   0207 EB          	ex hl, de
-0209   0208 2A 17 0C    	ld hl, (initBoard_s + 1)
-0210   020B 26 00       	ld h, 0
-0211   020D 19          	add hl, de
-0212   020E 36 00       	ld (hl), 0
-0213   0210             l_32: 
-0214   0210 3A 17 0C    	ld a, (initBoard_s + 1)
-0215   0213 3C          	inc a
-0216   0214 32 17 0C    	ld (initBoard_s + 1), a
-0217   0217 C3 F4 01    	jp l_31
-0218   021A             l_33: 
-0219   021A             l_29: 
-0220   021A 3A 16 0C    	ld a, (initBoard_s + 0)
-0221   021D 3C          	inc a
-0222   021E 32 16 0C    	ld (initBoard_s + 0), a
-0223   0221 C3 E8 01    	jp l_28
-0224   0224             l_30: 
-0225   0224             ; 251 		}
-0226   0224             ; 252 	}
-0227   0224             ; 253     addRandom();
-0228   0224 CD C6 03    	call addRandom
-0229   0227             ; 254     addRandom();
-0230   0227 CD C6 03    	call addRandom
-0231   022A             ; 255     prepareScreen();
-0232   022A CD F8 04    	call prepareScreen
-0233   022D             ; 256     score = 0;
-0234   022D 11 00 00    	ld de, 0
-0235   0230 21 00 00    	ld hl, 0
-0236   0233 22 CE 0B    	ld (score), hl
-0237   0236 EB          	ex hl, de
-0238   0237 22 D0 0B    	ld ((score) + 2), hl
-0239   023A             ; 257     drawBoard();
-0240   023A C3 B8 02    	jp drawBoard
-0241   023D             getchar: 
-0242   023D             ; 40  __fastcall getchar() {
-0243   023D             	; Stack correction reset
-0244   023D             ; 41     return cpmBiosConIn();
-0245   023D CD BC 05    	call cpmBiosConIn
-0246   0240 6F          	ld l, a
-0247   0241 26 00       	ld h, 0
-0248   0243 C9          	ret
-0249   0244             moveLeft: 
-0250   0244             ; 150  moveLeft() {
-0251   0244             	; Stack correction reset
-0252   0244             ; 151 	bool success;
-0253   0244             ; 152 	rotateBoard();
-0254   0244 CD C3 05    	call rotateBoard
-0255   0247             ; 153 	success = moveUp();
-0256   0247 CD 70 02    	call moveUp
-0257   024A 32 18 0C    	ld (moveLeft_s + 0), a
-0258   024D             ; 154 	rotateBoard();
-0259   024D CD C3 05    	call rotateBoard
-0260   0250             ; 155 	rotateBoard();
-0261   0250 CD C3 05    	call rotateBoard
-0262   0253             ; 156 	rotateBoard();
-0263   0253 CD C3 05    	call rotateBoard
-0264   0256             ; 157 	return success;
-0265   0256 3A 18 0C    	ld a, (moveLeft_s + 0)
-0266   0259 C9          	ret
-0267   025A             moveRight: 
-0268   025A             ; 170  moveRight() {
-0269   025A             	; Stack correction reset
-0270   025A             ; 171 	bool success;
-0271   025A             ; 172 	rotateBoard();
-0272   025A CD C3 05    	call rotateBoard
-0273   025D             ; 173 	rotateBoard();
-0274   025D CD C3 05    	call rotateBoard
-0275   0260             ; 174 	rotateBoard();
-0276   0260 CD C3 05    	call rotateBoard
-0277   0263             ; 175 	success = moveUp();
-0278   0263 CD 70 02    	call moveUp
-0279   0266 32 19 0C    	ld (moveRight_s + 0), a
-0280   0269             ; 176 	rotateBoard();
-0281   0269 CD C3 05    	call rotateBoard
-0282   026C             ; 177 	return success;
-0283   026C 3A 19 0C    	ld a, (moveRight_s + 0)
-0284   026F C9          	ret
-0285   0270             moveUp: 
-0286   0270             ; 141  moveUp() {
-0287   0270             	; Stack correction reset
-0288   0270             ; 142 	bool success = false;
-0289   0270             ; 24 ;
-0290   0270 AF          	xor a
-0291   0271 32 1A 0C    	ld (moveUp_s + 0), a
-0292   0274             ; 144 =0;x<SIZE;x++) {
-0293   0274 32 1B 0C    	ld (moveUp_s + 1), a
-0294   0277             l_34: 
-0295   0277 3A 1B 0C    	ld a, (moveUp_s + 1)
-0296   027A FE 04       	cp 4
-0297   027C D2 9E 02    	jp nc, l_36
-0298   027F             ; 145 		success |= slideArray(board[x]);
-0299   027F 2A 1B 0C    	ld hl, (moveUp_s + 1)
-0300   0282 26 00       	ld h, 0
-0301   0284 29          	add hl, hl
-0302   0285 29          	add hl, hl
-0303   0286 11 D2 0B    	ld de, board
-0304   0289 19          	add hl, de
-0305   028A CD 0C 07    	call slideArray
-0306   028D 21 1A 0C    	ld hl, moveUp_s + 0
-0307   0290 B6          	or (hl)
-0308   0291 32 1A 0C    	ld (moveUp_s + 0), a
-0309   0294             l_35: 
-0310   0294 3A 1B 0C    	ld a, (moveUp_s + 1)
-0311   0297 3C          	inc a
-0312   0298 32 1B 0C    	ld (moveUp_s + 1), a
-0313   029B C3 77 02    	jp l_34
-0314   029E             l_36: 
-0315   029E             ; 146 	}
-0316   029E             ; 147 	return success;
-0317   029E 3A 1A 0C    	ld a, (moveUp_s + 0)
-0318   02A1 C9          	ret
-0319   02A2             moveDown: 
-0320   02A2             ; 160  moveDown() {
-0321   02A2             	; Stack correction reset
-0322   02A2             ; 161 	bool success;
-0323   02A2             ; 162 	rotateBoard();
-0324   02A2 CD C3 05    	call rotateBoard
-0325   02A5             ; 163 	rotateBoard();
-0326   02A5 CD C3 05    	call rotateBoard
-0327   02A8             ; 164 	success = moveUp();
-0328   02A8 CD 70 02    	call moveUp
-0329   02AB 32 1C 0C    	ld (moveDown_s + 0), a
-0330   02AE             ; 165 	rotateBoard();
-0331   02AE CD C3 05    	call rotateBoard
-0332   02B1             ; 166 	rotateBoard();
-0333   02B1 CD C3 05    	call rotateBoard
-0334   02B4             ; 167 	return success;
-0335   02B4 3A 1C 0C    	ld a, (moveDown_s + 0)
-0336   02B7 C9          	ret
-0337   02B8             drawBoard: 
-0338   02B8             ; 31  drawBoard() {
-0339   02B8             	; Stack correction reset
-0340   02B8             ; 32 	uint8_t x,y;
-0341   02B8             ; 33 	uint8_t t;
-0342   02B8             ; 34     printf(ESC_HOME_CURSOR);
-0343   02B8             ; 1 al.c
-0344   02B8 21 33 0D    	ld hl, s_0
-0345   02BB E5          	push hl
-0346   02BC CD CA 04    	call printf
-0347   02BF C1          	pop bc
-0348   02C0             ; 36 "2048.c %23d pts",score);
-0349   02C0 2A D0 0B    	ld hl, (((score) + 2))
-0350   02C3 EB          	ex hl, de
-0351   02C4 2A CE 0B    	ld hl, (score)
-0352   02C7 D5          	push de
-0353   02C8 E5          	push hl
-0354   02C9 21 BD 0D    	ld hl, s_1
-0355   02CC E5          	push hl
-0356   02CD CD CA 04    	call printf
-0357   02D0 C1          	pop bc
-0358   02D1 C1          	pop bc
-0359   02D2 C1          	pop bc
-0360   02D3             ; 37     for (y=0;y<SIZE;y++) {
-0361   02D3 AF          	xor a
-0362   02D4 32 1E 0C    	ld (drawBoard_s + 1), a
-0363   02D7             l_37: 
-0364   02D7 3A 1E 0C    	ld a, (drawBoard_s + 1)
-0365   02DA FE 04       	cp 4
-0366   02DC D2 A1 03    	jp nc, l_39
-0367   02DF             ; 38         printf("\n\n\n\n");
-0368   02DF 21 09 0D    	ld hl, s_2
-0369   02E2 E5          	push hl
-0370   02E3 CD CA 04    	call printf
-0371   02E6 C1          	pop bc
-0372   02E7             ; 39         for (x=0;x<SIZE;x++) {
-0373   02E7 AF          	xor a
-0374   02E8 32 1D 0C    	ld (drawBoard_s + 0), a
-0375   02EB             l_40: 
-0376   02EB 3A 1D 0C    	ld a, (drawBoard_s + 0)
-0377   02EE FE 04       	cp 4
-0378   02F0 D2 97 03    	jp nc, l_42
-0379   02F3             ; 40             if (board[x][y]!=0) {
-0380   02F3 2A 1D 0C    	ld hl, (drawBoard_s + 0)
-0381   02F6 26 00       	ld h, 0
-0382   02F8 29          	add hl, hl
-0383   02F9 29          	add hl, hl
-0384   02FA 11 D2 0B    	ld de, board
-0385   02FD 19          	add hl, de
-0386   02FE EB          	ex hl, de
-0387   02FF 2A 1E 0C    	ld hl, (drawBoard_s + 1)
-0388   0302 26 00       	ld h, 0
-0389   0304 19          	add hl, de
-0390   0305 7E          	ld a, (hl)
-0391   0306 B7          	or a
-0392   0307 CA 85 03    	jp z, l_43
-0393   030A             ; 41                 char s[8];
-0394   030A             ; 42                 snprintf(s,8,"%u",1<<board[x][y]);
-0395   030A 2A 1D 0C    	ld hl, (drawBoard_s + 0)
-0396   030D 26 00       	ld h, 0
-0397   030F 29          	add hl, hl
-0398   0310 29          	add hl, hl
-0399   0311 11 D2 0B    	ld de, board
-0400   0314 19          	add hl, de
-0401   0315 EB          	ex hl, de
-0402   0316 2A 1E 0C    	ld hl, (drawBoard_s + 1)
-0403   0319 26 00       	ld h, 0
-0404   031B 19          	add hl, de
-0405   031C 6E          	ld l, (hl)
-0406   031D 26 00       	ld h, 0
-0407   031F 11 01 00    	ld de, 1
-0408   0322 EB          	ex hl, de
-0409   0323 CD BD 0C    	call __o_shl_16
-0410   0326 E5          	push hl
-0411   0327 21 9C 0D    	ld hl, s_3
-0412   032A E5          	push hl
-0413   032B 21 08 00    	ld hl, 8
-0414   032E E5          	push hl
-0415   032F 21 20 0C    	ld hl, drawBoard_s + 3
-0416   0332 E5          	push hl
-0417   0333 CD F0 07    	call snprintf
-0418   0336 21 08 00    	ld hl, 8
-0419   0339 39          	add hl, sp
-0420   033A F9          	ld sp, hl
-0421   033B             ; 43                 t = 7-strlen(s);
-0422   033B 21 20 0C    	ld hl, drawBoard_s + 3
-0423   033E CD 2E 08    	call strlen
-0424   0341 7D          	ld a, l
-0425   0342 57          	ld d, a
-0426   0343 3E 07       	ld a, 7
-0427   0345 92          	sub d
-0428   0346 32 1F 0C    	ld (drawBoard_s + 2), a
-0429   0349             ; 44                 printf("|%*s%s%*s",t-t/2,"",s,t/2,"");
-0430   0349 21 08 0D    	ld hl, s_5
-0431   034C E5          	push hl
-0432   034D 2A 1F 0C    	ld hl, (drawBoard_s + 2)
-0433   0350 26 00       	ld h, 0
-0434   0352 11 01 00    	ld de, 1
-0435   0355 CD C4 0C    	call __o_shr_u16
-0436   0358 E5          	push hl
-0437   0359 21 20 0C    	ld hl, drawBoard_s + 3
-0438   035C E5          	push hl
-0439   035D 21 08 0D    	ld hl, s_5
-0440   0360 E5          	push hl
-0441   0361 2A 1F 0C    	ld hl, (drawBoard_s + 2)
-0442   0364 26 00       	ld h, 0
-0443   0366 11 01 00    	ld de, 1
-0444   0369 CD C4 0C    	call __o_shr_u16
-0445   036C EB          	ex hl, de
-0446   036D 2A 1F 0C    	ld hl, (drawBoard_s + 2)
-0447   0370 26 00       	ld h, 0
-0448   0372 CD 6E 0C    	call __o_sub_16
-0449   0375 E5          	push hl
-0450   0376 21 D9 0D    	ld hl, s_4
-0451   0379 E5          	push hl
-0452   037A CD CA 04    	call printf
-0453   037D 21 0C 00    	ld hl, 12
-0454   0380 39          	add hl, sp
-0455   0381 F9          	ld sp, hl
-0456   0382 C3 8D 03    	jp l_44
-0457   0385             l_43: 
-0458   0385             ; 45             } else {
-0459   0385             ; 46                 printf("|       ");
-0460   0385 21 D0 0D    	ld hl, s_6
-0461   0388 E5          	push hl
-0462   0389 CD CA 04    	call printf
-0463   038C C1          	pop bc
-0464   038D             l_44: 
-0465   038D             l_41: 
-0466   038D 3A 1D 0C    	ld a, (drawBoard_s + 0)
-0467   0390 3C          	inc a
-0468   0391 32 1D 0C    	ld (drawBoard_s + 0), a
-0469   0394 C3 EB 02    	jp l_40
-0470   0397             l_42: 
-0471   0397             l_38: 
-0472   0397 3A 1E 0C    	ld a, (drawBoard_s + 1)
-0473   039A 3C          	inc a
-0474   039B 32 1E 0C    	ld (drawBoard_s + 1), a
-0475   039E C3 D7 02    	jp l_37
-0476   03A1             l_39: 
-0477   03A1             ; 47             }
-0478   03A1             ; 48         }
-0479   03A1             ; 49     }
-0480   03A1             ; 50     printf("\n\n\n\n");
-0481   03A1 21 09 0D    	ld hl, s_2
-0482   03A4 E5          	push hl
-0483   03A5 CD CA 04    	call printf
-0484   03A8 C1          	pop bc
-0485   03A9 C9          	ret
-0486   03AA             sleep: 
-0487   03AA             ; 25  sleep(unsigned seconds) {
-0488   03AA             	; Stack correction reset
-0489   03AA 22 F7 0B    	ld (sleep_1_a), hl
-0490   03AD             l_45: 
-0491   03AD             ; 26     while (seconds != 0) {
-0492   03AD 2A F7 0B    	ld hl, (sleep_1_a)
-0493   03B0 7C          	ld a, h
-0494   03B1 B5          	or l
-0495   03B2 CA C2 03    	jp z, l_46
-0496   03B5             ; 27         seconds--;
-0497   03B5 2B          	dec hl
-0498   03B6 22 F7 0B    	ld (sleep_1_a), hl
-0499   03B9             ; 28         Delay(C8080_SECOND_DELAY);
-0500   03B9 21 88 13    	ld hl, 5000
-0501   03BC CD 3D 08    	call Delay
-0502   03BF C3 AD 03    	jp l_45
-0503   03C2             l_46: 
-0504   03C2             ; 30 ;
-0505   03C2 21 00 00    	ld hl, 0
-0506   03C5 C9          	ret
-0507   03C6             addRandom: 
-0508   03C6             ; 216  addRandom() {
-0509   03C6             	; Stack correction reset
-0510   03C6             ; 217 	static bool initialized = false;
-0511   03C6             ; 218 	uint8_t x,y;
-0512   03C6             ; 219 	uint8_t r,len=0;
-0513   03C6 AF          	xor a
-0514   03C7 32 2B 0C    	ld (addRandom_s + 3), a
-0515   03CA             ; 220 	uint8_t n,list[SIZE*SIZE][2];
-0516   03CA             ; 221 
-0517   03CA             ; 222 	if (!initialized) {
-0518   03CA 3A E2 0B    	ld a, (initialized)
-0519   03CD B7          	or a
-0520   03CE C2 D6 03    	jp nz, l_47
-0521   03D1             ; 223 		//srand(time(NULL));
-0522   03D1             ; 224 		initialized = true;
-0523   03D1             ; 25 ;
-0524   03D1 3E 01       	ld a, 1
-0525   03D3 32 E2 0B    	ld (initialized), a
-0526   03D6             l_47: 
-0527   03D6             ; 227 =0;x<SIZE;x++) {
-0528   03D6 AF          	xor a
-0529   03D7 32 28 0C    	ld (addRandom_s + 0), a
-0530   03DA             l_49: 
-0531   03DA 3A 28 0C    	ld a, (addRandom_s + 0)
-0532   03DD FE 04       	cp 4
-0533   03DF D2 3A 04    	jp nc, l_51
-0534   03E2             ; 228 		for (y=0;y<SIZE;y++) {
-0535   03E2 AF          	xor a
-0536   03E3 32 29 0C    	ld (addRandom_s + 1), a
-0537   03E6             l_52: 
-0538   03E6 3A 29 0C    	ld a, (addRandom_s + 1)
-0539   03E9 FE 04       	cp 4
-0540   03EB D2 30 04    	jp nc, l_54
-0541   03EE             ; 229 			if (board[x][y]==0) {
-0542   03EE 2A 28 0C    	ld hl, (addRandom_s + 0)
-0543   03F1 26 00       	ld h, 0
-0544   03F3 29          	add hl, hl
-0545   03F4 29          	add hl, hl
-0546   03F5 11 D2 0B    	ld de, board
-0547   03F8 19          	add hl, de
-0548   03F9 EB          	ex hl, de
-0549   03FA 2A 29 0C    	ld hl, (addRandom_s + 1)
-0550   03FD 26 00       	ld h, 0
-0551   03FF 19          	add hl, de
-0552   0400 7E          	ld a, (hl)
-0553   0401 B7          	or a
-0554   0402 C2 26 04    	jp nz, l_55
-0555   0405             ; 230 				list[len][0]=x;
-0556   0405 3A 28 0C    	ld a, (addRandom_s + 0)
-0557   0408 2A 2B 0C    	ld hl, (addRandom_s + 3)
-0558   040B 26 00       	ld h, 0
-0559   040D 29          	add hl, hl
-0560   040E 11 2D 0C    	ld de, addRandom_s + 5
-0561   0411 19          	add hl, de
-0562   0412 77          	ld (hl), a
-0563   0413             ; 231 				list[len][1]=y;
-0564   0413 3A 29 0C    	ld a, (addRandom_s + 1)
-0565   0416 2A 2B 0C    	ld hl, (addRandom_s + 3)
-0566   0419 26 00       	ld h, 0
-0567   041B 29          	add hl, hl
-0568   041C 19          	add hl, de
-0569   041D 23          	inc hl
-0570   041E 77          	ld (hl), a
-0571   041F             ; 232 				len++;
-0572   041F 3A 2B 0C    	ld a, (addRandom_s + 3)
-0573   0422 3C          	inc a
-0574   0423 32 2B 0C    	ld (addRandom_s + 3), a
-0575   0426             l_55: 
-0576   0426             l_53: 
-0577   0426 3A 29 0C    	ld a, (addRandom_s + 1)
-0578   0429 3C          	inc a
-0579   042A 32 29 0C    	ld (addRandom_s + 1), a
-0580   042D C3 E6 03    	jp l_52
-0581   0430             l_54: 
-0582   0430             l_50: 
-0583   0430 3A 28 0C    	ld a, (addRandom_s + 0)
-0584   0433 3C          	inc a
-0585   0434 32 28 0C    	ld (addRandom_s + 0), a
-0586   0437 C3 DA 03    	jp l_49
-0587   043A             l_51: 
-0588   043A             ; 233 			}
-0589   043A             ; 234 		}
-0590   043A             ; 235 	}
-0591   043A             ; 236 
-0592   043A             ; 237 	if (len>0) {
-0593   043A 3A 2B 0C    	ld a, (addRandom_s + 3)
-0594   043D B7          	or a
-0595   043E C8          	ret z
-0596   043F             ; 238 		r = rand()%len;
-0597   043F CD 4D 08    	call rand
-0598   0442 6F          	ld l, a
-0599   0443 26 00       	ld h, 0
-0600   0445 EB          	ex hl, de
-0601   0446 2A 2B 0C    	ld hl, (addRandom_s + 3)
-0602   0449 26 00       	ld h, 0
-0603   044B EB          	ex hl, de
-0604   044C CD B5 0C    	call __o_mod_u16
-0605   044F 7D          	ld a, l
-0606   0450 32 2A 0C    	ld (addRandom_s + 2), a
-0607   0453             ; 239 		x = list[r][0];
-0608   0453 2A 2A 0C    	ld hl, (addRandom_s + 2)
-0609   0456 26 00       	ld h, 0
-0610   0458 29          	add hl, hl
-0611   0459 11 2D 0C    	ld de, addRandom_s + 5
-0612   045C 19          	add hl, de
-0613   045D 7E          	ld a, (hl)
-0614   045E 32 28 0C    	ld (addRandom_s + 0), a
-0615   0461             ; 240 		y = list[r][1];
-0616   0461 2A 2A 0C    	ld hl, (addRandom_s + 2)
-0617   0464 26 00       	ld h, 0
-0618   0466 29          	add hl, hl
-0619   0467 19          	add hl, de
-0620   0468 23          	inc hl
-0621   0469 7E          	ld a, (hl)
-0622   046A 32 29 0C    	ld (addRandom_s + 1), a
-0623   046D             ; 241 		n = (rand()%10)/9+1;
-0624   046D CD 4D 08    	call rand
-0625   0470 6F          	ld l, a
+0011   0106 21 00 00    		ld hl, 0
+0012   0109 E5          		push hl
+0013   010A             	
+0014   010A             ; 323 	asm {
+0015   010A             ; 324 		ld sp, 9000h
+0016   010A             ; 325 		ld hl, 0
+0017   010A             ; 326 		push hl
+0018   010A             ; 327 	}
+0019   010A             ; 328 	char c;
+0020   010A             ; 329 	bool success;
+0021   010A             ; 330 
+0022   010A             ; 331     // TODO: if (argc == 2 && strcmp(argv[1],"test")==0) {
+0023   010A             ; 332     // TODO: 	return test();
+0024   010A             ; 333     // TODO: }
+0025   010A             ; 334 
+0026   010A             ; 335 	initBoard();
+0027   010A CD 3C 02    	call initBoard
+0028   010D             l_0: 
+0029   010D             ; 336 	while (true) {
+0030   010D             ; 337 		c=getchar();
+0031   010D CD 95 02    	call getchar
+0032   0110 7D          	ld a, l
+0033   0111 32 6C 0C    	ld (main_s + 0), a
+0034   0114             ; 338 		if (c == 27) {
+0035   0114 FE 1B       	cp 27
+0036   0116 C2 60 01    	jp nz, l_2
+0037   0119             ; 339     		c = getchar();
+0038   0119 CD 95 02    	call getchar
+0039   011C 7D          	ld a, l
+0040   011D 32 6C 0C    	ld (main_s + 0), a
+0041   0120             ; 340     		if (c == '[') {
+0042   0120 FE 5B       	cp 91
+0043   0122 C2 60 01    	jp nz, l_4
+0044   0125             ; 341         		c = getchar();
+0045   0125 CD 95 02    	call getchar
+0046   0128 7D          	ld a, l
+0047   0129 32 6C 0C    	ld (main_s + 0), a
+0048   012C             ; 342 		        switch(c) {
+0049   012C D6 41       	sub 65
+0050   012E CA 40 01    	jp z, l_10
+0051   0131 3D          	dec a
+0052   0132 CA 48 01    	jp z, l_9
+0053   0135 3D          	dec a
+0054   0136 CA 58 01    	jp z, l_7
+0055   0139 3D          	dec a
+0056   013A CA 50 01    	jp z, l_8
+0057   013D C3 0D 01    	jp l_0
+0058   0140             l_10: 
+0059   0140             ; 343 			        case 'A':
+0060   0140             ; 344 			            c = 'W';
+0061   0140 3E 57       	ld a, 87
+0062   0142 32 6C 0C    	ld (main_s + 0), a
+0063   0145 C3 60 01    	jp l_6
+0064   0148             l_9: 
+0065   0148             ; 345 			            break;
+0066   0148             ; 346 			        case 'B':
+0067   0148             ; 347 			            c = 'S';
+0068   0148 3E 53       	ld a, 83
+0069   014A 32 6C 0C    	ld (main_s + 0), a
+0070   014D C3 60 01    	jp l_6
+0071   0150             l_8: 
+0072   0150             ; 348 			            break;
+0073   0150             ; 349 			        case 'D':
+0074   0150             ; 350 			            c = 'A';
+0075   0150 3E 41       	ld a, 65
+0076   0152 32 6C 0C    	ld (main_s + 0), a
+0077   0155 C3 60 01    	jp l_6
+0078   0158             l_7: 
+0079   0158             ; 351 			            break;
+0080   0158             ; 352 			        case 'C':
+0081   0158             ; 353 			            c = 'D';
+0082   0158 3E 44       	ld a, 68
+0083   015A 32 6C 0C    	ld (main_s + 0), a
+0084   015D C3 60 01    	jp l_6
+0085   0160             l_6: 
+0086   0160             l_4: 
+0087   0160             l_2: 
+0088   0160             ; 354 			            break;
+0089   0160             ; 355 			        default:
+0090   0160             ; 356 			            continue;
+0091   0160             ; 357 		        }
+0092   0160             ; 358     		}
+0093   0160             ; 359         }		
+0094   0160             ; 360 		switch(c) {
+0095   0160 D6 41       	sub 65
+0096   0162 CA 8B 01    	jp z, l_19
+0097   0165 D6 03       	sub 3
+0098   0167 CA 94 01    	jp z, l_17
+0099   016A D6 0F       	sub 15
+0100   016C CA A6 01    	jp z, l_13
+0101   016F D6 04       	sub 4
+0102   0171 CA 9D 01    	jp z, l_15
+0103   0174 D6 0A       	sub 10
+0104   0176 CA 8B 01    	jp z, l_20
+0105   0179 D6 03       	sub 3
+0106   017B CA 94 01    	jp z, l_18
+0107   017E D6 0F       	sub 15
+0108   0180 CA A6 01    	jp z, l_14
+0109   0183 D6 04       	sub 4
+0110   0185 CA 9D 01    	jp z, l_16
+0111   0188 C3 AF 01    	jp l_21
+0112   018B             l_20: 
+0113   018B             l_19: 
+0114   018B             ; 361 			case 'a':
+0115   018B             ; 362 			case 'A':
+0116   018B             ; 363 				success = moveLeft();  break;
+0117   018B CD 9C 02    	call moveLeft
+0118   018E 32 6D 0C    	ld (main_s + 1), a
+0119   0191 C3 B3 01    	jp l_12
+0120   0194             l_18: 
+0121   0194             l_17: 
+0122   0194             ; 364 			case 'd':
+0123   0194             ; 365 			case 'D':
+0124   0194             ; 366 				success = moveRight(); break;
+0125   0194 CD B2 02    	call moveRight
+0126   0197 32 6D 0C    	ld (main_s + 1), a
+0127   019A C3 B3 01    	jp l_12
+0128   019D             l_16: 
+0129   019D             l_15: 
+0130   019D             ; 367 			case 'w':
+0131   019D             ; 368 			case 'W':
+0132   019D             ; 369 				success = moveUp();    break;
+0133   019D CD C8 02    	call moveUp
+0134   01A0 32 6D 0C    	ld (main_s + 1), a
+0135   01A3 C3 B3 01    	jp l_12
+0136   01A6             l_14: 
+0137   01A6             l_13: 
+0138   01A6             ; 370 			case 's':
+0139   01A6             ; 371 			case 'S':
+0140   01A6             ; 372 				success = moveDown();  break;
+0141   01A6 CD FA 02    	call moveDown
+0142   01A9 32 6D 0C    	ld (main_s + 1), a
+0143   01AC C3 B3 01    	jp l_12
+0144   01AF             l_21: 
+0145   01AF             ; 373 			default: success = false;
+0146   01AF             ; 24 ;
+0147   01AF AF          	xor a
+0148   01B0 32 6D 0C    	ld (main_s + 1), a
+0149   01B3             l_12: 
+0150   01B3             ; 375 ) {
+0151   01B3 B7          	or a
+0152   01B4 CA D8 01    	jp z, l_22
+0153   01B7             ; 376 			drawBoard();
+0154   01B7 CD 10 03    	call drawBoard
+0155   01BA             ; 377 			sleep(2);
+0156   01BA 21 02 00    	ld hl, 2
+0157   01BD CD 02 04    	call sleep
+0158   01C0             ; 378 			addRandom();
+0159   01C0 CD 1E 04    	call addRandom
+0160   01C3             ; 379 			drawBoard();
+0161   01C3 CD 10 03    	call drawBoard
+0162   01C6             ; 380 			if (gameEnded()) {
+0163   01C6 CD F0 04    	call gameEnded
+0164   01C9 B7          	or a
+0165   01CA CA D8 01    	jp z, l_24
+0166   01CD             ; 381 				printf("            GAME OVER          \n");
+0167   01CD 21 94 0D    	ld hl, s_18
+0168   01D0 E5          	push hl
+0169   01D1 CD 22 05    	call printf
+0170   01D4 C1          	pop bc
+0171   01D5 C3 30 02    	jp l_1
+0172   01D8             l_24: 
+0173   01D8             l_22: 
+0174   01D8             ; 382 				break;
+0175   01D8             ; 383 			}
+0176   01D8             ; 384 		}
+0177   01D8             ; 385 		if (c=='q' || c=='Q') {
+0178   01D8 3A 6C 0C    	ld a, (main_s + 0)
+0179   01DB FE 71       	cp 113
+0180   01DD CA E5 01    	jp z, l_28
+0181   01E0 FE 51       	cp 81
+0182   01E2 C2 01 02    	jp nz, l_26
+0183   01E5             l_28: 
+0184   01E5             ; 386 			printf("            QUIT? (y/n)         \n");
+0185   01E5 21 B5 0D    	ld hl, s_19
+0186   01E8 E5          	push hl
+0187   01E9 CD 22 05    	call printf
+0188   01EC C1          	pop bc
+0189   01ED             ; 387 			c=getchar();
+0190   01ED CD 95 02    	call getchar
+0191   01F0 7D          	ld a, l
+0192   01F1 32 6C 0C    	ld (main_s + 0), a
+0193   01F4             ; 388 			if (c=='y' || c=='Y') {
+0194   01F4 FE 79       	cp 121
+0195   01F6 CA 30 02    	jp z, l_1
+0196   01F9 FE 59       	cp 89
+0197   01FB CA 30 02    	jp z, l_1
+0198   01FE             ; 389 				break;
+0199   01FE             ; 390 			}
+0200   01FE             ; 391 			prepareScreen();
+0201   01FE CD 50 05    	call prepareScreen
+0202   0201             l_26: 
+0203   0201             ; 392 		}
+0204   0201             ; 393 		if (c=='r' || c=='R') {
+0205   0201 3A 6C 0C    	ld a, (main_s + 0)
+0206   0204 FE 72       	cp 114
+0207   0206 CA 0E 02    	jp z, l_34
+0208   0209 FE 52       	cp 82
+0209   020B C2 0D 01    	jp nz, l_0
+0210   020E             l_34: 
+0211   020E             ; 394 			printf("          RESTART? (y/n)       \n");
+0212   020E 21 D7 0D    	ld hl, s_20
+0213   0211 E5          	push hl
+0214   0212 CD 22 05    	call printf
+0215   0215 C1          	pop bc
+0216   0216             ; 395 			c=getchar();
+0217   0216 CD 95 02    	call getchar
+0218   0219 7D          	ld a, l
+0219   021A 32 6C 0C    	ld (main_s + 0), a
+0220   021D             ; 396 			if (c=='y' || c=='Y') {
+0221   021D FE 79       	cp 121
+0222   021F CA 27 02    	jp z, l_37
+0223   0222 FE 59       	cp 89
+0224   0224 C2 2A 02    	jp nz, l_35
+0225   0227             l_37: 
+0226   0227             ; 397 				initBoard();
+0227   0227 CD 3C 02    	call initBoard
+0228   022A             l_35: 
+0229   022A             ; 398 			}
+0230   022A             ; 399 			prepareScreen();
+0231   022A CD 50 05    	call prepareScreen
+0232   022D C3 0D 01    	jp l_0
+0233   0230             l_1: 
+0234   0230             ; 400 		}
+0235   0230             ; 401 	}
+0236   0230             ; 402 
+0237   0230             ; 403 	printf(ESC_CLEAR_SCREEN);
+0238   0230 21 8C 0D    	ld hl, s_7
+0239   0233 E5          	push hl
+0240   0234 CD 22 05    	call printf
+0241   0237 C1          	pop bc
+0242   0238 21 00 00    	ld hl, 0
+0243   023B C9          	ret
+0244   023C             initBoard: 
+0245   023C             ; 246  initBoard() {
+0246   023C             	; Stack correction reset
+0247   023C             ; 247 	uint8_t x,y;
+0248   023C             ; 248 	for (x=0;x<SIZE;x++) {
+0249   023C AF          	xor a
+0250   023D 32 6E 0C    	ld (initBoard_s + 0), a
+0251   0240             l_38: 
+0252   0240 3A 6E 0C    	ld a, (initBoard_s + 0)
+0253   0243 FE 04       	cp 4
+0254   0245 D2 7C 02    	jp nc, l_40
+0255   0248             ; 249 		for (y=0;y<SIZE;y++) {
+0256   0248 AF          	xor a
+0257   0249 32 6F 0C    	ld (initBoard_s + 1), a
+0258   024C             l_41: 
+0259   024C 3A 6F 0C    	ld a, (initBoard_s + 1)
+0260   024F FE 04       	cp 4
+0261   0251 D2 72 02    	jp nc, l_43
+0262   0254             ; 250 			board[x][y]=0;
+0263   0254 2A 6E 0C    	ld hl, (initBoard_s + 0)
+0264   0257 26 00       	ld h, 0
+0265   0259 29          	add hl, hl
+0266   025A 29          	add hl, hl
+0267   025B 11 2A 0C    	ld de, board
+0268   025E 19          	add hl, de
+0269   025F EB          	ex hl, de
+0270   0260 2A 6F 0C    	ld hl, (initBoard_s + 1)
+0271   0263 26 00       	ld h, 0
+0272   0265 19          	add hl, de
+0273   0266 36 00       	ld (hl), 0
+0274   0268             l_42: 
+0275   0268 3A 6F 0C    	ld a, (initBoard_s + 1)
+0276   026B 3C          	inc a
+0277   026C 32 6F 0C    	ld (initBoard_s + 1), a
+0278   026F C3 4C 02    	jp l_41
+0279   0272             l_43: 
+0280   0272             l_39: 
+0281   0272 3A 6E 0C    	ld a, (initBoard_s + 0)
+0282   0275 3C          	inc a
+0283   0276 32 6E 0C    	ld (initBoard_s + 0), a
+0284   0279 C3 40 02    	jp l_38
+0285   027C             l_40: 
+0286   027C             ; 251 		}
+0287   027C             ; 252 	}
+0288   027C             ; 253     addRandom();
+0289   027C CD 1E 04    	call addRandom
+0290   027F             ; 254     addRandom();
+0291   027F CD 1E 04    	call addRandom
+0292   0282             ; 255     prepareScreen();
+0293   0282 CD 50 05    	call prepareScreen
+0294   0285             ; 256     score = 0;
+0295   0285 11 00 00    	ld de, 0
+0296   0288 21 00 00    	ld hl, 0
+0297   028B 22 26 0C    	ld (score), hl
+0298   028E EB          	ex hl, de
+0299   028F 22 28 0C    	ld ((score) + 2), hl
+0300   0292             ; 257     drawBoard();
+0301   0292 C3 10 03    	jp drawBoard
+0302   0295             getchar: 
+0303   0295             ; 40  __fastcall getchar() {
+0304   0295             	; Stack correction reset
+0305   0295             ; 41     return cpmBiosConIn();
+0306   0295 CD 14 06    	call cpmBiosConIn
+0307   0298 6F          	ld l, a
+0308   0299 26 00       	ld h, 0
+0309   029B C9          	ret
+0310   029C             moveLeft: 
+0311   029C             ; 150  moveLeft() {
+0312   029C             	; Stack correction reset
+0313   029C             ; 151 	bool success;
+0314   029C             ; 152 	rotateBoard();
+0315   029C CD 1B 06    	call rotateBoard
+0316   029F             ; 153 	success = moveUp();
+0317   029F CD C8 02    	call moveUp
+0318   02A2 32 70 0C    	ld (moveLeft_s + 0), a
+0319   02A5             ; 154 	rotateBoard();
+0320   02A5 CD 1B 06    	call rotateBoard
+0321   02A8             ; 155 	rotateBoard();
+0322   02A8 CD 1B 06    	call rotateBoard
+0323   02AB             ; 156 	rotateBoard();
+0324   02AB CD 1B 06    	call rotateBoard
+0325   02AE             ; 157 	return success;
+0326   02AE 3A 70 0C    	ld a, (moveLeft_s + 0)
+0327   02B1 C9          	ret
+0328   02B2             moveRight: 
+0329   02B2             ; 170  moveRight() {
+0330   02B2             	; Stack correction reset
+0331   02B2             ; 171 	bool success;
+0332   02B2             ; 172 	rotateBoard();
+0333   02B2 CD 1B 06    	call rotateBoard
+0334   02B5             ; 173 	rotateBoard();
+0335   02B5 CD 1B 06    	call rotateBoard
+0336   02B8             ; 174 	rotateBoard();
+0337   02B8 CD 1B 06    	call rotateBoard
+0338   02BB             ; 175 	success = moveUp();
+0339   02BB CD C8 02    	call moveUp
+0340   02BE 32 71 0C    	ld (moveRight_s + 0), a
+0341   02C1             ; 176 	rotateBoard();
+0342   02C1 CD 1B 06    	call rotateBoard
+0343   02C4             ; 177 	return success;
+0344   02C4 3A 71 0C    	ld a, (moveRight_s + 0)
+0345   02C7 C9          	ret
+0346   02C8             moveUp: 
+0347   02C8             ; 141  moveUp() {
+0348   02C8             	; Stack correction reset
+0349   02C8             ; 142 	bool success = false;
+0350   02C8             ; 24 ;
+0351   02C8 AF          	xor a
+0352   02C9 32 72 0C    	ld (moveUp_s + 0), a
+0353   02CC             ; 144 =0;x<SIZE;x++) {
+0354   02CC 32 73 0C    	ld (moveUp_s + 1), a
+0355   02CF             l_44: 
+0356   02CF 3A 73 0C    	ld a, (moveUp_s + 1)
+0357   02D2 FE 04       	cp 4
+0358   02D4 D2 F6 02    	jp nc, l_46
+0359   02D7             ; 145 		success |= slideArray(board[x]);
+0360   02D7 2A 73 0C    	ld hl, (moveUp_s + 1)
+0361   02DA 26 00       	ld h, 0
+0362   02DC 29          	add hl, hl
+0363   02DD 29          	add hl, hl
+0364   02DE 11 2A 0C    	ld de, board
+0365   02E1 19          	add hl, de
+0366   02E2 CD 64 07    	call slideArray
+0367   02E5 21 72 0C    	ld hl, moveUp_s + 0
+0368   02E8 B6          	or (hl)
+0369   02E9 32 72 0C    	ld (moveUp_s + 0), a
+0370   02EC             l_45: 
+0371   02EC 3A 73 0C    	ld a, (moveUp_s + 1)
+0372   02EF 3C          	inc a
+0373   02F0 32 73 0C    	ld (moveUp_s + 1), a
+0374   02F3 C3 CF 02    	jp l_44
+0375   02F6             l_46: 
+0376   02F6             ; 146 	}
+0377   02F6             ; 147 	return success;
+0378   02F6 3A 72 0C    	ld a, (moveUp_s + 0)
+0379   02F9 C9          	ret
+0380   02FA             moveDown: 
+0381   02FA             ; 160  moveDown() {
+0382   02FA             	; Stack correction reset
+0383   02FA             ; 161 	bool success;
+0384   02FA             ; 162 	rotateBoard();
+0385   02FA CD 1B 06    	call rotateBoard
+0386   02FD             ; 163 	rotateBoard();
+0387   02FD CD 1B 06    	call rotateBoard
+0388   0300             ; 164 	success = moveUp();
+0389   0300 CD C8 02    	call moveUp
+0390   0303 32 74 0C    	ld (moveDown_s + 0), a
+0391   0306             ; 165 	rotateBoard();
+0392   0306 CD 1B 06    	call rotateBoard
+0393   0309             ; 166 	rotateBoard();
+0394   0309 CD 1B 06    	call rotateBoard
+0395   030C             ; 167 	return success;
+0396   030C 3A 74 0C    	ld a, (moveDown_s + 0)
+0397   030F C9          	ret
+0398   0310             drawBoard: 
+0399   0310             ; 31  drawBoard() {
+0400   0310             	; Stack correction reset
+0401   0310             ; 32 	uint8_t x,y;
+0402   0310             ; 33 	uint8_t t;
+0403   0310             ; 34     printf(ESC_HOME_CURSOR);
+0404   0310 21 88 0D    	ld hl, s_0
+0405   0313 E5          	push hl
+0406   0314 CD 22 05    	call printf
+0407   0317 C1          	pop bc
+0408   0318             ; 36 "2048.c %23d pts",score);
+0409   0318 2A 28 0C    	ld hl, (((score) + 2))
+0410   031B EB          	ex hl, de
+0411   031C 2A 26 0C    	ld hl, (score)
+0412   031F D5          	push de
+0413   0320 E5          	push hl
+0414   0321 21 19 0E    	ld hl, s_1
+0415   0324 E5          	push hl
+0416   0325 CD 22 05    	call printf
+0417   0328 C1          	pop bc
+0418   0329 C1          	pop bc
+0419   032A C1          	pop bc
+0420   032B             ; 37     for (y=0;y<SIZE;y++) {
+0421   032B AF          	xor a
+0422   032C 32 76 0C    	ld (drawBoard_s + 1), a
+0423   032F             l_47: 
+0424   032F 3A 76 0C    	ld a, (drawBoard_s + 1)
+0425   0332 FE 04       	cp 4
+0426   0334 D2 F9 03    	jp nc, l_49
+0427   0337             ; 38         printf("\n\n\n\n");
+0428   0337 21 61 0D    	ld hl, s_2
+0429   033A E5          	push hl
+0430   033B CD 22 05    	call printf
+0431   033E C1          	pop bc
+0432   033F             ; 39         for (x=0;x<SIZE;x++) {
+0433   033F AF          	xor a
+0434   0340 32 75 0C    	ld (drawBoard_s + 0), a
+0435   0343             l_50: 
+0436   0343 3A 75 0C    	ld a, (drawBoard_s + 0)
+0437   0346 FE 04       	cp 4
+0438   0348 D2 EF 03    	jp nc, l_52
+0439   034B             ; 40             if (board[x][y]!=0) {
+0440   034B 2A 75 0C    	ld hl, (drawBoard_s + 0)
+0441   034E 26 00       	ld h, 0
+0442   0350 29          	add hl, hl
+0443   0351 29          	add hl, hl
+0444   0352 11 2A 0C    	ld de, board
+0445   0355 19          	add hl, de
+0446   0356 EB          	ex hl, de
+0447   0357 2A 76 0C    	ld hl, (drawBoard_s + 1)
+0448   035A 26 00       	ld h, 0
+0449   035C 19          	add hl, de
+0450   035D 7E          	ld a, (hl)
+0451   035E B7          	or a
+0452   035F CA DD 03    	jp z, l_53
+0453   0362             ; 41                 char s[8];
+0454   0362             ; 42                 snprintf(s,8,"%u",1<<board[x][y]);
+0455   0362 2A 75 0C    	ld hl, (drawBoard_s + 0)
+0456   0365 26 00       	ld h, 0
+0457   0367 29          	add hl, hl
+0458   0368 29          	add hl, hl
+0459   0369 11 2A 0C    	ld de, board
+0460   036C 19          	add hl, de
+0461   036D EB          	ex hl, de
+0462   036E 2A 76 0C    	ld hl, (drawBoard_s + 1)
+0463   0371 26 00       	ld h, 0
+0464   0373 19          	add hl, de
+0465   0374 6E          	ld l, (hl)
+0466   0375 26 00       	ld h, 0
+0467   0377 11 01 00    	ld de, 1
+0468   037A EB          	ex hl, de
+0469   037B CD 15 0D    	call __o_shl_16
+0470   037E E5          	push hl
+0471   037F 21 F8 0D    	ld hl, s_3
+0472   0382 E5          	push hl
+0473   0383 21 08 00    	ld hl, 8
+0474   0386 E5          	push hl
+0475   0387 21 78 0C    	ld hl, drawBoard_s + 3
+0476   038A E5          	push hl
+0477   038B CD 48 08    	call snprintf
+0478   038E 21 08 00    	ld hl, 8
+0479   0391 39          	add hl, sp
+0480   0392 F9          	ld sp, hl
+0481   0393             ; 43                 t = 7-strlen(s);
+0482   0393 21 78 0C    	ld hl, drawBoard_s + 3
+0483   0396 CD 86 08    	call strlen
+0484   0399 7D          	ld a, l
+0485   039A 57          	ld d, a
+0486   039B 3E 07       	ld a, 7
+0487   039D 92          	sub d
+0488   039E 32 77 0C    	ld (drawBoard_s + 2), a
+0489   03A1             ; 44                 printf("|%*s%s%*s",t-t/2,"",s,t/2,"");
+0490   03A1 21 60 0D    	ld hl, s_5
+0491   03A4 E5          	push hl
+0492   03A5 2A 77 0C    	ld hl, (drawBoard_s + 2)
+0493   03A8 26 00       	ld h, 0
+0494   03AA 11 01 00    	ld de, 1
+0495   03AD CD 1C 0D    	call __o_shr_u16
+0496   03B0 E5          	push hl
+0497   03B1 21 78 0C    	ld hl, drawBoard_s + 3
+0498   03B4 E5          	push hl
+0499   03B5 21 60 0D    	ld hl, s_5
+0500   03B8 E5          	push hl
+0501   03B9 2A 77 0C    	ld hl, (drawBoard_s + 2)
+0502   03BC 26 00       	ld h, 0
+0503   03BE 11 01 00    	ld de, 1
+0504   03C1 CD 1C 0D    	call __o_shr_u16
+0505   03C4 EB          	ex hl, de
+0506   03C5 2A 77 0C    	ld hl, (drawBoard_s + 2)
+0507   03C8 26 00       	ld h, 0
+0508   03CA CD C6 0C    	call __o_sub_16
+0509   03CD E5          	push hl
+0510   03CE 21 35 0E    	ld hl, s_4
+0511   03D1 E5          	push hl
+0512   03D2 CD 22 05    	call printf
+0513   03D5 21 0C 00    	ld hl, 12
+0514   03D8 39          	add hl, sp
+0515   03D9 F9          	ld sp, hl
+0516   03DA C3 E5 03    	jp l_54
+0517   03DD             l_53: 
+0518   03DD             ; 45             } else {
+0519   03DD             ; 46                 printf("|       ");
+0520   03DD 21 2C 0E    	ld hl, s_6
+0521   03E0 E5          	push hl
+0522   03E1 CD 22 05    	call printf
+0523   03E4 C1          	pop bc
+0524   03E5             l_54: 
+0525   03E5             l_51: 
+0526   03E5 3A 75 0C    	ld a, (drawBoard_s + 0)
+0527   03E8 3C          	inc a
+0528   03E9 32 75 0C    	ld (drawBoard_s + 0), a
+0529   03EC C3 43 03    	jp l_50
+0530   03EF             l_52: 
+0531   03EF             l_48: 
+0532   03EF 3A 76 0C    	ld a, (drawBoard_s + 1)
+0533   03F2 3C          	inc a
+0534   03F3 32 76 0C    	ld (drawBoard_s + 1), a
+0535   03F6 C3 2F 03    	jp l_47
+0536   03F9             l_49: 
+0537   03F9             ; 47             }
+0538   03F9             ; 48         }
+0539   03F9             ; 49     }
+0540   03F9             ; 50     printf("\n\n\n\n");
+0541   03F9 21 61 0D    	ld hl, s_2
+0542   03FC E5          	push hl
+0543   03FD CD 22 05    	call printf
+0544   0400 C1          	pop bc
+0545   0401 C9          	ret
+0546   0402             sleep: 
+0547   0402             ; 25  sleep(unsigned seconds) {
+0548   0402             	; Stack correction reset
+0549   0402 22 4F 0C    	ld (sleep_1_a), hl
+0550   0405             l_55: 
+0551   0405             ; 26     while (seconds != 0) {
+0552   0405 2A 4F 0C    	ld hl, (sleep_1_a)
+0553   0408 7C          	ld a, h
+0554   0409 B5          	or l
+0555   040A CA 1A 04    	jp z, l_56
+0556   040D             ; 27         seconds--;
+0557   040D 2B          	dec hl
+0558   040E 22 4F 0C    	ld (sleep_1_a), hl
+0559   0411             ; 28         Delay(C8080_SECOND_DELAY);
+0560   0411 21 88 13    	ld hl, 5000
+0561   0414 CD 95 08    	call Delay
+0562   0417 C3 05 04    	jp l_55
+0563   041A             l_56: 
+0564   041A             ; 30 ;
+0565   041A 21 00 00    	ld hl, 0
+0566   041D C9          	ret
+0567   041E             addRandom: 
+0568   041E             ; 216  addRandom() {
+0569   041E             	; Stack correction reset
+0570   041E             ; 217 	static bool initialized = false;
+0571   041E             ; 218 	uint8_t x,y;
+0572   041E             ; 219 	uint8_t r,len=0;
+0573   041E AF          	xor a
+0574   041F 32 83 0C    	ld (addRandom_s + 3), a
+0575   0422             ; 220 	uint8_t n,list[SIZE*SIZE][2];
+0576   0422             ; 221 
+0577   0422             ; 222 	if (!initialized) {
+0578   0422 3A 3A 0C    	ld a, (initialized)
+0579   0425 B7          	or a
+0580   0426 C2 2E 04    	jp nz, l_57
+0581   0429             ; 223 		//srand(time(NULL));
+0582   0429             ; 224 		initialized = true;
+0583   0429             ; 25 ;
+0584   0429 3E 01       	ld a, 1
+0585   042B 32 3A 0C    	ld (initialized), a
+0586   042E             l_57: 
+0587   042E             ; 227 =0;x<SIZE;x++) {
+0588   042E AF          	xor a
+0589   042F 32 80 0C    	ld (addRandom_s + 0), a
+0590   0432             l_59: 
+0591   0432 3A 80 0C    	ld a, (addRandom_s + 0)
+0592   0435 FE 04       	cp 4
+0593   0437 D2 92 04    	jp nc, l_61
+0594   043A             ; 228 		for (y=0;y<SIZE;y++) {
+0595   043A AF          	xor a
+0596   043B 32 81 0C    	ld (addRandom_s + 1), a
+0597   043E             l_62: 
+0598   043E 3A 81 0C    	ld a, (addRandom_s + 1)
+0599   0441 FE 04       	cp 4
+0600   0443 D2 88 04    	jp nc, l_64
+0601   0446             ; 229 			if (board[x][y]==0) {
+0602   0446 2A 80 0C    	ld hl, (addRandom_s + 0)
+0603   0449 26 00       	ld h, 0
+0604   044B 29          	add hl, hl
+0605   044C 29          	add hl, hl
+0606   044D 11 2A 0C    	ld de, board
+0607   0450 19          	add hl, de
+0608   0451 EB          	ex hl, de
+0609   0452 2A 81 0C    	ld hl, (addRandom_s + 1)
+0610   0455 26 00       	ld h, 0
+0611   0457 19          	add hl, de
+0612   0458 7E          	ld a, (hl)
+0613   0459 B7          	or a
+0614   045A C2 7E 04    	jp nz, l_65
+0615   045D             ; 230 				list[len][0]=x;
+0616   045D 3A 80 0C    	ld a, (addRandom_s + 0)
+0617   0460 2A 83 0C    	ld hl, (addRandom_s + 3)
+0618   0463 26 00       	ld h, 0
+0619   0465 29          	add hl, hl
+0620   0466 11 85 0C    	ld de, addRandom_s + 5
+0621   0469 19          	add hl, de
+0622   046A 77          	ld (hl), a
+0623   046B             ; 231 				list[len][1]=y;
+0624   046B 3A 81 0C    	ld a, (addRandom_s + 1)
+0625   046E 2A 83 0C    	ld hl, (addRandom_s + 3)
 0626   0471 26 00       	ld h, 0
-0627   0473 11 0A 00    	ld de, 10
-0628   0476 CD B5 0C    	call __o_mod_u16
-0629   0479 11 09 00    	ld de, 9
-0630   047C CD 7B 0C    	call __o_div_u16
-0631   047F 7D          	ld a, l
-0632   0480 3C          	inc a
-0633   0481 32 2C 0C    	ld (addRandom_s + 4), a
-0634   0484             ; 242 		board[x][y]=n;
-0635   0484 2A 28 0C    	ld hl, (addRandom_s + 0)
-0636   0487 26 00       	ld h, 0
-0637   0489 29          	add hl, hl
-0638   048A 29          	add hl, hl
-0639   048B 11 D2 0B    	ld de, board
-0640   048E 19          	add hl, de
-0641   048F EB          	ex hl, de
-0642   0490 2A 29 0C    	ld hl, (addRandom_s + 1)
-0643   0493 26 00       	ld h, 0
-0644   0495 19          	add hl, de
-0645   0496 77          	ld (hl), a
-0646   0497 C9          	ret
-0647   0498             gameEnded: 
-0648   0498             ; 204  gameEnded() {
-0649   0498             	; Stack correction reset
-0650   0498             ; 205 	bool ended = true;
-0651   0498             ; 25 ;
-0652   0498 3E 01       	ld a, 1
-0653   049A 32 4D 0C    	ld (gameEnded_s + 0), a
-0654   049D             ; 206 )>0) return false;
-0655   049D CD 58 08    	call countEmpty
-0656   04A0 B7          	or a
-0657   04A1 CA A6 04    	jp z, l_59
-0658   04A4             ; 24 ;
-0659   04A4 AF          	xor a
-0660   04A5 C9          	ret
-0661   04A6             l_59: 
-0662   04A6             ; 207 )) return false;
-0663   04A6 CD A9 08    	call findPairDown
-0664   04A9 B7          	or a
-0665   04AA CA AF 04    	jp z, l_61
-0666   04AD             ; 24 ;
-0667   04AD AF          	xor a
-0668   04AE C9          	ret
-0669   04AF             l_61: 
-0670   04AF             ; 208 );
-0671   04AF CD C3 05    	call rotateBoard
-0672   04B2             ; 209 	if (findPairDown()) ended = false;
-0673   04B2 CD A9 08    	call findPairDown
-0674   04B5 B7          	or a
-0675   04B6 CA BD 04    	jp z, l_63
-0676   04B9             ; 24 ;
-0677   04B9 AF          	xor a
-0678   04BA 32 4D 0C    	ld (gameEnded_s + 0), a
-0679   04BD             l_63: 
-0680   04BD             ; 210 );
-0681   04BD CD C3 05    	call rotateBoard
-0682   04C0             ; 211 	rotateBoard();
-0683   04C0 CD C3 05    	call rotateBoard
-0684   04C3             ; 212 	rotateBoard();
-0685   04C3 CD C3 05    	call rotateBoard
-0686   04C6             ; 213 	return ended;
-0687   04C6 3A 4D 0C    	ld a, (gameEnded_s + 0)
-0688   04C9 C9          	ret
-0689   04CA             printf: 
-0690   04CA             ; 26  __stdcall printf(const char* format, ...) {
-0691   04CA C5          	push bc
-0692   04CB             	; Stack correction reset
-0693   04CB             ; 1 /c8080/include/c8080/c8080.h
-0694   04CB 21 06 00    	ld hl, 6
-0695   04CE 39          	add hl, sp
-0696   04CF EB          	ex hl, de
-0697   04D0 21 00 00    	ld hl, 0
-0698   04D3 39          	add hl, sp
-0699   04D4 73          	ld (hl), e
-0700   04D5 23          	inc hl
-0701   04D6 72          	ld (hl), d
-0702   04D7             ; 29  = printfOutConsole;
-0703   04D7 21 09 09    	ld hl, printfOutConsole
-0704   04DA 22 E3 0B    	ld (printfOut), hl
-0705   04DD             ; 30     printfInternal(format, va);
-0706   04DD 21 04 00    	ld hl, 4
-0707   04E0 39          	add hl, sp
-0708   04E1 5E          	ld e, (hl)
-0709   04E2 23          	inc hl
-0710   04E3 56          	ld d, (hl)
-0711   04E4 EB          	ex hl, de
-0712   04E5 22 FB 0B    	ld (printfInternal_1_a), hl
-0713   04E8 21 00 00    	ld hl, 0
-0714   04EB 39          	add hl, sp
-0715   04EC 5E          	ld e, (hl)
-0716   04ED 23          	inc hl
-0717   04EE 56          	ld d, (hl)
-0718   04EF EB          	ex hl, de
-0719   04F0 CD 1B 09    	call printfInternal
-0720   04F3             ; 31     va_end(va);
-0721   04F3             ; 32     return printfOutTotal;
-0722   04F3 2A E9 0B    	ld hl, (printfOutTotal)
-0723   04F6 C1          	pop bc
-0724   04F7 C9          	ret
-0725   04F8             prepareScreen: 
-0726   04F8             ; 53  prepareScreen() {
-0727   04F8             	; Stack correction reset
-0728   04F8             ; 54     uint8_t x,y,i;
-0729   04F8             ; 55     printf(ESC_CLEAR_SCREEN);
-0730   04F8 21 30 0D    	ld hl, s_7
-0731   04FB E5          	push hl
-0732   04FC CD CA 04    	call printf
-0733   04FF C1          	pop bc
-0734   0500             ; 57 "2048.c %17d pts\n\n",score);
-0735   0500 2A D0 0B    	ld hl, (((score) + 2))
-0736   0503 EB          	ex hl, de
-0737   0504 2A CE 0B    	ld hl, (score)
-0738   0507 D5          	push de
-0739   0508 E5          	push hl
-0740   0509 21 AB 0D    	ld hl, s_8
-0741   050C E5          	push hl
-0742   050D CD CA 04    	call printf
-0743   0510 C1          	pop bc
-0744   0511 C1          	pop bc
-0745   0512 C1          	pop bc
-0746   0513             ; 58     for (x=0;x<SIZE;x++)
-0747   0513 AF          	xor a
-0748   0514 32 4E 0C    	ld (prepareScreen_s + 0), a
-0749   0517             l_66: 
-0750   0517 3A 4E 0C    	ld a, (prepareScreen_s + 0)
-0751   051A FE 04       	cp 4
-0752   051C D2 31 05    	jp nc, l_68
-0753   051F             ; 59         printf("+-------");
-0754   051F 21 A2 0D    	ld hl, s_9
-0755   0522 E5          	push hl
-0756   0523 CD CA 04    	call printf
-0757   0526 C1          	pop bc
-0758   0527             l_67: 
-0759   0527 3A 4E 0C    	ld a, (prepareScreen_s + 0)
-0760   052A 3C          	inc a
-0761   052B 32 4E 0C    	ld (prepareScreen_s + 0), a
-0762   052E C3 17 05    	jp l_66
-0763   0531             l_68: 
-0764   0531             ; 60     printf("+\n");
-0765   0531 21 9F 0D    	ld hl, s_10
-0766   0534 E5          	push hl
-0767   0535 CD CA 04    	call printf
-0768   0538 C1          	pop bc
-0769   0539             ; 61     for (y=0;y<SIZE;y++) {
-0770   0539 AF          	xor a
-0771   053A 32 4F 0C    	ld (prepareScreen_s + 1), a
-0772   053D             l_69: 
-0773   053D 3A 4F 0C    	ld a, (prepareScreen_s + 1)
-0774   0540 FE 04       	cp 4
-0775   0542 D2 B1 05    	jp nc, l_71
-0776   0545             ; 62         for (i=0;i<3;i++) {
-0777   0545 AF          	xor a
-0778   0546 32 50 0C    	ld (prepareScreen_s + 2), a
-0779   0549             l_72: 
-0780   0549 3A 50 0C    	ld a, (prepareScreen_s + 2)
-0781   054C FE 03       	cp 3
-0782   054E D2 81 05    	jp nc, l_74
-0783   0551             ; 63             for (x=0;x<SIZE;x++)
-0784   0551 AF          	xor a
-0785   0552 32 4E 0C    	ld (prepareScreen_s + 0), a
-0786   0555             l_75: 
-0787   0555 3A 4E 0C    	ld a, (prepareScreen_s + 0)
-0788   0558 FE 04       	cp 4
-0789   055A D2 6F 05    	jp nc, l_77
-0790   055D             ; 64                 printf("|       ");
-0791   055D 21 D0 0D    	ld hl, s_6
-0792   0560 E5          	push hl
-0793   0561 CD CA 04    	call printf
-0794   0564 C1          	pop bc
-0795   0565             l_76: 
-0796   0565 3A 4E 0C    	ld a, (prepareScreen_s + 0)
-0797   0568 3C          	inc a
-0798   0569 32 4E 0C    	ld (prepareScreen_s + 0), a
-0799   056C C3 55 05    	jp l_75
-0800   056F             l_77: 
-0801   056F             ; 65             printf("|\n");
-0802   056F 21 CD 0D    	ld hl, s_11
-0803   0572 E5          	push hl
-0804   0573 CD CA 04    	call printf
-0805   0576 C1          	pop bc
-0806   0577             l_73: 
-0807   0577 3A 50 0C    	ld a, (prepareScreen_s + 2)
-0808   057A 3C          	inc a
-0809   057B 32 50 0C    	ld (prepareScreen_s + 2), a
-0810   057E C3 49 05    	jp l_72
-0811   0581             l_74: 
-0812   0581             ; 66         }
-0813   0581             ; 67         for (x=0;x<SIZE;x++)
-0814   0581 AF          	xor a
-0815   0582 32 4E 0C    	ld (prepareScreen_s + 0), a
-0816   0585             l_78: 
-0817   0585 3A 4E 0C    	ld a, (prepareScreen_s + 0)
-0818   0588 FE 04       	cp 4
-0819   058A D2 9F 05    	jp nc, l_80
-0820   058D             ; 68             printf("+-------");
-0821   058D 21 A2 0D    	ld hl, s_9
-0822   0590 E5          	push hl
-0823   0591 CD CA 04    	call printf
-0824   0594 C1          	pop bc
-0825   0595             l_79: 
-0826   0595 3A 4E 0C    	ld a, (prepareScreen_s + 0)
-0827   0598 3C          	inc a
-0828   0599 32 4E 0C    	ld (prepareScreen_s + 0), a
-0829   059C C3 85 05    	jp l_78
-0830   059F             l_80: 
-0831   059F             ; 69         printf("+\n");
-0832   059F 21 9F 0D    	ld hl, s_10
-0833   05A2 E5          	push hl
-0834   05A3 CD CA 04    	call printf
-0835   05A6 C1          	pop bc
-0836   05A7             l_70: 
-0837   05A7 3A 4F 0C    	ld a, (prepareScreen_s + 1)
-0838   05AA 3C          	inc a
-0839   05AB 32 4F 0C    	ld (prepareScreen_s + 1), a
-0840   05AE C3 3D 05    	jp l_69
-0841   05B1             l_71: 
-0842   05B1             ; 70     }
-0843   05B1             ; 71     printf("\n          w,a,s,d or r,q       \n");
-0844   05B1 21 0E 0D    	ld hl, s_12
-0845   05B4 E5          	push hl
-0846   05B5 CD CA 04    	call printf
-0847   05B8 C1          	pop bc
-0848   05B9             ; 72     drawBoard();
-0849   05B9 C3 B8 02    	jp drawBoard
-0850   05BC             cpmBiosConIn: 
-0851   05BC             ; 32  uint8_t __fastcall cpmBiosConIn() {
-0852   05BC             	; Stack correction reset
-0853   05BC             
-0854   05BC 2A 01 00            ld hl, (1)
-0855   05BF 2E 09               ld l, 09h
-0856   05C1 E9                  jp hl
-0857   05C2                 
-0858   05C2 C9          	ret
-0859   05C3             rotateBoard: 
-0860   05C3             ; 127  rotateBoard() {
-0861   05C3             	; Stack correction reset
-0862   05C3             ; 128 	uint8_t i,j,n=SIZE;
-0863   05C3             ; 1 £>ëúU
-0864   05C3 3E 04       	ld a, 4
-0865   05C5 32 53 0C    	ld (rotateBoard_s + 2), a
-0866   05C8             ; 130 =0; i<n/2; i++) {
-0867   05C8 AF          	xor a
-0868   05C9 32 51 0C    	ld (rotateBoard_s + 0), a
-0869   05CC             l_81: 
-0870   05CC 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-0871   05CF 26 00       	ld h, 0
-0872   05D1 11 01 00    	ld de, 1
-0873   05D4 CD C4 0C    	call __o_shr_u16
-0874   05D7 EB          	ex hl, de
-0875   05D8 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-0876   05DB 26 00       	ld h, 0
-0877   05DD CD 6E 0C    	call __o_sub_16
-0878   05E0 D0          	ret nc
-0879   05E1             ; 131 		for (j=i; j<n-i-1; j++) {
-0880   05E1 3A 51 0C    	ld a, (rotateBoard_s + 0)
-0881   05E4 32 52 0C    	ld (rotateBoard_s + 1), a
-0882   05E7             l_84: 
-0883   05E7 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-0884   05EA 26 00       	ld h, 0
-0885   05EC EB          	ex hl, de
-0886   05ED 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-0887   05F0 26 00       	ld h, 0
-0888   05F2 CD 6E 0C    	call __o_sub_16
-0889   05F5 2B          	dec hl
-0890   05F6 EB          	ex hl, de
-0891   05F7 2A 52 0C    	ld hl, (rotateBoard_s + 1)
-0892   05FA 26 00       	ld h, 0
-0893   05FC CD 6E 0C    	call __o_sub_16
-0894   05FF D2 02 07    	jp nc, l_86
-0895   0602             ; 132 			tmp = board[i][j];
-0896   0602 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-0897   0605 26 00       	ld h, 0
-0898   0607 29          	add hl, hl
-0899   0608 29          	add hl, hl
-0900   0609 11 D2 0B    	ld de, board
-0901   060C 19          	add hl, de
-0902   060D EB          	ex hl, de
-0903   060E 2A 52 0C    	ld hl, (rotateBoard_s + 1)
-0904   0611 26 00       	ld h, 0
-0905   0613 19          	add hl, de
-0906   0614 7E          	ld a, (hl)
-0907   0615 32 54 0C    	ld (rotateBoard_s + 3), a
-0908   0618             ; 133 			board[i][j] = board[j][n-i-1];
-0909   0618 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-0910   061B 26 00       	ld h, 0
-0911   061D EB          	ex hl, de
-0912   061E 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-0913   0621 26 00       	ld h, 0
-0914   0623 CD 6E 0C    	call __o_sub_16
-0915   0626 2B          	dec hl
-0916   0627 E5          	push hl
-0917   0628 2A 52 0C    	ld hl, (rotateBoard_s + 1)
-0918   062B 26 00       	ld h, 0
-0919   062D 29          	add hl, hl
-0920   062E 29          	add hl, hl
-0921   062F 11 D2 0B    	ld de, board
-0922   0632 19          	add hl, de
-0923   0633 D1          	pop de
-0924   0634 19          	add hl, de
-0925   0635 7E          	ld a, (hl)
-0926   0636 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-0927   0639 26 00       	ld h, 0
-0928   063B 29          	add hl, hl
-0929   063C 29          	add hl, hl
-0930   063D 11 D2 0B    	ld de, board
-0931   0640 19          	add hl, de
-0932   0641 EB          	ex hl, de
-0933   0642 2A 52 0C    	ld hl, (rotateBoard_s + 1)
-0934   0645 26 00       	ld h, 0
-0935   0647 19          	add hl, de
-0936   0648 77          	ld (hl), a
-0937   0649             ; 134 			board[j][n-i-1] = board[n-i-1][n-j-1];
-0938   0649 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-0939   064C 26 00       	ld h, 0
-0940   064E EB          	ex hl, de
-0941   064F 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-0942   0652 26 00       	ld h, 0
-0943   0654 CD 6E 0C    	call __o_sub_16
-0944   0657 2B          	dec hl
-0945   0658 E5          	push hl
-0946   0659 2A 52 0C    	ld hl, (rotateBoard_s + 1)
-0947   065C 26 00       	ld h, 0
-0948   065E 29          	add hl, hl
-0949   065F 29          	add hl, hl
-0950   0660 11 D2 0B    	ld de, board
-0951   0663 19          	add hl, de
-0952   0664 D1          	pop de
-0953   0665 19          	add hl, de
-0954   0666 E5          	push hl
-0955   0667 2A 52 0C    	ld hl, (rotateBoard_s + 1)
-0956   066A 26 00       	ld h, 0
-0957   066C EB          	ex hl, de
-0958   066D 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-0959   0670 26 00       	ld h, 0
-0960   0672 CD 6E 0C    	call __o_sub_16
-0961   0675 2B          	dec hl
-0962   0676 E5          	push hl
-0963   0677 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-0964   067A 26 00       	ld h, 0
-0965   067C EB          	ex hl, de
-0966   067D 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-0967   0680 26 00       	ld h, 0
-0968   0682 CD 6E 0C    	call __o_sub_16
-0969   0685 2B          	dec hl
-0970   0686 29          	add hl, hl
-0971   0687 29          	add hl, hl
-0972   0688 11 D2 0B    	ld de, board
-0973   068B 19          	add hl, de
-0974   068C D1          	pop de
-0975   068D 19          	add hl, de
-0976   068E 7E          	ld a, (hl)
-0977   068F E1          	pop hl
-0978   0690 77          	ld (hl), a
-0979   0691             ; 135 			board[n-i-1][n-j-1] = board[n-j-1][i];
-0980   0691 2A 52 0C    	ld hl, (rotateBoard_s + 1)
-0981   0694 26 00       	ld h, 0
-0982   0696 EB          	ex hl, de
-0983   0697 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-0984   069A 26 00       	ld h, 0
-0985   069C CD 6E 0C    	call __o_sub_16
-0986   069F 2B          	dec hl
-0987   06A0 E5          	push hl
-0988   06A1 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-0989   06A4 26 00       	ld h, 0
-0990   06A6 EB          	ex hl, de
-0991   06A7 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-0992   06AA 26 00       	ld h, 0
-0993   06AC CD 6E 0C    	call __o_sub_16
-0994   06AF 2B          	dec hl
-0995   06B0 29          	add hl, hl
-0996   06B1 29          	add hl, hl
-0997   06B2 11 D2 0B    	ld de, board
-0998   06B5 19          	add hl, de
-0999   06B6 D1          	pop de
-1000   06B7 19          	add hl, de
-1001   06B8 E5          	push hl
-1002   06B9 2A 52 0C    	ld hl, (rotateBoard_s + 1)
-1003   06BC 26 00       	ld h, 0
-1004   06BE EB          	ex hl, de
-1005   06BF 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-1006   06C2 26 00       	ld h, 0
-1007   06C4 CD 6E 0C    	call __o_sub_16
-1008   06C7 2B          	dec hl
-1009   06C8 29          	add hl, hl
-1010   06C9 29          	add hl, hl
-1011   06CA 11 D2 0B    	ld de, board
-1012   06CD 19          	add hl, de
-1013   06CE EB          	ex hl, de
-1014   06CF 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-1015   06D2 26 00       	ld h, 0
-1016   06D4 19          	add hl, de
-1017   06D5 7E          	ld a, (hl)
-1018   06D6 E1          	pop hl
-1019   06D7 77          	ld (hl), a
-1020   06D8             ; 136 			board[n-j-1][i] = tmp;
-1021   06D8 2A 52 0C    	ld hl, (rotateBoard_s + 1)
-1022   06DB 26 00       	ld h, 0
-1023   06DD EB          	ex hl, de
-1024   06DE 2A 53 0C    	ld hl, (rotateBoard_s + 2)
-1025   06E1 26 00       	ld h, 0
-1026   06E3 CD 6E 0C    	call __o_sub_16
-1027   06E6 2B          	dec hl
-1028   06E7 29          	add hl, hl
-1029   06E8 29          	add hl, hl
-1030   06E9 11 D2 0B    	ld de, board
-1031   06EC 19          	add hl, de
-1032   06ED EB          	ex hl, de
-1033   06EE 2A 51 0C    	ld hl, (rotateBoard_s + 0)
-1034   06F1 26 00       	ld h, 0
-1035   06F3 19          	add hl, de
-1036   06F4 3A 54 0C    	ld a, (rotateBoard_s + 3)
-1037   06F7 77          	ld (hl), a
-1038   06F8             l_85: 
-1039   06F8 3A 52 0C    	ld a, (rotateBoard_s + 1)
-1040   06FB 3C          	inc a
-1041   06FC 32 52 0C    	ld (rotateBoard_s + 1), a
-1042   06FF C3 E7 05    	jp l_84
-1043   0702             l_86: 
-1044   0702             l_82: 
-1045   0702 3A 51 0C    	ld a, (rotateBoard_s + 0)
-1046   0705 3C          	inc a
-1047   0706 32 51 0C    	ld (rotateBoard_s + 0), a
-1048   0709 C3 CC 05    	jp l_81
-1049   070C             slideArray: 
-1050   070C             ; 99  slideArray(uint8_t array[SIZE]) {
-1051   070C             	; Stack correction reset
-1052   070C 22 F1 0B    	ld (slideArray_1_a), hl
-1053   070F             ; 100 	bool success = false;
-1054   070F             ; 24 ;
-1055   070F AF          	xor a
-1056   0710 32 55 0C    	ld (slideArray_s + 0), a
-1057   0713             ; 101  x,t,stop=0;
-1058   0713 32 58 0C    	ld (slideArray_s + 3), a
-1059   0716             ; 102 
-1060   0716             ; 103 	for (x=0;x<SIZE;x++) {
-1061   0716 32 56 0C    	ld (slideArray_s + 1), a
-1062   0719             l_87: 
-1063   0719 3A 56 0C    	ld a, (slideArray_s + 1)
-1064   071C FE 04       	cp 4
-1065   071E D2 EC 07    	jp nc, l_89
-1066   0721             ; 104 		if (array[x]!=0) {
-1067   0721 2A 56 0C    	ld hl, (slideArray_s + 1)
-1068   0724 26 00       	ld h, 0
-1069   0726 EB          	ex hl, de
-1070   0727 2A F1 0B    	ld hl, (slideArray_1_a)
-1071   072A 19          	add hl, de
-1072   072B 7E          	ld a, (hl)
-1073   072C B7          	or a
-1074   072D CA E2 07    	jp z, l_90
-1075   0730             ; 105 			t = findTarget(array,x,stop);
-1076   0730 2A F1 0B    	ld hl, (slideArray_1_a)
-1077   0733 22 ED 0B    	ld (findTarget_1_a), hl
-1078   0736 3A 56 0C    	ld a, (slideArray_s + 1)
-1079   0739 32 EF 0B    	ld (findTarget_2_a), a
-1080   073C 3A 58 0C    	ld a, (slideArray_s + 3)
-1081   073F CD 67 0A    	call findTarget
-1082   0742 32 57 0C    	ld (slideArray_s + 2), a
-1083   0745             ; 106 			// if target is not original position, then move or merge
-1084   0745             ; 107 			if (t!=x) {
-1085   0745 3A 56 0C    	ld a, (slideArray_s + 1)
-1086   0748 21 57 0C    	ld hl, slideArray_s + 2
-1087   074B BE          	cp (hl)
-1088   074C CA E2 07    	jp z, l_92
-1089   074F             ; 108 				// if target is zero, this is a move
-1090   074F             ; 109 				if (array[t]==0) {
-1091   074F 2A 57 0C    	ld hl, (slideArray_s + 2)
-1092   0752 26 00       	ld h, 0
-1093   0754 EB          	ex hl, de
-1094   0755 2A F1 0B    	ld hl, (slideArray_1_a)
-1095   0758 19          	add hl, de
-1096   0759 7E          	ld a, (hl)
-1097   075A B7          	or a
-1098   075B C2 77 07    	jp nz, l_94
-1099   075E             ; 110 					array[t]=array[x];
-1100   075E 2A 56 0C    	ld hl, (slideArray_s + 1)
-1101   0761 26 00       	ld h, 0
-1102   0763 EB          	ex hl, de
-1103   0764 2A F1 0B    	ld hl, (slideArray_1_a)
-1104   0767 19          	add hl, de
-1105   0768 7E          	ld a, (hl)
-1106   0769 2A 57 0C    	ld hl, (slideArray_s + 2)
-1107   076C 26 00       	ld h, 0
-1108   076E EB          	ex hl, de
-1109   076F 2A F1 0B    	ld hl, (slideArray_1_a)
-1110   0772 19          	add hl, de
-1111   0773 77          	ld (hl), a
-1112   0774 C3 D1 07    	jp l_95
-1113   0777             l_94: 
-1114   0777             ; 111 				} else if (array[t]==array[x]) {
-1115   0777 2A 56 0C    	ld hl, (slideArray_s + 1)
-1116   077A 26 00       	ld h, 0
-1117   077C EB          	ex hl, de
-1118   077D 2A F1 0B    	ld hl, (slideArray_1_a)
-1119   0780 19          	add hl, de
-1120   0781 7E          	ld a, (hl)
-1121   0782 2A 57 0C    	ld hl, (slideArray_s + 2)
-1122   0785 26 00       	ld h, 0
-1123   0787 EB          	ex hl, de
-1124   0788 2A F1 0B    	ld hl, (slideArray_1_a)
-1125   078B 19          	add hl, de
-1126   078C BE          	cp (hl)
-1127   078D C2 D1 07    	jp nz, l_96
-1128   0790             ; 112 					// merge (increase power of two)
-1129   0790             ; 113 					array[t]++;
-1130   0790 2A 57 0C    	ld hl, (slideArray_s + 2)
-1131   0793 26 00       	ld h, 0
-1132   0795 EB          	ex hl, de
-1133   0796 2A F1 0B    	ld hl, (slideArray_1_a)
-1134   0799 19          	add hl, de
-1135   079A 7E          	ld a, (hl)
-1136   079B 3C          	inc a
-1137   079C 77          	ld (hl), a
-1138   079D             ; 114 					// increase score
-1139   079D             ; 115 					score+=(uint32_t)1<<array[t];
-1140   079D 2A D0 0B    	ld hl, (((score) + 2))
-1141   07A0 EB          	ex hl, de
-1142   07A1 2A CE 0B    	ld hl, (score)
-1143   07A4 D5          	push de
-1144   07A5 E5          	push hl
-1145   07A6 11 00 00    	ld de, 0
-1146   07A9 21 01 00    	ld hl, 1
-1147   07AC D5          	push de
-1148   07AD E5          	push hl
-1149   07AE 2A 57 0C    	ld hl, (slideArray_s + 2)
-1150   07B1 26 00       	ld h, 0
-1151   07B3 EB          	ex hl, de
-1152   07B4 2A F1 0B    	ld hl, (slideArray_1_a)
-1153   07B7 19          	add hl, de
-1154   07B8 6E          	ld l, (hl)
-1155   07B9 11 00 00    	ld de, 0
-1156   07BC 62          	ld h, d
-1157   07BD CD E7 0C    	call __o_shl_32
-1158   07C0             	; Stack correction -4
-1159   07C0 CD D1 0C    	call __o_add_32
-1160   07C3             	; Stack correction -4
-1161   07C3 22 CE 0B    	ld (score), hl
-1162   07C6 EB          	ex hl, de
-1163   07C7 22 D0 0B    	ld ((score) + 2), hl
-1164   07CA             ; 116 					// set stop to avoid double merge
-1165   07CA             ; 117 					stop = t+1;
-1166   07CA 3A 57 0C    	ld a, (slideArray_s + 2)
-1167   07CD 3C          	inc a
-1168   07CE 32 58 0C    	ld (slideArray_s + 3), a
-1169   07D1             l_96: 
-1170   07D1             l_95: 
-1171   07D1             ; 118 				}
-1172   07D1             ; 119 				array[x]=0;
-1173   07D1 2A 56 0C    	ld hl, (slideArray_s + 1)
-1174   07D4 26 00       	ld h, 0
-1175   07D6 EB          	ex hl, de
-1176   07D7 2A F1 0B    	ld hl, (slideArray_1_a)
-1177   07DA 19          	add hl, de
-1178   07DB 36 00       	ld (hl), 0
-1179   07DD             ; 120 				success = true;
-1180   07DD             ; 25 ;
-1181   07DD 3E 01       	ld a, 1
-1182   07DF 32 55 0C    	ld (slideArray_s + 0), a
-1183   07E2             l_92: 
-1184   07E2             l_90: 
-1185   07E2             l_88: 
-1186   07E2             ; 103 ) {
-1187   07E2 3A 56 0C    	ld a, (slideArray_s + 1)
-1188   07E5 3C          	inc a
-1189   07E6 32 56 0C    	ld (slideArray_s + 1), a
-1190   07E9 C3 19 07    	jp l_87
-1191   07EC             l_89: 
-1192   07EC             ; 104 		if (array[x]!=0) {
-1193   07EC             ; 105 			t = findTarget(array,x,stop);
-1194   07EC             ; 106 			// if target is not original position, then move or merge
-1195   07EC             ; 107 			if (t!=x) {
-1196   07EC             ; 108 				// if target is zero, this is a move
-1197   07EC             ; 109 				if (array[t]==0) {
-1198   07EC             ; 110 					array[t]=array[x];
-1199   07EC             ; 111 				} else if (array[t]==array[x]) {
-1200   07EC             ; 112 					// merge (increase power of two)
-1201   07EC             ; 113 					array[t]++;
-1202   07EC             ; 114 					// increase score
-1203   07EC             ; 115 					score+=(uint32_t)1<<array[t];
-1204   07EC             ; 116 					// set stop to avoid double merge
-1205   07EC             ; 117 					stop = t+1;
-1206   07EC             ; 118 				}
-1207   07EC             ; 119 				array[x]=0;
-1208   07EC             ; 120 				success = true;
-1209   07EC             ; 121 			}
-1210   07EC             ; 122 		}
-1211   07EC             ; 123 	}
-1212   07EC             ; 124 	return success;
-1213   07EC 3A 55 0C    	ld a, (slideArray_s + 0)
-1214   07EF C9          	ret
-1215   07F0             snprintf: 
-1216   07F0             ; 38  __stdcall snprintf(char* buffer, size_t buffer_size, const char* format, ...) {
-1217   07F0 C5          	push bc
-1218   07F1             	; Stack correction reset
-1219   07F1             ; 1 /c8080/include/putchar.c
-1220   07F1 21 0A 00    	ld hl, 10
-1221   07F4 39          	add hl, sp
-1222   07F5 EB          	ex hl, de
-1223   07F6 21 00 00    	ld hl, 0
-1224   07F9 39          	add hl, sp
-1225   07FA 73          	ld (hl), e
-1226   07FB 23          	inc hl
-1227   07FC 72          	ld (hl), d
-1228   07FD             ; 41 buffer, buffer_size, format, va);
-1229   07FD 21 04 00    	ld hl, 4
-1230   0800 39          	add hl, sp
-1231   0801 5E          	ld e, (hl)
-1232   0802 23          	inc hl
-1233   0803 56          	ld d, (hl)
-1234   0804 EB          	ex hl, de
-1235   0805 22 FF 0B    	ld (snprintfInternal_1_a), hl
-1236   0808 21 06 00    	ld hl, 6
-1237   080B 39          	add hl, sp
-1238   080C 5E          	ld e, (hl)
-1239   080D 23          	inc hl
-1240   080E 56          	ld d, (hl)
-1241   080F EB          	ex hl, de
-1242   0810 22 01 0C    	ld (snprintfInternal_2_a), hl
-1243   0813 21 08 00    	ld hl, 8
-1244   0816 39          	add hl, sp
-1245   0817 5E          	ld e, (hl)
-1246   0818 23          	inc hl
-1247   0819 56          	ld d, (hl)
-1248   081A EB          	ex hl, de
-1249   081B 22 03 0C    	ld (snprintfInternal_3_a), hl
-1250   081E 21 00 00    	ld hl, 0
-1251   0821 39          	add hl, sp
-1252   0822 5E          	ld e, (hl)
-1253   0823 23          	inc hl
-1254   0824 56          	ld d, (hl)
-1255   0825 EB          	ex hl, de
-1256   0826 CD C3 0A    	call snprintfInternal
-1257   0829             ; 42     va_end(va);
-1258   0829             ; 43     return printfOutTotal;
-1259   0829 2A E9 0B    	ld hl, (printfOutTotal)
-1260   082C C1          	pop bc
-1261   082D C9          	ret
-1262   082E             strlen: 
-1263   082E             ; 20  __fastcall strlen(const char string[]) {
-1264   082E             	; Stack correction reset
-1265   082E 22 EB 0B    	ld (strlen_1_a), hl
-1266   0831             ; 21     (void)string;
-1267   0831             
-1268   0831 11 FF FF            ld de, -1
-1269   0834 AF                  xor a
-1270   0835             strlen_1: 
-1271   0835 BE                  cp (hl)
-1272   0836 13                  inc de
-1273   0837 23                  inc hl
-1274   0838 C2 35 08            jp nz, strlen_1
-1275   083B EB                  ex hl, de
-1276   083C                 
-1277   083C C9          	ret
-1278   083D             Delay: 
-1279   083D             ; 22  Delay(uint16_t n) {
-1280   083D             	; Stack correction reset
-1281   083D 22 08 0C    	ld (Delay_1_a), hl
-1282   0840             l_99: 
-1283   0840             ; 23     while (--n != 0) {
-1284   0840 2A 08 0C    	ld hl, (Delay_1_a)
-1285   0843 2B          	dec hl
-1286   0844 22 08 0C    	ld (Delay_1_a), hl
-1287   0847 7C          	ld a, h
-1288   0848 B5          	or l
-1289   0849 C2 40 08    	jp nz, l_99
-1290   084C C9          	ret
-1291   084D             rand: 
-1292   084D             ; 20  __fastcall rand() {
-1293   084D             	; Stack correction reset
-1294   084D             
-1295   084D             rand_seed: 
-1296   084D 3E FA               ld a, 0FAh
-1297   084F 47                  ld b, a
-1298   0850 87                  add a, a
-1299   0851 87                  add a, a
-1300   0852 80                  add a, b
-1301   0853 3C                  inc a
-1302   0854 32 4E 08            ld (rand_seed + 1), a
-1303   0857                 
-1304   0857 C9          	ret
-1305   0858             countEmpty: 
-1306   0858             ; 191  countEmpty() {
-1307   0858             	; Stack correction reset
-1308   0858             ; 192 	uint8_t x,y;
-1309   0858             ; 193 	uint8_t count=0;
-1310   0858 AF          	xor a
-1311   0859 32 5B 0C    	ld (countEmpty_s + 2), a
-1312   085C             ; 194 	for (x=0;x<SIZE;x++) {
-1313   085C 32 59 0C    	ld (countEmpty_s + 0), a
-1314   085F             l_101: 
-1315   085F 3A 59 0C    	ld a, (countEmpty_s + 0)
-1316   0862 FE 04       	cp 4
-1317   0864 D2 A5 08    	jp nc, l_103
-1318   0867             ; 195 		for (y=0;y<SIZE;y++) {
-1319   0867 AF          	xor a
-1320   0868 32 5A 0C    	ld (countEmpty_s + 1), a
-1321   086B             l_104: 
-1322   086B 3A 5A 0C    	ld a, (countEmpty_s + 1)
-1323   086E FE 04       	cp 4
-1324   0870 D2 9B 08    	jp nc, l_106
-1325   0873             ; 196 			if (board[x][y]==0) {
-1326   0873 2A 59 0C    	ld hl, (countEmpty_s + 0)
-1327   0876 26 00       	ld h, 0
-1328   0878 29          	add hl, hl
-1329   0879 29          	add hl, hl
-1330   087A 11 D2 0B    	ld de, board
-1331   087D 19          	add hl, de
-1332   087E EB          	ex hl, de
-1333   087F 2A 5A 0C    	ld hl, (countEmpty_s + 1)
-1334   0882 26 00       	ld h, 0
-1335   0884 19          	add hl, de
-1336   0885 7E          	ld a, (hl)
-1337   0886 B7          	or a
-1338   0887 C2 91 08    	jp nz, l_107
-1339   088A             ; 197 				count++;
-1340   088A 3A 5B 0C    	ld a, (countEmpty_s + 2)
-1341   088D 3C          	inc a
-1342   088E 32 5B 0C    	ld (countEmpty_s + 2), a
-1343   0891             l_107: 
-1344   0891             l_105: 
-1345   0891 3A 5A 0C    	ld a, (countEmpty_s + 1)
-1346   0894 3C          	inc a
-1347   0895 32 5A 0C    	ld (countEmpty_s + 1), a
-1348   0898 C3 6B 08    	jp l_104
-1349   089B             l_106: 
-1350   089B             l_102: 
-1351   089B 3A 59 0C    	ld a, (countEmpty_s + 0)
-1352   089E 3C          	inc a
-1353   089F 32 59 0C    	ld (countEmpty_s + 0), a
-1354   08A2 C3 5F 08    	jp l_101
-1355   08A5             l_103: 
-1356   08A5             ; 198 			}
-1357   08A5             ; 199 		}
-1358   08A5             ; 200 	}
-1359   08A5             ; 201 	return count;
-1360   08A5 3A 5B 0C    	ld a, (countEmpty_s + 2)
-1361   08A8 C9          	ret
-1362   08A9             findPairDown: 
-1363   08A9             ; 180  findPairDown() {
-1364   08A9             	; Stack correction reset
-1365   08A9             ; 181 	bool success = false;
-1366   08A9             ; 24 ;
-1367   08A9 AF          	xor a
-1368   08AA 32 5C 0C    	ld (findPairDown_s + 0), a
-1369   08AD             ; 183 =0;x<SIZE;x++) {
-1370   08AD 32 5D 0C    	ld (findPairDown_s + 1), a
-1371   08B0             l_109: 
-1372   08B0 3A 5D 0C    	ld a, (findPairDown_s + 1)
-1373   08B3 FE 04       	cp 4
-1374   08B5 D2 05 09    	jp nc, l_111
-1375   08B8             ; 184 		for (y=0;y<SIZE-1;y++) {
-1376   08B8 AF          	xor a
-1377   08B9 32 5E 0C    	ld (findPairDown_s + 2), a
-1378   08BC             l_112: 
-1379   08BC 3A 5E 0C    	ld a, (findPairDown_s + 2)
-1380   08BF FE 03       	cp 3
-1381   08C1 D2 FB 08    	jp nc, l_114
-1382   08C4             ; 185 			if (board[x][y]==board[x][y+1]) return true;
-1383   08C4 2A 5D 0C    	ld hl, (findPairDown_s + 1)
-1384   08C7 26 00       	ld h, 0
-1385   08C9 29          	add hl, hl
-1386   08CA 29          	add hl, hl
-1387   08CB 11 D2 0B    	ld de, board
-1388   08CE 19          	add hl, de
-1389   08CF EB          	ex hl, de
-1390   08D0 2A 5E 0C    	ld hl, (findPairDown_s + 2)
-1391   08D3 26 00       	ld h, 0
-1392   08D5 23          	inc hl
-1393   08D6 19          	add hl, de
-1394   08D7 7E          	ld a, (hl)
-1395   08D8 2A 5D 0C    	ld hl, (findPairDown_s + 1)
-1396   08DB 26 00       	ld h, 0
-1397   08DD 29          	add hl, hl
-1398   08DE 29          	add hl, hl
-1399   08DF 11 D2 0B    	ld de, board
-1400   08E2 19          	add hl, de
-1401   08E3 EB          	ex hl, de
-1402   08E4 2A 5E 0C    	ld hl, (findPairDown_s + 2)
-1403   08E7 26 00       	ld h, 0
-1404   08E9 19          	add hl, de
-1405   08EA BE          	cp (hl)
-1406   08EB C2 F1 08    	jp nz, l_115
-1407   08EE             ; 25 ;
-1408   08EE 3E 01       	ld a, 1
-1409   08F0 C9          	ret
-1410   08F1             l_115: 
-1411   08F1             l_113: 
-1412   08F1             ; 184 ) {
-1413   08F1 3A 5E 0C    	ld a, (findPairDown_s + 2)
-1414   08F4 3C          	inc a
-1415   08F5 32 5E 0C    	ld (findPairDown_s + 2), a
-1416   08F8 C3 BC 08    	jp l_112
-1417   08FB             l_114: 
-1418   08FB             l_110: 
-1419   08FB 3A 5D 0C    	ld a, (findPairDown_s + 1)
-1420   08FE 3C          	inc a
-1421   08FF 32 5D 0C    	ld (findPairDown_s + 1), a
-1422   0902 C3 B0 08    	jp l_109
-1423   0905             l_111: 
-1424   0905             ; 185 			if (board[x][y]==board[x][y+1]) return true;
-1425   0905             ; 186 		}
-1426   0905             ; 187 	}
-1427   0905             ; 188 	return success;
-1428   0905 3A 5C 0C    	ld a, (findPairDown_s + 0)
-1429   0908 C9          	ret
-1430   0909             printfOutConsole: 
-1431   0909             ; 21  __stdcall printfOutConsole(int c) { // TODO: static
-1432   0909             	; Stack correction reset
-1433   0909             ; 22     printfOutTotal++;
-1434   0909 2A E9 0B    	ld hl, (printfOutTotal)
-1435   090C 23          	inc hl
-1436   090D 22 E9 0B    	ld (printfOutTotal), hl
-1437   0910             ; 23     return putchar(c);
-1438   0910 21 02 00    	ld hl, 2
-1439   0913 39          	add hl, sp
-1440   0914 5E          	ld e, (hl)
-1441   0915 23          	inc hl
-1442   0916 56          	ld d, (hl)
-1443   0917 EB          	ex hl, de
-1444   0918 C3 FB 0A    	jp putchar
-1445   091B             printfInternal: 
-1446   091B             ; 46  printfInternal(const char* format, va_list va) {
-1447   091B             	; Stack correction reset
-1448   091B 22 FD 0B    	ld (printfInternal_2_a), hl
-1449   091E             ; 47     printfOutTotal = 0;
-1450   091E 21 00 00    	ld hl, 0
-1451   0921 22 E9 0B    	ld (printfOutTotal), hl
-1452   0924             l_117: 
-1453   0924             ; 48     char buf[UINT16_TO_STRING_SIZE];
-1454   0924             ; 49     for (;;) {
-1455   0924             ; 50         uint8_t c = *format;
-1456   0924 2A FB 0B    	ld hl, (printfInternal_1_a)
-1457   0927 7E          	ld a, (hl)
-1458   0928 32 65 0C    	ld (printfInternal_s + 6), a
-1459   092B             ; 51         switch (c) {
-1460   092B B7          	or a
-1461   092C C8          	ret z
-1462   092D D6 25       	sub 37
-1463   092F CA 35 09    	jp z, l_121
-1464   0932 C3 4F 0A    	jp l_123
-1465   0935             l_121: 
-1466   0935             ; 52             case 0:
-1467   0935             ; 53                 return;
-1468   0935             ; 54             case '%':
-1469   0935             ; 55                 unsigned width = 0;
-1470   0935 21 00 00    	ld hl, 0
-1471   0938 22 66 0C    	ld (printfInternal_s + 7), hl
-1472   093B             ; 56                 format++;
-1473   093B 2A FB 0B    	ld hl, (printfInternal_1_a)
-1474   093E 23          	inc hl
-1475   093F 22 FB 0B    	ld (printfInternal_1_a), hl
-1476   0942             ; 57                 c = *format;
-1477   0942 7E          	ld a, (hl)
-1478   0943 32 65 0C    	ld (printfInternal_s + 6), a
-1479   0946             ; 58                 if (c == '*') {
-1480   0946 FE 2A       	cp 42
-1481   0948 C2 6A 09    	jp nz, l_124
-1482   094B             ; 59                     width = va_arg(va, unsigned);
-1483   094B 2A FD 0B    	ld hl, (printfInternal_2_a)
-1484   094E 23          	inc hl
-1485   094F 23          	inc hl
-1486   0950 22 FD 0B    	ld (printfInternal_2_a), hl
-1487   0953 2B          	dec hl
-1488   0954 2B          	dec hl
-1489   0955 5E          	ld e, (hl)
-1490   0956 23          	inc hl
-1491   0957 56          	ld d, (hl)
-1492   0958 EB          	ex hl, de
-1493   0959 22 66 0C    	ld (printfInternal_s + 7), hl
-1494   095C             ; 60 ;
-1495   095C 2A FB 0B    	ld hl, (printfInternal_1_a)
-1496   095F 23          	inc hl
-1497   0960 22 FB 0B    	ld (printfInternal_1_a), hl
-1498   0963             ; 61                     c = *format;
-1499   0963 7E          	ld a, (hl)
-1500   0964 32 65 0C    	ld (printfInternal_s + 6), a
-1501   0967 C3 A1 09    	jp l_125
-1502   096A             l_124: 
-1503   096A             l_126: 
-1504   096A             ; 62                 } else {
-1505   096A             ; 63                     while (c >= '0' && c <= '9') {
-1506   096A 3A 65 0C    	ld a, (printfInternal_s + 6)
-1507   096D FE 30       	cp 48
-1508   096F DA A1 09    	jp c, l_127
-1509   0972 3E 39       	ld a, 57
-1510   0974 21 65 0C    	ld hl, printfInternal_s + 6
-1511   0977 BE          	cp (hl)
-1512   0978 DA A1 09    	jp c, l_127
-1513   097B             ; 64                         width = width * 10 + (c - '0');
-1514   097B 2A 65 0C    	ld hl, (printfInternal_s + 6)
-1515   097E 26 00       	ld h, 0
-1516   0980 11 D0 FF    	ld de, 65488
-1517   0983 19          	add hl, de
-1518   0984 E5          	push hl
-1519   0985 2A 66 0C    	ld hl, (printfInternal_s + 7)
-1520   0988 54          	ld d, h
-1521   0989 5D          	ld e, l
-1522   098A 29          	add hl, hl
-1523   098B 29          	add hl, hl
-1524   098C 19          	add hl, de
-1525   098D 29          	add hl, hl
-1526   098E D1          	pop de
-1527   098F 19          	add hl, de
-1528   0990 22 66 0C    	ld (printfInternal_s + 7), hl
-1529   0993             ; 65                         format++;
-1530   0993 2A FB 0B    	ld hl, (printfInternal_1_a)
-1531   0996 23          	inc hl
-1532   0997 22 FB 0B    	ld (printfInternal_1_a), hl
-1533   099A             ; 66                         c = *format;
-1534   099A 7E          	ld a, (hl)
-1535   099B 32 65 0C    	ld (printfInternal_s + 6), a
-1536   099E C3 6A 09    	jp l_126
-1537   09A1             l_127: 
-1538   09A1             l_125: 
-1539   09A1             ; 67                     }
-1540   09A1             ; 68                 }
-1541   09A1             ; 69                 switch (c) {
-1542   09A1 3A 65 0C    	ld a, (printfInternal_s + 6)
-1543   09A4 B7          	or a
-1544   09A5 C8          	ret z
-1545   09A6 D6 64       	sub 100
-1546   09A8 CA BD 09    	jp z, l_131
-1547   09AB D6 05       	sub 5
-1548   09AD CA BD 09    	jp z, l_130
-1549   09B0 D6 0A       	sub 10
-1550   09B2 CA 22 0A    	jp z, l_129
-1551   09B5 D6 02       	sub 2
-1552   09B7 CA BD 09    	jp z, l_132
-1553   09BA C3 5C 0A    	jp l_120
-1554   09BD             l_132: 
-1555   09BD             l_131: 
-1556   09BD             l_130: 
-1557   09BD             ; 70                     case 0:
-1558   09BD             ; 71                         return;
-1559   09BD             ; 72                     case 'u':
-1560   09BD             ; 73                     case 'd':
-1561   09BD             ; 74                     case 'i': {
-1562   09BD             ; 75                         unsigned i = va_arg(va, unsigned);
-1563   09BD 2A FD 0B    	ld hl, (printfInternal_2_a)
-1564   09C0 23          	inc hl
-1565   09C1 23          	inc hl
-1566   09C2 22 FD 0B    	ld (printfInternal_2_a), hl
-1567   09C5 2B          	dec hl
-1568   09C6 2B          	dec hl
-1569   09C7 5E          	ld e, (hl)
-1570   09C8 23          	inc hl
-1571   09C9 56          	ld d, (hl)
-1572   09CA EB          	ex hl, de
-1573   09CB 22 68 0C    	ld (printfInternal_s + 9), hl
-1574   09CE             ; 76  != 'u' && (int16_t)i < 0) {
-1575   09CE 3A 65 0C    	ld a, (printfInternal_s + 6)
-1576   09D1 FE 75       	cp 117
-1577   09D3 CA F7 09    	jp z, l_134
-1578   09D6 11 00 00    	ld de, 0
-1579   09D9 CD 6E 0C    	call __o_sub_16
-1580   09DC F2 F7 09    	jp p, l_134
-1581   09DF             ; 77                             printfOut('-');
-1582   09DF 21 2D 00    	ld hl, 45
-1583   09E2 E5          	push hl
-1584   09E3 2A E3 0B    	ld hl, (printfOut)
-1585   09E6 CD E6 0C    	call __o_call_hl
-1586   09E9 C1          	pop bc
-1587   09EA             ; 78                             i = 0 - i;
-1588   09EA 2A 68 0C    	ld hl, (printfInternal_s + 9)
-1589   09ED 11 00 00    	ld de, 0
-1590   09F0 EB          	ex hl, de
-1591   09F1 CD 6E 0C    	call __o_sub_16
-1592   09F4 22 68 0C    	ld (printfInternal_s + 9), hl
-1593   09F7             l_134: 
-1594   09F7             ; 79                         }
-1595   09F7             ; 80                         char* text = Uint16ToString(buf, (uint16_t)i);
-1596   09F7 21 5F 0C    	ld hl, printfInternal_s + 0
-1597   09FA 22 10 0C    	ld (Uint16ToString_1_a), hl
-1598   09FD 2A 68 0C    	ld hl, (printfInternal_s + 9)
-1599   0A00 CD 16 0B    	call Uint16ToString
-1600   0A03 22 6A 0C    	ld (printfInternal_s + 11), hl
-1601   0A06             ; 81                         printSpaces(width, &buf[UINT16_TO_STRING_SIZE] - text);
-1602   0A06 2A 66 0C    	ld hl, (printfInternal_s + 7)
-1603   0A09 22 0C 0C    	ld (printSpaces_1_a), hl
-1604   0A0C 2A 6A 0C    	ld hl, (printfInternal_s + 11)
-1605   0A0F 11 65 0C    	ld de, (printfInternal_s + 0) + (6)
-1606   0A12 EB          	ex hl, de
-1607   0A13 CD 6E 0C    	call __o_sub_16
-1608   0A16 CD 4A 0B    	call printSpaces
-1609   0A19             ; 82                         printfText(text);
-1610   0A19 2A 6A 0C    	ld hl, (printfInternal_s + 11)
-1611   0A1C CD 80 0B    	call printfText
-1612   0A1F C3 5C 0A    	jp l_120
-1613   0A22             l_129: 
-1614   0A22             ; 83                         break;
-1615   0A22             ; 84                     }
-1616   0A22             ; 85                     case 's': {
-1617   0A22             ; 86                         uint16_t prevTotal = printfOutTotal;
-1618   0A22 2A E9 0B    	ld hl, (printfOutTotal)
-1619   0A25 22 68 0C    	ld (printfInternal_s + 9), hl
-1620   0A28             ; 87                         printfText(va_arg(va, char*));
-1621   0A28 2A FD 0B    	ld hl, (printfInternal_2_a)
-1622   0A2B 23          	inc hl
-1623   0A2C 23          	inc hl
-1624   0A2D 22 FD 0B    	ld (printfInternal_2_a), hl
-1625   0A30 2B          	dec hl
-1626   0A31 2B          	dec hl
-1627   0A32 5E          	ld e, (hl)
-1628   0A33 23          	inc hl
-1629   0A34 56          	ld d, (hl)
-1630   0A35 EB          	ex hl, de
-1631   0A36 CD 80 0B    	call printfText
-1632   0A39             ; 88 width, printfOutTotal - prevTotal);
-1633   0A39 2A 66 0C    	ld hl, (printfInternal_s + 7)
-1634   0A3C 22 0C 0C    	ld (printSpaces_1_a), hl
-1635   0A3F 2A 68 0C    	ld hl, (printfInternal_s + 9)
-1636   0A42 EB          	ex hl, de
-1637   0A43 2A E9 0B    	ld hl, (printfOutTotal)
-1638   0A46 CD 6E 0C    	call __o_sub_16
-1639   0A49 CD 4A 0B    	call printSpaces
-1640   0A4C C3 5C 0A    	jp l_120
-1641   0A4F             l_123: 
-1642   0A4F             ; 89                         break;
-1643   0A4F             ; 90                     }
-1644   0A4F             ; 91                 }
-1645   0A4F             ; 92                 break;
-1646   0A4F             ; 93             default:
-1647   0A4F             ; 94                 printfOut(c);
-1648   0A4F 2A 65 0C    	ld hl, (printfInternal_s + 6)
-1649   0A52 26 00       	ld h, 0
-1650   0A54 E5          	push hl
-1651   0A55 2A E3 0B    	ld hl, (printfOut)
-1652   0A58 CD E6 0C    	call __o_call_hl
-1653   0A5B C1          	pop bc
-1654   0A5C             l_120: 
-1655   0A5C             ; 95         }
-1656   0A5C             ; 96         format++;
-1657   0A5C 2A FB 0B    	ld hl, (printfInternal_1_a)
-1658   0A5F 23          	inc hl
-1659   0A60 22 FB 0B    	ld (printfInternal_1_a), hl
-1660   0A63             l_118: 
-1661   0A63 C3 24 09    	jp l_117
-1662   0A66             l_119: 
-1663   0A66 C9          	ret
-1664   0A67             findTarget: 
-1665   0A67             ; 75  findTarget(uint8_t array[SIZE],uint8_t x,uint8_t stop) {
-1666   0A67             	; Stack correction reset
-1667   0A67 32 F0 0B    	ld (findTarget_3_a), a
-1668   0A6A             ; 76 	uint8_t t;
-1669   0A6A             ; 77 	// if the position is already on the first, don't evaluate
-1670   0A6A             ; 78 	if (x==0) {
-1671   0A6A 3A EF 0B    	ld a, (findTarget_2_a)
-1672   0A6D B7          	or a
-1673   0A6E C2 72 0A    	jp nz, l_136
-1674   0A71             ; 79 		return x;
-1675   0A71 C9          	ret
-1676   0A72             l_136: 
-1677   0A72             ; 80 	}
-1678   0A72             ; 81 	for(t=x-1;;t--) {
-1679   0A72 3D          	dec a
-1680   0A73 32 6C 0C    	ld (findTarget_s + 0), a
-1681   0A76             l_138: 
-1682   0A76             ; 82 		if (array[t]!=0) {
-1683   0A76 2A 6C 0C    	ld hl, (findTarget_s + 0)
-1684   0A79 26 00       	ld h, 0
-1685   0A7B EB          	ex hl, de
-1686   0A7C 2A ED 0B    	ld hl, (findTarget_1_a)
-1687   0A7F 19          	add hl, de
-1688   0A80 7E          	ld a, (hl)
-1689   0A81 B7          	or a
-1690   0A82 CA A7 0A    	jp z, l_141
-1691   0A85             ; 83 			if (array[t]!=array[x]) {
-1692   0A85 2A EF 0B    	ld hl, (findTarget_2_a)
-1693   0A88 26 00       	ld h, 0
-1694   0A8A EB          	ex hl, de
-1695   0A8B 2A ED 0B    	ld hl, (findTarget_1_a)
-1696   0A8E 19          	add hl, de
-1697   0A8F 7E          	ld a, (hl)
-1698   0A90 2A 6C 0C    	ld hl, (findTarget_s + 0)
-1699   0A93 26 00       	ld h, 0
-1700   0A95 EB          	ex hl, de
-1701   0A96 2A ED 0B    	ld hl, (findTarget_1_a)
-1702   0A99 19          	add hl, de
-1703   0A9A BE          	cp (hl)
-1704   0A9B CA A3 0A    	jp z, l_143
-1705   0A9E             ; 84 				// merge is not possible, take next position
-1706   0A9E             ; 85 				return t+1;
-1707   0A9E 3A 6C 0C    	ld a, (findTarget_s + 0)
-1708   0AA1 3C          	inc a
-1709   0AA2 C9          	ret
-1710   0AA3             l_143: 
-1711   0AA3             ; 86 			}
-1712   0AA3             ; 87 			return t;
-1713   0AA3 3A 6C 0C    	ld a, (findTarget_s + 0)
-1714   0AA6 C9          	ret
-1715   0AA7             l_141: 
-1716   0AA7             ; 88 		} else {
-1717   0AA7             ; 89 			// we should not slide further, return this one
-1718   0AA7             ; 90 			if (t==stop) {
-1719   0AA7 3A F0 0B    	ld a, (findTarget_3_a)
-1720   0AAA 21 6C 0C    	ld hl, findTarget_s + 0
-1721   0AAD BE          	cp (hl)
-1722   0AAE C2 B5 0A    	jp nz, l_145
-1723   0AB1             ; 91 				return t;
-1724   0AB1 3A 6C 0C    	ld a, (findTarget_s + 0)
-1725   0AB4 C9          	ret
-1726   0AB5             l_145: 
-1727   0AB5             l_139: 
-1728   0AB5 3A 6C 0C    	ld a, (findTarget_s + 0)
-1729   0AB8 3D          	dec a
-1730   0AB9 32 6C 0C    	ld (findTarget_s + 0), a
-1731   0ABC C3 76 0A    	jp l_138
-1732   0ABF             l_140: 
-1733   0ABF             ; 92 			}
-1734   0ABF             ; 93 		}
-1735   0ABF             ; 94 	}
-1736   0ABF             ; 95 	// we did not find a
-1737   0ABF             ; 96 	return x;
-1738   0ABF 3A EF 0B    	ld a, (findTarget_2_a)
-1739   0AC2 C9          	ret
-1740   0AC3             snprintfInternal: 
-1741   0AC3             ; 29  void snprintfInternal(char* buffer, size_t buffer_size, const char* format, va_list va) {
-1742   0AC3             	; Stack correction reset
-1743   0AC3 22 05 0C    	ld (snprintfInternal_4_a), hl
-1744   0AC6             ; 30     printfOut = printfOutString;
-1745   0AC6 21 A3 0B    	ld hl, printfOutString
-1746   0AC9 22 E3 0B    	ld (printfOut), hl
-1747   0ACC             ; 31     if (buffer_size > 0) buffer_size--;
-1748   0ACC 2A 01 0C    	ld hl, (snprintfInternal_2_a)
-1749   0ACF 7C          	ld a, h
-1750   0AD0 B5          	or l
-1751   0AD1 CA D8 0A    	jp z, l_147
-1752   0AD4 2B          	dec hl
-1753   0AD5 22 01 0C    	ld (snprintfInternal_2_a), hl
-1754   0AD8             l_147: 
-1755   0AD8             ; 32     printfOutPointer = buffer;
-1756   0AD8 2A FF 0B    	ld hl, (snprintfInternal_1_a)
-1757   0ADB 22 E5 0B    	ld (printfOutPointer), hl
-1758   0ADE             ; 33     printfOutEnd = buffer + buffer_size;
-1759   0ADE 2A 01 0C    	ld hl, (snprintfInternal_2_a)
-1760   0AE1 EB          	ex hl, de
-1761   0AE2 2A FF 0B    	ld hl, (snprintfInternal_1_a)
-1762   0AE5 19          	add hl, de
-1763   0AE6 22 E7 0B    	ld (printfOutEnd), hl
-1764   0AE9             ; 34     printfInternal(format, va);
-1765   0AE9 2A 03 0C    	ld hl, (snprintfInternal_3_a)
-1766   0AEC 22 FB 0B    	ld (printfInternal_1_a), hl
-1767   0AEF 2A 05 0C    	ld hl, (snprintfInternal_4_a)
-1768   0AF2 CD 1B 09    	call printfInternal
-1769   0AF5             ; 35     *printfOutPointer = 0;
-1770   0AF5 2A E5 0B    	ld hl, (printfOutPointer)
-1771   0AF8 36 00       	ld (hl), 0
-1772   0AFA C9          	ret
-1773   0AFB             putchar: 
-1774   0AFB             ; 45  __fastcall putchar(int c) {
-1775   0AFB             	; Stack correction reset
-1776   0AFB 22 F9 0B    	ld (putchar_1_a), hl
-1777   0AFE             ; 46     if (c == 0x0A) cpmBiosConOut(0x0D);
-1778   0AFE 11 0A 00    	ld de, 10
-1779   0B01 CD 75 0C    	call __o_cmp_16
-1780   0B04 C2 0C 0B    	jp nz, l_149
-1781   0B07 3E 0D       	ld a, 13
-1782   0B09 CD C3 0B    	call cpmBiosConOut
-1783   0B0C             l_149: 
-1784   0B0C             ; 47     cpmBiosConOut(c);
-1785   0B0C 3A F9 0B    	ld a, (putchar_1_a)
-1786   0B0F CD C3 0B    	call cpmBiosConOut
-1787   0B12             ; 48     return 0;
-1788   0B12 21 00 00    	ld hl, 0
-1789   0B15 C9          	ret
-1790   0B16             Uint16ToString: 
-1791   0B16             ; 21 * Uint16ToString(char* outputBuffer, uint16_t value) {
-1792   0B16             	; Stack correction reset
-1793   0B16 22 12 0C    	ld (Uint16ToString_2_a), hl
-1794   0B19             ; 22     outputBuffer += UINT16_TO_STRING_SIZE - 1;
-1795   0B19 2A 10 0C    	ld hl, (Uint16ToString_1_a)
-1796   0B1C 11 05 00    	ld de, 5
-1797   0B1F 19          	add hl, de
-1798   0B20 22 10 0C    	ld (Uint16ToString_1_a), hl
-1799   0B23             ; 23     *outputBuffer = 0;
-1800   0B23 36 00       	ld (hl), 0
-1801   0B25             l_151: 
-1802   0B25             ; 24     do {
-1803   0B25             ; 25         value /= 10;
-1804   0B25 2A 12 0C    	ld hl, (Uint16ToString_2_a)
-1805   0B28 11 0A 00    	ld de, 10
-1806   0B2B CD 7B 0C    	call __o_div_u16
-1807   0B2E 22 12 0C    	ld (Uint16ToString_2_a), hl
-1808   0B31             ; 26         --outputBuffer;
-1809   0B31 2A 10 0C    	ld hl, (Uint16ToString_1_a)
-1810   0B34 2B          	dec hl
-1811   0B35 22 10 0C    	ld (Uint16ToString_1_a), hl
-1812   0B38             ; 27         *outputBuffer = (uint8_t)__div_16_mod + '0';
-1813   0B38 3A 06 0D    	ld a, (__div_16_mod)
-1814   0B3B C6 30       	add 48
-1815   0B3D 77          	ld (hl), a
-1816   0B3E             l_152: 
-1817   0B3E             ; 28     } while (value != 0);
-1818   0B3E 2A 12 0C    	ld hl, (Uint16ToString_2_a)
-1819   0B41 7C          	ld a, h
-1820   0B42 B5          	or l
-1821   0B43 C2 25 0B    	jp nz, l_151
-1822   0B46             l_153: 
-1823   0B46             ; 29     return outputBuffer;
-1824   0B46 2A 10 0C    	ld hl, (Uint16ToString_1_a)
-1825   0B49 C9          	ret
-1826   0B4A             printSpaces: 
-1827   0B4A             ; 37  void printSpaces(unsigned need, unsigned ready) {
-1828   0B4A             	; Stack correction reset
-1829   0B4A 22 0E 0C    	ld (printSpaces_2_a), hl
-1830   0B4D             ; 38     if (ready >= need) return;
-1831   0B4D 2A 0C 0C    	ld hl, (printSpaces_1_a)
-1832   0B50 EB          	ex hl, de
-1833   0B51 2A 0E 0C    	ld hl, (printSpaces_2_a)
-1834   0B54 CD 6E 0C    	call __o_sub_16
-1835   0B57 D0          	ret nc
-1836   0B58             ; 39     need -= ready;
-1837   0B58 2A 0E 0C    	ld hl, (printSpaces_2_a)
-1838   0B5B EB          	ex hl, de
-1839   0B5C 2A 0C 0C    	ld hl, (printSpaces_1_a)
-1840   0B5F CD 6E 0C    	call __o_sub_16
-1841   0B62 22 0C 0C    	ld (printSpaces_1_a), hl
-1842   0B65             l_156: 
-1843   0B65             ; 40     do {
-1844   0B65             ; 41         printfOut(' ');
-1845   0B65 21 20 00    	ld hl, 32
-1846   0B68 E5          	push hl
-1847   0B69 2A E3 0B    	ld hl, (printfOut)
-1848   0B6C CD E6 0C    	call __o_call_hl
-1849   0B6F C1          	pop bc
-1850   0B70             ; 42         need--;
-1851   0B70 2A 0C 0C    	ld hl, (printSpaces_1_a)
-1852   0B73 2B          	dec hl
-1853   0B74 22 0C 0C    	ld (printSpaces_1_a), hl
-1854   0B77             l_157: 
-1855   0B77             ; 43     } while(need != 0);
-1856   0B77 2A 0C 0C    	ld hl, (printSpaces_1_a)
-1857   0B7A 7C          	ld a, h
-1858   0B7B B5          	or l
-1859   0B7C C2 65 0B    	jp nz, l_156
-1860   0B7F             l_158: 
-1861   0B7F C9          	ret
-1862   0B80             printfText: 
-1863   0B80             ; 28  printfText(const char *text) {
-1864   0B80             	; Stack correction reset
-1865   0B80 22 0A 0C    	ld (printfText_1_a), hl
-1866   0B83             l_159: 
-1867   0B83             ; 29     for (;;) {
-1868   0B83             ; 30         uint8_t c = *text;
-1869   0B83 2A 0A 0C    	ld hl, (printfText_1_a)
-1870   0B86 7E          	ld a, (hl)
-1871   0B87 32 6D 0C    	ld (printfText_s + 0), a
-1872   0B8A             ; 31         if (c == 0) break;
-1873   0B8A B7          	or a
-1874   0B8B C8          	ret z
-1875   0B8C             ; 32         printfOut(c);
-1876   0B8C 2A 6D 0C    	ld hl, (printfText_s + 0)
-1877   0B8F 26 00       	ld h, 0
-1878   0B91 E5          	push hl
-1879   0B92 2A E3 0B    	ld hl, (printfOut)
-1880   0B95 CD E6 0C    	call __o_call_hl
-1881   0B98 C1          	pop bc
-1882   0B99             ; 33         text++;
-1883   0B99 2A 0A 0C    	ld hl, (printfText_1_a)
-1884   0B9C 23          	inc hl
-1885   0B9D 22 0A 0C    	ld (printfText_1_a), hl
-1886   0BA0             l_160: 
-1887   0BA0 C3 83 0B    	jp l_159
-1888   0BA3             printfOutString: 
-1889   0BA3             ; 21  __stdcall printfOutString(int c) { // TODO: static
-1890   0BA3             	; Stack correction reset
-1891   0BA3             ; 22     printfOutTotal++;
-1892   0BA3 2A E9 0B    	ld hl, (printfOutTotal)
-1893   0BA6 23          	inc hl
-1894   0BA7 22 E9 0B    	ld (printfOutTotal), hl
-1895   0BAA             ; 23     if (printfOutPointer != printfOutEnd) {
-1896   0BAA 2A E7 0B    	ld hl, (printfOutEnd)
-1897   0BAD EB          	ex hl, de
-1898   0BAE 2A E5 0B    	ld hl, (printfOutPointer)
-1899   0BB1 CD 75 0C    	call __o_cmp_16
-1900   0BB4 C8          	ret z
-1901   0BB5             ; 24         *printfOutPointer = c;
-1902   0BB5 21 02 00    	ld hl, 2
-1903   0BB8 39          	add hl, sp
-1904   0BB9 7E          	ld a, (hl)
-1905   0BBA 2A E5 0B    	ld hl, (printfOutPointer)
-1906   0BBD 77          	ld (hl), a
-1907   0BBE             ; 25         printfOutPointer++;
-1908   0BBE 23          	inc hl
-1909   0BBF 22 E5 0B    	ld (printfOutPointer), hl
-1910   0BC2 C9          	ret
-1911   0BC3             cpmBiosConOut: 
-1912   0BC3             ; 36  void __fastcall cpmBiosConOut(uint8_t c) {
-1913   0BC3             	; Stack correction reset
-1914   0BC3 32 07 0C    	ld (cpmBiosConOut_1_a), a
-1915   0BC6             
-1916   0BC6 4F                  ld c, a
-1917   0BC7 2A 01 00            ld hl, (1)
-1918   0BCA 2E 0C               ld l, 0Ch
-1919   0BCC E9                  jp hl
-1920   0BCD                 
-1921   0BCD C9          	ret
-1922   0BCE             score: 
-1923   0BCE 00 00 00 00 	dd 0
-1924   0BD2             board: 
-1925   0BD2 00          	ds 16
-1926   0BE2             initialized: 
-1927   0BE2 00          	db 0
-1928   0BE3             printfOut: 
-1929   0BE3 00          	ds 2
-1930   0BE5             printfOutPointer: 
-1931   0BE5 00          	ds 2
-1932   0BE7             printfOutEnd: 
-1933   0BE7 00          	ds 2
-1934   0BE9             printfOutTotal: 
-1935   0BE9 00          	ds 2
-1936   0BEB             strlen_1_a: 
-1937   0BEB 00          	ds 2
-1938   0BED             findTarget_1_a: 
-1939   0BED 00          	ds 2
-1940   0BEF             findTarget_2_a: 
-1941   0BEF 00          	ds 1
-1942   0BF0             findTarget_3_a: 
-1943   0BF0 00          	ds 1
-1944   0BF1             slideArray_1_a: 
-1945   0BF1 00          	ds 2
-1946   0BF3             main_1_a: 
-1947   0BF3 00          	ds 2
-1948   0BF5             main_2_a: 
-1949   0BF5 00          	ds 2
-1950   0BF7             sleep_1_a: 
-1951   0BF7 00          	ds 2
-1952   0BF9             putchar_1_a: 
-1953   0BF9 00          	ds 2
-1954   0BFB             printfInternal_1_a: 
-1955   0BFB 00          	ds 2
-1956   0BFD             printfInternal_2_a: 
-1957   0BFD 00          	ds 2
-1958   0BFF             snprintfInternal_1_a: 
-1959   0BFF 00          	ds 2
-1960   0C01             snprintfInternal_2_a: 
-1961   0C01 00          	ds 2
-1962   0C03             snprintfInternal_3_a: 
-1963   0C03 00          	ds 2
-1964   0C05             snprintfInternal_4_a: 
-1965   0C05 00          	ds 2
-1966   0C07             cpmBiosConOut_1_a: 
-1967   0C07 00          	ds 1
-1968   0C08             Delay_1_a: 
-1969   0C08 00          	ds 2
-1970   0C0A             printfText_1_a: 
-1971   0C0A 00          	ds 2
-1972   0C0C             printSpaces_1_a: 
-1973   0C0C 00          	ds 2
-1974   0C0E             printSpaces_2_a: 
-1975   0C0E 00          	ds 2
-1976   0C10             Uint16ToString_1_a: 
-1977   0C10 00          	ds 2
-1978   0C12             Uint16ToString_2_a: 
-1979   0C12 00          	ds 2
-1980   0C14             main_s: 
-1981   0C14 00          	ds 2
-1982   0C16             initBoard_s: 
-1983   0C16 00          	ds 2
-1984   0C18             moveLeft_s: 
-1985   0C18 00          	ds 1
-1986   0C19             moveRight_s: 
-1987   0C19 00          	ds 1
-1988   0C1A             moveUp_s: 
-1989   0C1A 00          	ds 2
-1990   0C1C             moveDown_s: 
-1991   0C1C 00          	ds 1
-1992   0C1D             drawBoard_s: 
-1993   0C1D 00          	ds 11
-1994   0C28             addRandom_s: 
-1995   0C28 00          	ds 37
-1996   0C4D             gameEnded_s: 
-1997   0C4D 00          	ds 1
-1998   0C4E             prepareScreen_s: 
-1999   0C4E 00          	ds 3
-2000   0C51             rotateBoard_s: 
-2001   0C51 00          	ds 4
-2002   0C55             slideArray_s: 
-2003   0C55 00          	ds 4
-2004   0C59             countEmpty_s: 
-2005   0C59 00          	ds 3
-2006   0C5C             findPairDown_s: 
-2007   0C5C 00          	ds 3
-2008   0C5F             printfInternal_s: 
-2009   0C5F 00          	ds 13
-2010   0C6C             findTarget_s: 
-2011   0C6C 00          	ds 1
-2012   0C6D             printfText_s: 
-2013   0C6D 00          	ds 1
-2014   0C6E             __o_sub_16: 
-2015   0C6E 7D              ld a, l
-2016   0C6F 93              sub e
-2017   0C70 6F              ld l, a
-2018   0C71 7C              ld a, h
-2019   0C72 9A              sbc d
-2020   0C73 67              ld h, a
-2021   0C74 C9              ret
-2022   0C75             __o_cmp_16: 
-2023   0C75 7C              ld a, h
-2024   0C76 BA              cp d
-2025   0C77 C0              ret nz
-2026   0C78 7D              ld a, l
-2027   0C79 BB              cp e
-2028   0C7A C9              ret
-2029   0C7B             __o_div_u16: 
-2030   0C7B C5              push bc
-2031   0C7C EB              ex hl, de
-2032   0C7D CD 87 0C        call __o_div_u16__l0
-2033   0C80 EB              ex hl, de
-2034   0C81 22 06 0D        ld (__div_16_mod), hl
-2035   0C84 EB              ex hl, de
-2036   0C85 C1              pop bc
-2037   0C86 C9              ret
-2038   0C87             
-2039   0C87             __o_div_u16__l0: 
-2040   0C87             __o_div_u16__l: 
-2041   0C87 7C              ld a, h
-2042   0C88 B5              or l
-2043   0C89 C8              ret z
-2044   0C8A 01 00 00        ld bc, 0
-2045   0C8D C5              push bc
-2046   0C8E             __o_div_u16__l1: 
-2047   0C8E 7B              ld a, e
-2048   0C8F 95              sub l
-2049   0C90 7A              ld a, d
-2050   0C91 9C              sbc h
-2051   0C92 DA 9A 0C        jp c, __o_div_u16__l2
-2052   0C95 E5              push hl
-2053   0C96 29              add hl, hl
-2054   0C97 D2 8E 0C        jp nc, __o_div_u16__l1
-2055   0C9A             __o_div_u16__l2: 
-2056   0C9A 21 00 00        ld hl, 0
-2057   0C9D             __o_div_u16__l3: 
-2058   0C9D C1              pop bc
-2059   0C9E 78              ld a, b
-2060   0C9F B1              or c
-2061   0CA0 C8              ret z
-2062   0CA1 29              add hl, hl
-2063   0CA2 D5              push de
-2064   0CA3 7B              ld a, e
-2065   0CA4 91              sub c
-2066   0CA5 5F              ld e, a
-2067   0CA6 7A              ld a, d
-2068   0CA7 98              sbc b
-2069   0CA8 57              ld d, a
-2070   0CA9 DA B1 0C        jp c, __o_div_u16__l4
-2071   0CAC 23              inc hl
-2072   0CAD C1              pop bc
-2073   0CAE C3 9D 0C        jp __o_div_u16__l3
-2074   0CB1             __o_div_u16__l4: 
-2075   0CB1 D1              pop de
-2076   0CB2 C3 9D 0C        jp __o_div_u16__l3
-2077   0CB5             __o_mod_u16: 
-2078   0CB5 C5              push bc
-2079   0CB6 EB              ex hl, de
-2080   0CB7 CD 87 0C        call __o_div_u16__l0
-2081   0CBA EB              ex hl, de
-2082   0CBB C1              pop bc
-2083   0CBC C9              ret
-2084   0CBD             __o_shl_16: 
-2085   0CBD 1C              inc e
-2086   0CBE             __o_shl_16__l1: 
-2087   0CBE 1D              dec e
-2088   0CBF C8              ret z
-2089   0CC0 29              add hl, hl
-2090   0CC1 C3 BE 0C        jp __o_shl_16__l1
-2091   0CC4             __o_shr_u16: 
-2092   0CC4 1C              inc e
-2093   0CC5             __o_shr_u16__l1: 
-2094   0CC5 1D              dec e
-2095   0CC6 C8              ret z
-2096   0CC7 7C              ld a, h
-2097   0CC8 B7              or a  ; cf = 0
-2098   0CC9 1F              rra
-2099   0CCA 67              ld h, a
-2100   0CCB 7D              ld a, l
-2101   0CCC 1F              rra
-2102   0CCD 6F              ld l, a
-2103   0CCE C3 C5 0C        jp __o_shr_u16__l1
-2104   0CD1             ; Input: de:hl - value 1, stack - 32 bit value 2
-2105   0CD1             ; Output: de:hl - result
-2106   0CD1             
-2107   0CD1             __o_add_32: 
-2108   0CD1 44 4D           ld bc, hl ; bc = v1l
-2109   0CD3 E1              pop hl ; hl = ret, stack = v2l
-2110   0CD4 E3              ex (sp), hl ; hl = v2l, stack = ret
-2111   0CD5 79              ld a, c
-2112   0CD6 85              add l
-2113   0CD7 4F              ld c, a
-2114   0CD8 78              ld a, b
-2115   0CD9 8C              adc h
-2116   0CDA 47              ld b, a ; bc - result
-2117   0CDB E1              pop hl ; hl = ret, stack = v2h
-2118   0CDC E3              ex (sp), hl ; hl = v2h, stack = ret
-2119   0CDD 7B              ld a, e
-2120   0CDE 8D              adc l
-2121   0CDF 5F              ld e, a
-2122   0CE0 7A              ld a, d
-2123   0CE1 8C              adc h
-2124   0CE2 57              ld d, a ; de - result
-2125   0CE3 60 69           ld hl, bc
-2126   0CE5 C9              ret
-2127   0CE6             __o_call_hl: 
-2128   0CE6 E9              jp hl
-2129   0CE7             ; Input: de:hl - value 1, stack - 32 bit value 2
-2130   0CE7             ; Output: de:hl - result
-2131   0CE7             
-2132   0CE7             __o_shl_32: 
-2133   0CE7 44 4D           ld bc, hl ; bc = v1l
-2134   0CE9 E1              pop hl ; hl = ret, stack = v2l
-2135   0CEA E3              ex (sp), hl ; hl = v2l, stack = ret
-2136   0CEB 7D              ld a, l
-2137   0CEC E6 1F           and 31
-2138   0CEE CA 01 0D        jp z, __o_shl_32_ret
-2139   0CF1             __o_shl_32_1: 
-2140   0CF1 EB              ex hl, de ; de <<= 1
-2141   0CF2 29              add hl, hl
-2142   0CF3 EB              ex hl, de
-2143   0CF4 60 69           ld hl, bc ; bc <<= 1
-2144   0CF6 29              add hl, hl
-2145   0CF7 44 4D           ld bc, hl
-2146   0CF9 C2 FD 0C        jp nz, __o_shl_32_2 ; if (flag_c) de++;
-2147   0CFC 13              inc de
-2148   0CFD             __o_shl_32_2: 
-2149   0CFD 3D              dec a
-2150   0CFE C2 F1 0C        jp nz, __o_shl_32_1
-2151   0D01             __o_shl_32_ret: 
-2152   0D01 E1              pop hl ; hl = ret, stack = v2ha
-2153   0D02 E3              ex (sp), hl ; hl = v2h, stack = ret
-2154   0D03 60 69           ld hl, bc
-2155   0D05 E9              jp hl
-2156   0D06             __div_16_mod: 
-2157   0D06 00          	ds 2
-2158   0D08 00          s_5:  db 0
-2159   0D09 0A0A0A0A00  s_2:  db 10, 10, 10, 10, 0
-2160   0D0E             s_12:  db 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 119, 44, 97, 44, 115, 44, 100, 32, 111, 114, 32, 114, 44, 113, 32, 32, 32, 32, 32, 32, 32, 10, 0
-2160   0D0E 0A20202020202020202020772C612C732C64206F7220722C7120202020202020
-2160   0D2E 0A00
-2161   0D30 1B 2A 00    s_7:  db 27, 42, 0
-2162   0D33 1B3D202000  s_0:  db 27, 61, 32, 32, 0
-2163   0D38             s_18:  db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 71, 65, 77, 69, 32, 79, 86, 69, 82, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 0
-2163   0D38 20202020202020202020202047414D45204F564552202020202020202020200A
-2163   0D58 00
-2164   0D59             s_19:  db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 81, 85, 73, 84, 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 0
-2164   0D59 202020202020202020202020515549543F2028792F6E29202020202020202020
-2164   0D79 0A00
-2165   0D7B             s_20:  db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 82, 69, 83, 84, 65, 82, 84, 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 10, 0
-2165   0D7B 20202020202020202020524553544152543F2028792F6E29202020202020200A
-2165   0D9B 00
-2166   0D9C 25 75 00    s_3:  db 37, 117, 0
-2167   0D9F 2B 0A 00    s_10:  db 43, 10, 0
-2168   0DA2             s_9:  db 43, 45, 45, 45, 45, 45, 45, 45, 0
-2168   0DA2 2B2D2D2D2D2D2D2D00
-2169   0DAB             s_8:  db 50, 48, 52, 56, 46, 99, 32, 37, 49, 55, 100, 32, 112, 116, 115, 10, 10, 0
-2169   0DAB 323034382E632025313764207074730A0A00
-2170   0DBD             s_1:  db 50, 48, 52, 56, 46, 99, 32, 37, 50, 51, 100, 32, 112, 116, 115, 0
-2170   0DBD 323034382E6320253233642070747300
-2171   0DCD 7C 0A 00    s_11:  db 124, 10, 0
-2172   0DD0             s_6:  db 124, 32, 32, 32, 32, 32, 32, 32, 0
-2172   0DD0 7C2020202020202000
-2173   0DD9             s_4:  db 124, 37, 42, 115, 37, 115, 37, 42, 115, 0
-2173   0DD9 7C252A732573252A7300
-2174   0DE3             end: 
-2175   0DE3                 savebin 'output.com', begin, end - begin
-2176   0DE3             
+0627   0473 29          	add hl, hl
+0628   0474 19          	add hl, de
+0629   0475 23          	inc hl
+0630   0476 77          	ld (hl), a
+0631   0477             ; 232 				len++;
+0632   0477 3A 83 0C    	ld a, (addRandom_s + 3)
+0633   047A 3C          	inc a
+0634   047B 32 83 0C    	ld (addRandom_s + 3), a
+0635   047E             l_65: 
+0636   047E             l_63: 
+0637   047E 3A 81 0C    	ld a, (addRandom_s + 1)
+0638   0481 3C          	inc a
+0639   0482 32 81 0C    	ld (addRandom_s + 1), a
+0640   0485 C3 3E 04    	jp l_62
+0641   0488             l_64: 
+0642   0488             l_60: 
+0643   0488 3A 80 0C    	ld a, (addRandom_s + 0)
+0644   048B 3C          	inc a
+0645   048C 32 80 0C    	ld (addRandom_s + 0), a
+0646   048F C3 32 04    	jp l_59
+0647   0492             l_61: 
+0648   0492             ; 233 			}
+0649   0492             ; 234 		}
+0650   0492             ; 235 	}
+0651   0492             ; 236 
+0652   0492             ; 237 	if (len>0) {
+0653   0492 3A 83 0C    	ld a, (addRandom_s + 3)
+0654   0495 B7          	or a
+0655   0496 C8          	ret z
+0656   0497             ; 238 		r = rand()%len;
+0657   0497 CD A5 08    	call rand
+0658   049A 6F          	ld l, a
+0659   049B 26 00       	ld h, 0
+0660   049D EB          	ex hl, de
+0661   049E 2A 83 0C    	ld hl, (addRandom_s + 3)
+0662   04A1 26 00       	ld h, 0
+0663   04A3 EB          	ex hl, de
+0664   04A4 CD 0D 0D    	call __o_mod_u16
+0665   04A7 7D          	ld a, l
+0666   04A8 32 82 0C    	ld (addRandom_s + 2), a
+0667   04AB             ; 239 		x = list[r][0];
+0668   04AB 2A 82 0C    	ld hl, (addRandom_s + 2)
+0669   04AE 26 00       	ld h, 0
+0670   04B0 29          	add hl, hl
+0671   04B1 11 85 0C    	ld de, addRandom_s + 5
+0672   04B4 19          	add hl, de
+0673   04B5 7E          	ld a, (hl)
+0674   04B6 32 80 0C    	ld (addRandom_s + 0), a
+0675   04B9             ; 240 		y = list[r][1];
+0676   04B9 2A 82 0C    	ld hl, (addRandom_s + 2)
+0677   04BC 26 00       	ld h, 0
+0678   04BE 29          	add hl, hl
+0679   04BF 19          	add hl, de
+0680   04C0 23          	inc hl
+0681   04C1 7E          	ld a, (hl)
+0682   04C2 32 81 0C    	ld (addRandom_s + 1), a
+0683   04C5             ; 241 		n = (rand()%10)/9+1;
+0684   04C5 CD A5 08    	call rand
+0685   04C8 6F          	ld l, a
+0686   04C9 26 00       	ld h, 0
+0687   04CB 11 0A 00    	ld de, 10
+0688   04CE CD 0D 0D    	call __o_mod_u16
+0689   04D1 11 09 00    	ld de, 9
+0690   04D4 CD D3 0C    	call __o_div_u16
+0691   04D7 7D          	ld a, l
+0692   04D8 3C          	inc a
+0693   04D9 32 84 0C    	ld (addRandom_s + 4), a
+0694   04DC             ; 242 		board[x][y]=n;
+0695   04DC 2A 80 0C    	ld hl, (addRandom_s + 0)
+0696   04DF 26 00       	ld h, 0
+0697   04E1 29          	add hl, hl
+0698   04E2 29          	add hl, hl
+0699   04E3 11 2A 0C    	ld de, board
+0700   04E6 19          	add hl, de
+0701   04E7 EB          	ex hl, de
+0702   04E8 2A 81 0C    	ld hl, (addRandom_s + 1)
+0703   04EB 26 00       	ld h, 0
+0704   04ED 19          	add hl, de
+0705   04EE 77          	ld (hl), a
+0706   04EF C9          	ret
+0707   04F0             gameEnded: 
+0708   04F0             ; 204  gameEnded() {
+0709   04F0             	; Stack correction reset
+0710   04F0             ; 205 	bool ended = true;
+0711   04F0             ; 25 ;
+0712   04F0 3E 01       	ld a, 1
+0713   04F2 32 A5 0C    	ld (gameEnded_s + 0), a
+0714   04F5             ; 206 )>0) return false;
+0715   04F5 CD B0 08    	call countEmpty
+0716   04F8 B7          	or a
+0717   04F9 CA FE 04    	jp z, l_69
+0718   04FC             ; 24 ;
+0719   04FC AF          	xor a
+0720   04FD C9          	ret
+0721   04FE             l_69: 
+0722   04FE             ; 207 )) return false;
+0723   04FE CD 01 09    	call findPairDown
+0724   0501 B7          	or a
+0725   0502 CA 07 05    	jp z, l_71
+0726   0505             ; 24 ;
+0727   0505 AF          	xor a
+0728   0506 C9          	ret
+0729   0507             l_71: 
+0730   0507             ; 208 );
+0731   0507 CD 1B 06    	call rotateBoard
+0732   050A             ; 209 	if (findPairDown()) ended = false;
+0733   050A CD 01 09    	call findPairDown
+0734   050D B7          	or a
+0735   050E CA 15 05    	jp z, l_73
+0736   0511             ; 24 ;
+0737   0511 AF          	xor a
+0738   0512 32 A5 0C    	ld (gameEnded_s + 0), a
+0739   0515             l_73: 
+0740   0515             ; 210 );
+0741   0515 CD 1B 06    	call rotateBoard
+0742   0518             ; 211 	rotateBoard();
+0743   0518 CD 1B 06    	call rotateBoard
+0744   051B             ; 212 	rotateBoard();
+0745   051B CD 1B 06    	call rotateBoard
+0746   051E             ; 213 	return ended;
+0747   051E 3A A5 0C    	ld a, (gameEnded_s + 0)
+0748   0521 C9          	ret
+0749   0522             printf: 
+0750   0522             ; 26  __stdcall printf(const char* format, ...) {
+0751   0522 C5          	push bc
+0752   0523             	; Stack correction reset
+0753   0523             ; 1 /c8080/include/c8080/c8080.h
+0754   0523 21 06 00    	ld hl, 6
+0755   0526 39          	add hl, sp
+0756   0527 EB          	ex hl, de
+0757   0528 21 00 00    	ld hl, 0
+0758   052B 39          	add hl, sp
+0759   052C 73          	ld (hl), e
+0760   052D 23          	inc hl
+0761   052E 72          	ld (hl), d
+0762   052F             ; 29  = printfOutConsole;
+0763   052F 21 61 09    	ld hl, printfOutConsole
+0764   0532 22 3B 0C    	ld (printfOut), hl
+0765   0535             ; 30     printfInternal(format, va);
+0766   0535 21 04 00    	ld hl, 4
+0767   0538 39          	add hl, sp
+0768   0539 5E          	ld e, (hl)
+0769   053A 23          	inc hl
+0770   053B 56          	ld d, (hl)
+0771   053C EB          	ex hl, de
+0772   053D 22 53 0C    	ld (printfInternal_1_a), hl
+0773   0540 21 00 00    	ld hl, 0
+0774   0543 39          	add hl, sp
+0775   0544 5E          	ld e, (hl)
+0776   0545 23          	inc hl
+0777   0546 56          	ld d, (hl)
+0778   0547 EB          	ex hl, de
+0779   0548 CD 73 09    	call printfInternal
+0780   054B             ; 31     va_end(va);
+0781   054B             ; 32     return printfOutTotal;
+0782   054B 2A 41 0C    	ld hl, (printfOutTotal)
+0783   054E C1          	pop bc
+0784   054F C9          	ret
+0785   0550             prepareScreen: 
+0786   0550             ; 53  prepareScreen() {
+0787   0550             	; Stack correction reset
+0788   0550             ; 54     uint8_t x,y,i;
+0789   0550             ; 55     printf(ESC_CLEAR_SCREEN);
+0790   0550 21 8C 0D    	ld hl, s_7
+0791   0553 E5          	push hl
+0792   0554 CD 22 05    	call printf
+0793   0557 C1          	pop bc
+0794   0558             ; 57 "2048.c %17d pts\n\n",score);
+0795   0558 2A 28 0C    	ld hl, (((score) + 2))
+0796   055B EB          	ex hl, de
+0797   055C 2A 26 0C    	ld hl, (score)
+0798   055F D5          	push de
+0799   0560 E5          	push hl
+0800   0561 21 07 0E    	ld hl, s_8
+0801   0564 E5          	push hl
+0802   0565 CD 22 05    	call printf
+0803   0568 C1          	pop bc
+0804   0569 C1          	pop bc
+0805   056A C1          	pop bc
+0806   056B             ; 58     for (x=0;x<SIZE;x++)
+0807   056B AF          	xor a
+0808   056C 32 A6 0C    	ld (prepareScreen_s + 0), a
+0809   056F             l_76: 
+0810   056F 3A A6 0C    	ld a, (prepareScreen_s + 0)
+0811   0572 FE 04       	cp 4
+0812   0574 D2 89 05    	jp nc, l_78
+0813   0577             ; 59         printf("+-------");
+0814   0577 21 FE 0D    	ld hl, s_9
+0815   057A E5          	push hl
+0816   057B CD 22 05    	call printf
+0817   057E C1          	pop bc
+0818   057F             l_77: 
+0819   057F 3A A6 0C    	ld a, (prepareScreen_s + 0)
+0820   0582 3C          	inc a
+0821   0583 32 A6 0C    	ld (prepareScreen_s + 0), a
+0822   0586 C3 6F 05    	jp l_76
+0823   0589             l_78: 
+0824   0589             ; 60     printf("+\n");
+0825   0589 21 FB 0D    	ld hl, s_10
+0826   058C E5          	push hl
+0827   058D CD 22 05    	call printf
+0828   0590 C1          	pop bc
+0829   0591             ; 61     for (y=0;y<SIZE;y++) {
+0830   0591 AF          	xor a
+0831   0592 32 A7 0C    	ld (prepareScreen_s + 1), a
+0832   0595             l_79: 
+0833   0595 3A A7 0C    	ld a, (prepareScreen_s + 1)
+0834   0598 FE 04       	cp 4
+0835   059A D2 09 06    	jp nc, l_81
+0836   059D             ; 62         for (i=0;i<3;i++) {
+0837   059D AF          	xor a
+0838   059E 32 A8 0C    	ld (prepareScreen_s + 2), a
+0839   05A1             l_82: 
+0840   05A1 3A A8 0C    	ld a, (prepareScreen_s + 2)
+0841   05A4 FE 03       	cp 3
+0842   05A6 D2 D9 05    	jp nc, l_84
+0843   05A9             ; 63             for (x=0;x<SIZE;x++)
+0844   05A9 AF          	xor a
+0845   05AA 32 A6 0C    	ld (prepareScreen_s + 0), a
+0846   05AD             l_85: 
+0847   05AD 3A A6 0C    	ld a, (prepareScreen_s + 0)
+0848   05B0 FE 04       	cp 4
+0849   05B2 D2 C7 05    	jp nc, l_87
+0850   05B5             ; 64                 printf("|       ");
+0851   05B5 21 2C 0E    	ld hl, s_6
+0852   05B8 E5          	push hl
+0853   05B9 CD 22 05    	call printf
+0854   05BC C1          	pop bc
+0855   05BD             l_86: 
+0856   05BD 3A A6 0C    	ld a, (prepareScreen_s + 0)
+0857   05C0 3C          	inc a
+0858   05C1 32 A6 0C    	ld (prepareScreen_s + 0), a
+0859   05C4 C3 AD 05    	jp l_85
+0860   05C7             l_87: 
+0861   05C7             ; 65             printf("|\n");
+0862   05C7 21 29 0E    	ld hl, s_11
+0863   05CA E5          	push hl
+0864   05CB CD 22 05    	call printf
+0865   05CE C1          	pop bc
+0866   05CF             l_83: 
+0867   05CF 3A A8 0C    	ld a, (prepareScreen_s + 2)
+0868   05D2 3C          	inc a
+0869   05D3 32 A8 0C    	ld (prepareScreen_s + 2), a
+0870   05D6 C3 A1 05    	jp l_82
+0871   05D9             l_84: 
+0872   05D9             ; 66         }
+0873   05D9             ; 67         for (x=0;x<SIZE;x++)
+0874   05D9 AF          	xor a
+0875   05DA 32 A6 0C    	ld (prepareScreen_s + 0), a
+0876   05DD             l_88: 
+0877   05DD 3A A6 0C    	ld a, (prepareScreen_s + 0)
+0878   05E0 FE 04       	cp 4
+0879   05E2 D2 F7 05    	jp nc, l_90
+0880   05E5             ; 68             printf("+-------");
+0881   05E5 21 FE 0D    	ld hl, s_9
+0882   05E8 E5          	push hl
+0883   05E9 CD 22 05    	call printf
+0884   05EC C1          	pop bc
+0885   05ED             l_89: 
+0886   05ED 3A A6 0C    	ld a, (prepareScreen_s + 0)
+0887   05F0 3C          	inc a
+0888   05F1 32 A6 0C    	ld (prepareScreen_s + 0), a
+0889   05F4 C3 DD 05    	jp l_88
+0890   05F7             l_90: 
+0891   05F7             ; 69         printf("+\n");
+0892   05F7 21 FB 0D    	ld hl, s_10
+0893   05FA E5          	push hl
+0894   05FB CD 22 05    	call printf
+0895   05FE C1          	pop bc
+0896   05FF             l_80: 
+0897   05FF 3A A7 0C    	ld a, (prepareScreen_s + 1)
+0898   0602 3C          	inc a
+0899   0603 32 A7 0C    	ld (prepareScreen_s + 1), a
+0900   0606 C3 95 05    	jp l_79
+0901   0609             l_81: 
+0902   0609             ; 70     }
+0903   0609             ; 71     printf("\n          w,a,s,d or r,q       \n");
+0904   0609 21 66 0D    	ld hl, s_12
+0905   060C E5          	push hl
+0906   060D CD 22 05    	call printf
+0907   0610 C1          	pop bc
+0908   0611             ; 72     drawBoard();
+0909   0611 C3 10 03    	jp drawBoard
+0910   0614             cpmBiosConIn: 
+0911   0614             ; 32  uint8_t __fastcall cpmBiosConIn() {
+0912   0614             	; Stack correction reset
+0913   0614             
+0914   0614 2A 01 00            ld hl, (1)
+0915   0617 2E 09               ld l, 09h
+0916   0619 E9                  jp hl
+0917   061A                 
+0918   061A C9          	ret
+0919   061B             rotateBoard: 
+0920   061B             ; 127  rotateBoard() {
+0921   061B             	; Stack correction reset
+0922   061B             ; 128 	uint8_t i,j,n=SIZE;
+0923   061B 3E 04       	ld a, 4
+0924   061D 32 AB 0C    	ld (rotateBoard_s + 2), a
+0925   0620             ; 130 =0; i<n/2; i++) {
+0926   0620 AF          	xor a
+0927   0621 32 A9 0C    	ld (rotateBoard_s + 0), a
+0928   0624             l_91: 
+0929   0624 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+0930   0627 26 00       	ld h, 0
+0931   0629 11 01 00    	ld de, 1
+0932   062C CD 1C 0D    	call __o_shr_u16
+0933   062F EB          	ex hl, de
+0934   0630 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+0935   0633 26 00       	ld h, 0
+0936   0635 CD C6 0C    	call __o_sub_16
+0937   0638 D0          	ret nc
+0938   0639             ; 131 		for (j=i; j<n-i-1; j++) {
+0939   0639 3A A9 0C    	ld a, (rotateBoard_s + 0)
+0940   063C 32 AA 0C    	ld (rotateBoard_s + 1), a
+0941   063F             l_94: 
+0942   063F 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+0943   0642 26 00       	ld h, 0
+0944   0644 EB          	ex hl, de
+0945   0645 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+0946   0648 26 00       	ld h, 0
+0947   064A CD C6 0C    	call __o_sub_16
+0948   064D 2B          	dec hl
+0949   064E EB          	ex hl, de
+0950   064F 2A AA 0C    	ld hl, (rotateBoard_s + 1)
+0951   0652 26 00       	ld h, 0
+0952   0654 CD C6 0C    	call __o_sub_16
+0953   0657 D2 5A 07    	jp nc, l_96
+0954   065A             ; 132 			tmp = board[i][j];
+0955   065A 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+0956   065D 26 00       	ld h, 0
+0957   065F 29          	add hl, hl
+0958   0660 29          	add hl, hl
+0959   0661 11 2A 0C    	ld de, board
+0960   0664 19          	add hl, de
+0961   0665 EB          	ex hl, de
+0962   0666 2A AA 0C    	ld hl, (rotateBoard_s + 1)
+0963   0669 26 00       	ld h, 0
+0964   066B 19          	add hl, de
+0965   066C 7E          	ld a, (hl)
+0966   066D 32 AC 0C    	ld (rotateBoard_s + 3), a
+0967   0670             ; 133 			board[i][j] = board[j][n-i-1];
+0968   0670 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+0969   0673 26 00       	ld h, 0
+0970   0675 EB          	ex hl, de
+0971   0676 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+0972   0679 26 00       	ld h, 0
+0973   067B CD C6 0C    	call __o_sub_16
+0974   067E 2B          	dec hl
+0975   067F E5          	push hl
+0976   0680 2A AA 0C    	ld hl, (rotateBoard_s + 1)
+0977   0683 26 00       	ld h, 0
+0978   0685 29          	add hl, hl
+0979   0686 29          	add hl, hl
+0980   0687 11 2A 0C    	ld de, board
+0981   068A 19          	add hl, de
+0982   068B D1          	pop de
+0983   068C 19          	add hl, de
+0984   068D 7E          	ld a, (hl)
+0985   068E 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+0986   0691 26 00       	ld h, 0
+0987   0693 29          	add hl, hl
+0988   0694 29          	add hl, hl
+0989   0695 11 2A 0C    	ld de, board
+0990   0698 19          	add hl, de
+0991   0699 EB          	ex hl, de
+0992   069A 2A AA 0C    	ld hl, (rotateBoard_s + 1)
+0993   069D 26 00       	ld h, 0
+0994   069F 19          	add hl, de
+0995   06A0 77          	ld (hl), a
+0996   06A1             ; 134 			board[j][n-i-1] = board[n-i-1][n-j-1];
+0997   06A1 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+0998   06A4 26 00       	ld h, 0
+0999   06A6 EB          	ex hl, de
+1000   06A7 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+1001   06AA 26 00       	ld h, 0
+1002   06AC CD C6 0C    	call __o_sub_16
+1003   06AF 2B          	dec hl
+1004   06B0 E5          	push hl
+1005   06B1 2A AA 0C    	ld hl, (rotateBoard_s + 1)
+1006   06B4 26 00       	ld h, 0
+1007   06B6 29          	add hl, hl
+1008   06B7 29          	add hl, hl
+1009   06B8 11 2A 0C    	ld de, board
+1010   06BB 19          	add hl, de
+1011   06BC D1          	pop de
+1012   06BD 19          	add hl, de
+1013   06BE E5          	push hl
+1014   06BF 2A AA 0C    	ld hl, (rotateBoard_s + 1)
+1015   06C2 26 00       	ld h, 0
+1016   06C4 EB          	ex hl, de
+1017   06C5 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+1018   06C8 26 00       	ld h, 0
+1019   06CA CD C6 0C    	call __o_sub_16
+1020   06CD 2B          	dec hl
+1021   06CE E5          	push hl
+1022   06CF 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+1023   06D2 26 00       	ld h, 0
+1024   06D4 EB          	ex hl, de
+1025   06D5 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+1026   06D8 26 00       	ld h, 0
+1027   06DA CD C6 0C    	call __o_sub_16
+1028   06DD 2B          	dec hl
+1029   06DE 29          	add hl, hl
+1030   06DF 29          	add hl, hl
+1031   06E0 11 2A 0C    	ld de, board
+1032   06E3 19          	add hl, de
+1033   06E4 D1          	pop de
+1034   06E5 19          	add hl, de
+1035   06E6 7E          	ld a, (hl)
+1036   06E7 E1          	pop hl
+1037   06E8 77          	ld (hl), a
+1038   06E9             ; 135 			board[n-i-1][n-j-1] = board[n-j-1][i];
+1039   06E9 2A AA 0C    	ld hl, (rotateBoard_s + 1)
+1040   06EC 26 00       	ld h, 0
+1041   06EE EB          	ex hl, de
+1042   06EF 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+1043   06F2 26 00       	ld h, 0
+1044   06F4 CD C6 0C    	call __o_sub_16
+1045   06F7 2B          	dec hl
+1046   06F8 E5          	push hl
+1047   06F9 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+1048   06FC 26 00       	ld h, 0
+1049   06FE EB          	ex hl, de
+1050   06FF 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+1051   0702 26 00       	ld h, 0
+1052   0704 CD C6 0C    	call __o_sub_16
+1053   0707 2B          	dec hl
+1054   0708 29          	add hl, hl
+1055   0709 29          	add hl, hl
+1056   070A 11 2A 0C    	ld de, board
+1057   070D 19          	add hl, de
+1058   070E D1          	pop de
+1059   070F 19          	add hl, de
+1060   0710 E5          	push hl
+1061   0711 2A AA 0C    	ld hl, (rotateBoard_s + 1)
+1062   0714 26 00       	ld h, 0
+1063   0716 EB          	ex hl, de
+1064   0717 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+1065   071A 26 00       	ld h, 0
+1066   071C CD C6 0C    	call __o_sub_16
+1067   071F 2B          	dec hl
+1068   0720 29          	add hl, hl
+1069   0721 29          	add hl, hl
+1070   0722 11 2A 0C    	ld de, board
+1071   0725 19          	add hl, de
+1072   0726 EB          	ex hl, de
+1073   0727 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+1074   072A 26 00       	ld h, 0
+1075   072C 19          	add hl, de
+1076   072D 7E          	ld a, (hl)
+1077   072E E1          	pop hl
+1078   072F 77          	ld (hl), a
+1079   0730             ; 136 			board[n-j-1][i] = tmp;
+1080   0730 2A AA 0C    	ld hl, (rotateBoard_s + 1)
+1081   0733 26 00       	ld h, 0
+1082   0735 EB          	ex hl, de
+1083   0736 2A AB 0C    	ld hl, (rotateBoard_s + 2)
+1084   0739 26 00       	ld h, 0
+1085   073B CD C6 0C    	call __o_sub_16
+1086   073E 2B          	dec hl
+1087   073F 29          	add hl, hl
+1088   0740 29          	add hl, hl
+1089   0741 11 2A 0C    	ld de, board
+1090   0744 19          	add hl, de
+1091   0745 EB          	ex hl, de
+1092   0746 2A A9 0C    	ld hl, (rotateBoard_s + 0)
+1093   0749 26 00       	ld h, 0
+1094   074B 19          	add hl, de
+1095   074C 3A AC 0C    	ld a, (rotateBoard_s + 3)
+1096   074F 77          	ld (hl), a
+1097   0750             l_95: 
+1098   0750 3A AA 0C    	ld a, (rotateBoard_s + 1)
+1099   0753 3C          	inc a
+1100   0754 32 AA 0C    	ld (rotateBoard_s + 1), a
+1101   0757 C3 3F 06    	jp l_94
+1102   075A             l_96: 
+1103   075A             l_92: 
+1104   075A 3A A9 0C    	ld a, (rotateBoard_s + 0)
+1105   075D 3C          	inc a
+1106   075E 32 A9 0C    	ld (rotateBoard_s + 0), a
+1107   0761 C3 24 06    	jp l_91
+1108   0764             slideArray: 
+1109   0764             ; 99  slideArray(uint8_t array[SIZE]) {
+1110   0764             	; Stack correction reset
+1111   0764 22 49 0C    	ld (slideArray_1_a), hl
+1112   0767             ; 100 	bool success = false;
+1113   0767             ; 24 ;
+1114   0767 AF          	xor a
+1115   0768 32 AD 0C    	ld (slideArray_s + 0), a
+1116   076B             ; 101  x,t,stop=0;
+1117   076B 32 B0 0C    	ld (slideArray_s + 3), a
+1118   076E             ; 102 
+1119   076E             ; 103 	for (x=0;x<SIZE;x++) {
+1120   076E 32 AE 0C    	ld (slideArray_s + 1), a
+1121   0771             l_97: 
+1122   0771 3A AE 0C    	ld a, (slideArray_s + 1)
+1123   0774 FE 04       	cp 4
+1124   0776 D2 44 08    	jp nc, l_99
+1125   0779             ; 104 		if (array[x]!=0) {
+1126   0779 2A AE 0C    	ld hl, (slideArray_s + 1)
+1127   077C 26 00       	ld h, 0
+1128   077E EB          	ex hl, de
+1129   077F 2A 49 0C    	ld hl, (slideArray_1_a)
+1130   0782 19          	add hl, de
+1131   0783 7E          	ld a, (hl)
+1132   0784 B7          	or a
+1133   0785 CA 3A 08    	jp z, l_100
+1134   0788             ; 105 			t = findTarget(array,x,stop);
+1135   0788 2A 49 0C    	ld hl, (slideArray_1_a)
+1136   078B 22 45 0C    	ld (findTarget_1_a), hl
+1137   078E 3A AE 0C    	ld a, (slideArray_s + 1)
+1138   0791 32 47 0C    	ld (findTarget_2_a), a
+1139   0794 3A B0 0C    	ld a, (slideArray_s + 3)
+1140   0797 CD BF 0A    	call findTarget
+1141   079A 32 AF 0C    	ld (slideArray_s + 2), a
+1142   079D             ; 106 			// if target is not original position, then move or merge
+1143   079D             ; 107 			if (t!=x) {
+1144   079D 3A AE 0C    	ld a, (slideArray_s + 1)
+1145   07A0 21 AF 0C    	ld hl, slideArray_s + 2
+1146   07A3 BE          	cp (hl)
+1147   07A4 CA 3A 08    	jp z, l_102
+1148   07A7             ; 108 				// if target is zero, this is a move
+1149   07A7             ; 109 				if (array[t]==0) {
+1150   07A7 2A AF 0C    	ld hl, (slideArray_s + 2)
+1151   07AA 26 00       	ld h, 0
+1152   07AC EB          	ex hl, de
+1153   07AD 2A 49 0C    	ld hl, (slideArray_1_a)
+1154   07B0 19          	add hl, de
+1155   07B1 7E          	ld a, (hl)
+1156   07B2 B7          	or a
+1157   07B3 C2 CF 07    	jp nz, l_104
+1158   07B6             ; 110 					array[t]=array[x];
+1159   07B6 2A AE 0C    	ld hl, (slideArray_s + 1)
+1160   07B9 26 00       	ld h, 0
+1161   07BB EB          	ex hl, de
+1162   07BC 2A 49 0C    	ld hl, (slideArray_1_a)
+1163   07BF 19          	add hl, de
+1164   07C0 7E          	ld a, (hl)
+1165   07C1 2A AF 0C    	ld hl, (slideArray_s + 2)
+1166   07C4 26 00       	ld h, 0
+1167   07C6 EB          	ex hl, de
+1168   07C7 2A 49 0C    	ld hl, (slideArray_1_a)
+1169   07CA 19          	add hl, de
+1170   07CB 77          	ld (hl), a
+1171   07CC C3 29 08    	jp l_105
+1172   07CF             l_104: 
+1173   07CF             ; 111 				} else if (array[t]==array[x]) {
+1174   07CF 2A AE 0C    	ld hl, (slideArray_s + 1)
+1175   07D2 26 00       	ld h, 0
+1176   07D4 EB          	ex hl, de
+1177   07D5 2A 49 0C    	ld hl, (slideArray_1_a)
+1178   07D8 19          	add hl, de
+1179   07D9 7E          	ld a, (hl)
+1180   07DA 2A AF 0C    	ld hl, (slideArray_s + 2)
+1181   07DD 26 00       	ld h, 0
+1182   07DF EB          	ex hl, de
+1183   07E0 2A 49 0C    	ld hl, (slideArray_1_a)
+1184   07E3 19          	add hl, de
+1185   07E4 BE          	cp (hl)
+1186   07E5 C2 29 08    	jp nz, l_106
+1187   07E8             ; 112 					// merge (increase power of two)
+1188   07E8             ; 113 					array[t]++;
+1189   07E8 2A AF 0C    	ld hl, (slideArray_s + 2)
+1190   07EB 26 00       	ld h, 0
+1191   07ED EB          	ex hl, de
+1192   07EE 2A 49 0C    	ld hl, (slideArray_1_a)
+1193   07F1 19          	add hl, de
+1194   07F2 7E          	ld a, (hl)
+1195   07F3 3C          	inc a
+1196   07F4 77          	ld (hl), a
+1197   07F5             ; 114 					// increase score
+1198   07F5             ; 115 					score+=(uint32_t)1<<array[t];
+1199   07F5 2A 28 0C    	ld hl, (((score) + 2))
+1200   07F8 EB          	ex hl, de
+1201   07F9 2A 26 0C    	ld hl, (score)
+1202   07FC D5          	push de
+1203   07FD E5          	push hl
+1204   07FE 11 00 00    	ld de, 0
+1205   0801 21 01 00    	ld hl, 1
+1206   0804 D5          	push de
+1207   0805 E5          	push hl
+1208   0806 2A AF 0C    	ld hl, (slideArray_s + 2)
+1209   0809 26 00       	ld h, 0
+1210   080B EB          	ex hl, de
+1211   080C 2A 49 0C    	ld hl, (slideArray_1_a)
+1212   080F 19          	add hl, de
+1213   0810 6E          	ld l, (hl)
+1214   0811 11 00 00    	ld de, 0
+1215   0814 62          	ld h, d
+1216   0815 CD 3F 0D    	call __o_shl_32
+1217   0818             	; Stack correction -4
+1218   0818 CD 29 0D    	call __o_add_32
+1219   081B             	; Stack correction -4
+1220   081B 22 26 0C    	ld (score), hl
+1221   081E EB          	ex hl, de
+1222   081F 22 28 0C    	ld ((score) + 2), hl
+1223   0822             ; 116 					// set stop to avoid double merge
+1224   0822             ; 117 					stop = t+1;
+1225   0822 3A AF 0C    	ld a, (slideArray_s + 2)
+1226   0825 3C          	inc a
+1227   0826 32 B0 0C    	ld (slideArray_s + 3), a
+1228   0829             l_106: 
+1229   0829             l_105: 
+1230   0829             ; 118 				}
+1231   0829             ; 119 				array[x]=0;
+1232   0829 2A AE 0C    	ld hl, (slideArray_s + 1)
+1233   082C 26 00       	ld h, 0
+1234   082E EB          	ex hl, de
+1235   082F 2A 49 0C    	ld hl, (slideArray_1_a)
+1236   0832 19          	add hl, de
+1237   0833 36 00       	ld (hl), 0
+1238   0835             ; 120 				success = true;
+1239   0835             ; 25 ;
+1240   0835 3E 01       	ld a, 1
+1241   0837 32 AD 0C    	ld (slideArray_s + 0), a
+1242   083A             l_102: 
+1243   083A             l_100: 
+1244   083A             l_98: 
+1245   083A             ; 103 ) {
+1246   083A 3A AE 0C    	ld a, (slideArray_s + 1)
+1247   083D 3C          	inc a
+1248   083E 32 AE 0C    	ld (slideArray_s + 1), a
+1249   0841 C3 71 07    	jp l_97
+1250   0844             l_99: 
+1251   0844             ; 104 		if (array[x]!=0) {
+1252   0844             ; 105 			t = findTarget(array,x,stop);
+1253   0844             ; 106 			// if target is not original position, then move or merge
+1254   0844             ; 107 			if (t!=x) {
+1255   0844             ; 108 				// if target is zero, this is a move
+1256   0844             ; 109 				if (array[t]==0) {
+1257   0844             ; 110 					array[t]=array[x];
+1258   0844             ; 111 				} else if (array[t]==array[x]) {
+1259   0844             ; 112 					// merge (increase power of two)
+1260   0844             ; 113 					array[t]++;
+1261   0844             ; 114 					// increase score
+1262   0844             ; 115 					score+=(uint32_t)1<<array[t];
+1263   0844             ; 116 					// set stop to avoid double merge
+1264   0844             ; 117 					stop = t+1;
+1265   0844             ; 118 				}
+1266   0844             ; 119 				array[x]=0;
+1267   0844             ; 120 				success = true;
+1268   0844             ; 121 			}
+1269   0844             ; 122 		}
+1270   0844             ; 123 	}
+1271   0844             ; 124 	return success;
+1272   0844 3A AD 0C    	ld a, (slideArray_s + 0)
+1273   0847 C9          	ret
+1274   0848             snprintf: 
+1275   0848             ; 38  __stdcall snprintf(char* buffer, size_t buffer_size, const char* format, ...) {
+1276   0848 C5          	push bc
+1277   0849             	; Stack correction reset
+1278   0849             ; 1 /c8080/include/putchar.c
+1279   0849 21 0A 00    	ld hl, 10
+1280   084C 39          	add hl, sp
+1281   084D EB          	ex hl, de
+1282   084E 21 00 00    	ld hl, 0
+1283   0851 39          	add hl, sp
+1284   0852 73          	ld (hl), e
+1285   0853 23          	inc hl
+1286   0854 72          	ld (hl), d
+1287   0855             ; 41 buffer, buffer_size, format, va);
+1288   0855 21 04 00    	ld hl, 4
+1289   0858 39          	add hl, sp
+1290   0859 5E          	ld e, (hl)
+1291   085A 23          	inc hl
+1292   085B 56          	ld d, (hl)
+1293   085C EB          	ex hl, de
+1294   085D 22 57 0C    	ld (snprintfInternal_1_a), hl
+1295   0860 21 06 00    	ld hl, 6
+1296   0863 39          	add hl, sp
+1297   0864 5E          	ld e, (hl)
+1298   0865 23          	inc hl
+1299   0866 56          	ld d, (hl)
+1300   0867 EB          	ex hl, de
+1301   0868 22 59 0C    	ld (snprintfInternal_2_a), hl
+1302   086B 21 08 00    	ld hl, 8
+1303   086E 39          	add hl, sp
+1304   086F 5E          	ld e, (hl)
+1305   0870 23          	inc hl
+1306   0871 56          	ld d, (hl)
+1307   0872 EB          	ex hl, de
+1308   0873 22 5B 0C    	ld (snprintfInternal_3_a), hl
+1309   0876 21 00 00    	ld hl, 0
+1310   0879 39          	add hl, sp
+1311   087A 5E          	ld e, (hl)
+1312   087B 23          	inc hl
+1313   087C 56          	ld d, (hl)
+1314   087D EB          	ex hl, de
+1315   087E CD 1B 0B    	call snprintfInternal
+1316   0881             ; 42     va_end(va);
+1317   0881             ; 43     return printfOutTotal;
+1318   0881 2A 41 0C    	ld hl, (printfOutTotal)
+1319   0884 C1          	pop bc
+1320   0885 C9          	ret
+1321   0886             strlen: 
+1322   0886             ; 20  __fastcall strlen(const char string[]) {
+1323   0886             	; Stack correction reset
+1324   0886 22 43 0C    	ld (strlen_1_a), hl
+1325   0889             ; 21     (void)string;
+1326   0889             
+1327   0889 11 FF FF            ld de, -1
+1328   088C AF                  xor a
+1329   088D             strlen_1: 
+1330   088D BE                  cp (hl)
+1331   088E 13                  inc de
+1332   088F 23                  inc hl
+1333   0890 C2 8D 08            jp nz, strlen_1
+1334   0893 EB                  ex hl, de
+1335   0894                 
+1336   0894 C9          	ret
+1337   0895             Delay: 
+1338   0895             ; 22  Delay(uint16_t n) {
+1339   0895             	; Stack correction reset
+1340   0895 22 60 0C    	ld (Delay_1_a), hl
+1341   0898             l_109: 
+1342   0898             ; 23     while (--n != 0) {
+1343   0898 2A 60 0C    	ld hl, (Delay_1_a)
+1344   089B 2B          	dec hl
+1345   089C 22 60 0C    	ld (Delay_1_a), hl
+1346   089F 7C          	ld a, h
+1347   08A0 B5          	or l
+1348   08A1 C2 98 08    	jp nz, l_109
+1349   08A4 C9          	ret
+1350   08A5             rand: 
+1351   08A5             ; 20  __fastcall rand() {
+1352   08A5             	; Stack correction reset
+1353   08A5             
+1354   08A5             rand_seed: 
+1355   08A5 3E FA               ld a, 0FAh
+1356   08A7 47                  ld b, a
+1357   08A8 87                  add a, a
+1358   08A9 87                  add a, a
+1359   08AA 80                  add a, b
+1360   08AB 3C                  inc a
+1361   08AC 32 A6 08            ld (rand_seed + 1), a
+1362   08AF                 
+1363   08AF C9          	ret
+1364   08B0             countEmpty: 
+1365   08B0             ; 191  countEmpty() {
+1366   08B0             	; Stack correction reset
+1367   08B0             ; 192 	uint8_t x,y;
+1368   08B0             ; 193 	uint8_t count=0;
+1369   08B0 AF          	xor a
+1370   08B1 32 B3 0C    	ld (countEmpty_s + 2), a
+1371   08B4             ; 194 	for (x=0;x<SIZE;x++) {
+1372   08B4 32 B1 0C    	ld (countEmpty_s + 0), a
+1373   08B7             l_111: 
+1374   08B7 3A B1 0C    	ld a, (countEmpty_s + 0)
+1375   08BA FE 04       	cp 4
+1376   08BC D2 FD 08    	jp nc, l_113
+1377   08BF             ; 195 		for (y=0;y<SIZE;y++) {
+1378   08BF AF          	xor a
+1379   08C0 32 B2 0C    	ld (countEmpty_s + 1), a
+1380   08C3             l_114: 
+1381   08C3 3A B2 0C    	ld a, (countEmpty_s + 1)
+1382   08C6 FE 04       	cp 4
+1383   08C8 D2 F3 08    	jp nc, l_116
+1384   08CB             ; 196 			if (board[x][y]==0) {
+1385   08CB 2A B1 0C    	ld hl, (countEmpty_s + 0)
+1386   08CE 26 00       	ld h, 0
+1387   08D0 29          	add hl, hl
+1388   08D1 29          	add hl, hl
+1389   08D2 11 2A 0C    	ld de, board
+1390   08D5 19          	add hl, de
+1391   08D6 EB          	ex hl, de
+1392   08D7 2A B2 0C    	ld hl, (countEmpty_s + 1)
+1393   08DA 26 00       	ld h, 0
+1394   08DC 19          	add hl, de
+1395   08DD 7E          	ld a, (hl)
+1396   08DE B7          	or a
+1397   08DF C2 E9 08    	jp nz, l_117
+1398   08E2             ; 197 				count++;
+1399   08E2 3A B3 0C    	ld a, (countEmpty_s + 2)
+1400   08E5 3C          	inc a
+1401   08E6 32 B3 0C    	ld (countEmpty_s + 2), a
+1402   08E9             l_117: 
+1403   08E9             l_115: 
+1404   08E9 3A B2 0C    	ld a, (countEmpty_s + 1)
+1405   08EC 3C          	inc a
+1406   08ED 32 B2 0C    	ld (countEmpty_s + 1), a
+1407   08F0 C3 C3 08    	jp l_114
+1408   08F3             l_116: 
+1409   08F3             l_112: 
+1410   08F3 3A B1 0C    	ld a, (countEmpty_s + 0)
+1411   08F6 3C          	inc a
+1412   08F7 32 B1 0C    	ld (countEmpty_s + 0), a
+1413   08FA C3 B7 08    	jp l_111
+1414   08FD             l_113: 
+1415   08FD             ; 198 			}
+1416   08FD             ; 199 		}
+1417   08FD             ; 200 	}
+1418   08FD             ; 201 	return count;
+1419   08FD 3A B3 0C    	ld a, (countEmpty_s + 2)
+1420   0900 C9          	ret
+1421   0901             findPairDown: 
+1422   0901             ; 180  findPairDown() {
+1423   0901             	; Stack correction reset
+1424   0901             ; 181 	bool success = false;
+1425   0901             ; 24 ;
+1426   0901 AF          	xor a
+1427   0902 32 B4 0C    	ld (findPairDown_s + 0), a
+1428   0905             ; 183 =0;x<SIZE;x++) {
+1429   0905 32 B5 0C    	ld (findPairDown_s + 1), a
+1430   0908             l_119: 
+1431   0908 3A B5 0C    	ld a, (findPairDown_s + 1)
+1432   090B FE 04       	cp 4
+1433   090D D2 5D 09    	jp nc, l_121
+1434   0910             ; 184 		for (y=0;y<SIZE-1;y++) {
+1435   0910 AF          	xor a
+1436   0911 32 B6 0C    	ld (findPairDown_s + 2), a
+1437   0914             l_122: 
+1438   0914 3A B6 0C    	ld a, (findPairDown_s + 2)
+1439   0917 FE 03       	cp 3
+1440   0919 D2 53 09    	jp nc, l_124
+1441   091C             ; 185 			if (board[x][y]==board[x][y+1]) return true;
+1442   091C 2A B5 0C    	ld hl, (findPairDown_s + 1)
+1443   091F 26 00       	ld h, 0
+1444   0921 29          	add hl, hl
+1445   0922 29          	add hl, hl
+1446   0923 11 2A 0C    	ld de, board
+1447   0926 19          	add hl, de
+1448   0927 EB          	ex hl, de
+1449   0928 2A B6 0C    	ld hl, (findPairDown_s + 2)
+1450   092B 26 00       	ld h, 0
+1451   092D 23          	inc hl
+1452   092E 19          	add hl, de
+1453   092F 7E          	ld a, (hl)
+1454   0930 2A B5 0C    	ld hl, (findPairDown_s + 1)
+1455   0933 26 00       	ld h, 0
+1456   0935 29          	add hl, hl
+1457   0936 29          	add hl, hl
+1458   0937 11 2A 0C    	ld de, board
+1459   093A 19          	add hl, de
+1460   093B EB          	ex hl, de
+1461   093C 2A B6 0C    	ld hl, (findPairDown_s + 2)
+1462   093F 26 00       	ld h, 0
+1463   0941 19          	add hl, de
+1464   0942 BE          	cp (hl)
+1465   0943 C2 49 09    	jp nz, l_125
+1466   0946             ; 25 ;
+1467   0946 3E 01       	ld a, 1
+1468   0948 C9          	ret
+1469   0949             l_125: 
+1470   0949             l_123: 
+1471   0949             ; 184 ) {
+1472   0949 3A B6 0C    	ld a, (findPairDown_s + 2)
+1473   094C 3C          	inc a
+1474   094D 32 B6 0C    	ld (findPairDown_s + 2), a
+1475   0950 C3 14 09    	jp l_122
+1476   0953             l_124: 
+1477   0953             l_120: 
+1478   0953 3A B5 0C    	ld a, (findPairDown_s + 1)
+1479   0956 3C          	inc a
+1480   0957 32 B5 0C    	ld (findPairDown_s + 1), a
+1481   095A C3 08 09    	jp l_119
+1482   095D             l_121: 
+1483   095D             ; 185 			if (board[x][y]==board[x][y+1]) return true;
+1484   095D             ; 186 		}
+1485   095D             ; 187 	}
+1486   095D             ; 188 	return success;
+1487   095D 3A B4 0C    	ld a, (findPairDown_s + 0)
+1488   0960 C9          	ret
+1489   0961             printfOutConsole: 
+1490   0961             ; 21  __stdcall printfOutConsole(int c) { // TODO: static
+1491   0961             	; Stack correction reset
+1492   0961             ; 22     printfOutTotal++;
+1493   0961 2A 41 0C    	ld hl, (printfOutTotal)
+1494   0964 23          	inc hl
+1495   0965 22 41 0C    	ld (printfOutTotal), hl
+1496   0968             ; 23     return putchar(c);
+1497   0968 21 02 00    	ld hl, 2
+1498   096B 39          	add hl, sp
+1499   096C 5E          	ld e, (hl)
+1500   096D 23          	inc hl
+1501   096E 56          	ld d, (hl)
+1502   096F EB          	ex hl, de
+1503   0970 C3 53 0B    	jp putchar
+1504   0973             printfInternal: 
+1505   0973             ; 46  printfInternal(const char* format, va_list va) {
+1506   0973             	; Stack correction reset
+1507   0973 22 55 0C    	ld (printfInternal_2_a), hl
+1508   0976             ; 47     printfOutTotal = 0;
+1509   0976 21 00 00    	ld hl, 0
+1510   0979 22 41 0C    	ld (printfOutTotal), hl
+1511   097C             l_127: 
+1512   097C             ; 48     char buf[UINT16_TO_STRING_SIZE];
+1513   097C             ; 49     for (;;) {
+1514   097C             ; 50         uint8_t c = *format;
+1515   097C 2A 53 0C    	ld hl, (printfInternal_1_a)
+1516   097F 7E          	ld a, (hl)
+1517   0980 32 BD 0C    	ld (printfInternal_s + 6), a
+1518   0983             ; 51         switch (c) {
+1519   0983 B7          	or a
+1520   0984 C8          	ret z
+1521   0985 D6 25       	sub 37
+1522   0987 CA 8D 09    	jp z, l_131
+1523   098A C3 A7 0A    	jp l_133
+1524   098D             l_131: 
+1525   098D             ; 52             case 0:
+1526   098D             ; 53                 return;
+1527   098D             ; 54             case '%':
+1528   098D             ; 55                 unsigned width = 0;
+1529   098D 21 00 00    	ld hl, 0
+1530   0990 22 BE 0C    	ld (printfInternal_s + 7), hl
+1531   0993             ; 56                 format++;
+1532   0993 2A 53 0C    	ld hl, (printfInternal_1_a)
+1533   0996 23          	inc hl
+1534   0997 22 53 0C    	ld (printfInternal_1_a), hl
+1535   099A             ; 57                 c = *format;
+1536   099A 7E          	ld a, (hl)
+1537   099B 32 BD 0C    	ld (printfInternal_s + 6), a
+1538   099E             ; 58                 if (c == '*') {
+1539   099E FE 2A       	cp 42
+1540   09A0 C2 C2 09    	jp nz, l_134
+1541   09A3             ; 59                     width = va_arg(va, unsigned);
+1542   09A3 2A 55 0C    	ld hl, (printfInternal_2_a)
+1543   09A6 23          	inc hl
+1544   09A7 23          	inc hl
+1545   09A8 22 55 0C    	ld (printfInternal_2_a), hl
+1546   09AB 2B          	dec hl
+1547   09AC 2B          	dec hl
+1548   09AD 5E          	ld e, (hl)
+1549   09AE 23          	inc hl
+1550   09AF 56          	ld d, (hl)
+1551   09B0 EB          	ex hl, de
+1552   09B1 22 BE 0C    	ld (printfInternal_s + 7), hl
+1553   09B4             ; 60 ;
+1554   09B4 2A 53 0C    	ld hl, (printfInternal_1_a)
+1555   09B7 23          	inc hl
+1556   09B8 22 53 0C    	ld (printfInternal_1_a), hl
+1557   09BB             ; 61                     c = *format;
+1558   09BB 7E          	ld a, (hl)
+1559   09BC 32 BD 0C    	ld (printfInternal_s + 6), a
+1560   09BF C3 F9 09    	jp l_135
+1561   09C2             l_134: 
+1562   09C2             l_136: 
+1563   09C2             ; 62                 } else {
+1564   09C2             ; 63                     while (c >= '0' && c <= '9') {
+1565   09C2 3A BD 0C    	ld a, (printfInternal_s + 6)
+1566   09C5 FE 30       	cp 48
+1567   09C7 DA F9 09    	jp c, l_137
+1568   09CA 3E 39       	ld a, 57
+1569   09CC 21 BD 0C    	ld hl, printfInternal_s + 6
+1570   09CF BE          	cp (hl)
+1571   09D0 DA F9 09    	jp c, l_137
+1572   09D3             ; 64                         width = width * 10 + (c - '0');
+1573   09D3 2A BD 0C    	ld hl, (printfInternal_s + 6)
+1574   09D6 26 00       	ld h, 0
+1575   09D8 11 D0 FF    	ld de, 65488
+1576   09DB 19          	add hl, de
+1577   09DC E5          	push hl
+1578   09DD 2A BE 0C    	ld hl, (printfInternal_s + 7)
+1579   09E0 54          	ld d, h
+1580   09E1 5D          	ld e, l
+1581   09E2 29          	add hl, hl
+1582   09E3 29          	add hl, hl
+1583   09E4 19          	add hl, de
+1584   09E5 29          	add hl, hl
+1585   09E6 D1          	pop de
+1586   09E7 19          	add hl, de
+1587   09E8 22 BE 0C    	ld (printfInternal_s + 7), hl
+1588   09EB             ; 65                         format++;
+1589   09EB 2A 53 0C    	ld hl, (printfInternal_1_a)
+1590   09EE 23          	inc hl
+1591   09EF 22 53 0C    	ld (printfInternal_1_a), hl
+1592   09F2             ; 66                         c = *format;
+1593   09F2 7E          	ld a, (hl)
+1594   09F3 32 BD 0C    	ld (printfInternal_s + 6), a
+1595   09F6 C3 C2 09    	jp l_136
+1596   09F9             l_137: 
+1597   09F9             l_135: 
+1598   09F9             ; 67                     }
+1599   09F9             ; 68                 }
+1600   09F9             ; 69                 switch (c) {
+1601   09F9 3A BD 0C    	ld a, (printfInternal_s + 6)
+1602   09FC B7          	or a
+1603   09FD C8          	ret z
+1604   09FE D6 64       	sub 100
+1605   0A00 CA 15 0A    	jp z, l_141
+1606   0A03 D6 05       	sub 5
+1607   0A05 CA 15 0A    	jp z, l_140
+1608   0A08 D6 0A       	sub 10
+1609   0A0A CA 7A 0A    	jp z, l_139
+1610   0A0D D6 02       	sub 2
+1611   0A0F CA 15 0A    	jp z, l_142
+1612   0A12 C3 B4 0A    	jp l_130
+1613   0A15             l_142: 
+1614   0A15             l_141: 
+1615   0A15             l_140: 
+1616   0A15             ; 70                     case 0:
+1617   0A15             ; 71                         return;
+1618   0A15             ; 72                     case 'u':
+1619   0A15             ; 73                     case 'd':
+1620   0A15             ; 74                     case 'i': {
+1621   0A15             ; 75                         unsigned i = va_arg(va, unsigned);
+1622   0A15 2A 55 0C    	ld hl, (printfInternal_2_a)
+1623   0A18 23          	inc hl
+1624   0A19 23          	inc hl
+1625   0A1A 22 55 0C    	ld (printfInternal_2_a), hl
+1626   0A1D 2B          	dec hl
+1627   0A1E 2B          	dec hl
+1628   0A1F 5E          	ld e, (hl)
+1629   0A20 23          	inc hl
+1630   0A21 56          	ld d, (hl)
+1631   0A22 EB          	ex hl, de
+1632   0A23 22 C0 0C    	ld (printfInternal_s + 9), hl
+1633   0A26             ; 76  != 'u' && (int16_t)i < 0) {
+1634   0A26 3A BD 0C    	ld a, (printfInternal_s + 6)
+1635   0A29 FE 75       	cp 117
+1636   0A2B CA 4F 0A    	jp z, l_144
+1637   0A2E 11 00 00    	ld de, 0
+1638   0A31 CD C6 0C    	call __o_sub_16
+1639   0A34 F2 4F 0A    	jp p, l_144
+1640   0A37             ; 77                             printfOut('-');
+1641   0A37 21 2D 00    	ld hl, 45
+1642   0A3A E5          	push hl
+1643   0A3B 2A 3B 0C    	ld hl, (printfOut)
+1644   0A3E CD 3E 0D    	call __o_call_hl
+1645   0A41 C1          	pop bc
+1646   0A42             ; 78                             i = 0 - i;
+1647   0A42 2A C0 0C    	ld hl, (printfInternal_s + 9)
+1648   0A45 11 00 00    	ld de, 0
+1649   0A48 EB          	ex hl, de
+1650   0A49 CD C6 0C    	call __o_sub_16
+1651   0A4C 22 C0 0C    	ld (printfInternal_s + 9), hl
+1652   0A4F             l_144: 
+1653   0A4F             ; 79                         }
+1654   0A4F             ; 80                         char* text = Uint16ToString(buf, (uint16_t)i);
+1655   0A4F 21 B7 0C    	ld hl, printfInternal_s + 0
+1656   0A52 22 68 0C    	ld (Uint16ToString_1_a), hl
+1657   0A55 2A C0 0C    	ld hl, (printfInternal_s + 9)
+1658   0A58 CD 6E 0B    	call Uint16ToString
+1659   0A5B 22 C2 0C    	ld (printfInternal_s + 11), hl
+1660   0A5E             ; 81                         printSpaces(width, &buf[UINT16_TO_STRING_SIZE] - text);
+1661   0A5E 2A BE 0C    	ld hl, (printfInternal_s + 7)
+1662   0A61 22 64 0C    	ld (printSpaces_1_a), hl
+1663   0A64 2A C2 0C    	ld hl, (printfInternal_s + 11)
+1664   0A67 11 BD 0C    	ld de, (printfInternal_s + 0) + (6)
+1665   0A6A EB          	ex hl, de
+1666   0A6B CD C6 0C    	call __o_sub_16
+1667   0A6E CD A2 0B    	call printSpaces
+1668   0A71             ; 82                         printfText(text);
+1669   0A71 2A C2 0C    	ld hl, (printfInternal_s + 11)
+1670   0A74 CD D8 0B    	call printfText
+1671   0A77 C3 B4 0A    	jp l_130
+1672   0A7A             l_139: 
+1673   0A7A             ; 83                         break;
+1674   0A7A             ; 84                     }
+1675   0A7A             ; 85                     case 's': {
+1676   0A7A             ; 86                         uint16_t prevTotal = printfOutTotal;
+1677   0A7A 2A 41 0C    	ld hl, (printfOutTotal)
+1678   0A7D 22 C0 0C    	ld (printfInternal_s + 9), hl
+1679   0A80             ; 87                         printfText(va_arg(va, char*));
+1680   0A80 2A 55 0C    	ld hl, (printfInternal_2_a)
+1681   0A83 23          	inc hl
+1682   0A84 23          	inc hl
+1683   0A85 22 55 0C    	ld (printfInternal_2_a), hl
+1684   0A88 2B          	dec hl
+1685   0A89 2B          	dec hl
+1686   0A8A 5E          	ld e, (hl)
+1687   0A8B 23          	inc hl
+1688   0A8C 56          	ld d, (hl)
+1689   0A8D EB          	ex hl, de
+1690   0A8E CD D8 0B    	call printfText
+1691   0A91             ; 88 width, printfOutTotal - prevTotal);
+1692   0A91 2A BE 0C    	ld hl, (printfInternal_s + 7)
+1693   0A94 22 64 0C    	ld (printSpaces_1_a), hl
+1694   0A97 2A C0 0C    	ld hl, (printfInternal_s + 9)
+1695   0A9A EB          	ex hl, de
+1696   0A9B 2A 41 0C    	ld hl, (printfOutTotal)
+1697   0A9E CD C6 0C    	call __o_sub_16
+1698   0AA1 CD A2 0B    	call printSpaces
+1699   0AA4 C3 B4 0A    	jp l_130
+1700   0AA7             l_133: 
+1701   0AA7             ; 89                         break;
+1702   0AA7             ; 90                     }
+1703   0AA7             ; 91                 }
+1704   0AA7             ; 92                 break;
+1705   0AA7             ; 93             default:
+1706   0AA7             ; 94                 printfOut(c);
+1707   0AA7 2A BD 0C    	ld hl, (printfInternal_s + 6)
+1708   0AAA 26 00       	ld h, 0
+1709   0AAC E5          	push hl
+1710   0AAD 2A 3B 0C    	ld hl, (printfOut)
+1711   0AB0 CD 3E 0D    	call __o_call_hl
+1712   0AB3 C1          	pop bc
+1713   0AB4             l_130: 
+1714   0AB4             ; 95         }
+1715   0AB4             ; 96         format++;
+1716   0AB4 2A 53 0C    	ld hl, (printfInternal_1_a)
+1717   0AB7 23          	inc hl
+1718   0AB8 22 53 0C    	ld (printfInternal_1_a), hl
+1719   0ABB             l_128: 
+1720   0ABB C3 7C 09    	jp l_127
+1721   0ABE             l_129: 
+1722   0ABE C9          	ret
+1723   0ABF             findTarget: 
+1724   0ABF             ; 75  findTarget(uint8_t array[SIZE],uint8_t x,uint8_t stop) {
+1725   0ABF             	; Stack correction reset
+1726   0ABF 32 48 0C    	ld (findTarget_3_a), a
+1727   0AC2             ; 76 	uint8_t t;
+1728   0AC2             ; 77 	// if the position is already on the first, don't evaluate
+1729   0AC2             ; 78 	if (x==0) {
+1730   0AC2 3A 47 0C    	ld a, (findTarget_2_a)
+1731   0AC5 B7          	or a
+1732   0AC6 C2 CA 0A    	jp nz, l_146
+1733   0AC9             ; 79 		return x;
+1734   0AC9 C9          	ret
+1735   0ACA             l_146: 
+1736   0ACA             ; 80 	}
+1737   0ACA             ; 81 	for(t=x-1;;t--) {
+1738   0ACA 3D          	dec a
+1739   0ACB 32 C4 0C    	ld (findTarget_s + 0), a
+1740   0ACE             l_148: 
+1741   0ACE             ; 82 		if (array[t]!=0) {
+1742   0ACE 2A C4 0C    	ld hl, (findTarget_s + 0)
+1743   0AD1 26 00       	ld h, 0
+1744   0AD3 EB          	ex hl, de
+1745   0AD4 2A 45 0C    	ld hl, (findTarget_1_a)
+1746   0AD7 19          	add hl, de
+1747   0AD8 7E          	ld a, (hl)
+1748   0AD9 B7          	or a
+1749   0ADA CA FF 0A    	jp z, l_151
+1750   0ADD             ; 83 			if (array[t]!=array[x]) {
+1751   0ADD 2A 47 0C    	ld hl, (findTarget_2_a)
+1752   0AE0 26 00       	ld h, 0
+1753   0AE2 EB          	ex hl, de
+1754   0AE3 2A 45 0C    	ld hl, (findTarget_1_a)
+1755   0AE6 19          	add hl, de
+1756   0AE7 7E          	ld a, (hl)
+1757   0AE8 2A C4 0C    	ld hl, (findTarget_s + 0)
+1758   0AEB 26 00       	ld h, 0
+1759   0AED EB          	ex hl, de
+1760   0AEE 2A 45 0C    	ld hl, (findTarget_1_a)
+1761   0AF1 19          	add hl, de
+1762   0AF2 BE          	cp (hl)
+1763   0AF3 CA FB 0A    	jp z, l_153
+1764   0AF6             ; 84 				// merge is not possible, take next position
+1765   0AF6             ; 85 				return t+1;
+1766   0AF6 3A C4 0C    	ld a, (findTarget_s + 0)
+1767   0AF9 3C          	inc a
+1768   0AFA C9          	ret
+1769   0AFB             l_153: 
+1770   0AFB             ; 86 			}
+1771   0AFB             ; 87 			return t;
+1772   0AFB 3A C4 0C    	ld a, (findTarget_s + 0)
+1773   0AFE C9          	ret
+1774   0AFF             l_151: 
+1775   0AFF             ; 88 		} else {
+1776   0AFF             ; 89 			// we should not slide further, return this one
+1777   0AFF             ; 90 			if (t==stop) {
+1778   0AFF 3A 48 0C    	ld a, (findTarget_3_a)
+1779   0B02 21 C4 0C    	ld hl, findTarget_s + 0
+1780   0B05 BE          	cp (hl)
+1781   0B06 C2 0D 0B    	jp nz, l_155
+1782   0B09             ; 91 				return t;
+1783   0B09 3A C4 0C    	ld a, (findTarget_s + 0)
+1784   0B0C C9          	ret
+1785   0B0D             l_155: 
+1786   0B0D             l_149: 
+1787   0B0D 3A C4 0C    	ld a, (findTarget_s + 0)
+1788   0B10 3D          	dec a
+1789   0B11 32 C4 0C    	ld (findTarget_s + 0), a
+1790   0B14 C3 CE 0A    	jp l_148
+1791   0B17             l_150: 
+1792   0B17             ; 92 			}
+1793   0B17             ; 93 		}
+1794   0B17             ; 94 	}
+1795   0B17             ; 95 	// we did not find a
+1796   0B17             ; 96 	return x;
+1797   0B17 3A 47 0C    	ld a, (findTarget_2_a)
+1798   0B1A C9          	ret
+1799   0B1B             snprintfInternal: 
+1800   0B1B             ; 29  void snprintfInternal(char* buffer, size_t buffer_size, const char* format, va_list va) {
+1801   0B1B             	; Stack correction reset
+1802   0B1B 22 5D 0C    	ld (snprintfInternal_4_a), hl
+1803   0B1E             ; 30     printfOut = printfOutString;
+1804   0B1E 21 FB 0B    	ld hl, printfOutString
+1805   0B21 22 3B 0C    	ld (printfOut), hl
+1806   0B24             ; 31     if (buffer_size > 0) buffer_size--;
+1807   0B24 2A 59 0C    	ld hl, (snprintfInternal_2_a)
+1808   0B27 7C          	ld a, h
+1809   0B28 B5          	or l
+1810   0B29 CA 30 0B    	jp z, l_157
+1811   0B2C 2B          	dec hl
+1812   0B2D 22 59 0C    	ld (snprintfInternal_2_a), hl
+1813   0B30             l_157: 
+1814   0B30             ; 32     printfOutPointer = buffer;
+1815   0B30 2A 57 0C    	ld hl, (snprintfInternal_1_a)
+1816   0B33 22 3D 0C    	ld (printfOutPointer), hl
+1817   0B36             ; 33     printfOutEnd = buffer + buffer_size;
+1818   0B36 2A 59 0C    	ld hl, (snprintfInternal_2_a)
+1819   0B39 EB          	ex hl, de
+1820   0B3A 2A 57 0C    	ld hl, (snprintfInternal_1_a)
+1821   0B3D 19          	add hl, de
+1822   0B3E 22 3F 0C    	ld (printfOutEnd), hl
+1823   0B41             ; 34     printfInternal(format, va);
+1824   0B41 2A 5B 0C    	ld hl, (snprintfInternal_3_a)
+1825   0B44 22 53 0C    	ld (printfInternal_1_a), hl
+1826   0B47 2A 5D 0C    	ld hl, (snprintfInternal_4_a)
+1827   0B4A CD 73 09    	call printfInternal
+1828   0B4D             ; 35     *printfOutPointer = 0;
+1829   0B4D 2A 3D 0C    	ld hl, (printfOutPointer)
+1830   0B50 36 00       	ld (hl), 0
+1831   0B52 C9          	ret
+1832   0B53             putchar: 
+1833   0B53             ; 45  __fastcall putchar(int c) {
+1834   0B53             	; Stack correction reset
+1835   0B53 22 51 0C    	ld (putchar_1_a), hl
+1836   0B56             ; 46     if (c == 0x0A) cpmBiosConOut(0x0D);
+1837   0B56 11 0A 00    	ld de, 10
+1838   0B59 CD CD 0C    	call __o_cmp_16
+1839   0B5C C2 64 0B    	jp nz, l_159
+1840   0B5F 3E 0D       	ld a, 13
+1841   0B61 CD 1B 0C    	call cpmBiosConOut
+1842   0B64             l_159: 
+1843   0B64             ; 47     cpmBiosConOut(c);
+1844   0B64 3A 51 0C    	ld a, (putchar_1_a)
+1845   0B67 CD 1B 0C    	call cpmBiosConOut
+1846   0B6A             ; 48     return 0;
+1847   0B6A 21 00 00    	ld hl, 0
+1848   0B6D C9          	ret
+1849   0B6E             Uint16ToString: 
+1850   0B6E             ; 21 * Uint16ToString(char* outputBuffer, uint16_t value) {
+1851   0B6E             	; Stack correction reset
+1852   0B6E 22 6A 0C    	ld (Uint16ToString_2_a), hl
+1853   0B71             ; 22     outputBuffer += UINT16_TO_STRING_SIZE - 1;
+1854   0B71 2A 68 0C    	ld hl, (Uint16ToString_1_a)
+1855   0B74 11 05 00    	ld de, 5
+1856   0B77 19          	add hl, de
+1857   0B78 22 68 0C    	ld (Uint16ToString_1_a), hl
+1858   0B7B             ; 23     *outputBuffer = 0;
+1859   0B7B 36 00       	ld (hl), 0
+1860   0B7D             l_161: 
+1861   0B7D             ; 24     do {
+1862   0B7D             ; 25         value /= 10;
+1863   0B7D 2A 6A 0C    	ld hl, (Uint16ToString_2_a)
+1864   0B80 11 0A 00    	ld de, 10
+1865   0B83 CD D3 0C    	call __o_div_u16
+1866   0B86 22 6A 0C    	ld (Uint16ToString_2_a), hl
+1867   0B89             ; 26         --outputBuffer;
+1868   0B89 2A 68 0C    	ld hl, (Uint16ToString_1_a)
+1869   0B8C 2B          	dec hl
+1870   0B8D 22 68 0C    	ld (Uint16ToString_1_a), hl
+1871   0B90             ; 27         *outputBuffer = (uint8_t)__div_16_mod + '0';
+1872   0B90 3A 5E 0D    	ld a, (__div_16_mod)
+1873   0B93 C6 30       	add 48
+1874   0B95 77          	ld (hl), a
+1875   0B96             l_162: 
+1876   0B96             ; 28     } while (value != 0);
+1877   0B96 2A 6A 0C    	ld hl, (Uint16ToString_2_a)
+1878   0B99 7C          	ld a, h
+1879   0B9A B5          	or l
+1880   0B9B C2 7D 0B    	jp nz, l_161
+1881   0B9E             l_163: 
+1882   0B9E             ; 29     return outputBuffer;
+1883   0B9E 2A 68 0C    	ld hl, (Uint16ToString_1_a)
+1884   0BA1 C9          	ret
+1885   0BA2             printSpaces: 
+1886   0BA2             ; 37  void printSpaces(unsigned need, unsigned ready) {
+1887   0BA2             	; Stack correction reset
+1888   0BA2 22 66 0C    	ld (printSpaces_2_a), hl
+1889   0BA5             ; 38     if (ready >= need) return;
+1890   0BA5 2A 64 0C    	ld hl, (printSpaces_1_a)
+1891   0BA8 EB          	ex hl, de
+1892   0BA9 2A 66 0C    	ld hl, (printSpaces_2_a)
+1893   0BAC CD C6 0C    	call __o_sub_16
+1894   0BAF D0          	ret nc
+1895   0BB0             ; 39     need -= ready;
+1896   0BB0 2A 66 0C    	ld hl, (printSpaces_2_a)
+1897   0BB3 EB          	ex hl, de
+1898   0BB4 2A 64 0C    	ld hl, (printSpaces_1_a)
+1899   0BB7 CD C6 0C    	call __o_sub_16
+1900   0BBA 22 64 0C    	ld (printSpaces_1_a), hl
+1901   0BBD             l_166: 
+1902   0BBD             ; 40     do {
+1903   0BBD             ; 41         printfOut(' ');
+1904   0BBD 21 20 00    	ld hl, 32
+1905   0BC0 E5          	push hl
+1906   0BC1 2A 3B 0C    	ld hl, (printfOut)
+1907   0BC4 CD 3E 0D    	call __o_call_hl
+1908   0BC7 C1          	pop bc
+1909   0BC8             ; 42         need--;
+1910   0BC8 2A 64 0C    	ld hl, (printSpaces_1_a)
+1911   0BCB 2B          	dec hl
+1912   0BCC 22 64 0C    	ld (printSpaces_1_a), hl
+1913   0BCF             l_167: 
+1914   0BCF             ; 43     } while(need != 0);
+1915   0BCF 2A 64 0C    	ld hl, (printSpaces_1_a)
+1916   0BD2 7C          	ld a, h
+1917   0BD3 B5          	or l
+1918   0BD4 C2 BD 0B    	jp nz, l_166
+1919   0BD7             l_168: 
+1920   0BD7 C9          	ret
+1921   0BD8             printfText: 
+1922   0BD8             ; 28  printfText(const char *text) {
+1923   0BD8             	; Stack correction reset
+1924   0BD8 22 62 0C    	ld (printfText_1_a), hl
+1925   0BDB             l_169: 
+1926   0BDB             ; 29     for (;;) {
+1927   0BDB             ; 30         uint8_t c = *text;
+1928   0BDB 2A 62 0C    	ld hl, (printfText_1_a)
+1929   0BDE 7E          	ld a, (hl)
+1930   0BDF 32 C5 0C    	ld (printfText_s + 0), a
+1931   0BE2             ; 31         if (c == 0) break;
+1932   0BE2 B7          	or a
+1933   0BE3 C8          	ret z
+1934   0BE4             ; 32         printfOut(c);
+1935   0BE4 2A C5 0C    	ld hl, (printfText_s + 0)
+1936   0BE7 26 00       	ld h, 0
+1937   0BE9 E5          	push hl
+1938   0BEA 2A 3B 0C    	ld hl, (printfOut)
+1939   0BED CD 3E 0D    	call __o_call_hl
+1940   0BF0 C1          	pop bc
+1941   0BF1             ; 33         text++;
+1942   0BF1 2A 62 0C    	ld hl, (printfText_1_a)
+1943   0BF4 23          	inc hl
+1944   0BF5 22 62 0C    	ld (printfText_1_a), hl
+1945   0BF8             l_170: 
+1946   0BF8 C3 DB 0B    	jp l_169
+1947   0BFB             printfOutString: 
+1948   0BFB             ; 21  __stdcall printfOutString(int c) { // TODO: static
+1949   0BFB             	; Stack correction reset
+1950   0BFB             ; 22     printfOutTotal++;
+1951   0BFB 2A 41 0C    	ld hl, (printfOutTotal)
+1952   0BFE 23          	inc hl
+1953   0BFF 22 41 0C    	ld (printfOutTotal), hl
+1954   0C02             ; 23     if (printfOutPointer != printfOutEnd) {
+1955   0C02 2A 3F 0C    	ld hl, (printfOutEnd)
+1956   0C05 EB          	ex hl, de
+1957   0C06 2A 3D 0C    	ld hl, (printfOutPointer)
+1958   0C09 CD CD 0C    	call __o_cmp_16
+1959   0C0C C8          	ret z
+1960   0C0D             ; 24         *printfOutPointer = c;
+1961   0C0D 21 02 00    	ld hl, 2
+1962   0C10 39          	add hl, sp
+1963   0C11 7E          	ld a, (hl)
+1964   0C12 2A 3D 0C    	ld hl, (printfOutPointer)
+1965   0C15 77          	ld (hl), a
+1966   0C16             ; 25         printfOutPointer++;
+1967   0C16 23          	inc hl
+1968   0C17 22 3D 0C    	ld (printfOutPointer), hl
+1969   0C1A C9          	ret
+1970   0C1B             cpmBiosConOut: 
+1971   0C1B             ; 36  void __fastcall cpmBiosConOut(uint8_t c) {
+1972   0C1B             	; Stack correction reset
+1973   0C1B 32 5F 0C    	ld (cpmBiosConOut_1_a), a
+1974   0C1E             
+1975   0C1E 4F                  ld c, a
+1976   0C1F 2A 01 00            ld hl, (1)
+1977   0C22 2E 0C               ld l, 0Ch
+1978   0C24 E9                  jp hl
+1979   0C25                 
+1980   0C25 C9          	ret
+1981   0C26             score: 
+1982   0C26 00 00 00 00 	dd 0
+1983   0C2A             board: 
+1984   0C2A 00          	ds 16
+1985   0C3A             initialized: 
+1986   0C3A 00          	db 0
+1987   0C3B             printfOut: 
+1988   0C3B 00          	ds 2
+1989   0C3D             printfOutPointer: 
+1990   0C3D 00          	ds 2
+1991   0C3F             printfOutEnd: 
+1992   0C3F 00          	ds 2
+1993   0C41             printfOutTotal: 
+1994   0C41 00          	ds 2
+1995   0C43             strlen_1_a: 
+1996   0C43 00          	ds 2
+1997   0C45             findTarget_1_a: 
+1998   0C45 00          	ds 2
+1999   0C47             findTarget_2_a: 
+2000   0C47 00          	ds 1
+2001   0C48             findTarget_3_a: 
+2002   0C48 00          	ds 1
+2003   0C49             slideArray_1_a: 
+2004   0C49 00          	ds 2
+2005   0C4B             main_1_a: 
+2006   0C4B 00          	ds 2
+2007   0C4D             main_2_a: 
+2008   0C4D 00          	ds 2
+2009   0C4F             sleep_1_a: 
+2010   0C4F 00          	ds 2
+2011   0C51             putchar_1_a: 
+2012   0C51 00          	ds 2
+2013   0C53             printfInternal_1_a: 
+2014   0C53 00          	ds 2
+2015   0C55             printfInternal_2_a: 
+2016   0C55 00          	ds 2
+2017   0C57             snprintfInternal_1_a: 
+2018   0C57 00          	ds 2
+2019   0C59             snprintfInternal_2_a: 
+2020   0C59 00          	ds 2
+2021   0C5B             snprintfInternal_3_a: 
+2022   0C5B 00          	ds 2
+2023   0C5D             snprintfInternal_4_a: 
+2024   0C5D 00          	ds 2
+2025   0C5F             cpmBiosConOut_1_a: 
+2026   0C5F 00          	ds 1
+2027   0C60             Delay_1_a: 
+2028   0C60 00          	ds 2
+2029   0C62             printfText_1_a: 
+2030   0C62 00          	ds 2
+2031   0C64             printSpaces_1_a: 
+2032   0C64 00          	ds 2
+2033   0C66             printSpaces_2_a: 
+2034   0C66 00          	ds 2
+2035   0C68             Uint16ToString_1_a: 
+2036   0C68 00          	ds 2
+2037   0C6A             Uint16ToString_2_a: 
+2038   0C6A 00          	ds 2
+2039   0C6C             main_s: 
+2040   0C6C 00          	ds 2
+2041   0C6E             initBoard_s: 
+2042   0C6E 00          	ds 2
+2043   0C70             moveLeft_s: 
+2044   0C70 00          	ds 1
+2045   0C71             moveRight_s: 
+2046   0C71 00          	ds 1
+2047   0C72             moveUp_s: 
+2048   0C72 00          	ds 2
+2049   0C74             moveDown_s: 
+2050   0C74 00          	ds 1
+2051   0C75             drawBoard_s: 
+2052   0C75 00          	ds 11
+2053   0C80             addRandom_s: 
+2054   0C80 00          	ds 37
+2055   0CA5             gameEnded_s: 
+2056   0CA5 00          	ds 1
+2057   0CA6             prepareScreen_s: 
+2058   0CA6 00          	ds 3
+2059   0CA9             rotateBoard_s: 
+2060   0CA9 00          	ds 4
+2061   0CAD             slideArray_s: 
+2062   0CAD 00          	ds 4
+2063   0CB1             countEmpty_s: 
+2064   0CB1 00          	ds 3
+2065   0CB4             findPairDown_s: 
+2066   0CB4 00          	ds 3
+2067   0CB7             printfInternal_s: 
+2068   0CB7 00          	ds 13
+2069   0CC4             findTarget_s: 
+2070   0CC4 00          	ds 1
+2071   0CC5             printfText_s: 
+2072   0CC5 00          	ds 1
+2073   0CC6             __o_sub_16: 
+2074   0CC6 7D              ld a, l
+2075   0CC7 93              sub e
+2076   0CC8 6F              ld l, a
+2077   0CC9 7C              ld a, h
+2078   0CCA 9A              sbc d
+2079   0CCB 67              ld h, a
+2080   0CCC C9              ret
+2081   0CCD             __o_cmp_16: 
+2082   0CCD 7C              ld a, h
+2083   0CCE BA              cp d
+2084   0CCF C0              ret nz
+2085   0CD0 7D              ld a, l
+2086   0CD1 BB              cp e
+2087   0CD2 C9              ret
+2088   0CD3             __o_div_u16: 
+2089   0CD3 C5              push bc
+2090   0CD4 EB              ex hl, de
+2091   0CD5 CD DF 0C        call __o_div_u16__l0
+2092   0CD8 EB              ex hl, de
+2093   0CD9 22 5E 0D        ld (__div_16_mod), hl
+2094   0CDC EB              ex hl, de
+2095   0CDD C1              pop bc
+2096   0CDE C9              ret
+2097   0CDF             
+2098   0CDF             __o_div_u16__l0: 
+2099   0CDF             __o_div_u16__l: 
+2100   0CDF 7C              ld a, h
+2101   0CE0 B5              or l
+2102   0CE1 C8              ret z
+2103   0CE2 01 00 00        ld bc, 0
+2104   0CE5 C5              push bc
+2105   0CE6             __o_div_u16__l1: 
+2106   0CE6 7B              ld a, e
+2107   0CE7 95              sub l
+2108   0CE8 7A              ld a, d
+2109   0CE9 9C              sbc h
+2110   0CEA DA F2 0C        jp c, __o_div_u16__l2
+2111   0CED E5              push hl
+2112   0CEE 29              add hl, hl
+2113   0CEF D2 E6 0C        jp nc, __o_div_u16__l1
+2114   0CF2             __o_div_u16__l2: 
+2115   0CF2 21 00 00        ld hl, 0
+2116   0CF5             __o_div_u16__l3: 
+2117   0CF5 C1              pop bc
+2118   0CF6 78              ld a, b
+2119   0CF7 B1              or c
+2120   0CF8 C8              ret z
+2121   0CF9 29              add hl, hl
+2122   0CFA D5              push de
+2123   0CFB 7B              ld a, e
+2124   0CFC 91              sub c
+2125   0CFD 5F              ld e, a
+2126   0CFE 7A              ld a, d
+2127   0CFF 98              sbc b
+2128   0D00 57              ld d, a
+2129   0D01 DA 09 0D        jp c, __o_div_u16__l4
+2130   0D04 23              inc hl
+2131   0D05 C1              pop bc
+2132   0D06 C3 F5 0C        jp __o_div_u16__l3
+2133   0D09             __o_div_u16__l4: 
+2134   0D09 D1              pop de
+2135   0D0A C3 F5 0C        jp __o_div_u16__l3
+2136   0D0D             __o_mod_u16: 
+2137   0D0D C5              push bc
+2138   0D0E EB              ex hl, de
+2139   0D0F CD DF 0C        call __o_div_u16__l0
+2140   0D12 EB              ex hl, de
+2141   0D13 C1              pop bc
+2142   0D14 C9              ret
+2143   0D15             __o_shl_16: 
+2144   0D15 1C              inc e
+2145   0D16             __o_shl_16__l1: 
+2146   0D16 1D              dec e
+2147   0D17 C8              ret z
+2148   0D18 29              add hl, hl
+2149   0D19 C3 16 0D        jp __o_shl_16__l1
+2150   0D1C             __o_shr_u16: 
+2151   0D1C 1C              inc e
+2152   0D1D             __o_shr_u16__l1: 
+2153   0D1D 1D              dec e
+2154   0D1E C8              ret z
+2155   0D1F 7C              ld a, h
+2156   0D20 B7              or a  ; cf = 0
+2157   0D21 1F              rra
+2158   0D22 67              ld h, a
+2159   0D23 7D              ld a, l
+2160   0D24 1F              rra
+2161   0D25 6F              ld l, a
+2162   0D26 C3 1D 0D        jp __o_shr_u16__l1
+2163   0D29             ; Input: de:hl - value 1, stack - 32 bit value 2
+2164   0D29             ; Output: de:hl - result
+2165   0D29             
+2166   0D29             __o_add_32: 
+2167   0D29 44 4D           ld bc, hl ; bc = v1l
+2168   0D2B E1              pop hl ; hl = ret, stack = v2l
+2169   0D2C E3              ex (sp), hl ; hl = v2l, stack = ret
+2170   0D2D 79              ld a, c
+2171   0D2E 85              add l
+2172   0D2F 4F              ld c, a
+2173   0D30 78              ld a, b
+2174   0D31 8C              adc h
+2175   0D32 47              ld b, a ; bc - result
+2176   0D33 E1              pop hl ; hl = ret, stack = v2h
+2177   0D34 E3              ex (sp), hl ; hl = v2h, stack = ret
+2178   0D35 7B              ld a, e
+2179   0D36 8D              adc l
+2180   0D37 5F              ld e, a
+2181   0D38 7A              ld a, d
+2182   0D39 8C              adc h
+2183   0D3A 57              ld d, a ; de - result
+2184   0D3B 60 69           ld hl, bc
+2185   0D3D C9              ret
+2186   0D3E             __o_call_hl: 
+2187   0D3E E9              jp hl
+2188   0D3F             ; Input: de:hl - value 1, stack - 32 bit value 2
+2189   0D3F             ; Output: de:hl - result
+2190   0D3F             
+2191   0D3F             __o_shl_32: 
+2192   0D3F 44 4D           ld bc, hl ; bc = v1l
+2193   0D41 E1              pop hl ; hl = ret, stack = v2l
+2194   0D42 E3              ex (sp), hl ; hl = v2l, stack = ret
+2195   0D43 7D              ld a, l
+2196   0D44 E6 1F           and 31
+2197   0D46 CA 59 0D        jp z, __o_shl_32_ret
+2198   0D49             __o_shl_32_1: 
+2199   0D49 EB              ex hl, de ; de <<= 1
+2200   0D4A 29              add hl, hl
+2201   0D4B EB              ex hl, de
+2202   0D4C 60 69           ld hl, bc ; bc <<= 1
+2203   0D4E 29              add hl, hl
+2204   0D4F 44 4D           ld bc, hl
+2205   0D51 C2 55 0D        jp nz, __o_shl_32_2 ; if (flag_c) de++;
+2206   0D54 13              inc de
+2207   0D55             __o_shl_32_2: 
+2208   0D55 3D              dec a
+2209   0D56 C2 49 0D        jp nz, __o_shl_32_1
+2210   0D59             __o_shl_32_ret: 
+2211   0D59 E1              pop hl ; hl = ret, stack = v2ha
+2212   0D5A E3              ex (sp), hl ; hl = v2h, stack = ret
+2213   0D5B 60 69           ld hl, bc
+2214   0D5D E9              jp hl
+2215   0D5E             __div_16_mod: 
+2216   0D5E 00          	ds 2
+2217   0D60 00          s_5:  db 0
+2218   0D61 0A0A0A0A00  s_2:  db 10, 10, 10, 10, 0
+2219   0D66             s_12:  db 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 119, 44, 97, 44, 115, 44, 100, 32, 111, 114, 32, 114, 44, 113, 32, 32, 32, 32, 32, 32, 32, 10, 0
+2219   0D66 0A20202020202020202020772C612C732C64206F7220722C7120202020202020
+2219   0D86 0A00
+2220   0D88 1B 5B 48 00 s_0:  db 27, 91, 72, 0
+2221   0D8C             s_7:  db 27, 91, 72, 27, 91, 50, 74, 0
+2221   0D8C 1B5B481B5B324A00
+2222   0D94             s_18:  db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 71, 65, 77, 69, 32, 79, 86, 69, 82, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 0
+2222   0D94 20202020202020202020202047414D45204F564552202020202020202020200A
+2222   0DB4 00
+2223   0DB5             s_19:  db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 81, 85, 73, 84, 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 0
+2223   0DB5 202020202020202020202020515549543F2028792F6E29202020202020202020
+2223   0DD5 0A00
+2224   0DD7             s_20:  db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 82, 69, 83, 84, 65, 82, 84, 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 10, 0
+2224   0DD7 20202020202020202020524553544152543F2028792F6E29202020202020200A
+2224   0DF7 00
+2225   0DF8 25 75 00    s_3:  db 37, 117, 0
+2226   0DFB 2B 0A 00    s_10:  db 43, 10, 0
+2227   0DFE             s_9:  db 43, 45, 45, 45, 45, 45, 45, 45, 0
+2227   0DFE 2B2D2D2D2D2D2D2D00
+2228   0E07             s_8:  db 50, 48, 52, 56, 46, 99, 32, 37, 49, 55, 100, 32, 112, 116, 115, 10, 10, 0
+2228   0E07 323034382E632025313764207074730A0A00
+2229   0E19             s_1:  db 50, 48, 52, 56, 46, 99, 32, 37, 50, 51, 100, 32, 112, 116, 115, 0
+2229   0E19 323034382E6320253233642070747300
+2230   0E29 7C 0A 00    s_11:  db 124, 10, 0
+2231   0E2C             s_6:  db 124, 32, 32, 32, 32, 32, 32, 32, 0
+2231   0E2C 7C2020202020202000
+2232   0E35             s_4:  db 124, 37, 42, 115, 37, 115, 37, 42, 115, 0
+2232   0E35 7C252A732573252A7300
+2233   0E3F             end: 
+2234   0E3F                 savebin 'output.com', begin, end - begin
+2235   0E3F             
