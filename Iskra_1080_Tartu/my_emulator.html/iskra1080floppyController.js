@@ -179,8 +179,8 @@ function Iskra1080FloppyController(floppy) {
                 console.log("Write floppy error, incorrect device " + device + "/" + track + "/" + sector);
                 return 1;
             }
-            const sectorPerTrack = floppy[0][0];
-            const offset = (sector + track * sectorPerTrack) * 128;
+            const sectorPerTrack = floppy[0].get0(0);
+            const offset = sector + track * sectorPerTrack;
             let tmp = [];
             for (let i = 0; i < 128; i++)
                 tmp[i] = inputPacket[8 + i];
