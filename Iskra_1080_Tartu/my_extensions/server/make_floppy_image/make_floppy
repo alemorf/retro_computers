@@ -1,4 +1,4 @@
 #!/bin/bash
 fallocate -l 808960 disk0.cpm
-mkfs.cpm -f i1080 -b 1080_boot.bin disk0.cpm
+mkfs.cpm -f i1080 -b i1080_boot.bin disk0.cpm
 cpmcp -f i1080 disk0.cpm files/* 0:
