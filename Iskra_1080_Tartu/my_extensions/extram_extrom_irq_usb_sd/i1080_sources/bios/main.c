@@ -3,12 +3,38 @@
 #include "graph4.h"
 #include "console.h"
 #include "storage.h"
+#include "keyboard.h"
 
 const int cpm_load_address = 0xE500;
 void CpmEntryPoint() __address(0xFB33);
 
 extern uint16_t cpm_start;
 extern uint16_t cpm_stop;
+
+void menu() {
+    ClearScreen();
+    DrawText(c = 0, de = 0, hl = "Выберите разрешение экрана");
+    SetColor(a = 1);
+    DrawText(c = 0, de = 0x2, hl = "1. 64x25 2 цвета");
+    DrawText(c = 0, de = 0x3, hl = "2. 64x25 4 цвета");
+    DrawText(c = 0, de = 0x4, hl = "3. 96x25 2 цвета");
+    DrawText(c = 0, de = 0x5, hl = "4. 96x25 4 цвета");
+
+    for(;;) {
+        do {
+            ReadKeyboard();
+        } while(flag_z);
+        if (a == '1')
+            return SetScreenBw6();
+        if (a == '2')
+            return SetScreenColor6();
+        if (a == '3')
+            return SetScreenBw4();
+        if (a == '4')
+            return SetScreenColor4();
+    }
+
+}
 
 void main() {
     /* Настройка адресного пространства */
@@ -21,6 +47,8 @@ void main() {
     sp = &stack;
 
     /* Очистка экрана и запуск прерываний */
+    SetScreenColor6();
+    SetColor(a = 3);
     ConReset();
 
     /* Настройка палитры */
@@ -29,10 +57,9 @@ void main() {
     out(PORT_PALETTE(2), a = PALETTE_WHITE);
     out(PORT_PALETTE(3), a = PALETTE_CYAN);
 
-    /* Экран и запуск прерываний */
+    menu();
+
     SetColor(a = 3);
-    SetScreenColor();
-    //SetScreenColor4();
     ClearScreen();
     DrawText(c = 0, de = 0, hl = "Искра 1080М");
     SetColor(a = 1);

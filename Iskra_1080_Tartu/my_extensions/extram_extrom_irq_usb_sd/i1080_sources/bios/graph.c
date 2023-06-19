@@ -241,8 +241,7 @@ void DrawText(...) {
 /* Draw char
  * Input:
  *   A  - Char
- *   C  - Shift 0..3
- *   DE - Video address 0xD000..0xFFFF
+ *   DE - Coodrs
  */
 
 void DrawChar6(...) {

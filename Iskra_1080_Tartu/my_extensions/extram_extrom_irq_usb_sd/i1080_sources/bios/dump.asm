@@ -91,13 +91,13 @@
 0000          MOD_NUM equ 32
 0000           org 0
 Reboot:
-0000 C3 7A 20  jp main
+0000 C3 D6 20  jp main
 sector_count:
-0003 7A 00     dw (file_end+127)/128
+0003 7C 00     dw (file_end+127)/128
 CpmInterrupt:
 0005 C3 E9 1F  jp InterruptHandler
 EntryCpmWBoot:
-0008 C3 C0 20  jp CpmWBoot
+0008 C3 24 21  jp CpmWBoot
 EntryCpmConst:
 000B C3 43 03  jp CpmConst
 EntryCpmConin:
@@ -105,23 +105,23 @@ EntryCpmConin:
 EntryCpmConout:
 0011 C3 BE 02  jp CpmConout
 EntryCpmList:
-0014 C3 FB 3B  jp CpmList
+0014 C3 5F 3C  jp CpmList
 EntryCpmPunch:
-0017 C3 BC 3C  jp CpmPunch
+0017 C3 20 3D  jp CpmPunch
 EntryCpmReader:
-001A C3 BD 3C  jp CpmReader
+001A C3 21 3D  jp CpmReader
 EntryCpmSelDsk:
-001D C3 0D 3C  jp CpmSelDsk
+001D C3 71 3C  jp CpmSelDsk
 EntryCpmSetTrk:
-0020 C3 4D 3C  jp CpmSetTrk
+0020 C3 B1 3C  jp CpmSetTrk
 EntryCpmSetSec:
-0023 C3 53 3C  jp CpmSetSec
+0023 C3 B7 3C  jp CpmSetSec
 EntryCpmRead:
-0026 C3 8B 3C  jp CpmRead
+0026 C3 EF 3C  jp CpmRead
 EntryCpmWrite:
-0029 C3 A7 3C  jp CpmWrite
+0029 C3 0B 3D  jp CpmWrite
 EntryCpmPrSta:
-002C C3 FC 3B  jp CpmPrSta
+002C C3 60 3C  jp CpmPrSta
 002F 00 00 00  org 56
 EntryInterrupt:
 0038 F5        push af
@@ -278,8 +278,8 @@ EndConsoleChange:
 0137 3E 0E     ld a, 7*2
 0139 D3 03     out (3), a
 013B C9        ret
-ConClear:
 ConReset:
+ConClear:
 013C AF        xor a
 013D 32 01 01  ld (cursor_visible), a
 0140 32 04 01  ld (cursor_x), a
@@ -332,8 +332,8 @@ _l40:
 018E C6 03     add FONT_WIDTH
 0190 67        ld h, a
 0191 C3 7B 01  jp _l40
-_l39:
 CpmConoutCsi2:
+_l39:
 0194 79        ld a, c
 0195 FE 30     cp 48
 0197 DA AE 01  jp c, _l42
@@ -484,11 +484,11 @@ _l65:
 02B1 22 03 01  ld (cursor_y), hl
 02B4 CD 28 01  call EndConsoleChange
 02B7 21 BE 02  ld hl, CpmConout
-_l60:
-_l66:
-_l62:
-_l67:
 _l64:
+_l66:
+_l67:
+_l62:
+_l60:
 02BA 22 12 00  ld (entry_cpm_conout_address), hl
 02BD C9        ret
 CpmConout:
@@ -553,13 +553,13 @@ _l83:
 033A C3 40 03  jp _l86
 _l85:
 033D CD 5F 01  call ConPrintChar
-_l78:
-_l71:
-_l80:
 _l82:
 _l84:
-_l73:
 _l86:
+_l80:
+_l78:
+_l73:
+_l71:
 0340 C3 28 01  jp EndConsoleChange
 CpmConst:
 0343 CD A0 1E  call CheckKeyboard
@@ -567,8 +567,8 @@ CpmConst:
 0348 C8        ret z
 0349 15        dec d
 034A C9        ret
-_l89:
 CpmConin:
+_l89:
 034B CD A6 1E  call ReadKeyboard
 _l91:
 034E CA 4B 03  jp z, _l89
@@ -771,8 +771,8 @@ _l106:
 03C6          SCREEN_SIZE equ 12288
 03C6          SCREEN_0_ADDRESS equ 53248
 03C6          SCREEN_1_ADDRESS equ 36864
-ScrollUpSubBw:
 _l115:
+ScrollUpSubBw:
 03C6 F9        ld sp, hl
 03C7 19        add hl, de
 03C8 46        ld b, (hl)
@@ -806,8 +806,8 @@ _l117:
 03E5 C2 C6 03  jp nz, _l115
 _l116:
 03E8 C3 44 04  jp ScrollUpSpInstr
-ScrollUpSubColor:
 _l119:
+ScrollUpSubColor:
 03EB F9        ld sp, hl
 03EC 19        add hl, de
 03ED 46        ld b, (hl)
@@ -1310,9 +1310,9 @@ _l201:
 0683 C3 89 06  jp _l204
 _l203:
 0686 11 3F 00  ld de, 63
-_l204:
-_l202:
 _l200:
+_l202:
+_l204:
 0689 7D        ld a, l
 068A 87        add a
 068B 87        add a
@@ -6703,8 +6703,8 @@ DrawChar4b_Xor1:
 _l230:
 1B83 0D        dec c
 1B84 C2 78 1B  jp nz, _l228
-_l229:
 DrawChar4b:
+_l229:
 1B87 7A        ld a, d
 1B88 D6 40     sub 64
 1B8A 57        ld d, a
@@ -7704,10 +7704,10 @@ _l282:
 1FA2 E6 20     and MOD_NUM
 1FA4 C2 A9 1F  jp nz, _l286
 1FA7 26 50     ld h, LAYOUT_SIZE
+_l286:
+_l285:
 _l281:
 _l284:
-_l285:
-_l286:
 1FA9 7A        ld a, d
 1FAA 84        add h
 1FAB C6 60     add key_layout_table
@@ -7930,59 +7930,106 @@ _l294:
 207A          DrawCharAddress equ DrawChar+1
 207A          SetColorAddress equ SetColor+1
 207A          DrawCursorAddress equ DrawCursor+1
+207A          MOD_CTR equ 1
+207A          MOD_SHIFT equ 2
+207A          MOD_CAPS equ 16
+207A          MOD_NUM equ 32
 207A          cpm_load_address equ 58624
 207A          CpmEntryPoint equ 64307
+menu:
+207A CD 88 03  call ClearScreen
+207D 0E 00     ld c, 0
+207F 11 00 00  ld de, 0
+2082 21 70 3D  ld hl, _l303
+2085 CD 85 04  call DrawText
+2088 3E 01     ld a, 1
+208A CD 82 03  call SetColor
+208D 0E 00     ld c, 0
+208F 11 02 00  ld de, 2
+2092 21 24 3D  ld hl, _l304
+2095 CD 85 04  call DrawText
+2098 0E 00     ld c, 0
+209A 11 03 00  ld de, 3
+209D 21 37 3D  ld hl, _l305
+20A0 CD 85 04  call DrawText
+20A3 0E 00     ld c, 0
+20A5 11 04 00  ld de, 4
+20A8 21 4A 3D  ld hl, _l306
+20AB CD 85 04  call DrawText
+20AE 0E 00     ld c, 0
+20B0 11 05 00  ld de, 5
+20B3 21 5D 3D  ld hl, _l307
+20B6 CD 85 04  call DrawText
+_l310:
+_l309:
+20B9 CD A6 1E  call ReadKeyboard
+_l312:
+20BC CA B9 20  jp z, _l310
+_l311:
+20BF FE 31     cp 49
+20C1 CA A9 06  jp z, SetScreenBw6
+20C4 FE 32     cp 50
+20C6 CA EE 06  jp z, SetScreenColor6
+20C9 FE 33     cp 51
+20CB CA 25 1C  jp z, SetScreenBw4
+20CE FE 34     cp 52
+20D0 CA 47 1C  jp z, SetScreenColor4
+20D3 C3 B9 20  jp _l309
+_l308:
 main:
-207A 3E 00     ld a, 0*2
-207C D3 00     out (0), a
-207E 3E 02     ld a, 1*2
-2080 D3 01     out (1), a
-2082 3E 01     ld a, 1
-2084 D3 02     out (2), a
-2086 3E 01     ld a, 1
-2088 D3 03     out (3), a
-208A 31 00 01  ld sp, stack
-208D CD 3C 01  call ConReset
-2090 3E 0B     ld a, PALETTE_DARK_BLUE
-2092 D3 90     out (144+(0&3)), a
-2094 3E 04     ld a, PALETTE_YELLOW
-2096 D3 91     out (144+(1&3)), a
-2098 3E 00     ld a, PALETTE_WHITE
-209A D3 92     out (144+(2&3)), a
-209C 3E 01     ld a, PALETTE_CYAN
-209E D3 93     out (144+(3&3)), a
-20A0 3E 03     ld a, 3
-20A2 CD 82 03  call SetColor
-20A5 CD 0D 07  call SetScreenColor
-20A8 CD 88 03  call ClearScreen
-20AB 0E 00     ld c, 0
-20AD 11 00 00  ld de, 0
-20B0 21 C0 3C  ld hl, _l303
-20B3 CD 85 04  call DrawText
-20B6 3E 01     ld a, 1
-20B8 CD 82 03  call SetColor
-20BB 3E 01     ld a, 1
-20BD 32 01 01  ld (cursor_visible), a
+20D6 3E 00     ld a, 0*2
+20D8 D3 00     out (0), a
+20DA 3E 02     ld a, 1*2
+20DC D3 01     out (1), a
+20DE 3E 01     ld a, 1
+20E0 D3 02     out (2), a
+20E2 3E 01     ld a, 1
+20E4 D3 03     out (3), a
+20E6 31 00 01  ld sp, stack
+20E9 CD EE 06  call SetScreenColor6
+20EC 3E 03     ld a, 3
+20EE CD 82 03  call SetColor
+20F1 CD 3C 01  call ConReset
+20F4 3E 0B     ld a, PALETTE_DARK_BLUE
+20F6 D3 90     out (144+(0&3)), a
+20F8 3E 04     ld a, PALETTE_YELLOW
+20FA D3 91     out (144+(1&3)), a
+20FC 3E 00     ld a, PALETTE_WHITE
+20FE D3 92     out (144+(2&3)), a
+2100 3E 01     ld a, PALETTE_CYAN
+2102 D3 93     out (144+(3&3)), a
+2104 CD 7A 20  call menu
+2107 3E 03     ld a, 3
+2109 CD 82 03  call SetColor
+210C CD 88 03  call ClearScreen
+210F 0E 00     ld c, 0
+2111 11 00 00  ld de, 0
+2114 21 8D 3D  ld hl, _l314
+2117 CD 85 04  call DrawText
+211A 3E 01     ld a, 1
+211C CD 82 03  call SetColor
+211F 3E 01     ld a, 1
+2121 32 01 01  ld (cursor_visible), a
 CpmWBoot:
-20C0 3E 0E     ld a, 7*2
-20C2 D3 03     out (3), a
-20C4 11 00 E5  ld de, cpm_load_address
-20C7 21 DA 20  ld hl, cpm_start
-_l305:
-20CA 7E        ld a, (hl)
-20CB 12        ld (de), a
-20CC 23        inc hl
-20CD 13        inc de
-_l307:
-20CE 7A        ld a, d
-20CF B7        or a
-20D0 C2 CA 20  jp nz, _l305
-_l306:
-20D3 3A FF 3B  ld a, (drive_number)
-20D6 4F        ld c, a
-20D7 C3 33 FB  jp CpmEntryPoint
+2124 3E 0E     ld a, 7*2
+2126 D3 03     out (3), a
+2128 11 00 E5  ld de, cpm_load_address
+212B 21 3E 21  ld hl, cpm_start
+_l316:
+212E 7E        ld a, (hl)
+212F 12        ld (de), a
+2130 23        inc hl
+2131 13        inc de
+_l318:
+2132 7A        ld a, d
+2133 B7        or a
+2134 C2 2E 21  jp nz, _l316
+_l317:
+2137 3A 63 3C  ld a, (drive_number)
+213A 4F        ld c, a
+213B C3 33 FB  jp CpmEntryPoint
 cpm_start:
-20DA C3 5C E8  db 195
+213E C3 5C E8  db 195
  db 92
  db 232
  db 195
@@ -14895,433 +14942,543 @@ cpm_start:
  db 0
  db 0
 cpm_stop:
-3BDA 00        db 0
+3C3E 00        db 0
 MulU16:
-3BDB 44        ld b, h
-3BDC 4D        ld c, l
-3BDD 21 00 00  ld hl, 0
-3BE0 3E 11     ld a, 17
-_l312:
-3BE2 3D        dec a
-3BE3 C8        ret z
-3BE4 29        add hl, hl
-3BE5 EB        ex hl, de
-3BE6 D2 EE 3B  jp nc, _l313
-3BE9 29        add hl, hl
-3BEA 23        inc hl
-3BEB C3 EF 3B  jp _l314
-_l313:
-3BEE 29        add hl, hl
-_l314:
-3BEF EB        ex hl, de
-3BF0 D2 E2 3B  jp nc, _l312
-3BF3 09        add hl, bc
-3BF4 D2 E2 3B  jp nc, _l312
-3BF7 13        inc de
-3BF8 C3 E2 3B  jp _l312
-_l311:
-3BFB          PALETTE_WHITE equ 0
-3BFB          PALETTE_CYAN equ 1
-3BFB          PALETTE_MAGENTA equ 2
-3BFB          PALETTE_BLUE equ 3
-3BFB          PALETTE_YELLOW equ 4
-3BFB          PALETTE_GREEN equ 5
-3BFB          PALETTE_RED equ 6
-3BFB          PALETTE_XXX equ 7
-3BFB          PALETTE_GRAY equ 8
-3BFB          PALETTE_DARK_CYAN equ 9
-3BFB          PALETTE_DARK_MAGENTA equ 10
-3BFB          PALETTE_DARK_BLUE equ 11
-3BFB          PALETTE_DARK_YELLOW equ 12
-3BFB          PALETTE_DARK_GREEN equ 13
-3BFB          PALETTE_DARK_RED equ 14
-3BFB          PALETTE_BLACK equ 15
-3BFB          KEY_BACKSPACE equ 8
-3BFB          KEY_TAB equ 9
-3BFB          KEY_ENTER equ 13
-3BFB          KEY_ESC equ 27
-3BFB          KEY_ALT equ 1
-3BFB          KEY_F1 equ 242
-3BFB          KEY_F2 equ 243
-3BFB          KEY_F3 equ 244
-3BFB          KEY_UP equ 245
-3BFB          KEY_DOWN equ 246
-3BFB          KEY_RIGHT equ 247
-3BFB          KEY_LEFT equ 248
-3BFB          KEY_EXT_5 equ 249
-3BFB          KEY_END equ 250
-3BFB          KEY_HOME equ 251
-3BFB          KEY_INSERT equ 252
-3BFB          KEY_DEL equ 253
-3BFB          KEY_PG_UP equ 254
-3BFB          KEY_PG_DN equ 255
-3BFB          PORT_FRAME_IRQ_RESET equ 4
-3BFB          PORT_SD_SIZE equ 9
-3BFB          PORT_SD_RESULT equ 9
-3BFB          PORT_SD_DATA equ 8
-3BFB          PORT_UART_DATA equ 128
-3BFB          PORT_UART_CONFIG equ 129
-3BFB          PORT_UART_STATE equ 129
-3BFB          PORT_EXT_DATA_OUT equ 136
-3BFB          PORT_PALETTE_3 equ 144
-3BFB          PORT_PALETTE_2 equ 145
-3BFB          PORT_PALETTE_1 equ 146
-3BFB          PORT_PALETTE_0 equ 147
-3BFB          PORT_EXT_IN_DATA equ 137
-3BFB          PORT_A0 equ 160
-3BFB          PORT_ROM_0000 equ 168
-3BFB          PORT_ROM_0000__ROM equ 0
-3BFB          PORT_ROM_0000__RAM equ 128
-3BFB          PORT_VIDEO_MODE_1_LOW equ 185
-3BFB          PORT_VIDEO_MODE_1_HIGH equ 249
-3BFB          PORT_VIDEO_MODE_0_LOW equ 184
-3BFB          PORT_VIDEO_MODE_0_HIGH equ 248
-3BFB          PORT_UART_SPEED_0 equ 187
-3BFB          PORT_KEYBOARD equ 192
-3BFB          PORT_UART_SPEED_1 equ 251
-3BFB          PORT_CODE_ROM equ 186
-3BFB          PORT_CHARGEN_ROM equ 250
-3BFB          PORT_TAPE_AND_IDX2 equ 153
-3BFB          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-3BFB          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-3BFB          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-3BFB          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-3BFB          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-3BFB          PORT_RESET_CU1 equ 188
-3BFB          PORT_RESET_CU2 equ 189
-3BFB          PORT_RESET_CU3 equ 190
-3BFB          PORT_RESET_CU4 equ 191
-3BFB          PORT_SET_CU1 equ 252
-3BFB          PORT_SET_CU2 equ 253
-3BFB          PORT_SET_CU3 equ 254
-3BFB          PORT_SET_CU4 equ 255
-3BFB          PORT_TAPE_OUT equ 176
-3BFB          SD_COMMAND_READ equ 1
-3BFB          SD_COMMAND_READ_SIZE equ 5
-3BFB          SD_COMMAND_WRITE equ 2
-3BFB          SD_COMMAND_WRITE_SIZE equ 5+128
-3BFB          SD_RESULT_BUSY equ 255
-3BFB          SD_RESULT_OK equ 0
-3BFB          stack equ 256
-3BFB          entry_cpm_conout_address equ EntryCpmConout+1
-3BFB          cpm_dph_a equ 65376
-3BFB          cpm_dph_b equ 65392
-3BFB          cpm_dma_buffer equ 65408
-CpmList:
-3BFB C9        ret
-CpmPrSta:
-3BFC 16 00     ld d, 0
-3BFE C9        ret
-3BFF          PALETTE_WHITE equ 0
-3BFF          PALETTE_CYAN equ 1
-3BFF          PALETTE_MAGENTA equ 2
-3BFF          PALETTE_BLUE equ 3
-3BFF          PALETTE_YELLOW equ 4
-3BFF          PALETTE_GREEN equ 5
-3BFF          PALETTE_RED equ 6
-3BFF          PALETTE_XXX equ 7
-3BFF          PALETTE_GRAY equ 8
-3BFF          PALETTE_DARK_CYAN equ 9
-3BFF          PALETTE_DARK_MAGENTA equ 10
-3BFF          PALETTE_DARK_BLUE equ 11
-3BFF          PALETTE_DARK_YELLOW equ 12
-3BFF          PALETTE_DARK_GREEN equ 13
-3BFF          PALETTE_DARK_RED equ 14
-3BFF          PALETTE_BLACK equ 15
-3BFF          KEY_BACKSPACE equ 8
-3BFF          KEY_TAB equ 9
-3BFF          KEY_ENTER equ 13
-3BFF          KEY_ESC equ 27
-3BFF          KEY_ALT equ 1
-3BFF          KEY_F1 equ 242
-3BFF          KEY_F2 equ 243
-3BFF          KEY_F3 equ 244
-3BFF          KEY_UP equ 245
-3BFF          KEY_DOWN equ 246
-3BFF          KEY_RIGHT equ 247
-3BFF          KEY_LEFT equ 248
-3BFF          KEY_EXT_5 equ 249
-3BFF          KEY_END equ 250
-3BFF          KEY_HOME equ 251
-3BFF          KEY_INSERT equ 252
-3BFF          KEY_DEL equ 253
-3BFF          KEY_PG_UP equ 254
-3BFF          KEY_PG_DN equ 255
-3BFF          PORT_FRAME_IRQ_RESET equ 4
-3BFF          PORT_SD_SIZE equ 9
-3BFF          PORT_SD_RESULT equ 9
-3BFF          PORT_SD_DATA equ 8
-3BFF          PORT_UART_DATA equ 128
-3BFF          PORT_UART_CONFIG equ 129
-3BFF          PORT_UART_STATE equ 129
-3BFF          PORT_EXT_DATA_OUT equ 136
-3BFF          PORT_PALETTE_3 equ 144
-3BFF          PORT_PALETTE_2 equ 145
-3BFF          PORT_PALETTE_1 equ 146
-3BFF          PORT_PALETTE_0 equ 147
-3BFF          PORT_EXT_IN_DATA equ 137
-3BFF          PORT_A0 equ 160
-3BFF          PORT_ROM_0000 equ 168
-3BFF          PORT_ROM_0000__ROM equ 0
-3BFF          PORT_ROM_0000__RAM equ 128
-3BFF          PORT_VIDEO_MODE_1_LOW equ 185
-3BFF          PORT_VIDEO_MODE_1_HIGH equ 249
-3BFF          PORT_VIDEO_MODE_0_LOW equ 184
-3BFF          PORT_VIDEO_MODE_0_HIGH equ 248
-3BFF          PORT_UART_SPEED_0 equ 187
-3BFF          PORT_KEYBOARD equ 192
-3BFF          PORT_UART_SPEED_1 equ 251
-3BFF          PORT_CODE_ROM equ 186
-3BFF          PORT_CHARGEN_ROM equ 250
-3BFF          PORT_TAPE_AND_IDX2 equ 153
-3BFF          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-3BFF          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-3BFF          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-3BFF          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-3BFF          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-3BFF          PORT_RESET_CU1 equ 188
-3BFF          PORT_RESET_CU2 equ 189
-3BFF          PORT_RESET_CU3 equ 190
-3BFF          PORT_RESET_CU4 equ 191
-3BFF          PORT_SET_CU1 equ 252
-3BFF          PORT_SET_CU2 equ 253
-3BFF          PORT_SET_CU3 equ 254
-3BFF          PORT_SET_CU4 equ 255
-3BFF          PORT_TAPE_OUT equ 176
-3BFF          SD_COMMAND_READ equ 1
-3BFF          SD_COMMAND_READ_SIZE equ 5
-3BFF          SD_COMMAND_WRITE equ 2
-3BFF          SD_COMMAND_WRITE_SIZE equ 5+128
-3BFF          SD_RESULT_BUSY equ 255
-3BFF          SD_RESULT_OK equ 0
-3BFF          stack equ 256
-3BFF          entry_cpm_conout_address equ EntryCpmConout+1
-3BFF          cpm_dph_a equ 65376
-3BFF          cpm_dph_b equ 65392
-3BFF          cpm_dma_buffer equ 65408
-drive_number:
-3BFF 00        db 0
-drive_track:
-3C00 00 00     dw 0
-drive_sector:
-3C02 00        db 0
-drive_dpb:
-3C03 60 FF     dw cpm_dph_a
-WaitSd:
-_l322:
-3C05 DB 09     in a, (PORT_SD_RESULT)
-_l324:
-3C07 FE FF     cp SD_RESULT_BUSY
-3C09 CA 05 3C  jp z, _l322
+3C3F 44        ld b, h
+3C40 4D        ld c, l
+3C41 21 00 00  ld hl, 0
+3C44 3E 11     ld a, 17
 _l323:
-3C0C C9        ret
-CpmSelDsk:
-3C0D CD 05 3C  call WaitSd
-3C10 3E 05     ld a, SD_COMMAND_READ_SIZE
-3C12 D3 09     out (PORT_SD_SIZE), a
-3C14 3E 01     ld a, SD_COMMAND_READ
-3C16 D3 08     out (PORT_SD_DATA), a
-3C18 79        ld a, c
-3C19 3C        inc a
-3C1A D3 08     out (PORT_SD_DATA), a
-3C1C AF        xor a
-3C1D D3 08     out (PORT_SD_DATA), a
-3C1F D3 08     out (PORT_SD_DATA), a
-3C21 D3 08     out (PORT_SD_DATA), a
-3C23 D3 08     out (PORT_SD_DATA), a
-3C25 CD 05 3C  call WaitSd
-3C28 B7        or a
-3C29 CA 2E 3C  jp z, _l326
-3C2C 57        ld d, a
-3C2D C9        ret
-_l326:
-3C2E 79        ld a, c
-3C2F 2A 6A FF  ld hl, (cpm_dph_a+10)
-3C32 FE 01     cp 1
-3C34 C2 3A 3C  jp nz, _l327
-3C37 2A 7A FF  ld hl, (cpm_dph_b+10)
-_l327:
-3C3A 32 FF 3B  ld (drive_number), a
-3C3D 22 03 3C  ld (drive_dpb), hl
-3C40 06 0F     ld b, 15
-_l328:
-3C42 DB 08     in a, (PORT_SD_DATA)
-3C44 77        ld (hl), a
-3C45 23        inc hl
-_l330:
-3C46 05        dec b
-3C47 C2 42 3C  jp nz, _l328
-_l329:
-3C4A 16 00     ld d, 0
-3C4C C9        ret
-CpmSetTrk:
-3C4D 60        ld h, b
-3C4E 69        ld l, c
-3C4F 22 00 3C  ld (drive_track), hl
-3C52 C9        ret
-CpmSetSec:
-3C53 79        ld a, c
-3C54 32 02 3C  ld (drive_sector), a
-3C57 C9        ret
-ReadWriteSd:
-3C58 CD 05 3C  call WaitSd
-3C5B 78        ld a, b
-3C5C D3 09     out (PORT_SD_SIZE), a
-3C5E 79        ld a, c
-3C5F D3 08     out (PORT_SD_DATA), a
-3C61 3A FF 3B  ld a, (drive_number)
-3C64 3C        inc a
-3C65 D3 08     out (PORT_SD_DATA), a
-3C67 2A 03 3C  ld hl, (drive_dpb)
-3C6A 5E        ld e, (hl)
-3C6B 23        inc hl
-3C6C 56        ld d, (hl)
-3C6D 2A 00 3C  ld hl, (drive_track)
-3C70 CD DB 3B  call MulU16
-3C73 06 00     ld b, 0
-3C75 3A 02 3C  ld a, (drive_sector)
-3C78 4F        ld c, a
-3C79 09        add hl, bc
-3C7A D2 7E 3C  jp nc, _l334
-3C7D 13        inc de
+3C46 3D        dec a
+3C47 C8        ret z
+3C48 29        add hl, hl
+3C49 EB        ex hl, de
+3C4A D2 52 3C  jp nc, _l324
+3C4D 29        add hl, hl
+3C4E 23        inc hl
+3C4F C3 53 3C  jp _l325
+_l324:
+3C52 29        add hl, hl
+_l325:
+3C53 EB        ex hl, de
+3C54 D2 46 3C  jp nc, _l323
+3C57 09        add hl, bc
+3C58 D2 46 3C  jp nc, _l323
+3C5B 13        inc de
+3C5C C3 46 3C  jp _l323
+_l322:
+3C5F          PALETTE_WHITE equ 0
+3C5F          PALETTE_CYAN equ 1
+3C5F          PALETTE_MAGENTA equ 2
+3C5F          PALETTE_BLUE equ 3
+3C5F          PALETTE_YELLOW equ 4
+3C5F          PALETTE_GREEN equ 5
+3C5F          PALETTE_RED equ 6
+3C5F          PALETTE_XXX equ 7
+3C5F          PALETTE_GRAY equ 8
+3C5F          PALETTE_DARK_CYAN equ 9
+3C5F          PALETTE_DARK_MAGENTA equ 10
+3C5F          PALETTE_DARK_BLUE equ 11
+3C5F          PALETTE_DARK_YELLOW equ 12
+3C5F          PALETTE_DARK_GREEN equ 13
+3C5F          PALETTE_DARK_RED equ 14
+3C5F          PALETTE_BLACK equ 15
+3C5F          KEY_BACKSPACE equ 8
+3C5F          KEY_TAB equ 9
+3C5F          KEY_ENTER equ 13
+3C5F          KEY_ESC equ 27
+3C5F          KEY_ALT equ 1
+3C5F          KEY_F1 equ 242
+3C5F          KEY_F2 equ 243
+3C5F          KEY_F3 equ 244
+3C5F          KEY_UP equ 245
+3C5F          KEY_DOWN equ 246
+3C5F          KEY_RIGHT equ 247
+3C5F          KEY_LEFT equ 248
+3C5F          KEY_EXT_5 equ 249
+3C5F          KEY_END equ 250
+3C5F          KEY_HOME equ 251
+3C5F          KEY_INSERT equ 252
+3C5F          KEY_DEL equ 253
+3C5F          KEY_PG_UP equ 254
+3C5F          KEY_PG_DN equ 255
+3C5F          PORT_FRAME_IRQ_RESET equ 4
+3C5F          PORT_SD_SIZE equ 9
+3C5F          PORT_SD_RESULT equ 9
+3C5F          PORT_SD_DATA equ 8
+3C5F          PORT_UART_DATA equ 128
+3C5F          PORT_UART_CONFIG equ 129
+3C5F          PORT_UART_STATE equ 129
+3C5F          PORT_EXT_DATA_OUT equ 136
+3C5F          PORT_PALETTE_3 equ 144
+3C5F          PORT_PALETTE_2 equ 145
+3C5F          PORT_PALETTE_1 equ 146
+3C5F          PORT_PALETTE_0 equ 147
+3C5F          PORT_EXT_IN_DATA equ 137
+3C5F          PORT_A0 equ 160
+3C5F          PORT_ROM_0000 equ 168
+3C5F          PORT_ROM_0000__ROM equ 0
+3C5F          PORT_ROM_0000__RAM equ 128
+3C5F          PORT_VIDEO_MODE_1_LOW equ 185
+3C5F          PORT_VIDEO_MODE_1_HIGH equ 249
+3C5F          PORT_VIDEO_MODE_0_LOW equ 184
+3C5F          PORT_VIDEO_MODE_0_HIGH equ 248
+3C5F          PORT_UART_SPEED_0 equ 187
+3C5F          PORT_KEYBOARD equ 192
+3C5F          PORT_UART_SPEED_1 equ 251
+3C5F          PORT_CODE_ROM equ 186
+3C5F          PORT_CHARGEN_ROM equ 250
+3C5F          PORT_TAPE_AND_IDX2 equ 153
+3C5F          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+3C5F          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+3C5F          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+3C5F          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+3C5F          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+3C5F          PORT_RESET_CU1 equ 188
+3C5F          PORT_RESET_CU2 equ 189
+3C5F          PORT_RESET_CU3 equ 190
+3C5F          PORT_RESET_CU4 equ 191
+3C5F          PORT_SET_CU1 equ 252
+3C5F          PORT_SET_CU2 equ 253
+3C5F          PORT_SET_CU3 equ 254
+3C5F          PORT_SET_CU4 equ 255
+3C5F          PORT_TAPE_OUT equ 176
+3C5F          SD_COMMAND_READ equ 1
+3C5F          SD_COMMAND_READ_SIZE equ 5
+3C5F          SD_COMMAND_WRITE equ 2
+3C5F          SD_COMMAND_WRITE_SIZE equ 5+128
+3C5F          SD_RESULT_BUSY equ 255
+3C5F          SD_RESULT_OK equ 0
+3C5F          stack equ 256
+3C5F          entry_cpm_conout_address equ EntryCpmConout+1
+3C5F          cpm_dph_a equ 65376
+3C5F          cpm_dph_b equ 65392
+3C5F          cpm_dma_buffer equ 65408
+CpmList:
+3C5F C9        ret
+CpmPrSta:
+3C60 16 00     ld d, 0
+3C62 C9        ret
+3C63          PALETTE_WHITE equ 0
+3C63          PALETTE_CYAN equ 1
+3C63          PALETTE_MAGENTA equ 2
+3C63          PALETTE_BLUE equ 3
+3C63          PALETTE_YELLOW equ 4
+3C63          PALETTE_GREEN equ 5
+3C63          PALETTE_RED equ 6
+3C63          PALETTE_XXX equ 7
+3C63          PALETTE_GRAY equ 8
+3C63          PALETTE_DARK_CYAN equ 9
+3C63          PALETTE_DARK_MAGENTA equ 10
+3C63          PALETTE_DARK_BLUE equ 11
+3C63          PALETTE_DARK_YELLOW equ 12
+3C63          PALETTE_DARK_GREEN equ 13
+3C63          PALETTE_DARK_RED equ 14
+3C63          PALETTE_BLACK equ 15
+3C63          KEY_BACKSPACE equ 8
+3C63          KEY_TAB equ 9
+3C63          KEY_ENTER equ 13
+3C63          KEY_ESC equ 27
+3C63          KEY_ALT equ 1
+3C63          KEY_F1 equ 242
+3C63          KEY_F2 equ 243
+3C63          KEY_F3 equ 244
+3C63          KEY_UP equ 245
+3C63          KEY_DOWN equ 246
+3C63          KEY_RIGHT equ 247
+3C63          KEY_LEFT equ 248
+3C63          KEY_EXT_5 equ 249
+3C63          KEY_END equ 250
+3C63          KEY_HOME equ 251
+3C63          KEY_INSERT equ 252
+3C63          KEY_DEL equ 253
+3C63          KEY_PG_UP equ 254
+3C63          KEY_PG_DN equ 255
+3C63          PORT_FRAME_IRQ_RESET equ 4
+3C63          PORT_SD_SIZE equ 9
+3C63          PORT_SD_RESULT equ 9
+3C63          PORT_SD_DATA equ 8
+3C63          PORT_UART_DATA equ 128
+3C63          PORT_UART_CONFIG equ 129
+3C63          PORT_UART_STATE equ 129
+3C63          PORT_EXT_DATA_OUT equ 136
+3C63          PORT_PALETTE_3 equ 144
+3C63          PORT_PALETTE_2 equ 145
+3C63          PORT_PALETTE_1 equ 146
+3C63          PORT_PALETTE_0 equ 147
+3C63          PORT_EXT_IN_DATA equ 137
+3C63          PORT_A0 equ 160
+3C63          PORT_ROM_0000 equ 168
+3C63          PORT_ROM_0000__ROM equ 0
+3C63          PORT_ROM_0000__RAM equ 128
+3C63          PORT_VIDEO_MODE_1_LOW equ 185
+3C63          PORT_VIDEO_MODE_1_HIGH equ 249
+3C63          PORT_VIDEO_MODE_0_LOW equ 184
+3C63          PORT_VIDEO_MODE_0_HIGH equ 248
+3C63          PORT_UART_SPEED_0 equ 187
+3C63          PORT_KEYBOARD equ 192
+3C63          PORT_UART_SPEED_1 equ 251
+3C63          PORT_CODE_ROM equ 186
+3C63          PORT_CHARGEN_ROM equ 250
+3C63          PORT_TAPE_AND_IDX2 equ 153
+3C63          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+3C63          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+3C63          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+3C63          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+3C63          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+3C63          PORT_RESET_CU1 equ 188
+3C63          PORT_RESET_CU2 equ 189
+3C63          PORT_RESET_CU3 equ 190
+3C63          PORT_RESET_CU4 equ 191
+3C63          PORT_SET_CU1 equ 252
+3C63          PORT_SET_CU2 equ 253
+3C63          PORT_SET_CU3 equ 254
+3C63          PORT_SET_CU4 equ 255
+3C63          PORT_TAPE_OUT equ 176
+3C63          SD_COMMAND_READ equ 1
+3C63          SD_COMMAND_READ_SIZE equ 5
+3C63          SD_COMMAND_WRITE equ 2
+3C63          SD_COMMAND_WRITE_SIZE equ 5+128
+3C63          SD_RESULT_BUSY equ 255
+3C63          SD_RESULT_OK equ 0
+3C63          stack equ 256
+3C63          entry_cpm_conout_address equ EntryCpmConout+1
+3C63          cpm_dph_a equ 65376
+3C63          cpm_dph_b equ 65392
+3C63          cpm_dma_buffer equ 65408
+drive_number:
+3C63 00        db 0
+drive_track:
+3C64 00 00     dw 0
+drive_sector:
+3C66 00        db 0
+drive_dpb:
+3C67 60 FF     dw cpm_dph_a
+WaitSd:
+_l333:
+3C69 DB 09     in a, (PORT_SD_RESULT)
+_l335:
+3C6B FE FF     cp SD_RESULT_BUSY
+3C6D CA 69 3C  jp z, _l333
 _l334:
-3C7E 7D        ld a, l
-3C7F D3 08     out (PORT_SD_DATA), a
-3C81 7C        ld a, h
-3C82 D3 08     out (PORT_SD_DATA), a
-3C84 7B        ld a, e
+3C70 C9        ret
+CpmSelDsk:
+3C71 CD 69 3C  call WaitSd
+3C74 3E 05     ld a, SD_COMMAND_READ_SIZE
+3C76 D3 09     out (PORT_SD_SIZE), a
+3C78 3E 01     ld a, SD_COMMAND_READ
+3C7A D3 08     out (PORT_SD_DATA), a
+3C7C 79        ld a, c
+3C7D 3C        inc a
+3C7E D3 08     out (PORT_SD_DATA), a
+3C80 AF        xor a
+3C81 D3 08     out (PORT_SD_DATA), a
+3C83 D3 08     out (PORT_SD_DATA), a
 3C85 D3 08     out (PORT_SD_DATA), a
-3C87 7A        ld a, d
-3C88 D3 08     out (PORT_SD_DATA), a
-3C8A C9        ret
-CpmRead:
-3C8B 01 01 05  ld bc, SD_COMMAND_READ_SIZE<<8|SD_COMMAND_READ
-3C8E CD 58 3C  call ReadWriteSd
-3C91 CD 05 3C  call WaitSd
-3C94 B7        or a
-3C95 CA 9A 3C  jp z, _l336
-3C98 57        ld d, a
-3C99 C9        ret
-_l336:
-3C9A 21 80 FF  ld hl, cpm_dma_buffer
+3C87 D3 08     out (PORT_SD_DATA), a
+3C89 CD 69 3C  call WaitSd
+3C8C B7        or a
+3C8D CA 92 3C  jp z, _l337
+3C90 57        ld d, a
+3C91 C9        ret
 _l337:
-3C9D DB 08     in a, (PORT_SD_DATA)
-3C9F 77        ld (hl), a
-3CA0 2C        inc l
-_l339:
-3CA1 C2 9D 3C  jp nz, _l337
+3C92 79        ld a, c
+3C93 2A 6A FF  ld hl, (cpm_dph_a+10)
+3C96 FE 01     cp 1
+3C98 C2 9E 3C  jp nz, _l338
+3C9B 2A 7A FF  ld hl, (cpm_dph_b+10)
 _l338:
-3CA4 16 00     ld d, 0
-3CA6 C9        ret
-CpmWrite:
-3CA7 01 02 85  ld bc, SD_COMMAND_WRITE_SIZE<<8|SD_COMMAND_WRITE
-3CAA CD 58 3C  call ReadWriteSd
-3CAD 21 80 FF  ld hl, cpm_dma_buffer
+3C9E 32 63 3C  ld (drive_number), a
+3CA1 22 67 3C  ld (drive_dpb), hl
+3CA4 06 0F     ld b, 15
+_l339:
+3CA6 DB 08     in a, (PORT_SD_DATA)
+3CA8 77        ld (hl), a
+3CA9 23        inc hl
 _l341:
-3CB0 7E        ld a, (hl)
-3CB1 D3 08     out (PORT_SD_DATA), a
-3CB3 2C        inc l
-_l343:
-3CB4 C2 B0 3C  jp nz, _l341
-_l342:
-3CB7 CD 05 3C  call WaitSd
-3CBA 57        ld d, a
+3CAA 05        dec b
+3CAB C2 A6 3C  jp nz, _l339
+_l340:
+3CAE 16 00     ld d, 0
+3CB0 C9        ret
+CpmSetTrk:
+3CB1 60        ld h, b
+3CB2 69        ld l, c
+3CB3 22 64 3C  ld (drive_track), hl
+3CB6 C9        ret
+CpmSetSec:
+3CB7 79        ld a, c
+3CB8 32 66 3C  ld (drive_sector), a
 3CBB C9        ret
-3CBC          PALETTE_WHITE equ 0
-3CBC          PALETTE_CYAN equ 1
-3CBC          PALETTE_MAGENTA equ 2
-3CBC          PALETTE_BLUE equ 3
-3CBC          PALETTE_YELLOW equ 4
-3CBC          PALETTE_GREEN equ 5
-3CBC          PALETTE_RED equ 6
-3CBC          PALETTE_XXX equ 7
-3CBC          PALETTE_GRAY equ 8
-3CBC          PALETTE_DARK_CYAN equ 9
-3CBC          PALETTE_DARK_MAGENTA equ 10
-3CBC          PALETTE_DARK_BLUE equ 11
-3CBC          PALETTE_DARK_YELLOW equ 12
-3CBC          PALETTE_DARK_GREEN equ 13
-3CBC          PALETTE_DARK_RED equ 14
-3CBC          PALETTE_BLACK equ 15
-3CBC          KEY_BACKSPACE equ 8
-3CBC          KEY_TAB equ 9
-3CBC          KEY_ENTER equ 13
-3CBC          KEY_ESC equ 27
-3CBC          KEY_ALT equ 1
-3CBC          KEY_F1 equ 242
-3CBC          KEY_F2 equ 243
-3CBC          KEY_F3 equ 244
-3CBC          KEY_UP equ 245
-3CBC          KEY_DOWN equ 246
-3CBC          KEY_RIGHT equ 247
-3CBC          KEY_LEFT equ 248
-3CBC          KEY_EXT_5 equ 249
-3CBC          KEY_END equ 250
-3CBC          KEY_HOME equ 251
-3CBC          KEY_INSERT equ 252
-3CBC          KEY_DEL equ 253
-3CBC          KEY_PG_UP equ 254
-3CBC          KEY_PG_DN equ 255
-3CBC          PORT_FRAME_IRQ_RESET equ 4
-3CBC          PORT_SD_SIZE equ 9
-3CBC          PORT_SD_RESULT equ 9
-3CBC          PORT_SD_DATA equ 8
-3CBC          PORT_UART_DATA equ 128
-3CBC          PORT_UART_CONFIG equ 129
-3CBC          PORT_UART_STATE equ 129
-3CBC          PORT_EXT_DATA_OUT equ 136
-3CBC          PORT_PALETTE_3 equ 144
-3CBC          PORT_PALETTE_2 equ 145
-3CBC          PORT_PALETTE_1 equ 146
-3CBC          PORT_PALETTE_0 equ 147
-3CBC          PORT_EXT_IN_DATA equ 137
-3CBC          PORT_A0 equ 160
-3CBC          PORT_ROM_0000 equ 168
-3CBC          PORT_ROM_0000__ROM equ 0
-3CBC          PORT_ROM_0000__RAM equ 128
-3CBC          PORT_VIDEO_MODE_1_LOW equ 185
-3CBC          PORT_VIDEO_MODE_1_HIGH equ 249
-3CBC          PORT_VIDEO_MODE_0_LOW equ 184
-3CBC          PORT_VIDEO_MODE_0_HIGH equ 248
-3CBC          PORT_UART_SPEED_0 equ 187
-3CBC          PORT_KEYBOARD equ 192
-3CBC          PORT_UART_SPEED_1 equ 251
-3CBC          PORT_CODE_ROM equ 186
-3CBC          PORT_CHARGEN_ROM equ 250
-3CBC          PORT_TAPE_AND_IDX2 equ 153
-3CBC          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-3CBC          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-3CBC          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-3CBC          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-3CBC          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-3CBC          PORT_RESET_CU1 equ 188
-3CBC          PORT_RESET_CU2 equ 189
-3CBC          PORT_RESET_CU3 equ 190
-3CBC          PORT_RESET_CU4 equ 191
-3CBC          PORT_SET_CU1 equ 252
-3CBC          PORT_SET_CU2 equ 253
-3CBC          PORT_SET_CU3 equ 254
-3CBC          PORT_SET_CU4 equ 255
-3CBC          PORT_TAPE_OUT equ 176
-3CBC          SD_COMMAND_READ equ 1
-3CBC          SD_COMMAND_READ_SIZE equ 5
-3CBC          SD_COMMAND_WRITE equ 2
-3CBC          SD_COMMAND_WRITE_SIZE equ 5+128
-3CBC          SD_RESULT_BUSY equ 255
-3CBC          SD_RESULT_OK equ 0
-3CBC          stack equ 256
-3CBC          entry_cpm_conout_address equ EntryCpmConout+1
-3CBC          cpm_dph_a equ 65376
-3CBC          cpm_dph_b equ 65392
-3CBC          cpm_dma_buffer equ 65408
+ReadWriteSd:
+3CBC CD 69 3C  call WaitSd
+3CBF 78        ld a, b
+3CC0 D3 09     out (PORT_SD_SIZE), a
+3CC2 79        ld a, c
+3CC3 D3 08     out (PORT_SD_DATA), a
+3CC5 3A 63 3C  ld a, (drive_number)
+3CC8 3C        inc a
+3CC9 D3 08     out (PORT_SD_DATA), a
+3CCB 2A 67 3C  ld hl, (drive_dpb)
+3CCE 5E        ld e, (hl)
+3CCF 23        inc hl
+3CD0 56        ld d, (hl)
+3CD1 2A 64 3C  ld hl, (drive_track)
+3CD4 CD 3F 3C  call MulU16
+3CD7 06 00     ld b, 0
+3CD9 3A 66 3C  ld a, (drive_sector)
+3CDC 4F        ld c, a
+3CDD 09        add hl, bc
+3CDE D2 E2 3C  jp nc, _l345
+3CE1 13        inc de
+_l345:
+3CE2 7D        ld a, l
+3CE3 D3 08     out (PORT_SD_DATA), a
+3CE5 7C        ld a, h
+3CE6 D3 08     out (PORT_SD_DATA), a
+3CE8 7B        ld a, e
+3CE9 D3 08     out (PORT_SD_DATA), a
+3CEB 7A        ld a, d
+3CEC D3 08     out (PORT_SD_DATA), a
+3CEE C9        ret
+CpmRead:
+3CEF 01 01 05  ld bc, SD_COMMAND_READ_SIZE<<8|SD_COMMAND_READ
+3CF2 CD BC 3C  call ReadWriteSd
+3CF5 CD 69 3C  call WaitSd
+3CF8 B7        or a
+3CF9 CA FE 3C  jp z, _l347
+3CFC 57        ld d, a
+3CFD C9        ret
+_l347:
+3CFE 21 80 FF  ld hl, cpm_dma_buffer
+_l348:
+3D01 DB 08     in a, (PORT_SD_DATA)
+3D03 77        ld (hl), a
+3D04 2C        inc l
+_l350:
+3D05 C2 01 3D  jp nz, _l348
+_l349:
+3D08 16 00     ld d, 0
+3D0A C9        ret
+CpmWrite:
+3D0B 01 02 85  ld bc, SD_COMMAND_WRITE_SIZE<<8|SD_COMMAND_WRITE
+3D0E CD BC 3C  call ReadWriteSd
+3D11 21 80 FF  ld hl, cpm_dma_buffer
+_l352:
+3D14 7E        ld a, (hl)
+3D15 D3 08     out (PORT_SD_DATA), a
+3D17 2C        inc l
+_l354:
+3D18 C2 14 3D  jp nz, _l352
+_l353:
+3D1B CD 69 3C  call WaitSd
+3D1E 57        ld d, a
+3D1F C9        ret
+3D20          PALETTE_WHITE equ 0
+3D20          PALETTE_CYAN equ 1
+3D20          PALETTE_MAGENTA equ 2
+3D20          PALETTE_BLUE equ 3
+3D20          PALETTE_YELLOW equ 4
+3D20          PALETTE_GREEN equ 5
+3D20          PALETTE_RED equ 6
+3D20          PALETTE_XXX equ 7
+3D20          PALETTE_GRAY equ 8
+3D20          PALETTE_DARK_CYAN equ 9
+3D20          PALETTE_DARK_MAGENTA equ 10
+3D20          PALETTE_DARK_BLUE equ 11
+3D20          PALETTE_DARK_YELLOW equ 12
+3D20          PALETTE_DARK_GREEN equ 13
+3D20          PALETTE_DARK_RED equ 14
+3D20          PALETTE_BLACK equ 15
+3D20          KEY_BACKSPACE equ 8
+3D20          KEY_TAB equ 9
+3D20          KEY_ENTER equ 13
+3D20          KEY_ESC equ 27
+3D20          KEY_ALT equ 1
+3D20          KEY_F1 equ 242
+3D20          KEY_F2 equ 243
+3D20          KEY_F3 equ 244
+3D20          KEY_UP equ 245
+3D20          KEY_DOWN equ 246
+3D20          KEY_RIGHT equ 247
+3D20          KEY_LEFT equ 248
+3D20          KEY_EXT_5 equ 249
+3D20          KEY_END equ 250
+3D20          KEY_HOME equ 251
+3D20          KEY_INSERT equ 252
+3D20          KEY_DEL equ 253
+3D20          KEY_PG_UP equ 254
+3D20          KEY_PG_DN equ 255
+3D20          PORT_FRAME_IRQ_RESET equ 4
+3D20          PORT_SD_SIZE equ 9
+3D20          PORT_SD_RESULT equ 9
+3D20          PORT_SD_DATA equ 8
+3D20          PORT_UART_DATA equ 128
+3D20          PORT_UART_CONFIG equ 129
+3D20          PORT_UART_STATE equ 129
+3D20          PORT_EXT_DATA_OUT equ 136
+3D20          PORT_PALETTE_3 equ 144
+3D20          PORT_PALETTE_2 equ 145
+3D20          PORT_PALETTE_1 equ 146
+3D20          PORT_PALETTE_0 equ 147
+3D20          PORT_EXT_IN_DATA equ 137
+3D20          PORT_A0 equ 160
+3D20          PORT_ROM_0000 equ 168
+3D20          PORT_ROM_0000__ROM equ 0
+3D20          PORT_ROM_0000__RAM equ 128
+3D20          PORT_VIDEO_MODE_1_LOW equ 185
+3D20          PORT_VIDEO_MODE_1_HIGH equ 249
+3D20          PORT_VIDEO_MODE_0_LOW equ 184
+3D20          PORT_VIDEO_MODE_0_HIGH equ 248
+3D20          PORT_UART_SPEED_0 equ 187
+3D20          PORT_KEYBOARD equ 192
+3D20          PORT_UART_SPEED_1 equ 251
+3D20          PORT_CODE_ROM equ 186
+3D20          PORT_CHARGEN_ROM equ 250
+3D20          PORT_TAPE_AND_IDX2 equ 153
+3D20          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+3D20          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+3D20          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+3D20          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+3D20          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+3D20          PORT_RESET_CU1 equ 188
+3D20          PORT_RESET_CU2 equ 189
+3D20          PORT_RESET_CU3 equ 190
+3D20          PORT_RESET_CU4 equ 191
+3D20          PORT_SET_CU1 equ 252
+3D20          PORT_SET_CU2 equ 253
+3D20          PORT_SET_CU3 equ 254
+3D20          PORT_SET_CU4 equ 255
+3D20          PORT_TAPE_OUT equ 176
+3D20          SD_COMMAND_READ equ 1
+3D20          SD_COMMAND_READ_SIZE equ 5
+3D20          SD_COMMAND_WRITE equ 2
+3D20          SD_COMMAND_WRITE_SIZE equ 5+128
+3D20          SD_RESULT_BUSY equ 255
+3D20          SD_RESULT_OK equ 0
+3D20          stack equ 256
+3D20          entry_cpm_conout_address equ EntryCpmConout+1
+3D20          cpm_dph_a equ 65376
+3D20          cpm_dph_b equ 65392
+3D20          cpm_dma_buffer equ 65408
 CpmPunch:
-3CBC C9        ret
+3D20 C9        ret
 CpmReader:
-3CBD 16 00     ld d, 0
-3CBF C9        ret
-3CC0          ; Const strings
+3D21 16 00     ld d, 0
+3D23 C9        ret
+3D24          ; Const strings
+_l304:
+3D24 31 2E 20  db 49
+ db 46
+ db 32
+ db 54
+ db 52
+ db 120
+ db 50
+ db 53
+ db 32
+ db 50
+ db 32
+ db 230
+ db 162
+ db 165
+ db 226
+ db 160
+ db 0
+ db 41
+ db 0
+_l305:
+3D37 32 2E 20  db 50
+ db 46
+ db 32
+ db 54
+ db 52
+ db 120
+ db 50
+ db 53
+ db 32
+ db 52
+ db 32
+ db 230
+ db 162
+ db 165
+ db 226
+ db 160
+ db 0
+ db 41
+ db 0
+_l306:
+3D4A 33 2E 20  db 51
+ db 46
+ db 32
+ db 57
+ db 54
+ db 120
+ db 50
+ db 53
+ db 32
+ db 50
+ db 32
+ db 230
+ db 162
+ db 165
+ db 226
+ db 160
+ db 0
+ db 41
+ db 0
+_l307:
+3D5D 34 2E 20  db 52
+ db 46
+ db 32
+ db 57
+ db 54
+ db 120
+ db 50
+ db 53
+ db 32
+ db 52
+ db 32
+ db 230
+ db 162
+ db 165
+ db 226
+ db 160
+ db 0
+ db 41
+ db 0
 _l303:
-3CC0 88 E1 AA  db 136
+3D70 82 EB A1  db 130
+ db 235
+ db 161
+ db 165
+ db 224
+ db 168
+ db 226
+ db 165
+ db 32
+ db 224
+ db 160
+ db 167
+ db 224
+ db 165
+ db 232
+ db 165
+ db 173
+ db 168
+ db 165
+ db 32
+ db 237
+ db 170
+ db 224
+ db 160
+ db 173
+ db 160
+ db 0
+ db 41
+ db 0
+_l314:
+3D8D 88 E1 AA  db 136
  db 225
  db 170
  db 224
@@ -15335,6 +15492,6 @@ _l303:
  db 0
  db 41
  db 0
-3CCE 00 00 00  align 128
+3D9B 00 00 00  align 128
 file_end:
-3D00 00 00 00  savebin "boot.cpm", 0, $
+3E00 00 00 00  savebin "boot.cpm", 0, $

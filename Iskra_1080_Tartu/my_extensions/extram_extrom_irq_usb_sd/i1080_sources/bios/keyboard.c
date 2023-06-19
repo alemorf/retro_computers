@@ -135,7 +135,7 @@ void ReadKeyboard() {
     /* Если буфер пуст, то выходим с флагом Z */
     hl = key_read; /* h = key_write */
     if ((a = h) == l)
-        return; /* Flag Z */
+        return; /* Флаг Z */
 
     /* Считываем из буфера слово в DE */
     h = &key_buffer >> 8;
