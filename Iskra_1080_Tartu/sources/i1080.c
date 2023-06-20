@@ -2,24 +2,192 @@
 // В процессе
 // (c) 06-09-2020 Aleksey Morozov
 
-asm(" device zxspectrum48");
-
+#include "cmm.h"
 #include "i1080.h"
 #include "i1080_internal.h"
 
-// TODO: Убрать
-extern uint8_t vPrintDisabled = 0x020E;
-extern uint16_t word_26E = 0x26E;
-extern uint16_t vBasicProgrammBegin = 0x0272;
-extern uint16_t vBasicProgrammEnd = 0x0236;
-extern uint8_t rst8a = 0xD006;
-extern uint8_t basSyntaxError = 0xD13F;
-extern uint8_t GetSymbolOrNumberEx = 0xD598;
-extern uint8_t loc_D3FC = 0xD3FC;
-extern uint8_t byte_241 = 0x241;
-extern uint16_t vRst30ReturnAddress = 0x275;
-extern uint8_t rst30a = 0xD00C;
-extern uint8_t cpmEntry = 0x9C00;
+extern uint8_t vPrintDisabled __address(0x020E);
+extern uint16_t word_26E __address(0x26E);
+extern uint16_t vBasicProgrammBegin __address(0x0272);
+extern uint16_t vBasicProgrammEnd __address(0x0236);
+extern uint8_t byte_241 __address(0x241);
+extern uint16_t vRst30ReturnAddress __address(0x275);
+
+void Rst8a(...) __address(0xD006);
+void BasSyntaxError(...) __address(0xD13F);
+void GetSymbolOrNumberEx(...) __address(0xD598);
+void Loc_D3FC(...) __address(0xD3FC);
+void Rst30a(...) __address(0xD00C);
+void CpmEntry(...) __address(0x9C00);
+void CallE332(...) __address(0xE332);
+
+void Init(...);
+void CallRamRst38Handler(...);
+void VideoDrawChar64X0(...);
+void VideoDrawChar64X1(...);
+void VideoDrawChar64End(...);
+void VideoDrawCharEnd(...);
+void TapePrintDone(...);
+void loc_EC87(...);
+void VideoPrintRomString(...);
+void TapeWriteArray(...);
+void TapeAsciiPrintInternal(...);
+void MonitorPrintHexDump(...);
+void MonitorDirectiveLInternal(...);
+void MonitorDirectiveSet(...);
+void VideoRedrawTextScreen(...);
+void VideoNextLineClear(...);
+void MemcpyHlBcDe(...);
+void InitMonitor(...);
+void MonitorLoop(...);
+void DisassemblerEnd(...);
+void VideoInverseInternal(...);
+void VideoSetModeInternal(...);
+void VideoSetFontHeightInternal(...);
+void VideoSetCursorInternal(...);
+void VideoMoveCursorRight2(...);
+void KeyboardGetNoWaitEnd(...);
+void BiosWriteReadInternal(...);
+void VideoDrawChar64X0L(...);
+void VideoDrawChar64X1L(...);
+void VideoDrawChar64X2L(...);
+void VideoDrawChar64X3L(...);
+void TapeBeginDialog(...);
+void TapeReadPilot(...);
+void TapeReadByte(...);
+void TapePrintFound(...);
+void TapeAsciiInputInternal(...);
+void TapeReadWord(...);
+void TapeIntractiveWriteHeader(...);
+void TapeWritePilot(...);
+void TapeDelay(...);
+void TapeWriteByte(...);
+void TapeWriteWord(...);
+void TapeAsciiFlush(...);
+void PrintNewLine(...);
+void RealInput2(...);
+void MonitorParseChar(...);
+void MonitorParseNumber(...);
+void PrintHexWord(...);
+void PrintSpace(...);
+void PrintHexByte(...);
+void MonitorPrintHexDumpLoop(...);
+void PrintString(...);
+void SkipSpaces(...);
+void CharCodeToNumber(...);
+void MonitorParseSkip(...);
+void MonitorDirectiveIOInternal(...);
+void VideoInverse(...);
+void VideoNormal(...);
+void PrintHexNibble(...);
+void MonitorDirectiveVPrint(...);
+void VideoClearScreen0(...);
+void Init2(...);
+void Init3(...);
+void UartSetMode(...);
+void KeyboardIsCtrPressed(...);
+void KeyboardIsShiftPressed(...);
+void IsSomethingConnected(...);
+void IsFloppyConnected(...);
+void VideoSetCursorY(...);
+void MonitorInput(...);
+void Test(...);
+void Disassembler(...);
+void VideoPrintSpaces(...);
+void DisassemblerPrint(...);
+void DisassemblerPrintFromArray(...);
+void DisassemblerArgumentD(...);
+void VideoPrintSpaces11(...);
+void PrintHexByteFromHl(...);
+void DisassemblerArgumentA(...);
+void DisassemblerPrintInternal(...);
+void KeyboardReplaceFKeys(...);
+void VideoMoveCursorUp(...);
+void VideoMoveCursorDown(...);
+void VideoMoveCursorLeft(...);
+void VideoMoveCursorRight(...);
+void KeyboardSetRussianLayout(...);
+void KeyboardSetEnglishLayout(...);
+void VideoNextLine(...);
+void MonitorInputBackspace(...);
+void MultipleHlBy64(...);
+void VideoDrawChar(...);
+void VideoScrollUp(...);
+void WaitIfKeyPressed(...);
+void KeyboardGet(...);
+void VideoClearScreenInternal(...);
+void MemsetHlBDe(...);
+void VideoMoveCursorLeftTop(...);
+void VideoScrollUp0(...);
+void Call0000(...);
+void Enable0000Rom(...);
+void Enable0000Ram(...);
+void KeyboardGetNoWait(...);
+void KeyboardGetInternal(...);
+void DelayHl(...);
+void KeyboardGetNoWaitIsShift(...);
+void KeyboardIs71Pressed(...);
+void CompareBcHl(...);
+void KeyboardIsKeyPressed(...);
+void TestEmptyRom(...);
+void TestCheckFill(...);
+void TapeWriteHalfBit1(...);
+void TapeWritePeriod(...);
+void TapeWriteBit1(...);
+void TapeWriteBit0(...);
+void TapeReadBit(...);
+void KeyboardIsF1Pressed(...);
+void TapeReadHalfBitF1(...);
+void TapeReadChanges(...);
+void TapeReadHalfBit(...);
+void VideoDrawChar64X2(...);
+void VideoDrawChar64X3(...);
+void TapeLoadError(...);
+void TapeVerifyLoadRetry(...);
+void TapeLoadAsciiOverflow(...);
+void TapeVerifyError(...);
+void MonitorDirectiveEx(...);
+void MonitorDirectiveI(...);
+void MonitorDirectiveO(...);
+void MonitorDirectiveW(...);
+void MonitorDirectiveR(...);
+void MonitorDirectiveG(...);
+void MonitorDirectiveM(...);
+void MonitorDirectiveV(...);
+void MonitorDirectiveT(...);
+void InitCold(...);
+void InitSomething(...);
+void InitFloppy(...);
+void DisassemblerPrintVariant1(...);
+void DisassemblerMov(...);
+void DisassemblerVariant2(...);
+void VideoGetCharCodeUnderCursor(...);
+void MonitorInputError(...);
+void VideoPrintEscCursor(...);
+void VideoPrintNoEsc(...);
+void VideoClearRight(...);
+void Beep(...);
+void VideoSetCursorXInternal(...);
+void KeyboardGetNoWaitInternal(...);
+void TestFailed(...);
+void UartSetModeSpeed0(...);
+void UartSetModeSpeed1(...);
+void UartSetModeSpeed2(...);
+void TapeReadEndBitOverflow(...);
+void TapeLoadBasic(...);
+void TapeLoadAscii(...);
+void TapeLoadBinary(...);
+void TapeVerifyBasic(...);
+void Rst10(...);
+void TestRom(...);
+void MonitorError(...);
+void Enable0000Internal(...);
+void KeyboardIsKeyPressedInternal(...);
+void UartSetModeInternal(...);
+void UartModeInternal10(...);
+void TapeReadEndBit(...);
+void TapeAsciiInput(...);
+void KeyboardSetLayout(...);
 
 //----------------------------------------------------------------------------------------------------------------------
 // Эта часть кода может подключаться к адресам 0 - 0FFh через порт 0A8h. В этом случае она доступна выполнение и чтение.
@@ -30,42 +198,38 @@ asm(" org 0");
 
 // Запуск компьютера
 
-void Rst0() {
-    disable_interrupts();
+void Rst0(...) {
+    DisableInterrupts();
     return Init();
-    noreturn;
 }
 
 uint8_t data1[] = {0xFF, 0xFF, 0x23, 0xE3};
 
-void Rst8() {
+void Rst8(...) {
     a = *hl;
-    swap(*sp, hl);
-    return rst8a();
-    noreturn;
+    Swap(*sp, hl);
+    return Rst8a();
 }
 
-void Rst8B() {
-    if (flag_nz) return basSyntaxError();
+void Rst8B(...) {
+    if (flag_nz) return BasSyntaxError();
     hl++;
-    noreturn;
+    return Rst10();
 }
 
-void Rst10() {
+void Rst10(...) {
     a = *hl;
     if (a >= ':') return;
     return GetSymbolOrNumberEx();
-    noreturn;
 }
 
-void Rst18() {
+void Rst18(...) {
     push(a);
     (a = vPrintDisabled) |= a;
-    return loc_D3FC();
-    noreturn;
+    return Loc_D3FC();
 }
 
-void Rst20() {
+void Rst20(...) {
     (a = h) -= d;
     if (flag_nz) return;
     (a = l) -= e;
@@ -73,49 +237,43 @@ void Rst20() {
 
 uint8_t data2[] = {0xFF, 0xFF};
 
-extern uint8_t callE332 = 0xE332;
-
-void Rst28() {
+void Rst28(...) {
     a = byte_241;
-    if (flag_nz a |= a) return callE332();
+    if (flag_nz(a |= a)) return CallE332();
 }
 
-void Rst30AtC000() {
+void Rst30AtC000(...) {
     swap(*sp, hl);
 rst30b:
     vRst30ReturnAddress = hl;
     pop(hl);
-    return rst30a();
-    noreturn;
+    return Rst30a();
 }
 
 // Обработчик прерывания когда подключено ПЗУ в 0 - 0FFh
 
-void Rst38() {
+void Rst38(...) {
     return CallRamRst38Handler();
-    noreturn;
 }
 
 uint8_t vUnused1[] = {
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-};
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-void UnusedFunction1() {
+void UnusedFunction1(...) {
     a = *bc;
 }
 
-void UnusedFunction2() {
+void UnusedFunction2(...) {
     a = *de;
 }
 
-void UnusedFunction3() {
+void UnusedFunction3(...) {
     a = *hl;
 }
 
@@ -124,24 +282,24 @@ void UnusedFunction3() {
 
 const int VIDEO_COPY_UP_BLOCK = 8;
 const int VIDEO_COPY_UP_COLUMN = 0x100;
-const int VIDEO_COPY_UP_TO = 10;
+const int FONT_HEIGHT = 10;
 
-void VideoCopy0Up() {
+void VideoCopy0Up(...) {
     // Сохранить SP
     vTempSP = ((hl = 0) += sp);
     // Поместить адрес записи в SP. +SCROLL_NEXT_COLUMN это компенсация уменьшения далее.
-    sp = [SCREEN_0_ADDRESS + VIDEO_COPY_UP_COLUMN];
+    sp = SCREEN_0_ADDRESS + VIDEO_COPY_UP_COLUMN;
     // Перенос данных на SCROLL_BY строк выше. -1 это пропущенный hl-- далее.
-    de = [-VIDEO_COPY_UP_TO - 1];
+    de = -FONT_HEIGHT - 1;
     // Цикл от 0x??00 до 0x??18
     do {
         // Перемещение на первую строку. -SCROLL_BLOCK это компенсация увеличения далее.
-        sp = ((hl = [SCREEN_SIZE - VIDEO_COPY_UP_BLOCK]) += sp);
+        sp = ((hl = SCREEN_SIZE - VIDEO_COPY_UP_BLOCK) += sp);
         // Цикл от 0xFF?? до 0xD0??
         a = 0xD0;
         do {
             // Перемещение на следущую колонку и возврат на туже строку
-            hl = [-VIDEO_COPY_UP_COLUMN + VIDEO_COPY_UP_BLOCK];
+            hl = -VIDEO_COPY_UP_COLUMN + VIDEO_COPY_UP_BLOCK;
             hl += sp;
             sp = hl;
             hl += de;
@@ -175,12 +333,12 @@ void VideoCopy0Up() {
     } while ((a = l) >= 0x0C);
     // Восстановление SP
     sp = hl = vTempSP;
-    noreturn;
+    return TestRom();
 }
 
 // Самодиагностика при включении. Пустая внутренняя функция. Эта функция вызывается функцией Test.
 
-void TestRom() {
+void TestRom(...) {
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -355,13 +513,12 @@ uint8_t BasicC100[] = {
     0x04, 0x02, 0xe6, 0x0f, 0x32, 0xc0, 0x8f, 0x2f, 0xd3, 0x90, 0xc9, 0x3a, 0x06, 0x02, 0xe6, 0x0f, 0x32, 0xc1, 0x8f,
     0x2f, 0xd3, 0x91, 0xc9, 0x3a, 0x08, 0x02, 0xe6, 0x0f, 0x32, 0xc2, 0x8f, 0x2f, 0xd3, 0x92, 0xc9, 0x3a, 0x0a, 0x02,
     0xe6, 0x0f, 0x32, 0xc3, 0x8f, 0x2f, 0xd3, 0x93, 0xc9, 0x3a, 0xc0, 0x8f, 0x32, 0xe0, 0x8f, 0xc9, 0x3a, 0xc1, 0x8f,
-    0x32, 0xe0, 0x8f, 0xc9, 0x3a, 0xc2, 0x8f, 0x32, 0xe0, 0x8f, 0xc9, 0x3a, 0xc3, 0x8f, 0x32, 0xe0, 0x8f, 0xc9
-};
+    0x32, 0xe0, 0x8f, 0xc9, 0x3a, 0xc2, 0x8f, 0x32, 0xe0, 0x8f, 0xc9, 0x3a, 0xc3, 0x8f, 0x32, 0xe0, 0x8f, 0xc9};
 
 // Внутреняя функция. Вызывается функцией VideoPrintChar.
 // Вывод символа на экран в режиме 64 символа в строке.
 
-void VideoDrawChar64() {
+void VideoDrawChar64(...) {
     // Запоминаем, было ли подключено ПЗУ
     vTempVideoRom = (a ^= a);
     vTempVideoRom = a = vTempVideoRom;
@@ -375,74 +532,73 @@ void VideoDrawChar64() {
 
     // Вычисление адреса текстового столбца в видеопамяти
     a = vTempVideoCursorX;
-    a >>r= 2;
+    CyclicRotateRight(a, 2);
     a &= 0x1F;
     h = a;
     (a += h) += h;
-    invert(a);
+    Invert(a);
     h = a;
 
     // Вызов одной из функций наложения символа на изображение в видеопамяти
     a = vTempVideoCursorX;
-    a >>r= 1;
+    CyclicRotateRight(a);
     if (flag_nc) {
-        a >>r= 1;
+        CyclicRotateRight(a);
         if (flag_c) return VideoDrawChar64X2();  // С битовым сдвигом >> 2
         return VideoDrawChar64X0();              // С битовым сдвигом << 2
     }
-    a >>r= 1;
+    CyclicRotateRight(a);
     if (flag_c) return VideoDrawChar64X3();  // Без сдвига
     return VideoDrawChar64X1();              // С битовым сдвигом >> 4
-    noreturn;
 }
 
 // Вывод символа на экран в режиме 64 символа в строке
 // Функция для символов в координатах (X % 4) == 0
 // Вызывается функцией VideoDrawChar64
 
-void VideoDrawChar64X0() {
+extern uint8_t cZeroZero[];
+
+void VideoDrawChar64X0(...) {
     VideoDrawChar64X0L(c = 8);
-    if (flag_z(a = vTempVideoFontHeight10) |= a) {
+    if (flag_z((a = vTempVideoFontHeight10) |= a)) {
         de = &cZeroZero;
     }
     VideoDrawChar64X0L(c = 2);
     return VideoDrawChar64End();
-    noreturn;
 }
 
 // Вызывается функцией VideoDrawChar64X0
 
-void VideoDrawChar64X0L() {
+void VideoDrawChar64X0L(...) {
     do {
-        b = ((a = *de) <<@= 2);
+        b = CarryRotateLeft(a = *de, 2);
         b = (((a = vTempVideoInverse) ^= b) &= 0xFC);
         *hl = (((a = *hl) &= 3) |= b);
         de++;
         hl--;
-    } while (flag_nz c--);
+    } while (flag_nz(c--));
 }
 
 // Вывод символа на экран в режиме 64 символа в строке
 // Функция для символов в координатах (X % 4) == 1
 // Вызывается функцией VideoDrawChar64
 
-void VideoDrawChar64X1() {
+void VideoDrawChar64X1(...) {
     VideoDrawChar64X1L(a = 8);
-    if (flag_z(a = vTempVideoFontHeight10) |= a) {
+    if (flag_z((a = vTempVideoFontHeight10) |= a)) {
         de = &cZeroZero;
     }
     VideoDrawChar64X1L(a = 2);
     return VideoDrawChar64End();
-    noreturn;
 }
 
 // Вызывается функцией VideoDrawChar64X1
 
-void VideoDrawChar64X1L() {
+void VideoDrawChar64X1L(...) {
     do {
-        push(a) {
+        push_pop(a) {
             c = a = vTempVideoInverse;
-            c = (((a = *de) >>r= 4) ^= c);
+            c = (CyclicRotateRight(a = *de, 4) ^= c);
             b = (a &= 3);
             c = ((a = c) &= 0xF0);
             *hl = (((a = *hl) &= 0xFC) |= b);
@@ -452,31 +608,30 @@ void VideoDrawChar64X1L() {
             de++;
             hl--;
         }
-    } while (flag_nz a--);
+    } while (flag_nz(a--));
 }
 
 // Вывод символа на экран в режиме 64 символа в строке
 // Функция для символов в координатах (X % 4) == 2
 // Вызывается функцией VideoDrawChar64
 
-void VideoDrawChar64X2() {
+void VideoDrawChar64X2(...) {
     h--;
     VideoDrawChar64X2L(a = 8);
-    if (flag_z(a = vTempVideoFontHeight10) |= a) {
+    if (flag_z((a = vTempVideoFontHeight10) |= a)) {
         de = &cZeroZero;
     }
     VideoDrawChar64X2L(a = 2);
     return VideoDrawChar64End();
-    noreturn;
 }
 
 // Вызывается функцией VideoDrawChar64X2
 
-void VideoDrawChar64X2L() {
+void VideoDrawChar64X2L(...) {
     do {
-        push(a) {
+        push_pop(a) {
             c = a = vTempVideoInverse;
-            c = (((a = *de) >>r= 2) ^= c);
+            c = (CyclicRotateRight(a = *de, 2) ^= c);
             b = (a &= 0xF);
             c = ((a = c) &= 0xC0);
             *hl = (((a = *hl) &= 0xF0) |= b);
@@ -486,57 +641,55 @@ void VideoDrawChar64X2L() {
             de++;
             hl--;
         }
-    } while (flag_nz a--);
+    } while (flag_nz(a--));
 }
 
 // Вывод символа на экран в режиме 64 символа в строке
 // Функция для символов в координатах (X % 4) == 3
 // Вызывается функцией VideoDrawChar64
 
-void VideoDrawChar64X3() {
+void VideoDrawChar64X3(...) {
     h--;
     h--;
     VideoDrawChar64X3L(c = 8);
-    if (flag_z(a = vTempVideoFontHeight10) |= a) {
+    if (flag_z((a = vTempVideoFontHeight10) |= a)) {
         de = &cZeroZero;
     }
     VideoDrawChar64X3L(c = 2);
     return VideoDrawChar64End();
-    noreturn;
 }
 
 // Вызывается функцией VideoDrawChar64X3
 
-void VideoDrawChar64X3L() {
+void VideoDrawChar64X3L(...) {
     do {
         b = a = *de;
         b = (((a = vTempVideoInverse) ^= b) &= 0x3F);
         *hl = (((a = *hl) &= 0xC0) |= b);
         de++;
         hl--;
-    } while (flag_nz c--);
+    } while (flag_nz(c--));
 }
 
 // Завершение вывода символа на экран в режиме 64 символа в строке
 // Вызывается функциями VideoDrawChar64X0, 1, 2, 3
 
-void VideoDrawChar64End() {
-    if (flag_z(a = vTempVideoRom) |= a) return VideoDrawCharEnd();
+void VideoDrawChar64End(...) {
+    if (flag_z((a = vTempVideoRom) |= a)) return VideoDrawCharEnd();
     out(PORT_ROM_0000, a ^= a);  // Подключаем ПЗУ, тут a == PORT_ROM_0000__ROM
     return VideoDrawCharEnd();
-    noreturn;
 }
 
 // Используется для рисования межстрочного интервала.
 uint8_t cZeroZero[2];
 
-asm(" org 0xCFF0"); // TODO: Заменить на массив
+asm(" org 0xCFF0");  // TODO: Заменить на массив
 
 // Функция копирования из ПЗУ1 0C000h - 0CFFFh в ОЗУ
 // Вход: bc - откуда, de - конечный адрес откуда, hl - куда
 
-void CopyRom() {
-    while () {
+void CopyRom(...) {
+    for (;;) {
         if ((a = c) == e) {
             if ((a = b) == d) return;
         }
@@ -544,7 +697,6 @@ void CopyRom() {
         bc++;
         hl++;
     }
-    noreturn;
 }
 
 uint8_t vCFFF = 0xFF;
@@ -555,7 +707,9 @@ uint8_t vCFFF = 0xFF;
 
 asm(" org 0xD000");
 
-uint8_t BasicEntry[] = {
+void BasicEntry() __address(0xD000);
+
+uint8_t BasicData[] = {
     0xc3, 0xc4, 0xea, 0xc3, 0x03, 0xeb, 0xbe, 0x23, 0xe3, 0xc3, 0x0d, 0x00, 0x4e, 0x23, 0x46, 0x23, 0xc5, 0xc3, 0x74,
     0x02, 0x3c, 0xe3, 0xfa, 0xe3, 0x50, 0xe3, 0x9a, 0xe7, 0x8b, 0xdd, 0x86, 0xe0, 0xb9, 0xdd, 0xbc, 0xe5, 0x92, 0xe6,
     0xee, 0xe1, 0x01, 0xe6, 0xc4, 0xe6, 0xca, 0xe6, 0x27, 0xe7, 0x3c, 0xe7, 0x88, 0xe7, 0xf8, 0xdf, 0x30, 0xde, 0xbe,
@@ -930,7 +1084,7 @@ uint8_t BasicEntry[] = {
 
 // Интрактивная функция загрузки с ленты
 
-void TapeLoad() {
+void TapeLoad(...) {
     // Установка черно-белого видеорежима
     out(PORT_VIDEO_MODE_1_HIGH, a);
     out(PORT_VIDEO_MODE_0_LOW, a);
@@ -960,7 +1114,10 @@ void TapeLoad() {
     // Searching
     VideoPrintRomString(hl = &bSearching);
 
-TapeVerifyLoadRetry:
+    return TapeVerifyLoadRetry();
+}
+
+void TapeVerifyLoadRetry(...) {
     TapeReadPilot();
     if (flag_c) return TapeLoadError();
     TapeReadByte();
@@ -983,7 +1140,7 @@ TapeVerifyLoadRetry:
         TapeReadByte();
         if (flag_c) return TapeLoadError();
         if (a != c) return TapeVerifyLoadRetry();
-    } while (flag_nz b--);
+    } while (flag_nz(b--));
 
     vTempTapeFoundType = a;
 
@@ -995,7 +1152,7 @@ TapeVerifyLoadRetry:
         if (flag_c) return TapeLoadError();
         *hl = a;
         hl++;
-    } while (flag_nz b--);
+    } while (flag_nz(b--));
 
     // Вывод на экран типа и имя файла загруженного с ленты
     TapePrintFound();
@@ -1017,21 +1174,19 @@ TapeVerifyLoadRetry:
         if (a != b) return TapeVerifyLoadRetry();
         hl++;
         de++;
-    } while (flag_nz c--);
+    } while (flag_nz(c--));
 
     // Вывод на экран:
     // Reading
     VideoPrintRomString(hl = &bReading);
 
     // Переход на функцию загрузки второго блока
-    hl = vTempTapeFunction;
-    goto hl;
-    noreturn;
+    GotoHl(hl = vTempTapeFunction);
 }
 
 // Загрузка BASIC блока с ленты
 
-void TapeLoadBasic() {
+void TapeLoadBasic(...) {
     TapeReadPilot();
     if (flag_c) return TapeLoadError();
 
@@ -1044,7 +1199,7 @@ loc_EC31:
         *hl = a;
         hl++;
 
-        if (flag_nz a |= a) goto loc_EC31;
+        if (flag_nz(a |= a)) goto loc_EC31;
 
         a = vTempTapeCounter;
         a++;
@@ -1052,16 +1207,15 @@ loc_EC31:
     } while (a != 3);
     vTempTape2 = hl;
     return TapePrintDone();
-    noreturn;
 }
 
 // Загрузка ASCII блока с ленты
 
-void TapeLoadAscii() {
+void TapeLoadAscii(...) {
     vTempTapeAsciiRead = hl = vTempTape1;
 
-    while () {
-        push(hl) {
+    for (;;) {
+        push_pop(hl) {
             TapeReadPilot();
         }
         if (flag_c) return TapeLoadError();
@@ -1072,46 +1226,46 @@ void TapeLoadAscii() {
             if (flag_c) return TapeLoadError();
             *hl = a;
             hl++;
-            if (a == 0x1A) goto loc_EC87;
-        } while (flag_nz b++);
+            if (a == 0x1A) return loc_EC87();
+        } while (flag_nz(b++));
 
         swap(hl, de);
-        hl = word_26E; // TODO: Переименовать
+        hl = word_26E;  // TODO: Переименовать
         h--;
         swap(hl, de);
         if ((a = d) < h) return TapeLoadAsciiOverflow();
         if ((a = e) < l) return TapeLoadAsciiOverflow();
     }
+    return loc_EC87();
+}
 
-loc_EC87:
+void loc_EC87(...) {
     vInputAddress = hl = &TapeAsciiInput;
     return TapePrintDone();
-    noreturn;
 }
 
 // Эта функция подменяет собой функцию RealInput во время загрузки ASCII с ленты
 // Вход: a - символ
 
-void TapeAsciiInput() {
-    while () {
+void TapeAsciiInput(...) {
+    for (;;) {
         TapeAsciiInputInternal();
         if (a != 0x0A) return;
     }
-    noreturn;
 }
 
 // Эта функция вызывается функцией выше
 // Вход: a - символ
 
-void TapeAsciiInputInternal() {
-    push(hl) {
+void TapeAsciiInputInternal(...) {
+    push_pop(hl) {
         hl = vTempTapeAsciiRead;
         a = *hl;
         hl++;
         vTempTapeAsciiRead = hl;
     }
     if (a != 0x1A) return;
-    push(hl) {
+    push_pop(hl) {
         vInputAddress = hl = &RealInput;
         a = EOL;
     }
@@ -1119,16 +1273,15 @@ void TapeAsciiInputInternal() {
 
 // Эта функция вызывается если при загрузке ASCII блока с ленты закончилась память
 
-void TapeLoadAsciiOverflow() {
+void TapeLoadAsciiOverflow(...) {
     *hl = 0x1A;
     VideoPrintRomString(hl = &bFileTooLong);
-    return loc_EC87(); // TODO: Переименовать
-    noreturn;
+    return loc_EC87();  // TODO: Переименовать
 }
 
 // Загрузка BINARY блока с ленты
 
-void TapeLoadBinary() {
+void TapeLoadBinary(...) {
     TapeReadPilot();
     if (flag_c) return TapeLoadError();
 
@@ -1145,28 +1298,27 @@ void TapeLoadBinary() {
     if (flag_c) return TapeLoadError();
 
     do {
-        TapeReadByte();
-        if (flag_c) return TapeLoadError();
-        *de = a;
-        de++;
-
-        if ((a = d) != h) continue;
+        do {
+            TapeReadByte();
+            if (flag_c) return TapeLoadError();
+            *de = a;
+            de++;
+        } while ((a = d) != h);
     } while ((a = e) != l);
 
     return TapePrintDone();
-    noreturn;
+    return TapePrintDone();
 }
 
 // Эта функция вызывается после удачного сохранении или загрузки с ленты
 
-void TapePrintDone() {
+void TapePrintDone(...) {
     return VideoPrintRomString(hl = &bDone);  // Done$
-    noreturn;
 }
 
 // Сравнение BASIC блока на ленте и в памяти
 
-void TapeVerifyBasic() {
+void TapeVerifyBasic(...) {
     TapeReadPilot();
     if (flag_c) return TapeLoadError();
 
@@ -1176,7 +1328,7 @@ loc_ECFB:
     do {
         TapeReadByte();
         if (flag_c) return TapeLoadError();
-        a ? *hl;
+        Compare(a, *hl);
         hl++;
         if (flag_nz) return TapeVerifyError();
         a |= a;
@@ -1188,13 +1340,12 @@ loc_ECFB:
     } while (a != 3);
 
     return TapePrintDone();
-    noreturn;
 }
 
 // Прочтить слово с ленты
 // Выход: hl - слово
 
-void TapeReadWord() {
+void TapeReadWord(...) {
     TapeReadByte();
     if (flag_c) return;
     l = a;
@@ -1204,7 +1355,7 @@ void TapeReadWord() {
 
 // Записать BASIC блок на ленту
 
-void TapeWriteBasicBlock() {
+void TapeWriteBasicBlock(...) {
     vTempTapeBegin = hl = vBasicProgrammBegin;
     vTempTapeEnd = hl = vBasicProgrammEnd;
     TapeIntractiveWriteHeader(a = TAPE_BASIC);
@@ -1217,42 +1368,42 @@ void TapeWriteBasicBlock() {
         a ^= a;
         TapeDelay();
         TapeWriteByte(a);
-    } while (flag_nz b--);
+    } while (flag_nz(b--));
 
     return TapePrintDone();
-    noreturn;
 }
 
-// Записать BINARY блок на ленту
+// Записать BINARY блока на ленту
 
-void TapeWriteBinaryBlock() {
+void TapeWriteBinaryBlock(...) {
     TapeIntractiveWriteHeader(a = TAPE_BINARY);
     TapeWritePilot(a ^= a);  // Короткий пилот-тон
     TapeWriteWord(hl = vTempTapeBegin);
     TapeWriteWord(hl = vTempTapeEnd);
     TapeWriteWord(hl = vTempTapeBegin);
     return TapeWriteArray();
-    noreturn;
+    return TapeWriteArray();
 }
 
 // Записать массив байт на ленту
 
-void TapeWriteArray() {
+void TapeWriteArray(...) {
     hl = vTempTapeEnd;
     hl++;
     swap(de, hl);
     hl = vTempTapeBegin;
     do {
-        TapeWriteByte(a = *hl);
-        hl++;
-        if ((a = d) != h) continue;
+        do {
+            TapeWriteByte(a = *hl);
+            hl++;
+        } while ((a = d) != h);
     } while ((a = e) != l);
 }
 
 // Записать слово из на ленту
 // Вход: hl - значение для записи
 
-void TapeWriteWord() {
+void TapeWriteWord(...) {
     TapeWriteByte(a = l);
     TapeDelay();
     TapeWriteByte(a = h);
@@ -1261,8 +1412,8 @@ void TapeWriteWord() {
 // Вывод на экран текста "Press RECORD & PLAY on tape & any key on keyboard", ожидание нажатия клавиши,
 // вывод на экран текста "Saving" и запись заголовка на ленту.
 
-void TapeIntractiveWriteHeader() {
-    push(a) {
+void TapeIntractiveWriteHeader(...) {
+    push_pop(a) {
         // Установка черно-белого видеорежима
         out(PORT_VIDEO_MODE_1_HIGH, a);
         out(PORT_VIDEO_MODE_0_LOW, a);
@@ -1285,7 +1436,7 @@ void TapeIntractiveWriteHeader() {
             pop(a);
             push(a);
             TapeWriteByte(a);
-        } while (flag_nz b--);
+        } while (flag_nz(b--));
     }
 
     // Запись на ленту имени файла. Имя дополняется до 6 символов пробелами справа.
@@ -1301,13 +1452,16 @@ void TapeIntractiveWriteHeader() {
     do {
         TapeWriteByte(a = ' ');
         TapeDelay();
-    } while (flag_nz b--);
-TapeIntractiveWriteHeaderReturn:
+    } while (flag_nz(b--));
+TapeIntractiveWriteHeaderReturn:;
 }
 
 // Начать запись ASCII блока на ленту. Окончание записи после записи кода 0x1A в консоль.
 
-void TapeWriteAsciiBlock() {
+void TapeIntractiveWriteHeader();
+void TapeAsciiPrint();
+
+void TapeWriteAsciiBlock(...) {
     TapeIntractiveWriteHeader(a = TAPE_ASCII);
     vTempTapeAscii = hl = TAPE_ASCII_BUFFER;
     vPrintAddress = hl = &TapeAsciiPrint;
@@ -1316,20 +1470,20 @@ void TapeWriteAsciiBlock() {
 // Эта функция подменяет собой функцию vPrint во время записи ASCII файла на ленту
 // Вход: a - символ
 
-void TapeAsciiPrint() {
-    push(a) {
+void TapeAsciiPrint(...) {
+    push_pop(a) {
         TapeAsciiPrintInternal();
     }
     if (a != EOL) return;
     a = 0x0A;
     return TapeAsciiPrintInternal();
-    noreturn;
+    return TapeAsciiPrintInternal();
 }
 
 // Внутренняя функция. Вызывается функцией TapeWriteAsciiBlock.
 // Вход: a - символ
 
-void TapeAsciiPrintInternal() {
+void TapeAsciiPrintInternal(...) {
     // Сохранить байт в буфер
     push(hl, de);
     hl = vTempTapeAscii;
@@ -1356,8 +1510,8 @@ void TapeAsciiPrintInternal() {
 
 // Внутренняя функция. Записать ASCII буфер на ленту. Вызывается функцией TapeAsciiPrintInternal.
 
-void TapeAsciiFlush() {
-    push(bc, hl) {
+void TapeAsciiFlush(...) {
+    push_pop(bc, hl) {
         // Запись короткого пилот-тона на ленту
         TapeWritePilot(a ^= a);
 
@@ -1368,7 +1522,7 @@ void TapeAsciiFlush() {
             TapeWriteByte(a = *hl);
             hl++;
             TapeDelay();
-        } while (flag_nz b--);
+        } while (flag_nz(b--));
 
         // Очищаем буфер
         vTempTapeAscii = hl = TAPE_ASCII_BUFFER;
@@ -1377,7 +1531,7 @@ void TapeAsciiFlush() {
 
 // Внутренняя функция. Вызывается функцией TapeLoad. Выводит на экран тип и имя файла.
 
-void TapePrintFound() {
+void TapePrintFound(...) {
     // Вывод на экран текста:
     // Found
     VideoPrintRomString(hl = &bFound);
@@ -1403,7 +1557,7 @@ void TapePrintFound() {
     do {
         VideoPrint(a = *hl);
         hl++;
-    } while (flag_nz b--);
+    } while (flag_nz(b--));
 
     // Перевод строки
     PrintNewLine();
@@ -1411,24 +1565,23 @@ void TapePrintFound() {
 
 // Внутренняя функция. Вызывается, если произошла ошибка загрузки с ленты.
 
-void TapeLoadError() {
+void TapeLoadError(...) {
     return VideoPrintRomString(hl = &bLoadError);
-    noreturn;
 }
 
 // Внутренняя функция. Вызывается, если произошла ошибка сравнения с лентой.
 
-void TapeVerifyError() {
+void TapeVerifyError(...) {
     return VideoPrintRomString(hl = &bVerifyError);
-    noreturn;
+    return VideoPrintRomString();
 }
 
 // Вывод строки текста на экран из ПЗУ CHARGEN_ROM
 // Вход: hl - адрес строки
 // Строка оканчивается символом $
 
-void VideoPrintRomString() {
-    while () {
+void VideoPrintRomString(...) {
+    for (;;) {
         out(PORT_CHARGEN_ROM, a);
         a = *hl;
         out(PORT_CODE_ROM, a);
@@ -1436,7 +1589,6 @@ void VideoPrintRomString() {
         VideoPrint(a);
         hl++;
     }
-    noreturn;
 }
 
 // Вывод на экран:
@@ -1444,18 +1596,18 @@ void VideoPrintRomString() {
 //  & any key on keyboard
 // И ожидание нажати клавиши
 
-void TapeBeginDialog() {
+void TapeBeginDialog(...) {
     VideoPrintRomString(hl);
     PrintNewLine();
     VideoPrintRomString(hl = &bAndAnyKeyOnKeyboard);
     RealInput2();
     PrintNewLine();
-    noreturn;
+    return TapeDelay();
 }
 
 // Задержка. Используется функциями записи на ленту.
 
-void TapeDelay() {
+void TapeDelay(...) {
 }
 
 // Не используется
@@ -1468,7 +1620,7 @@ asm(" org 0xF000");
 // Вывести значения ячеек адресного пространства
 // <начальный адрес>P<длина>
 
-void MonitorDirectiveP() {
+void MonitorDirectiveP(...) {
     push(bc, hl);
     MonitorParseChar();  // Пропуск директивы
     MonitorParseNumber();
@@ -1477,18 +1629,17 @@ void MonitorDirectiveP() {
     }
     vTempMonitorArgument2 = ((hl = vMonitorArgument1) += bc);
     return MonitorPrintHexDump();
-    noreturn;
 }
 
 // Внутренняя функция. Вызывается функцией MonitorDirectiveEmpty.
 
-void MonitorDirectiveEmpty2() {
+void MonitorDirectiveEmpty2(...) {
     push(bc, hl);
     hl = vTempMonitorArgument2;
-    noreturn;
+    return MonitorPrintHexDump();
 }
 
-void MonitorPrintHexDump() {
+void MonitorPrintHexDump(...) {
     bc = hl;
     hl = vMonitorArgument1;
 
@@ -1497,7 +1648,7 @@ void MonitorPrintHexDump() {
         vPrint(a = ':');
         PrintSpace();
         PrintSpace();
-        push(hl) {
+        push_pop(hl) {
             do {
                 PrintHexByte(a = *hl);
                 PrintSpace();
@@ -1516,7 +1667,7 @@ void MonitorPrintHexDump() {
             MonitorPrintHexDumpLoop();
         } while (flag_nz);
 
-        push(a) {
+        push_pop(a) {
             vMonitorArgument1 = hl;
             VideoNextLineClear();
         }
@@ -1524,7 +1675,7 @@ void MonitorPrintHexDump() {
     pop(bc, hl);
 }
 
-void MonitorPrintHexDumpLoop() {
+void MonitorPrintHexDumpLoop(...) {
     hl++;
     if ((a = l) == c) {
         if ((a = h) == b) {
@@ -1542,38 +1693,36 @@ void MonitorPrintHexDumpLoop() {
 // <адрес>
 // <пустая строка>
 
-void MonitorDirectiveEmpty() {
+void MonitorDirectiveEmpty(...) {
     hl = vMonitorArgument1;
     hl++;
     vTempMonitorArgument2 = hl;
     return MonitorDirectiveEmpty2();
-    noreturn;
 }
 
 // Директива монитора L
 // Дизассемблер
 // <адрес>L<кол-во строк>
 
-void MonitorDirectiveL() {
+void MonitorDirectiveL(...) {
     MonitorParseChar();  // Пропуск директивы
     MonitorParseNumber();
     if (flag_c) {
         c = 21;  // Второй параметр по умолчанию
     }
     return MonitorDirectiveLInternal(a = c);
-    noreturn;
 }
 
 // Выполнить команду Монитора
 
-void MonitorExecute() {
+void MonitorExecute(...) {
     // Выделяем первый аргумент директивы
     vTempMonitorAble1 = (a ^= a);
     vTempMonitorParse = hl = &vMonitorString;
     MonitorParseNumber();
     if (flag_nc) {
         vTempMonitorArgument1 = a = c;
-        *[&vTempMonitorArgument1 + 1] = a = b;
+        *(&vTempMonitorArgument1 + 1) = a = b;
         vTempMonitorAble1 = a = 0xFF;
     }
     // Сама директива
@@ -1589,13 +1738,13 @@ void MonitorExecute() {
     if (a == 'R') return MonitorDirectiveR();
     if (a == 'Q') return vMonitorQuit();
     // Сохраняем первый аргумент
-    push(a) {
-        if (flag_nz(a = vTempMonitorAble1) |= a) {
+    push_pop(a) {
+        if (flag_nz((a = vTempMonitorAble1) |= a)) {
             vMonitorArgument1 = hl = vTempMonitorArgument1;
         }
     }
-    if (a == [':' & 0x5F]) {
-        if (flag_nz(a = vTempMonitorAble1) |= a) return MonitorDirectiveSet();
+    if (a == ':' & 0x5F) {
+        if (flag_nz((a = vTempMonitorAble1) |= a)) return MonitorDirectiveSet();
         hl = vMonitorArgument1;
         hl--;
         vMonitorArgument1 = hl;
@@ -1608,10 +1757,10 @@ void MonitorExecute() {
     if (a == 'M') return MonitorDirectiveM();
     if (a == 'V') return MonitorDirectiveV();
     if (a == 'T') return MonitorDirectiveT();
-    noreturn;
+    return MonitorError();
 }
 
-void MonitorError() {
+void MonitorError(...) {
     vPrint(a = 7);
     VideoNextLineClear();
 }
@@ -1620,7 +1769,7 @@ void MonitorError() {
 // Строка завершающаяся кодом EOL.
 // Вход: hl - адрес строки текста
 
-void PrintStringNewLine() {
+void PrintStringNewLine(...) {
     PrintString(c = EOL);
     vPrint(a = c);
 }
@@ -1628,29 +1777,28 @@ void PrintStringNewLine() {
 // Вывод строки текста в консоль.
 // Вход: hl - адрес строки текста, c - код окончания строки
 
-void PrintString() {
-    while () {
+void PrintString(...) {
+    for (;;) {
         a = *hl;
         if (a == c) return;
         vPrint(a);
         hl++;
     }
-    noreturn;
 }
 
 // Получить очедерной числовой параметр дириктивы монитора
 // Выход: bc - число, cf - произошла ошибка, a и d - кол-во обработанных цифр
 
-void MonitorParseNumber() {
+void MonitorParseNumber(...) {
     bc = 0;
     d = 0;
     hl = vTempMonitorParse;
     SkipSpaces(hl);
-    while () {
+    for (;;) {
         a = *hl;
         CharCodeToNumber();
         if (a == 0xFF) break;
-        push(hl) {
+        push_pop(hl) {
             hl = bc;
             hl += hl += hl += hl += hl;
             b = h;
@@ -1660,7 +1808,7 @@ void MonitorParseNumber() {
         d++;
     }
     vTempMonitorParse = hl;
-    if (flag_nz(a = d) |= a) return;
+    if (flag_nz((a = d) |= a)) return;
     set_flag_c();
 }
 
@@ -1668,8 +1816,8 @@ void MonitorParseNumber() {
 // Сохранение на ленту в формате BINARY
 // <начальный адрес>W<конечный адрес> <имя>
 
-void MonitorDirectiveW() {
-    if (flag_z(a = vTempMonitorAble1) |= a) return MonitorError();
+void MonitorDirectiveW(...) {
+    if (flag_z((a = vTempMonitorAble1) |= a)) return MonitorError();
     hl = vTempMonitorParse;  // Лишняя команда
     MonitorParseChar();      // Пропустить директиву
     MonitorParseNumber();
@@ -1680,47 +1828,44 @@ void MonitorDirectiveW() {
     MonitorParseSkip(hl);
     vTempTapeRequiredName = hl;
     return TapeWriteBinaryBlock();
-    noreturn;
 }
 
 // Директива монитора R
 // Загрузка с ленты в формате BINARY
 // R<имя>
 
-void MonitorDirectiveR() {
+void MonitorDirectiveR(...) {
     vTempTapeRequiredType = a = TAPE_BINARY;
     MonitorParseSkip();  // Пропустить директиву и пробелы
     vTempTapeRequiredName = hl;
     return TapeLoad();
-    noreturn;
 }
 
 // Распознавание введенной пользователем строки в Мониторе.
 // Пропустить символ, а затем все пробелы.
 // Выход: hl - адрес строки. hl необходимо сохранить в vMonitorParse.
 
-void MonitorParseSkip() {
+void MonitorParseSkip(...) {
     MonitorParseChar();
-    noreturn;
+    return SkipSpaces();
 }
 
 // Пропустить все пробелы в строке
 // Вход: hl - адрес строки
 // Выход: hl - адрес строки
 
-void SkipSpaces() {
-    while () {
+void SkipSpaces(...) {
+    for (;;) {
         a = *hl;
         if (a != ' ') return;
         hl++;
     }
-    noreturn;
 }
 
 // Директива монитора !
 // Изменяет режим экрана 48/64 символа в ширину
 
-void MonitorDirectiveEx() {
+void MonitorDirectiveEx(...) {
     a = vVideoTextWidth;
     if (a != 48) {
         a = 48;
@@ -1729,43 +1874,42 @@ void MonitorDirectiveEx() {
     }
     vVideoTextWidth = a;
     return VideoRedrawTextScreen();
-    noreturn;
 }
 
 // Директива монитора :
 // Записать значения в память
 // <адрес>:<байт> <байт> <байт>...
 
-void MonitorDirectiveSet() {
+void MonitorDirectiveSet(...) {
     hl = vMonitorArgument1;
     swap(de, hl);
-    while () {
+    for (;;) {
         MonitorParseChar();  // Пропуск директивы или разделителя значений
-        push(de) {
+        push_pop(de) {
             MonitorParseNumber();
         }
         if (flag_c) return;
         *de = a = c;
         de++;
     }
-    noreturn;
 }
 
 // Директива монитора T
 // Записать текст по указанному адресу
 // <адрес>G<текст>
 
-void MonitorDirectiveT() {
+void MonitorDirectiveT(...) {
     hl = vMonitorArgument1;
     swap(hl, de);
     MonitorParseChar();  // Пропуск директивы
-    while () {
+    for (;;) {
         a = *hl;
         if (a == EOL) return;
         *de = a;
         de++;
         hl++;
     }
+    return;
 }
 
 // Директива монитора G
@@ -1773,38 +1917,35 @@ void MonitorDirectiveT() {
 // <адрес>G
 // G<адрес>
 
-void MonitorDirectiveG() {
-    hl = vMonitorArgument1;
-    goto hl;
-    noreturn;
+void MonitorDirectiveG(...) {
+    GotoHl(hl = vMonitorArgument1);
 }
 
 // Директива монитора I
 // Прочитать байт из порта ввода-вывода
 // <порт>I
 
-void MonitorDirectiveI() {
+void MonitorDirectiveI(...) {
     // Первый параметр директивы I запоминается. Следующие разы его можно не писать.
-    if (flag_nz(a = vTempMonitorAble1) |= a) {
+    if (flag_nz((a = vTempMonitorAble1) |= a)) {
         vMonitorDirectiveIPort = a = vTempMonitorArgument1;
     }
     vTempMonitorProgramm1 = a = vMonitorDirectiveIPort;
     PrintHexByte(a);
     vPrint(a = '=');
     MonitorDirectiveIOInternal(a = OPCODE_IN);
-    vTempMonitorProgramm0();
+    vTempMonitorProgramm();
     PrintHexByte(a);
     return VideoNextLineClear();
-    noreturn;
 }
 
 // Директива монитора O
 // Записать байт в порт ввода-вывода
 // <порт>O<значение>
 
-void MonitorDirectiveO() {
+void MonitorDirectiveO(...) {
     // Первый параметр директивы O запоминается. Следующие разы его можно не писать.
-    if (flag_nz(a = vTempMonitorAble1) |= a) {
+    if (flag_nz((a = vTempMonitorAble1) |= a)) {
         vMonitorDirectiveOPort = a = vTempMonitorArgument1;
     }
     vTempMonitorProgramm1 = a = vMonitorDirectiveOPort;
@@ -1822,18 +1963,17 @@ void MonitorDirectiveO() {
     }
     PrintHexByte(a = c);
     VideoNextLineClear();
-    return vTempMonitorProgramm0(a = c);
-    noreturn;
+    return vTempMonitorProgramm(a = c);
 }
 
 // Используется директивами монитора I и O. Подготавливается програма.
 
-void MonitorDirectiveIOInternal() {
+void MonitorDirectiveIOInternal(...) {
     vTempMonitorProgramm0 = a;
     vTempMonitorProgramm2 = a = OPCODE_RET;
 }
 
-void MonitorParseArguments23() {
+void MonitorParseArguments23(...) {
     MonitorParseChar();  // Пропуск директивы
     MonitorParseNumber();
     if (flag_c) {
@@ -1858,7 +1998,7 @@ void MonitorParseArguments23() {
 // Получить очередной символ
 // Выход: a - символ, hl - содержимое vMonitorParse
 
-void MonitorParseChar() {
+void MonitorParseChar(...) {
     hl = vTempMonitorParse;
     a = *hl;
     if (a == EOL) return;
@@ -1866,16 +2006,16 @@ void MonitorParseChar() {
     vTempMonitorParse = hl;
 }
 
-void CharCodeToNumber() {  // TODO: Rewrite
-    if (flag_p a ? 'A') goto loc_F2B0;
-    if (flag_p a ? 0x3A) goto loc_F2BA;
-    if (flag_m a ? '0') goto loc_F2BA;
+void CharCodeToNumber(...) {  // TODO: Rewrite
+    if (flag_p(Compare(a, 'A'))) goto loc_F2B0;
+    if (flag_p(Compare(a, 0x3A))) goto loc_F2BA;
+    if (flag_m(Compare(a, '0'))) goto loc_F2BA;
     a -= '0';
     return;
 
 loc_F2B0:
     a &= 0x5F;
-    if (flag_p a ? 0x47) goto loc_F2BA;
+    if (flag_p(Compare(a, 0x47))) goto loc_F2BA;
     a -= '7';
     return;
 
@@ -1886,7 +2026,7 @@ loc_F2BA:
 // Вывести в консоль 16-ричное число из регистровой пары HL. Четыре символа.
 // Вход: hl - число
 
-void PrintHexWord() {
+void PrintHexWord(...) {
     PrintHexByte(a = h);
     PrintHexByte(a = l);
 }
@@ -1894,9 +2034,9 @@ void PrintHexWord() {
 // Вывести в консоль 16-ричное число из регистра A. Два символа.
 // Вход: a - число
 
-void PrintHexByte() {
-    push(a) {
-        a >>r= 4;
+void PrintHexByte(...) {
+    push_pop(a) {
+        CyclicRotateRight(a, 4);
         PrintHexNibble(a);
     }
     PrintHexNibble();
@@ -1905,12 +2045,12 @@ void PrintHexByte() {
 // Вывести в консоль 16-ричное число из 4-х младших битов регистра A. Один символ.
 // Вход: a - число
 
-void PrintHexNibble() {
+void PrintHexNibble(...) {
     a &= 0x0F;
     if (a < 10) {
         a += '0';
     } else {
-        a += ['A' - 10];
+        a += 'A' - 10;
     }
     vPrint();
 }
@@ -1920,10 +2060,9 @@ void PrintHexNibble() {
 // <адрес куда>V<адрес откуда> <конец откуда>
 // V<адрес откуда> <конец откуда>
 
-void MonitorDirectiveM() {
+void MonitorDirectiveM(...) {
     MonitorParseArguments23();
     return MemcpyHlBcDe();
-    noreturn;
 }
 
 // Директива монитора V
@@ -1931,9 +2070,9 @@ void MonitorDirectiveM() {
 // <адрес 1>V<адрес 2> <конец 2>
 // V<адрес 2> <конец 2>
 
-void MonitorDirectiveV() {
+void MonitorDirectiveV(...) {
     MonitorParseArguments23();
-    while () {
+    for (;;) {
         if ((a = c) == e) {
             if ((a = b) == d) return;
         }
@@ -1941,15 +2080,14 @@ void MonitorDirectiveV() {
         bc++;
         hl++;
     }
-    noreturn;
 }
 
 // Вывод одной строки дампа адерсного пространства
 
-void MonitorDirectiveVPrint() {
-    push(bc, de, hl) {
+void MonitorDirectiveVPrint(...) {
+    push_pop(bc, de, hl) {
         push(bc);
-        push(hl) {
+        push_pop(hl) {
             PrintHexWord(hl);
             vPrint(a = ':');
             PrintSpace();
@@ -1966,21 +2104,24 @@ void MonitorDirectiveVPrint() {
 
 // Внутренняя функция. Запуск компьютера. Вызывается функциями InitMonitor, Init3
 
-void Init4() {
+extern uint8_t aIskra1080Tartu[];
+
+void Init4(...) {
     VideoNormal();
     VideoClearScreen0();
     vUnused = (a ^= a);
-    vMonitorQuit = a = OPCODE_RET;
+    vMonitorQuitOpcode = a = OPCODE_RET;
     vRst38 = a;
     Init2();
     PrintStringNewLine(hl = &aIskra1080Tartu);
 }
 
-uint8_t aIskra1080Tartu[] = {@"\x1B= 5Iskra 1080 Tartu\x07\r"};  // TODO
+uint8_t aIskra1080Tartu[] = {'\x1B', '=', ' ', '5', 'I', 's', 'k', 'r', 'a', ' ',    '1',
+                             '0',    '8', '0', ' ', 'T', 'a', 'r', 't', 'u', '\x07', '\r'};  // TODO
 
 // Внутренняя функция. Запуск компьютера. Вызывается функциями Init, InitCold, Init4
 
-void Init2() {
+void Init2(...) {
     // Установка черно-белого видеорежима
     out(PORT_VIDEO_MODE_0_LOW, a);
     out(PORT_VIDEO_MODE_1_HIGH, a);
@@ -1989,7 +2130,7 @@ void Init2() {
     out(PORT_CODE_ROM, a);
 
     // Сброс переменных
-    vVideoInverse = (a ^= a); // Сброс графических функций
+    vVideoInverse = (a ^= a);  // Сброс графических функций
 
     // Подключить ОЗУ
     out(PORT_ROM_0000, a = PORT_ROM_0000__RAM);
@@ -2001,34 +2142,34 @@ void Init2() {
     out(PORT_PALETTE_0, a = PALETTE_DARK_BLUE);
 
     // Установка стандартных функций ввода вывода в консоль.
-    vPrint = a = OPCODE_CALL;
-    vInput = a;
+    vPrintOpcode = a = OPCODE_CALL;
+    vInputOpcode = a;
     vPrintAddress = hl = &VideoPrint;
     vInputAddress = hl = &RealInput;
 
     // Сброс переменных
-    vVideoFontHeight10 = (a ^= a); // Сброс графических функций
-    vVideoEscState = a; // Сброс функции вывода в консоль
-    vVideoEscCursorState = a; // Сброс функции вывода в консоль
-    vKeyboardCapsLock = a; // Сброс клавиатуры
-    vKeyboardNumLock = a; // Сброс клавиатуры
-    vVideoTextWidth = a = 64; // Сброс графических функций
-    vKeyboardLast = a = 0xFF; // Сброс клавиатуры
-    vKeyboardDelay = hl = 0x1FF; // Сброс клавиатуры
-    vVideoFont = hl = FONT_ADDRESS; // Сброс графических функций
-    vKeyboardLayout = hl = &bKeybaordEnglishLayout; // Сброс клавиатуры
-    vKeyboardLeds = a = [LED_CAPS_LOCK | LED_NUM_LOCK]; // Сброс клавиатуры
+    vVideoFontHeight10 = (a ^= a);                     // Сброс графических функций
+    vVideoEscState = a;                                // Сброс функции вывода в консоль
+    vVideoEscCursorState = a;                          // Сброс функции вывода в консоль
+    vKeyboardCapsLock = a;                             // Сброс клавиатуры
+    vKeyboardNumLock = a;                              // Сброс клавиатуры
+    vVideoTextWidth = a = 64;                          // Сброс графических функций
+    vKeyboardLast = a = 0xFF;                          // Сброс клавиатуры
+    vKeyboardDelay = hl = 0x1FF;                       // Сброс клавиатуры
+    vVideoFont = hl = FONT_ADDRESS;                    // Сброс графических функций
+    vKeyboardLayout = hl = &bKeybaordEnglishLayout;    // Сброс клавиатуры
+    vKeyboardLeds = a = LED_CAPS_LOCK | LED_NUM_LOCK;  // Сброс клавиатуры
 
     // Настройка UART. Баг. При теплой перезагрузке рабоатет некорректно.
-    UartSetMode(a = [UART_MODE__SPEED_3 | UART_MODE__DATA_8 | UART_MODE__STOP_1]);
+    UartSetMode(a = UART_MODE__SPEED_3 | UART_MODE__DATA_8 | UART_MODE__STOP_1);
 
     // Сброс переменных
-    vKeyboardF1 = a = 0x9B; // Сброс клавиатуры
-    vKeyboardF2 = a = 0x9C; // Сброс клавиатуры
-    vKeyboardF3 = a = 0x9D; // Сброс клавиатуры
-    vKeyboardShiftF1 = a = 0x97; // Сброс клавиатуры
-    vKeyboardShiftF2 = a = 0x98; // Сброс клавиатуры
-    vKeyboardShiftF3 = a = 0x99; // Сброс клавиатуры
+    vKeyboardF1 = a = 0x9B;       // Сброс клавиатуры
+    vKeyboardF2 = a = 0x9C;       // Сброс клавиатуры
+    vKeyboardF3 = a = 0x9D;       // Сброс клавиатуры
+    vKeyboardShiftF1 = a = 0x97;  // Сброс клавиатуры
+    vKeyboardShiftF2 = a = 0x98;  // Сброс клавиатуры
+    vKeyboardShiftF3 = a = 0x99;  // Сброс клавиатуры
 }
 
 // Внутренняя функция. Запуск компьютера. Вызывается функцией Rst0.
@@ -2038,7 +2179,7 @@ void Init2() {
 //              \                                      \-> Init4 -> Init2 -> BasicEntry
 //               \---------> InitMonitor ----------------> Init4 -> Init2 -> MonitorLoop
 
-void Init() {
+void Init(...) {
     if ((a = vInited12) != 0x12) return InitCold();
     if ((a = vInited34) != 0x34) return InitCold();
     sp = STACK_ADDRESS;
@@ -2049,13 +2190,13 @@ void Init() {
         return InitMonitor();
     }
     Init2();
-    noreturn;
+    return Init3();
 }
 
 // Внутренняя функция. Запуск компьютера. Вызывается функциями InitCold и Init.
 
-void Init3() {
-    if ((a = vResetOpcode) == OPCODE_CALL) return vResetOpcode();
+void Init3(...) {
+    if ((a = vResetOpcode) == OPCODE_CALL) return vReset();
 
     // Если что то подключено, то загрузиться с него
     IsSomethingConnected();
@@ -2067,12 +2208,13 @@ void Init3() {
 
     Init4();
     return BasicEntry();
-    noreturn;
 }
 
 // Внутренняя функция. Запуск компьютера. Вызывается функцией Init.
 
-void InitMonitor() {
+void MonitorResetHandler();
+
+void InitMonitor(...) {
     Init4();
 
     // Кнопка "сброс" возвращает в Монитор
@@ -2083,43 +2225,40 @@ void InitMonitor() {
     vMonitorPrompt = a = 0x7F;  // Это смайлик
 
     return MonitorLoop();
-    noreturn;
 }
 
 // Вызывается при нажатии на клавишу "Сброс" при работе в мониторе.
 
-void MonitorResetHandler() {
+void MonitorResetHandler(...) {
     sp = STACK_ADDRESS;
     vVideoCursorX = (a ^= a);
-    VideoSetCursorY(a = [TEXT_SCREEN_HEIGHT - 1]);
-    noreturn;
+    VideoSetCursorY(a = TEXT_SCREEN_HEIGHT - 1);
+    return MonitorLoop();
 }
 
 // Основной цикл монитора
 
-void MonitorLoop() {
-    while () {
+void MonitorLoop(...) {
+    for (;;) {
         sp = STACK_ADDRESS;
         MonitorInput();
         MonitorExecute();
     }
-    noreturn;
 }
 
 // Внутренняя функция. Запуск компьютера. Вызывается функциями Init.
 
-void InitCold() {
+void InitCold(...) {
     sp = STACK_ADDRESS;
     Init2();
     Test();
     vInited12 = hl = 0x3412;
     return Init3();
-    noreturn;
 }
 
 // Если что то подключено
 
-void IsSomethingConnected() {
+void IsSomethingConnected(...) {
     a ^= a;
 }
 
@@ -2127,16 +2266,16 @@ uint8_t vEmptyCheck[] = {0xFF, 0xFF, 0xFF};
 
 // Загрузить с чего то
 
-void InitSomething() {
+void InitSomething(...) {
 }
 
 uint8_t vEmptyFunction[] = {0xFF, 0xFF, 0xFF};
 
 // Возвращает флаг C, если контроллер дисковода подключен.
 
-void IsFloppyConnected() {
-    a = in(PORT_TAPE_AND_IDX2);
-    a &= PORT_TAPE_AND_IDX2_ID12;
+void IsFloppyConnected(...) {
+    a = In(PORT_TAPE_AND_IDX2);
+    a &= PORT_TAPE_AND_IDX2_ID2_2;
     set_flag_c();
     if (flag_nz) return;
     invert_flag_c();
@@ -2144,19 +2283,18 @@ void IsFloppyConnected() {
 
 // Внутренняя функция. Запуск компьютера. Вызывается функцией Init3.
 
-void InitFloppy() {
+void InitFloppy(...) {
     return BiosBoot();
-    noreturn;
 }
 
 // Обработка прерываний.
 // Эта функция вызывается, если произошло прерывание при включенном ПЗУ в адресах 0000.
 // Эта функция отключает ПЗУ и повторно вызывает прерывание
 
-void CallRamRst38Handler() {
+void CallRamRst38Handler(...) {
     vTempRst38 = a;
     out(PORT_ROM_0000, a = PORT_ROM_0000__RAM);
-    rst(0x38);
+    Rst(0x38);
     out(PORT_ROM_0000, a = PORT_ROM_0000__ROM);
     a = vTempRst38;
 }
@@ -2164,20 +2302,20 @@ void CallRamRst38Handler() {
 // Продолжение выполнения директивы монитора L
 // Вход: a - кол-во строк (0 обозначает 256)
 
-void MonitorDirectiveLInternal() {
-    push(hl, bc, de, a) {
+void MonitorDirectiveLInternal(...) {
+    push_pop(hl, bc, de, a) {
         do {
-            push(a) {
+            push_pop(a) {
                 Disassembler();
                 out(PORT_CODE_ROM, a);
             }
-        } while (flag_nz a--);
+        } while (flag_nz(a--));
     }
 }
 
 // Дизассемблер
 
-void Disassembler() {
+void Disassembler(...) {
     // Вывод адреса на экран
     PrintHexWord(hl = vMonitorArgument1);
     VideoPrintSpaces(d = 6);
@@ -2231,7 +2369,7 @@ void Disassembler() {
     // 0xC7, 0xF0
     // 0xC7, 0xEF
     // 0xCF, 0x29
-    c = 22; // Размер массива - 1
+    c = 22;  // Размер массива - 1
     do {
         // Накладываем на опкод маску из *hl
         b = ((a = *de) &= *hl);
@@ -2243,23 +2381,22 @@ void Disassembler() {
         if (a == b) return DisassemblerVariant2(hl, de, c);
         // Следующий элемент массива
         hl++;
-    } while(flag_p c--);
+    } while (flag_p(c--));
 
     // Неизвестный опкод
-    hl = &bDisassemlerUnknown; // Содержит: 0xFF, 0x7F, 0x7F, 0x20  длина команды 1
-    c = 4; // Длина
+    hl = &bDisassemlerUnknown;  // Содержит: 0xFF, 0x7F, 0x7F, 0x20  длина команды 1
+    c = 4;                      // Длина
     DisassemblerPrint();
 
     return DisassemblerEnd();
-    noreturn;
 }
 
 // Внутренняя функция дизассемблера
 // Вариант 2. Опкод содержит аргуметы.
 
-void DisassemblerVariant2() {
+void DisassemblerVariant2(...) {
     hl--;
-    push(hl, a) {
+    push_pop(hl, a) {
         hl = &bDisassemlerNames2;
         // Содержимое массива:
         // 0xC4, 0x41, 0x44, 0x20  1  DAD
@@ -2290,7 +2427,7 @@ void DisassemblerVariant2() {
     d = a = *de;
     // Получаем маску аргуманта из массива
     a = *hl;
-    invert(a);
+    Invert(a);
     c = a;
     // Получаем аргумент
     d = (a &= d);
@@ -2299,20 +2436,20 @@ void DisassemblerVariant2() {
     e = ((a = *hl) &= c);
     // Выводим аргумент на экран
     DisassemblerArgumentD();
-    noreturn;
+    return DisassemblerEnd();
 }
 
 // Внутренняя функция дизассемблера
 // Вывод последнего аргумента, дампа и перевод строки.
 
-void DisassemblerEnd() {
+void DisassemblerEnd(...) {
     // Адрес дизассемблирования
     hl = vMonitorArgument1;
 
     // Вывод последнего аргумента команды
-    a = vTempDisassemblerSize; // Длина команды в байтах
+    a = vTempDisassemblerSize;  // Длина команды в байтах
     if (a != 1) {
-        push(a) {
+        push_pop(a) {
             VideoPrintSpaces11();
 
             a = '$';
@@ -2321,7 +2458,7 @@ void DisassemblerEnd() {
             out(PORT_CHARGEN_ROM, a);
         }
         hl++;
-        if (a == 3) PrintHexByteFromHl(hl);
+        if (a == 3) PrintHexByteFromHl();
         out(PORT_CHARGEN_ROM, a);
         a = *hl;
         out(PORT_CODE_ROM, a);
@@ -2348,7 +2485,7 @@ void DisassemblerEnd() {
     // Конец строки
     out(PORT_CODE_ROM, a);
     PrintNewLine();
-    out(PORT_CHARGEN_ROM, a);    
+    out(PORT_CHARGEN_ROM, a);
 
     // Адрес дизассемблирования
     vMonitorArgument1 = hl;
@@ -2357,7 +2494,7 @@ void DisassemblerEnd() {
 // Внутренняя функция дизассемблера
 // Вариант 1. Опкод не содержит аргуметов.
 
-void DisassemblerPrintVariant1() {
+void DisassemblerPrintVariant1(...) {
     hl = &bDisassemlerNames1;
     // Содержимое массива:
     // 0xD3, 0xD4, 0xC1, 0x20  3  STA
@@ -2396,13 +2533,12 @@ void DisassemblerPrintVariant1() {
     DisassemblerPrintFromArray(hl, c);
 
     return DisassemblerEnd();
-    noreturn;
 }
 
 // Внутренняя функция дизассемблера
 // Дизассемблирование команды MOV
 
-void DisassemblerMov() {
+void DisassemblerMov(...) {
     // Вывод опкода MOV
     c = 4;                  // Размер элемента массива
     hl = &bDisassemlerMov;  // 0xCD, 0x4Fh, 0x56h, 0x20  MOV  длина команды 1
@@ -2410,49 +2546,47 @@ void DisassemblerMov() {
 
     // Первый аргумент
     a = *de;
-    push(de) {
-        e = [4 << 3]; // Массив BCDEHLMA
-        c = 0x38; // Маска аргумента
-        a &= c; // Аргумент
+    push_pop(de) {
+        e = 4 << 3;  // Массив BCDEHLMA
+        c = 0x38;    // Маска аргумента
+        a &= c;      // Аргумент
         DisassemblerArgumentA(a, c);
     }
 
     // Второй аргумент
     a = *de;
-    c = 7; // Маска аргумента
-    a &= c; // Аргумент
-    e = 4; // Массив BCDEHLMA
+    c = 7;   // Маска аргумента
+    a &= c;  // Аргумент
+    e = 4;   // Массив BCDEHLMA
     DisassemblerArgumentA(a, c);
 
     return DisassemblerEnd();
-    noreturn;
 }
 
 // Внутренняя функция дизассемблера
 // Дизассемблирование аргумента команды
 // Вход: E - номер массива, D - элемент массива, C - маска
 
-void DisassemblerArgumentD() {
-    a = d;
-    noreturn;
+void DisassemblerArgumentD(...) {
+    return DisassemblerArgumentA(a = d);
 }
 
 // Внутренняя функция дизассемблера
 // Дизассемблирование аргумента команды
 // Вход: E - номер массива, A - элемент массива, C - маска
 
-void DisassemblerArgumentA() {
-    d = (a >>r= 1);
-    e = ((a = e) >>r= 1);
-    c = ((a = c) >>r= 1);
+void DisassemblerArgumentA(...) {
+    d = CyclicRotateRight(a);
+    e = CyclicRotateRight(a = e);
+    c = CyclicRotateRight(a = c);
     if (flag_nc) return DisassemblerArgumentD();
 
     // Откатываем последний сдвиг
-    c = ((a = d) <<r= 1); // Элемент массива
-    (a = e) <<r= 1;  // Номер массива
+    c = CyclicRotateLeft(a = d);  // Элемент массива
+    CyclicRotateLeft(a = e, 1);   // Номер массива
 
-    push(de) {
-        hl = [&bDisassemlerArguments - 2];
+    push_pop(de) {
+        hl = &bDisassemlerArguments - 2;
         // Массив содержит указатели на массивы:
         // 1) 1, B, D
         // 2) 2, B, D, H, SP
@@ -2462,7 +2596,7 @@ void DisassemblerArgumentA() {
         // 6) 2, NZ, Z, NC, C, PO, PE, P, M
 
         // Для массивов 1 - 5 отступаем до 11 колонки.
-        push(a) {
+        push_pop(a) {
             if (a < 6) VideoPrintSpaces11();
         }
 
@@ -2470,14 +2604,14 @@ void DisassemblerArgumentA() {
         do {
             hl++;
             hl++;
-        } while (flag_nz a--);
+        } while (flag_nz(a--));
         out(PORT_CHARGEN_ROM, a);
         e = *hl;
         hl++;
         d = *hl;
         swap(de, hl);
     }
-    noreturn;
+    return DisassemblerPrintFromArray();
 }
 
 // Внутренняя функция дизассемблера.
@@ -2485,22 +2619,22 @@ void DisassemblerArgumentA() {
 // Длина команды закодирована 7-ыми битами в имени
 // Вход: HL - массив, C - номер элемента
 
-void DisassemblerPrintFromArray() {
+void DisassemblerPrintFromArray(...) {
     // Вычислить в HL адрес текстовой строки, в C длину строки
-    push(de) {
+    push_pop(de) {
         d = 0;
         e = *hl;
         hl++;
 
         a = c;
-        while (flag_nz a &= a) {
+        while (flag_nz(a &= a)) {
             hl += de;
             a--;
         }
 
         c = e;
     }
-    noreturn;
+    return DisassemblerPrint();
 }
 
 // Внутренняя функция дизассемблера.
@@ -2509,12 +2643,12 @@ void DisassemblerPrintFromArray() {
 // Вход: hl - адрес строки, c - длина строки
 // Выход: b - длина команды
 
-void DisassemblerPrint() {
-    push(bc) {
+void DisassemblerPrint(...) {
+    push_pop(bc) {
         b = 0;
         do {
             a = *hl;
-            if (flag_m a &= a) DisassemblerPrintInternal();
+            if (flag_m(a &= a)) DisassemblerPrintInternal();
             a &= 0x7F;
             out(PORT_CODE_ROM, a);
             VideoPrint(a);
@@ -2523,7 +2657,7 @@ void DisassemblerPrint() {
             hl++;
         } while (flag_nz);
 
-        if (flag_nz (a = b) &= a) {
+        if (flag_nz((a = b) &= a)) {
             vTempDisassemblerSize = a;
         }
     }
@@ -2531,31 +2665,30 @@ void DisassemblerPrint() {
 
 // Внутренняя функция дизассемблера. Используется функцией DisassemblerPrint.
 
-void DisassemblerPrintInternal() {
-    if ((a = c) == 4) { // Если осталось 4 символа
+void DisassemblerPrintInternal(...) {
+    if ((a = c) == 4) {  // Если осталось 4 символа
     loc_F5D2:
-        b++; // Увеличить длину
+        b++;  // Увеличить длину
     loc_F5D3:
-        a = *hl; // Востановить A
+        a = *hl;  // Востановить A
         return;
     }
-    if (flag_nz (a = b) &= a) goto loc_F5D2; // Только если длина команды больше 0
+    if (flag_nz((a = b) &= a)) goto loc_F5D2;  // Только если длина команды больше 0
     goto loc_F5D3;
-    noreturn;
 }
 
 // Выводить пробелы, пока положение курсора по оси X меньше 11
 
-void VideoPrintSpaces11() {
+void VideoPrintSpaces11(...) {
     d = 11;
-    noreturn;
+    return VideoPrintSpaces();
 }
 
 // Выводить пробелы, пока положение курсора по оси X меньше D
 // Вход: D - положение курсора по оси X
 
-void VideoPrintSpaces() {
-    while () {
+void VideoPrintSpaces(...) {
+    for (;;) {
         a = vVideoCursorX;
         if (a == d) return;
         out(PORT_CODE_ROM, a);
@@ -2563,19 +2696,17 @@ void VideoPrintSpaces() {
         PrintSpace();
     }
     return VideoPrint(a = ',');
-    noreturn;
 }
 
 // Вывести в консоль 16-ричное число из HL + 1. Два символа.
 // Вход: HL - адрес
 
-void PrintHexByteFromHl() {
+void PrintHexByteFromHl(...) {
     hl++;
     a = *hl;
     hl--;
     out(PORT_CODE_ROM, a);
     return PrintHexByte(a);
-    noreturn;
 }
 
 // Получить символ нажатой клавиши с ожиданием.
@@ -2594,20 +2725,20 @@ void PrintHexByteFromHl() {
 // Вход: нет
 // Выход: a - код символа, регистры bc, de, hl сохраняются
 
-void RealInput() {
-    RealInput2();        
+void RealInput(...) {
+    RealInput2();
 
     // Обработка клавиши NUM LOCK
     if (a == KEY_NUM_LOCK) {
         a = vKeyboardNumLock;
-        invert(a);
+        Invert(a);
         vKeyboardNumLock = a;
         vKeyboardLeds = ((a = vKeyboardLeds) ^= LED_NUM_LOCK);
         return RealInput();
     }
 
     // Замена скан кодов клавиш F1 - F3 на коды из переменных vKeyboardF?, vKeyboardShiftF?.
-    push(hl) {
+    push_pop(hl) {
         vTempInputPrint = a;
         KeyboardReplaceFKeys();
         a = *hl;
@@ -2615,15 +2746,15 @@ void RealInput() {
 
     // Замена скан-кодов правой клавиатуры на цифры если нажат NUM LOCK
     push(a);
-    if (flag_nz(a = vKeyboardNumLock) |= a) {
+    if (flag_nz((a = vKeyboardNumLock) |= a)) {
         pop(a);
         if (a == KEY_EXT_POINT) {
             a = '.';
             goto RealInput1;  // TODO: Optimize
         }
-        if (a < KEY_EXT_0) goto RealInput1;         // TODO: Optimize
-        if (a >= [KEY_EXT_9 + 1]) goto RealInput1;  // TODO: Optimize
-        a -= [KEY_EXT_0 - '0'];
+        if (a < KEY_EXT_0) goto RealInput1;       // TODO: Optimize
+        if (a >= KEY_EXT_9 + 1) goto RealInput1;  // TODO: Optimize
+        a -= KEY_EXT_0 - '0';
     } else {
         pop(a);
     }
@@ -2668,7 +2799,7 @@ RealInput1:
     }
 
     // Обработка клавиши COP
-    if (a == KEY_COP) return VideoGetCharCodeUnderCursor();    
+    if (a == KEY_COP) return VideoGetCharCodeUnderCursor();
 
     // Правая точка при не нажатом NUM LOCK работает как COP
     if (a == KEY_EXT_POINT) return VideoGetCharCodeUnderCursor();
@@ -2681,16 +2812,16 @@ RealInput1:
     // Обработка клавиш CAPS LOCK, RUS, LAT
     if (a == KEY_CAPS_LOCK) {
         a = vKeyboardCapsLock;
-        invert(a);
+        Invert(a);
         vKeyboardCapsLock = a;
         vKeyboardLeds = ((a = vKeyboardLeds) ^= LED_CAPS_LOCK);
         return RealInput();
-    }    
+    }
     if (a == KEY_RUS) {
         KeyboardSetRussianLayout();
         return RealInput();
     }
-    if (a == KET_LAT) {
+    if (a == KEY_LAT) {
         KeyboardSetEnglishLayout();
         return RealInput();
     }
@@ -2703,12 +2834,12 @@ RealInput1:
 
     // Замена строчных/заглавных букв если нажат CAPS LOCK
     push(a);
-    if (flag_nz(a = vKeyboardCapsLock) |= a) {
+    if (flag_nz((a = vKeyboardCapsLock) |= a)) {
         pop(a);
         if (a < 'A') return;
-        if (a < ['Z' + 1]) goto RealInputEnglishChar;
+        if (a < 'Z' + 1) goto RealInputEnglishChar;
         if (a < 'a') return;
-        if (a < ['z' + 1]) goto RealInputEnglishChar;
+        if (a < 'z' + 1) goto RealInputEnglishChar;
         if (a < 0xB0) return;
         if (a >= 0xF0) return;
         a += 0x10;
@@ -2724,10 +2855,9 @@ RealInput1:
 
 // Включить русскую раскладку клавиатуры
 
-void KeyboardSetRussianLayout() {
+void KeyboardSetRussianLayout(...) {
     push(hl);
-    hl = &bKeybaordRussianLayout;
-    noreturn;
+    return KeyboardSetLayout(hl = &bKeybaordRussianLayout);
 }
 
 // Таблица из ПЗУ компьютера
@@ -2753,20 +2883,18 @@ void KeyboardSetRussianLayout() {
 // 0D     B9 Й    9     FF     7C |   88     85     82
 // 95     FF     93     94     1B     89     86     83
 
-
 // Внутренняя функция. Используется функциями KeyboardSetRussianLayout, KeyboardSetEnglishLayout.
 
-void KeyboardSetLayout() {
+void KeyboardSetLayout(...) {
     vKeyboardLayout = hl;
     pop(hl);
 }
 
 // Включить английскую раскладку клавиатуры
 
-void KeyboardSetEnglishLayout() {
+void KeyboardSetEnglishLayout(...) {
     push(hl);
     return KeyboardSetLayout(hl = &bKeybaordEnglishLayout);
-    noreturn;
 }
 
 // Таблица из ПЗУ компьютера
@@ -2795,12 +2923,12 @@ void KeyboardSetEnglishLayout() {
 // Внутренняя функция. Используется функцией RealInput.
 // Замена скан кодов клавиш F1 - F3 на коды из переменных vKeyboardF?, vKeyboardShiftF?.
 
-void KeyboardReplaceFKeys() {
+void KeyboardReplaceFKeys(...) {
     hl = &vTempInputPrint;
     if (a < KEY_F1) return;  // TODO: Что за код?
-    if (a >= [KEY_SHIFT_F3 + 1]) return;
+    if (a >= KEY_SHIFT_F3 + 1) return;
     a -= KEY_F1;
-    push(de) {
+    push_pop(de) {
         e = a;
         d = 0;
         (hl = &vKeyboardF1) += de;
@@ -2809,31 +2937,32 @@ void KeyboardReplaceFKeys() {
 
 // Перевод строки, а затем ввод директивы монитора пользователем
 
-void MonitorInputNextLine() {
+void MonitorInputNextLine(...) {
     VideoNextLine();
-    noreturn;
+    return MonitorInput();
 }
 
 // Ввод директивы монитора пользователем
 
-void MonitorInput() {
+void MonitorInput(...) {
     // Вывести приглашение
     vPrint(a = vMonitorPrompt);
 
     push(hl);
     hl = &vMonitorString;
     do {
+    MonitorInputRetry:
         RealInput();
         if (a == 8) {
             MonitorInputBackspace();
-            continue;
+            goto MonitorInputRetry;
         }
         if (a < ' ') {
             if (a == 0x18) return MonitorInputError();
             if (a == 0x0A) {
                 a = EOL;
             }
-            if (a != EOL) continue;
+            if (a != EOL) goto MonitorInputRetry;
             *hl = a;
             VideoNextLineClear();
             vMonitorStringLength = a = l;
@@ -2844,41 +2973,38 @@ void MonitorInput() {
         hl++;
         vPrint(a);
     } while ((a = l) != 0xC0);
-    noreturn;
+    return MonitorInputError();
 }
 
 // Внутренняя функция. Вызывается функцией MonitorInput если пользователь отменил ввод.
 
-void MonitorInputError() {
+void MonitorInputError(...) {
     vPrint(a = 0x5C);  // TODO: Backslash
     vPrint(a = 7);
     VideoNextLine();
     pop(hl);
     return MonitorInput();
-    noreturn;
 }
 
 // Выключить инверсию при выводе текста
 // Функция сохраняет все регистры
 
-void VideoNormal() {
+void VideoNormal(...) {
     push(a);
     return VideoInverseInternal(a ^= a);
-    noreturn;
 }
 
 // Включить инверсию при выводе текста
 // Функция сохраняет все регистры
 
-void VideoInverse() {
+void VideoInverse(...) {
     push(a);
-    a = 0xFF;
-    noreturn;
+    return VideoInverseInternal(a = 0xFF);
 }
 
 // Используется функциями VideoNormal и VideoInverse
 
-void VideoInverseInternal() {
+void VideoInverseInternal(...) {
     vVideoInverse = a;
     pop(a);
 }
@@ -2886,24 +3012,22 @@ void VideoInverseInternal() {
 // Включить режим 48 символов в строке
 // Функция сохраняет все регистры
 
-void VideoSetMode48() {
+void VideoSetMode48(...) {
     push(a);
     return VideoSetModeInternal(a = 48);
-    noreturn;
 }
 
 // Включить режим 64 символа в строке
 // Функция сохраняет все регистры
 
-void VideoSetMode64() {
+void VideoSetMode64(...) {
     push(a);
-    a = 64;
-    noreturn;
+    return VideoSetModeInternal(a = 64);
 }
 
 // Внутренняя функция. Используется функциями VideoSetMode48 и VideoSetMode64
 
-void VideoSetModeInternal() {
+void VideoSetModeInternal(...) {
     vVideoTextWidth = a;
     VideoRedrawTextScreen();
     pop(a);
@@ -2912,35 +3036,34 @@ void VideoSetModeInternal() {
 // Высота символа в установленном знакогенераторе 8 пикселей
 // Функция сохраняет все регистры
 
-void VideoSetFontHeight8() {
+void VideoSetFontHeight8(...) {
     push(a);
     a ^= a;
     return VideoSetFontHeightInternal();
-    noreturn;
 }
 
 // Высота символа в установленном знакогенераторе 10 пикселей
 // Функция сохраняет все регистры
 
-void VideoSetFontHeight10() {
+void VideoSetFontHeight10(...) {
     push(a);
     a = 0xFF;
-    noreturn;
+    return VideoSetFontHeightInternal();
 }
 
 // Внутренняя функция. Используется функциями VideoSetFontHeight8 и VideoSetFontHeight10
 
-void VideoSetFontHeightInternal() {
+void VideoSetFontHeightInternal(...) {
     vVideoFontHeight10 = a;
     pop(a);
 }
 
-void VideoSetCursorX() {
-    push(de) {
+void VideoSetCursorX(...) {
+    push_pop(de) {
         d = a;
         a = vVideoTextWidth;
         a--;
-        a ? d;
+        Compare(a, d);
         a = d;
     }
     if (flag_c) return;
@@ -2953,10 +3076,9 @@ void VideoSetCursorX() {
     h = 0;
     MultipleHlBy64();
     return VideoSetCursorInternal();
-    noreturn;
 }
 
-void VideoSetCursorY() {
+void VideoSetCursorY(...) {
     if (a >= TEXT_SCREEN_HEIGHT) return;
     push(de, hl);
     vVideoCursorY = a;
@@ -2965,10 +3087,10 @@ void VideoSetCursorY() {
     MultipleHlBy64();
     e = a = vVideoCursorX;
     d = 0;
-    noreturn;
+    return VideoSetCursorInternal();
 }
 
-void VideoSetCursorInternal() {
+void VideoSetCursorInternal(...) {
     hl += de;
     hl += (de = TEXT_SCREEN_ADDRESS);
     vVideoCursorAddress = hl;
@@ -2978,10 +3100,10 @@ void VideoSetCursorInternal() {
 // Вывод в консоль
 // Вход: a - код
 
-void VideoPrint() {
-    push(a) {
-        if (flag_nz(a = vVideoEscCursorState) |= a) return VideoPrintEscCursor();
-        if (flag_z(a = vVideoEscState) |= a) return VideoPrintNoEsc();
+void VideoPrint(...) {
+    push_pop(a) {
+        if (flag_nz((a = vVideoEscCursorState) |= a)) return VideoPrintEscCursor();
+        if (flag_z((a = vVideoEscState) |= a)) return VideoPrintNoEsc();
         vVideoEscState = (a ^= a);
     }
     if (a == 0x2A) return VideoClearScreen0();
@@ -2995,7 +3117,7 @@ void VideoPrint() {
 // Обработка 3 и 4 ого символа ESC-последовательности устанавливающей положение курсора
 // Последовательность: 0x1B, 0x3D, Y + 0x20, X + 0x20
 
-void VideoPrintEscCursor() {
+void VideoPrintEscCursor(...) {
     // Тут A = vVideoEscCursorState
     if (a == 2) {
         a--;
@@ -3010,10 +3132,9 @@ void VideoPrintEscCursor() {
     pop(a);
     a -= 0x20;
     return VideoSetCursorX(a);
-    noreturn;
 }
 
-void VideoPrintNoEsc() {
+void VideoPrintNoEsc(...) {
     pop(a);
     if (a == 0x1B) {
         vVideoEscState = a = 0xFF;
@@ -3031,8 +3152,8 @@ void VideoPrintNoEsc() {
     if (a == 0x1E) return VideoMoveCursorLeftTop();
 }
 
-void VideoClearRightInternal() {
-    push(bc) {
+void VideoClearRightInternal(...) {
+    push_pop(bc) {
         b = a = vVideoCursorX;
         b = ((a = vVideoTextWidth) -= b);
         if (flag_nz) {
@@ -3040,27 +3161,27 @@ void VideoClearRightInternal() {
             do {
                 VideoMoveCursorRight2();
                 VideoDrawChar(a = ' ');
-            } while (flag_nz b--);
+            } while (flag_nz(b--));
         }
     }
 }
 
-void VideoClearRight() {
+void VideoClearRight(...) {
     a = vVideoCursorX;
-    push(a) {
+    push_pop(a) {
         VideoClearRightInternal();
     }
     return VideoSetCursorX();
-    noreturn;
 }
 
-void VideoNextLineClear() {
+void VideoNextLineClear(...) {
     VideoClearRightInternal();
     return vPrint(a = EOL);
-    noreturn;
 }
 
-void VideoDrawChar() {
+extern uint8_t cVideoTextRowAddess[];
+
+void VideoDrawChar(...) {
     push(hl, de, bc, a);
 
     // Сохранить код символа
@@ -3081,7 +3202,7 @@ void VideoDrawChar() {
     hl += hl += hl += hl;
     hl += bc;
     c = 8;
-    if (flag_nz(a = vVideoFontHeight10) |= a) {
+    if (flag_nz((a = vVideoFontHeight10) |= a)) {
         c = a = vTempInputPrint;
         b = 0;
         hl += bc;
@@ -3107,16 +3228,16 @@ void VideoDrawChar() {
         *de = ((a = *hl) ^= b);
         de--;
         hl++;
-    } while (flag_nz c--);
-    if (flag_z(a = vVideoFontHeight10) |= a) {
+    } while (flag_nz(c--));
+    if (flag_z((a = vVideoFontHeight10) |= a)) {
         *de = a = vVideoInverse;
         de--;
         *de = a;
     }
-    noreturn;
+    return VideoDrawCharEnd();
 }
 
-void VideoDrawCharEnd() {
+void VideoDrawCharEnd(...) {
     pop(a);
     hl = vVideoCursorAddress;
     *hl = a;
@@ -3125,8 +3246,8 @@ void VideoDrawCharEnd() {
 
 // Переместить курсор вправо
 
-void VideoMoveCursorRight2() {
-    push(hl) {
+void VideoMoveCursorRight2(...) {
+    push_pop(hl) {
         hl = vVideoCursorAddress;
         hl++;
         vVideoCursorAddress = hl;
@@ -3134,22 +3255,22 @@ void VideoMoveCursorRight2() {
         a = vVideoCursorX;
         a++;
         hl = &vVideoTextWidth;
-        a ? *hl;
+        Compare(a, *hl);
     }
     if (flag_nz) return VideoSetCursorXInternal();
-    noreturn;
+    return VideoNextLine();
 }
 
 // Перевод строки
 // Сохраняет: de, hl
 
-void VideoNextLine() {
-    push(de, hl) {
+void VideoNextLine(...) {
+    push_pop(de, hl) {
         a = vVideoCursorY;
         a++;
         if (a == TEXT_SCREEN_HEIGHT) {
             VideoScrollUp();
-            a = [TEXT_SCREEN_HEIGHT - 1];
+            a = TEXT_SCREEN_HEIGHT - 1;
         }
         vVideoCursorY = a;
 
@@ -3162,26 +3283,24 @@ void VideoNextLine() {
         WaitIfKeyPressed();
         a ^= a;
     }
-    noreturn;
+    return VideoSetCursorXInternal();
 }
 
-void VideoSetCursorXInternal() {
+void VideoSetCursorXInternal(...) {
     vVideoCursorX = a;
 }
 
-void PrintNewLine() {
+void PrintNewLine(...) {
     return vPrint(a = EOL);
-    noreturn;
 }
 
-void PrintSpace() {
+void PrintSpace(...) {
     return vPrint(a = ' ');
-    noreturn;
 }
 
-uint8_t data7[] = {0x3E, 0x20, 0xCD, 0xB0, 0xF8, 0xC3, 0x2E, 0xF9}; // TODO
+uint8_t data7[] = {0x3E, 0x20, 0xCD, 0xB0, 0xF8, 0xC3, 0x2E, 0xF9};  // TODO
 
-void WaitIfKeyPressed() {
+void WaitIfKeyPressed(...) {
     KeyboardGet();
     if (flag_m) return;
 
@@ -3191,11 +3310,11 @@ void WaitIfKeyPressed() {
         }
     }
 
-    push(bc) {
+    push_pop(bc) {
         b = a;
         do {
             KeyboardGet();
-        } while (flag_z a ^= b);
+        } while (flag_z(a ^= b));
     }
 
     do {
@@ -3207,28 +3326,28 @@ void WaitIfKeyPressed() {
 // Инверсия влияет на очистку экрана.
 // Функция сохраняет все регистры.
 
-void VideoClearScreen0() {
-    push(hl, de, bc, a) {
+void VideoClearScreen0(...) {
+    push_pop(hl, de, bc, a) {
         a = vVideoInverse;
-        VideoClearScreenInternal(b = a, c = a, de = [SCREEN_0_ADDRESS + SCREEN_SIZE]);
-        MemsetHlBDe(hl = TEXT_SCREEN_ADDRESS, de = [TEXT_SCREEN_WIDTH * TEXT_SCREEN_HEIGHT], b = ' ');
+        VideoClearScreenInternal(b = a, c = a, de = SCREEN_0_ADDRESS + SCREEN_SIZE);
+        MemsetHlBDe(hl = TEXT_SCREEN_ADDRESS, de = TEXT_SCREEN_WIDTH * TEXT_SCREEN_HEIGHT, b = ' ');
         VideoMoveCursorLeftTop();
     }
 }
 
 // Заполняет область памяти DE-2..DE-0x3000 словом BC
 
-void VideoClearScreenInternal() {
+void VideoClearScreenInternal(...) {
     vTempSP = ((hl = 0) += sp);
     swap(hl, de);
     sp = hl;
-    d = [SCREEN_WIDTH / BIT_PER_BYTE];
+    d = SCREEN_WIDTH / BIT_PER_BYTE;
     do {
-        e = [SCREEN_HEIGHT / 16];  // 16 это количество push
+        e = SCREEN_HEIGHT / 16;  // 16 это количество push
         do {
             push(bc, bc, bc, bc, bc, bc, bc, bc);
-        } while (flag_nz-- e);
-    } while (flag_nz-- d);
+        } while (flag_nz(e--));
+    } while (flag_nz(d--));
     sp = hl = vTempSP;
 }
 
@@ -3236,18 +3355,18 @@ void VideoClearScreenInternal() {
 // Инверсия влияет на очистку экрана.
 // Функция сохраняет все регистры.
 
-void VideoClearScreen1() {
-    push(hl, de, bc, a) {
+void VideoClearScreen1(...) {
+    push_pop(hl, de, bc, a) {
         a = vVideoInverse;
-        VideoClearScreenInternal(b = a, c = a, de = [SCREEN_1_ADDRESS + SCREEN_SIZE]);
+        VideoClearScreenInternal(b = a, c = a, de = SCREEN_1_ADDRESS + SCREEN_SIZE);
     }
 }
 
 // Переместить курсор в левый верхний угол экрана
 // Функция сохраняет регистры BC, DE, HL
 
-void VideoMoveCursorLeftTop() {
-    push(hl) {
+void VideoMoveCursorLeftTop(...) {
+    push_pop(hl) {
         a ^= a;
         vVideoCursorX = a;
         vVideoCursorY = a;
@@ -3257,20 +3376,19 @@ void VideoMoveCursorLeftTop() {
 
 // Заполнить память от hl до de - 1 байтом b
 
-void MemsetHlBDe() {
-    while () {
-        if (flag_z(a = d) |= e) return;
+void MemsetHlBDe(...) {
+    for (;;) {
+        if (flag_z((a = d) |= e)) return;
         *hl = b;
         hl++;
         de--;
     }
-    noreturn;
 }
 
 // Скопировать память от bc до de - 1 в hl
 
-void MemcpyHlBcDe() {
-    while () {
+void MemcpyHlBcDe(...) {
+    for (;;) {
         if ((a = c) == e) {
             if ((a = b) == d) return;
         }
@@ -3278,39 +3396,37 @@ void MemcpyHlBcDe() {
         bc++;
         hl++;
     }
-    noreturn;
 }
 
 // Умножить HL на 64
 // Функция сохраняет регистры A, BC, DE
 
-void MultipleHlBy64() {
+void MultipleHlBy64(...) {
     hl += hl += hl += hl += hl += hl += hl;
 }
 
 // Адрес строки текста (0 - 24) в графической памяти
 
-uint8_t cVideoTextRowAddess[] = {
-    [0xFF - 0 * 10],  [0xFF - 1 * 10],  [0xFF - 2 * 10],  [0xFF - 3 * 10],  [0xFF - 4 * 10],
-    [0xFF - 5 * 10],  [0xFF - 6 * 10],  [0xFF - 7 * 10],  [0xFF - 8 * 10],  [0xFF - 9 * 10],
-    [0xFF - 10 * 10], [0xFF - 11 * 10], [0xFF - 12 * 10], [0xFF - 13 * 10], [0xFF - 14 * 10],
-    [0xFF - 15 * 10], [0xFF - 16 * 10], [0xFF - 17 * 10], [0xFF - 18 * 10], [0xFF - 19 * 10],
-    [0xFF - 20 * 10], [0xFF - 21 * 10], [0xFF - 22 * 10], [0xFF - 23 * 10], [0xFF - 24 * 10]};
+uint8_t cVideoTextRowAddess[] = {0xFF - 0 * 10,  0xFF - 1 * 10,  0xFF - 2 * 10,  0xFF - 3 * 10,  0xFF - 4 * 10,
+                                 0xFF - 5 * 10,  0xFF - 6 * 10,  0xFF - 7 * 10,  0xFF - 8 * 10,  0xFF - 9 * 10,
+                                 0xFF - 10 * 10, 0xFF - 11 * 10, 0xFF - 12 * 10, 0xFF - 13 * 10, 0xFF - 14 * 10,
+                                 0xFF - 15 * 10, 0xFF - 16 * 10, 0xFF - 17 * 10, 0xFF - 18 * 10, 0xFF - 19 * 10,
+                                 0xFF - 20 * 10, 0xFF - 21 * 10, 0xFF - 22 * 10, 0xFF - 23 * 10, 0xFF - 24 * 10};
 
 // Звуковой сигнал
 // Функция сохраняет регистры BC, DE, HL
 
-void Beep() {
-    push(hl, bc) {
+void Beep(...) {
+    push_pop(hl, bc) {
         bc = 255;
         do {
             out(PORT_TAPE_OUT, a);
             hl = 31;
             do {
                 hl--;
-            } while (flag_nz(a = h) |= l);
+            } while (flag_nz((a = h) |= l));
             bc--;
-        } while (flag_nz(a = b) |= c);
+        } while (flag_nz((a = b) |= c));
     }
 }
 
@@ -3330,13 +3446,13 @@ void Beep() {
 // Вход: нет
 // Выход: a - код символа, регистры bc, de, hl сохраняются
 
-void RealInput2() {
-    push(hl, de, bc) {
+void RealInput2(...) {
+    push_pop(hl, de, bc) {
         d = a = vVideoInverse;
 
-        while () {
+        for (;;) {
             a = vVideoInverse;
-            invert(a);
+            Invert(a);
             vVideoInverse = a;
 
             bc = 0x1FF;
@@ -3345,10 +3461,10 @@ void RealInput2() {
                 bc--;
                 KeyboardGet();
                 if (a != 0xFF) goto RealInput2Exit;
-            } while (flag_nz(a = b) |= c);
+            } while (flag_nz((a = b) |= c));
         }
     RealInput2Exit:
-        push(a) {
+        push_pop(a) {
             vVideoInverse = a = d;
             VideoDrawChar(a = *(hl = vVideoCursorAddress));
         }
@@ -3357,43 +3473,41 @@ void RealInput2() {
 
 // Переместить курсор вверх
 
-void VideoMoveCursorUp() {
+void VideoMoveCursorUp(...) {
     a = vVideoCursorY;
     a--;
     return VideoSetCursorY(a);
-    noreturn;
 }
 
 // Переместить курсор вниз.
 // Если курсор находится в последней строке, то происходит прокрутка экрана.
 
-void VideoMoveCursorDown() {
+void VideoMoveCursorDown(...) {
     a = vVideoCursorY;
     a++;
     if (a != TEXT_SCREEN_HEIGHT) return VideoSetCursorY(a);
 
     a = vVideoCursorX;
-    push(a) {
+    push_pop(a) {
         VideoNextLine();
-        vVideoCursorY = a = [TEXT_SCREEN_HEIGHT - 1];
+        vVideoCursorY = a = TEXT_SCREEN_HEIGHT - 1;
     }
     return VideoSetCursorX(a);
-    noreturn;
 }
 
 // Переместить курсор влево.
 
-void VideoMoveCursorLeft() {
+void VideoMoveCursorLeft(...) {
     // Если курсор находится не в крайней левой колонке, то курсор перемещается влево.
     a = vVideoCursorX;
-    if (flag_nz a |= a) {
+    if (flag_nz(a |= a)) {
         a--;
         return VideoSetCursorX(a);
     }
 
     // Если курсор находится в левом верхнем углу экрана, то ничего не происходит.
     a = vVideoCursorY;
-    if (flag_z a |= a) return;
+    if (flag_z(a |= a)) return;
 
     // Если курсор находится в крайней левой колонке, то курсор перемещается
     // в крайнюю правую колонку и на строку выше.
@@ -3403,18 +3517,17 @@ void VideoMoveCursorLeft() {
     a = vVideoTextWidth;
     a--;
     return VideoSetCursorX(a);
-    noreturn;
 }
 
 // Переместить курсор вправо
 
-void VideoMoveCursorRight() {
+void VideoMoveCursorRight(...) {
     // Если курсор находится не в крайней правой колонке, то курсор перемещается вправо.
-    push(bc) {
+    push_pop(bc) {
         b = a = vVideoTextWidth;
         a = vVideoCursorX;
         a++;
-        a ? b;
+        Compare(a, b);
     }
     if (flag_nz) return VideoSetCursorX(a);
 
@@ -3423,13 +3536,12 @@ void VideoMoveCursorRight() {
     // экрана, иначе курсор перемещается на строку ниже.
     vVideoCursorX = (a ^= a);
     return VideoMoveCursorDown();
-    noreturn;
 }
 
 // Получить код символа под курсором
 
-void VideoGetCharCodeUnderCursor() {
-    push(hl) {
+void VideoGetCharCodeUnderCursor(...) {
+    push_pop(hl) {
         a = *(hl = vVideoCursorAddress);
     }
 }
@@ -3437,10 +3549,10 @@ void VideoGetCharCodeUnderCursor() {
 // Внутренняя функция.
 // Вызывается из MonitorInput, когда пользователь нажимает клавишу влево.
 
-void MonitorInputBackspace() {
+void MonitorInputBackspace(...) {
     hl--;
-    if ((a = [(&vMonitorString - 1) & 0xFF]) == l) {
-        if ((a = [(&vMonitorString - 1) >> 8]) == h) {
+    if ((a = (intptr_t(&vMonitorString - 1) & 0xFF)) == l) {
+        if ((a = intptr_t(&vMonitorString - 1) >> 8) == h) {
             pop(a);
             return MonitorInputError();
         }
@@ -3452,8 +3564,8 @@ void MonitorInputBackspace() {
 // Функция сохраняет регистр BC
 // Инверсия не сохраняется. Инверсия влияет на работу этой функции.
 
-void VideoRedrawTextScreen() {
-    push(bc) {
+void VideoRedrawTextScreen(...) {
+    push_pop(bc) {
         VideoMoveCursorLeftTop();
         b = TEXT_SCREEN_HEIGHT;
         do {
@@ -3461,28 +3573,28 @@ void VideoRedrawTextScreen() {
             do {
                 VideoGetCharCodeUnderCursor();
                 VideoPrint(a);
-            } while (flag_nz c--);
-        } while (flag_nz b--);
+            } while (flag_nz(c--));
+        } while (flag_nz(b--));
     }
 }
 
 // Прокрутить на одну строку вверх текстовый и черно-белый экран
 
-void VideoScrollUp() {
-    push(hl, de, bc) {
+void VideoScrollUp(...) {
+    push_pop(hl, de, bc) {
         VideoScrollUp0();
         // Прокрутить на одну строку вверх текстовый экран без очистки нижней строки
-        MemcpyHlBcDe(hl = TEXT_SCREEN_ADDRESS, bc = [TEXT_SCREEN_ADDRESS + TEXT_SCREEN_WIDTH],
-                     de = [TEXT_SCREEN_ADDRESS + TEXT_SCREEN_WIDTH * TEXT_SCREEN_HEIGHT]);
+        MemcpyHlBcDe(hl = TEXT_SCREEN_ADDRESS, bc = TEXT_SCREEN_ADDRESS + TEXT_SCREEN_WIDTH,
+                     de = TEXT_SCREEN_ADDRESS + TEXT_SCREEN_WIDTH * TEXT_SCREEN_HEIGHT);
         // Очистить нижнюю строку
-        MemsetHlBDe(hl = [TEXT_SCREEN_ADDRESS + TEXT_SCREEN_WIDTH * (TEXT_SCREEN_HEIGHT - 1)], de = TEXT_SCREEN_WIDTH,
+        MemsetHlBDe(hl = TEXT_SCREEN_ADDRESS + TEXT_SCREEN_WIDTH * (TEXT_SCREEN_HEIGHT - 1), de = TEXT_SCREEN_WIDTH,
                     b = ' ');
     }
 }
 
 // Прокрутить на одну строку вверх графический черно-белый экран
 
-void VideoScrollUp0() {
+void VideoScrollUp0(...) {
     // Прокрутить без очистки нижней строки
     Call0000(hl = &VideoCopy0Up);
 
@@ -3496,53 +3608,54 @@ void VideoScrollUp0() {
         sp = hl;
         push(bc, bc, bc, bc, bc, bc, bc, bc);
         (hl = -240) += sp;
-    } while (flag_nz-- a);
+    } while (flag_nz(a--));
     sp = hl = vTempSP;
 }
 
 // Вызвать функцию по адресу HL и подключить ПЗУ в адреса 0000..00FF на время выполнения этой функции.
 // вход: hl - адрес функции
 
-void Call0000() {
+void Call0000EnableRom();
+void Call0000End();
+
+void Call0000(...) {
     vTempCall0000 = hl;
 
     hl = &Call0000EnableRom;
     vTempVideoRom = (a ^= a);
-    if (flag_nz(a = vTempVideoRom) |= a) {
+    if (flag_nz((a = vTempVideoRom) |= a)) {
         hl = &Call0000End;
     }
     push(hl);
 
     hl = vTempCall0000;
     Enable0000Rom();
-    goto hl;
-    noreturn;
+    GotoHl();
 }
 
 // Внутренняя функция. Используется функцией Call0000.
 
-void Call0000EnableRom() {
+void Call0000EnableRom(...) {
     Enable0000Ram();
-    noreturn;
+    return Call0000End();
 }
 
 // Внутренняя функция. Используется функцией Call0000.
 
-void Call0000End() {
+void Call0000End(...) {
 }
 
 // Подключить ПЗУ к адресам 0 - 0FFh
 // Функция сохрнаяет все регистры
 
-void Enable0000Rom() {
+void Enable0000Rom(...) {
     push(a);
-    a = PORT_ROM_0000__ROM;
-    noreturn;
+    return Enable0000Internal(a = PORT_ROM_0000__ROM);
 }
 
 // Внутренняя функция. Используется функциями Enable0000Rom, Enable0000Ram
 
-void Enable0000Internal() {
+void Enable0000Internal(...) {
     out(PORT_ROM_0000, a);
     pop(a);
 }
@@ -3550,11 +3663,9 @@ void Enable0000Internal() {
 // Подключить ОЗУ к адресам 0 - 0FFh
 // Функция сохрнаяет все регистры
 
-void Enable0000Ram() {
+void Enable0000Ram(...) {
     push(a);
-    a = PORT_ROM_0000__RAM;
-    return Enable0000Internal();
-    noreturn;
+    return Enable0000Internal(a = PORT_ROM_0000__RAM);
 }
 
 // Таблица из ПЗУ компьютера
@@ -3602,7 +3713,6 @@ void Enable0000Ram() {
 // 0D     B9 Й    9     FF     7C |   88     85     82
 // 95     FF     93     94     1B     89     86     83
 
-
 // Получить символ или скан-код нажатой клавиши с ожиданием.
 // Функция:
 // - Не рисует мигающий курсор
@@ -3619,7 +3729,7 @@ void Enable0000Ram() {
 // Вход: нет
 // Выход: a - код символа, регистры bc, de, hl сохраняются
 
-void KeyboardGet() {
+void KeyboardGet(...) {
     push(bc, de, hl);
 
     KeyboardGetNoWait();
@@ -3643,7 +3753,7 @@ void KeyboardGet() {
         if (flag_nz) goto KeyboardGet5;
 
         b = a;
-    } while (flag_nz(a = h) |= l);
+    } while (flag_nz((a = h) |= l));
 
     a = b;
     vKeyboardDelay = hl = 31;
@@ -3672,28 +3782,26 @@ KeyboardGet4:
 KeyboardGet5:
     vKeyboardLast = a = b;
     goto KeyboardGet1;
-
-    noreturn;
 }
 
 // Внутренняя функция. Используется функцией KeyboardGetInternal.
 
-void KeyboardGetInternal() {
+void KeyboardGetInternal(...) {
     b = a;
     a = vKeyboardLast;
-    a ? b;
+    Compare(a, b);
 }
 
 // Задержка
 // Вход: hl - длительность
 
-void DelayHl() {
-    push(hl, a) {
+void DelayHl(...) {
+    push_pop(hl, a) {
         nop();
         do {
             hl--;
             nop();
-        } while (flag_nz(a = h) |= l);
+        } while (flag_nz((a = h) |= l));
     }
 }
 
@@ -3712,33 +3820,32 @@ void DelayHl() {
 // Вход: нет
 // Выход: a - код символа, регистры bc, de, hl сохраняются
 
-void KeyboardGetNoWait() {
+void KeyboardGetNoWait(...) {
     push(bc, de, hl);
     b = 9;
     do {
         out(PORT_KEYBOARD, (a = vKeyboardLeds) |= b);
-        a = in(PORT_KEYBOARD);
-        if (flag_nz a |= a) {
+        a = In(PORT_KEYBOARD);
+        if (flag_nz(a |= a)) {
             c = 7;
             d = 0x80;
             e = a;
             do {
-                if (flag_nz(a = e) &= d) {
+                if (flag_nz((a = e) &= d)) {
                     KeyboardGetNoWaitIsShift();
                     if (flag_nc) return KeyboardGetNoWaitInternal();
                 }
-                d = (((a = d) |= a) >>@= 1);  // Это d >>= 1
-            } while (flag_p c--);
+                d = CarryRotateRight((a = d) |= a, 1);  // Это d >>= 1
+            } while (flag_p(c--));
         }
-    } while (flag_p b--);
+    } while (flag_p(b--));
     a = 0xFF;
     return KeyboardGetNoWaitEnd(a);
-    noreturn;
 }
 
 // Внутренняя функция. Используется функцией KeyboardGetNoWait.
 
-void KeyboardGetNoWaitInternal() {
+void KeyboardGetNoWaitInternal(...) {
     ((((a = b) += a) += a) += a) += c;  // Это a = b * 8 + c
     hl = vKeyboardLayout;
 
@@ -3762,18 +3869,18 @@ void KeyboardGetNoWaitInternal() {
     out(PORT_CHARGEN_ROM, a);
     a = *hl;
     out(PORT_CODE_ROM, a);
-    noreturn;
+    return KeyboardGetNoWaitEnd();
 }
 
 // Внутренняя функция. Используется функцией KeyboardGetNoWait.
 
-void KeyboardGetNoWaitEnd() {
+void KeyboardGetNoWaitEnd(...) {
     pop(bc, de, hl);
 }
 
 // Внутренняя функция. Используется функцией KeyboardGetNoWait.
 
-void KeyboardGetNoWaitIsShift() {
+void KeyboardGetNoWaitIsShift(...) {
     push(hl, a);
     hl = 0x303;
     CompareBcHl();
@@ -3785,39 +3892,38 @@ void KeyboardGetNoWaitIsShift() {
             CompareBcHl();
             if (flag_nz) {
                 pop(a);
-                set_flag_c();
-                invert_flag_c();
+                SetFlagC();
+                InvertFlagC();
                 pop(hl);
                 return;
             }
         }
     }
     pop(a);
-    set_flag_c();
+    SetFlagC();
     pop(hl);
 }
 
 // Сравнить BC и HL. Функция возвращает флаг Z, если регистры равны.
 // Функция сохраняет регистры BC, DE, HL.
 
-void CompareBcHl() {
+void CompareBcHl(...) {
     if ((a = b) != h) return;
-    (a = c) ? l;
+    Compare(a = c, l);
 }
 
 // Нажата ли клавиша SHIFT?
 // Выход: cf - нажата
 // Функция сохраняет все регистры
 
-void KeyboardIsShiftPressed() {
+void KeyboardIsShiftPressed(...) {
     push(bc);
-    bc = 0x308;
-    noreturn;
+    return KeyboardIsKeyPressedInternal(bc = 0x308);
 }
 
 // Внутренняя функция. Используется функциями KeyboardIsShiftPressed и KeyboardIsCtrPressed.
 
-void KeyboardIsKeyPressedInternal() {
+void KeyboardIsKeyPressedInternal(...) {
     KeyboardIsKeyPressed();
     pop(bc);
 }
@@ -3826,18 +3932,16 @@ void KeyboardIsKeyPressedInternal() {
 // Выход: cf - нажата
 // Функция сохраняет все регистры
 
-void KeyboardIsCtrPressed() {
+void KeyboardIsCtrPressed(...) {
     push(bc);
     return KeyboardIsKeyPressedInternal(bc = 0x808);
-    noreturn;
 }
 
 // TODO: Что это?
 
-void KeyboardIs71Pressed() {
+void KeyboardIs71Pressed(...) {
     push(bc);
     return KeyboardIsKeyPressedInternal(bc = 0x701);
-    noreturn;
 }
 
 // Нажаты ли клавиши?
@@ -3845,10 +3949,10 @@ void KeyboardIs71Pressed() {
 // Выход: cf - одна из клавиш нажата
 // Функция сохраняет все регистры
 
-void KeyboardIsKeyPressed() {
-    push(a) {
+void KeyboardIsKeyPressed(...) {
+    push_pop(a) {
         out(PORT_KEYBOARD, a = b);
-        a = in(PORT_KEYBOARD);
+        a = In(PORT_KEYBOARD);
         a &= c;
         if (flag_nz) {
             pop(a);
@@ -3861,7 +3965,7 @@ void KeyboardIsKeyPressed() {
 
 // Самодиагностика при включении
 
-void Test() {
+void Test(...) {
     // *** Проверка, что ПЗУ по адресам C000..CFFF, F000..FFFF не пустые ***
     TestEmptyRom(b = 0);
     TestEmptyRom(b = 0xFF);
@@ -3875,7 +3979,7 @@ void Test() {
     b = 0xA5;
     de = 0x9000;
     hl = 0;
-    push(de, hl) {
+    push_pop(de, hl) {
         MemsetHlBDe();
     }
     // Проверка, что память содержит эти значения
@@ -3888,7 +3992,7 @@ void Test() {
     // Заполнение ячеек памяти 1, 2, 4, 8 .. 0x8000 числами 1, 2, 3, 4 .. 16
     hl = 1;
     b = 1;
-    while () {
+    for (;;) {
         *hl = b;
         hl += hl;
         if (flag_c) break;
@@ -3897,7 +4001,7 @@ void Test() {
     // Проверка, что память содержит эти значения
     hl = 1;
     b = 1;
-    while () {
+    for (;;) {
         a = *hl;
         if (a != b) return TestFailed();
         PrintHexNibble();  // Тут выводятся  16-ричные цифры от 1 до F
@@ -3912,12 +4016,12 @@ void Test() {
     hl = &TestRom;
     *hl = OPCODE_HALT;
     // Подключить ПЗУ к 0x0000 .. 0x00FF
-    out(PORT_ROM_0000, a ^= a);  // Тут a == PORT_ROM_0000__ROM
+    Out(PORT_ROM_0000, a ^= a);  // Тут a == PORT_ROM_0000__ROM
     // ПЗУ содержит RET, а ОЗУ содержит HALT
     TestRom();
     // Подключить ОЗУ к 0x0000 .. 0x00FF
-    invert(a);
-    out(PORT_ROM_0000, a);  // Тут a != PORT_ROM_0000__ROM
+    Invert(a);
+    Out(PORT_ROM_0000, a);  // Тут a != PORT_ROM_0000__ROM
     // Тест пройден
     VideoPrint(a = 'Z');
 
@@ -3934,7 +4038,7 @@ void Test() {
     // *** Вывод знакогенератора в консоль ***
     a = 0x20;
     do {
-        push(a) {
+        push_pop(a) {
             VideoPrint(a);
         }
         a++;
@@ -3948,7 +4052,7 @@ void Test() {
 // Проверка, что ПЗУ по адресам C000..CFFF, F000..FFFF не заполнено значением регистра B
 // Вход: b - значение для проверки
 
-void TestEmptyRom() {
+void TestEmptyRom(...) {
     TestCheckFill(hl = 0xF000, de = 0x1000);
     if (flag_z) return TestFailed();
     TestCheckFill(hl = 0xC000, de = 0x1000);
@@ -3959,24 +4063,23 @@ void TestEmptyRom() {
 // Вход: B - константа, HL - адрес, DE - длина
 // Результат: Z - память заполнена этой константой, портит все регистры
 
-void TestCheckFill() {
-    while () {
+void TestCheckFill(...) {
+    for (;;) {
         if ((a = *hl) != b) return;
         hl++;
         de--;
-        if (flag_z(a = d) |= e) return;
+        if (flag_z((a = d) |= e)) return;
     }
-    noreturn;
 }
 
 // Вызывается, если самодиагностика не пройдена
 
-void TestFailed() {
-    halt();
-    noreturn;
+void TestFailed(...) {
+    Halt();
+    return BiosBoot();
 }
 
-void BiosBoot() {
+void BiosBoot(...) {
     out(PORT_RESET_CU2, a);
     out(PORT_RESET_CU4, a);
     sp = CPM_STACK_ADDRESS;
@@ -3988,33 +4091,31 @@ void BiosBoot() {
     out(PORT_CHARGEN_ROM, a);
     BiosBoot2();
     out(PORT_CODE_ROM, a);
-    noreturn;
+    return BiosWarmBoot();
 }
 
-void BiosWarmBoot() {
+void BiosWarmBoot(...) {
     sp = CPM_STACK_ADDRESS;
     out(PORT_CHARGEN_ROM, a);
     BiosInit2();
     BiosLoadDph2();
     BiosLoadCpm2();
     out(PORT_CODE_ROM, a);
-    return cpmEntry();
-    noreturn;
+    return CpmEntry();
 }
 
-void BiosConst() {
+void BiosConst(...) {
     KeyboardGet();
     a ^= 0xFF;
     if (flag_z) return;
     a = 0xFF;
 }
 
-void BiosWaitKey() {
+void BiosWaitKey(...) {
     return vInput();
-    noreturn;
 }
 
-void BiosPutch() {
+void BiosPutch(...) {
     a = c;
     if (a == 0x1D) goto loc_FDC0;
     if (a != 0x1E) return vPrint();
@@ -4025,35 +4126,34 @@ loc_FDBC:
 loc_FDC0:
     a = 48;
     goto loc_FDBC;
-    noreturn;
 }
 
-void BiosList() {
+void BiosList(...) {
     out(PORT_CHARGEN_ROM, a);
     BiosList2();
     out(PORT_CODE_ROM, a);
 }
 
-void BiosUnknown() {
+void BiosListSt(...) {
     a ^= a;
-    noreturn;
+    return BiosAuxOut();
 }
 
-void BiosAuxOut() {
+void BiosAuxOut(...) {
 }
 
-void BiosAuxIn() {
+void BiosAuxIn(...) {
     a = 0x1A;
 }
 
-void BiosRead4() {
+void BiosRead4(...) {
     BiosRead();
     out(PORT_CHARGEN_ROM, a);
 }
 
 // Фукнкция CP/M BIOS. Выбрать диск.
 
-void BiosSetDsk() {
+void BiosSetDsk(...) {
     hl = 0;  // Return value
     if ((a = c) >= 1) return;
     vCpmDisk = a;
@@ -4068,33 +4168,32 @@ void BiosSetDsk() {
 
 // Фукнкция CP/M BIOS. Выбрать нулевую дорожку.
 
-void BiosHome() {
+void BiosHome(...) {
     return vBiosEntrySetTrk(bc = 0);
-    noreturn;
 }
 
 // Фукнкция CP/M BIOS. Выбрать дорожку.
 
-void BiosSetTrk() {
+void BiosSetTrk(...) {
     vBiosTrackLow = a = c;
     vBiosTrackHigh = a = b;
 }
 
 // Фукнкция CP/M BIOS. Выбрать сектор.
 
-void BiosSetSec() {
+void BiosSetSec(...) {
     vBiosSector = a = c;
 }
 
 // Фукнкция CP/M BIOS. Преобразование номера сектора из логического в физический.
 
-void BiosSectTran(bc) {
+void BiosSectTran(...) {
     hl = bc;
 }
 
 // Фукнкция CP/M BIOS. Установить адрес буфера для чтения или записи сектора.
 
-void BiosSetDma(bc) {
+void BiosSetDma(...) {
     l = c;
     h = b;
     vBiosDma = hl;
@@ -4102,7 +4201,7 @@ void BiosSetDma(bc) {
 
 // Фукнкция CP/M BIOS. Прочитать сектор с диска.
 
-void BiosRead() {
+void BiosRead(...) {
     out(PORT_RESET_CU2, a);
     out(PORT_RESET_CU4, a);
     out(PORT_A0, a);
@@ -4115,12 +4214,11 @@ void BiosRead() {
     out(PORT_CHARGEN_ROM, a);
     BiosRead2();
     return BiosWriteReadInternal();
-    noreturn;
 }
 
 // Фукнкция CP/M BIOS. Записать сектор на диск.
 
-void BiosWrite() {
+void BiosWrite(...) {
     out(PORT_RESET_CU2, a);
     out(PORT_RESET_CU4, a);
     out(PORT_A0, a);
@@ -4132,30 +4230,28 @@ void BiosWrite() {
     // Выбор ПЗУ c CP/M BIOS и переход туда
     out(PORT_CHARGEN_ROM, a);
     BiosWrite2();
-    noreturn;
+    return BiosWriteReadInternal();
 }
 
 // Внутренняя функция. Исользуется функциями BiosRead и BiosWindow
 
-void BiosWriteReadInternal() {
+void BiosWriteReadInternal(...) {
     out(PORT_CODE_ROM, a);
     return vBiosReadWrite();
-    noreturn;
 }
 
 // Функция UART. Получить байт из буфера передачи микросхемы UART.
 // Выход: a - байт.
 
-void UartCheckWrite() {
-    a = vUartWriteByte;
-    noreturn;
+void UartResoreMode(...) {
+    return UartSetMode(a = vUartMode);
 }
 
 // Функция UART. Настройка UART интерфейса
 // Вход: a - режим, смотри константы UART_MODE
 // Перед вызовом неободимо выполнить out(PORT_UART_CONFIG, a = VV51_COMMAND__INTERNAL_RESET)
 
-void UartSetMode() {
+void UartSetMode(...) {
     push(a);
     a &= VV51_MODE__ASYNC_MASK;
     if (flag_z) return UartSetModeSpeed0();
@@ -4166,53 +4262,51 @@ void UartSetMode() {
 
     // Скорость 3
     out(PORT_UART_SPEED_0, a);
-    noreturn;
+    return UartSetModeInternal();
 }
 
 // Внутренняя функция. Используется функцией UartSetMode.
 
-void UartSetModeInternal() {
+void UartSetModeInternal(...) {
     pop(a);
-    (a &= [0xFF ^ VV51_MODE__ASYNC_MASK]) |= VV51_MODE__ASYNC_16;
+    (a &= 0xFF ^ VV51_MODE__ASYNC_MASK) |= VV51_MODE__ASYNC_16;
     out(PORT_UART_CONFIG, a);
 }
 
 // Внутренняя функция. Используется функцией UartSetMode. Скорость 2.
 
-void UartSetModeSpeed2() {
+void UartSetModeSpeed2(...) {
     out(PORT_UART_SPEED_1, a);
     return UartSetModeInternal();
-    noreturn;
 }
 
 // Внутренняя функция. Используется функцией UartSetMode. Скорость 1.
 
-void UartSetModeSpeed1() {
+void UartSetModeSpeed1(...) {
     out(PORT_UART_SPEED_0, a);
-    noreturn;
+    return UartModeInternal10();
 }
 
 // Внутренняя функция. Используется функцией UartSetMode.
 
-void UartModeInternal10() {
+void UartModeInternal10(...) {
     pop(a);
-    (a &= [0xFF ^ VV51_MODE__ASYNC_MASK]) |= VV51_MODE__ASYNC_64;
+    (a &= 0xFF ^ VV51_MODE__ASYNC_MASK) |= VV51_MODE__ASYNC_64;
     out(PORT_UART_CONFIG, a);
 }
 
 // Внутренняя функция. Используется функцией UartSetMode. Скорость 0.
 
-void UartSetModeSpeed0() {
+void UartSetModeSpeed0(...) {
     out(PORT_UART_SPEED_1, a);
     return UartModeInternal10();
-    noreturn;
 }
 
 // Функция UART. Проверить буфер приёма микросхемы UART.
 // Выход: a = 0 если буфер пуст.
 
-void UartRxReady() {
-    a = in(PORT_UART_STATE);
+void UartRxReady(...) {
+    a = In(PORT_UART_STATE);
     a &= VV51_STATE__RX_READY;
     a = 0xFF;
     if (flag_nz) return;
@@ -4222,8 +4316,8 @@ void UartRxReady() {
 // Функция UART. Проверить буфер передачи микросхемы UART.
 // Выход: a - 0 если буфер заполнен.
 
-void UartTxReady() {
-    a = in(PORT_UART_STATE);
+void UartTxReady(...) {
+    a = In(PORT_UART_STATE);
     a &= VV51_STATE__TX_READY;
     a = 0xFF;
     if (flag_nz) return;
@@ -4233,27 +4327,27 @@ void UartTxReady() {
 // Функция UART. Получить байт из буфера приёма микросхемы UART.
 // Выход: a - байт.
 
-void UartRead() {
-    a = in(PORT_UART_DATA);
+void UartRead(...) {
+    a = In(PORT_UART_DATA);
 }
 
-// Функция UART. Поместить байт в буфер передачи микросхемы UART.
+// Функция UART. Отправить режим UART.
 
-void UartWrite() {
-    out(PORT_UART_DATA, a = vUartWriteByte);
+void UartWriteMode(...) {
+    out(PORT_UART_DATA, a = vUartMode);
 }
 
 // Записать пилот-тон на ленту
 // Вход: a = 0 - короткий пилот-тон, иначе длинный
 
-void TapeWritePilot() {
+void TapeWritePilot(...) {
     // Запись тишины
     a |= a;
-    push(a) {
+    push_pop(a) {
         hl = 0;
         do {
             hl--;
-        } while (flag_nz(a = h) |= l);
+        } while (flag_nz((a = h) |= l));
     }
 
     // Короткий или длинный пилот-тон
@@ -4265,28 +4359,28 @@ void TapeWritePilot() {
     // Запись пилот-тона
     do {
         TapeWriteHalfBit1();
-        a = in(PORT_TAPE_AND_IDX2);  // Задержка
-        a = in(PORT_TAPE_AND_IDX2);  // Задержка
+        a = In(PORT_TAPE_AND_IDX2);  // Задержка
+        a = In(PORT_TAPE_AND_IDX2);  // Задержка
         bc--;
-    } while (flag_nz(a = b) |= c);
+    } while (flag_nz((a = b) |= c));
 }
 
 // Записать байт на ленту
 // Вход: a - байт
 
-void TapeWriteByte() {
-    push(bc, hl) {
+void TapeWriteByte(...) {
+    push_pop(bc, hl) {
         hl = 0x3B31;  // Длительности периода
-        push(a) {
+        push_pop(a) {
             l = ((a = l) -= 3);
             TapeWritePeriod();
         }
         b = 8;
         do {
-            a >>r= 1;
+            CyclicRotateRight(a);
             if (flag_c) TapeWriteBit1();
             if (flag_nc) TapeWriteBit0();
-        } while (flag_nz b--);
+        } while (flag_nz(b--));
         TapeWriteBit1();
         TapeWriteBit1();
     }
@@ -4294,7 +4388,7 @@ void TapeWriteByte() {
 
 // Записать нулевой бит на ленту
 
-void TapeWriteBit0() {
+void TapeWriteBit0(...) {
     hl = 0x3B31;  // Длительности периода
     nop();        // Задержка
     nop();        // Задержка
@@ -4303,7 +4397,7 @@ void TapeWriteBit0() {
 
 // Записать единичный бит на ленту
 
-void TapeWriteBit1() {
+void TapeWriteBit1(...) {
     TapeWriteHalfBit1();
     swap(*sp, hl);  // Задержка
     swap(*sp, hl);  // Задержка
@@ -4315,23 +4409,23 @@ void TapeWriteBit1() {
 
 // Записать один период частоты единичного бита на ленту
 
-void TapeWriteHalfBit1() {
+void TapeWriteHalfBit1(...) {
     hl = 0x1D14;  // Длительности периода
     nop();        // Задержка
     nop();        // Задержка
-    noreturn;
+    return TapeWritePeriod();
 }
 
 // Записать один период на ленту
 // Вход: h, l - длительности
 
-void TapeWritePeriod() {
-    push(a) {
+void TapeWritePeriod(...) {
+    push_pop(a) {
         do {
-        } while (flag_nz l--);
+        } while (flag_nz(l--));
         out(PORT_TAPE_OUT, a);
         do {
-        } while (flag_nz h--);
+        } while (flag_nz(h--));
         out(PORT_TAPE_OUT, a);
     }
 }
@@ -4339,7 +4433,7 @@ void TapeWritePeriod() {
 // Настройка констант скорости загрузки с ленты по пилот-тону
 // Выход: cf - ошшибка чтения или прервано нажатием F1
 
-void TapeReadPilot() {
+void TapeReadPilot(...) {
     hl = 1111;
     do {
         d = c;
@@ -4355,7 +4449,7 @@ void TapeReadPilot() {
         }
         if (a >= 8) return TapeReadPilot();
         hl--;
-    } while(flag_nz (a = h) |= l);
+    } while (flag_nz((a = h) |= l));
 
     hl = 0;
     b = l;
@@ -4364,49 +4458,50 @@ void TapeReadPilot() {
         TapeReadBit();
         if (flag_c) return;
         hl += bc;
-    } while(flag_nz d--);
+    } while (flag_nz(d--));
 
     hl += (bc = 1710);
 
-    d = (((a = h) >>@= 1) &= 0x7F);
+    d = (CarryRotateRight(a = h) &= 0x7F);
     hl += hl;
     d = ((a = h) -= d);
     a -= 6;
     vTempTape3 = a;
 
-    vTempTape4 = ((((((a = d) += a) += d) &= 0xFC) >>r= 2) -= 3);
-    a |= a; // return nc
+    vTempTape4 = (CyclicRotateRight((((a = d) += a) += d) &= 0xFC, 2) -= 3);
+    a |= a;  // return nc
 }
 
 // Чтение байта с ленты
 // Выход: а - байт, cf - ошшибка чтения или прервано нажатием F1
 
-void TapeReadByte() {
-    push(de, bc, hl) {
+void TapeReadByte(...) {
+    push_pop(de, bc, hl) {
         d = a = vTempTape3;
 
         // Ждем, пока на входе 1
         do {
             KeyboardIsF1Pressed();
             if (flag_c) goto TapeReadByteError;
-            a = in(PORT_TAPE_AND_IDX2);
-        } while (flag_nc a >>r= 1);
+            a = In(PORT_TAPE_AND_IDX2);
+        } while (flag_nc(CyclicRotateRight(a)));
 
         // Ждем, пока на входе 0
         do {
             KeyboardIsF1Pressed();
             if (flag_c) goto TapeReadByteError;
-            e = a = in(PORT_TAPE_AND_IDX2);
-        } while (flag_c a >>r= 1);
+            e = a = In(PORT_TAPE_AND_IDX2);
+        } while (flag_c(CyclicRotateRight(a)));
 
         // Измеряем длительность, пока на входе 1
         TapeReadHalfBitF1();
         do {
-            b = c;
-            TapeReadHalfBitF1();
-            if (flag_c) goto TapeReadByteError;
-            (a = b) += c;
-            if (flag_c) continue;
+            do {
+                b = c;
+                TapeReadHalfBitF1();
+                if (flag_c) goto TapeReadByteError;
+                (a = b) += c;
+            } while (flag_c);
         } while (a < d);
 
         // Чтение 8 бит
@@ -4416,51 +4511,51 @@ void TapeReadByte() {
             TapeReadChanges();
 
             // Если 4 или больше изменений, то выходим с ошибкой
-            a ? 4;
+            Compare(a, 4);
             invert_flag_c();
             if (flag_c) goto TapeReadByteError;
 
             // Если 2 или 3 изменения, сохраняем единичный бит, иначе нулевой
-            a ? 2;
+            Compare(a, 2);
             invert_flag_c();
-            d = ((a = d) >>@= 1);
+            d = CarryRotateRight(a = d);
 
             // Если 0 или 2 изменения, то ждем еще одно изменение
-            if (flag_nc (a = c) >>r= 1) TapeReadHalfBit();
+            if (flag_nc(CyclicRotateRight(a = c))) TapeReadHalfBit();
 
             // Ждем одно изменение
             TapeReadHalfBitF1();
-        } while(flag_nz l--);
+        } while (flag_nz(l--));
         KeyboardIsF1Pressed();
         a = d;
-TapeReadByteError:
+    TapeReadByteError:;
     }
 }
 
 // Измерение количества изменений полярности сигнала на входе с ленты за определенный интервал
 // Выход: с - количество изменений
 
-void TapeReadChanges() {
+void TapeReadChanges(...) {
     b = a = vTempTape4;
     c = 0;
 
-loc_FFA1:
     do {
-        a = in(PORT_TAPE_AND_IDX2);
-        a ^= e;
-        if (flag_z) goto loc_FFB0;
-        e = (a ^= e);
-        c++;
-    } while (flag_nz b--);
-    a = c;
-    return;
+        do {
+            a = In(PORT_TAPE_AND_IDX2);
+            a ^= e;
+            if (flag_z) goto loc_FFB0;
+            e = (a ^= e);
+            c++;
+        } while (flag_nz(b--));
+        a = c;
+        return;
 
 loc_FFB0:
-    nop();
-    nop();
-    nop();
-    a++;
-    if (flag_nz b--) goto loc_FFA1;
+        nop();
+        nop();
+        nop();
+        a++;
+    } while (flag_nz(b--));
     a = c;
 }
 
@@ -4468,30 +4563,30 @@ loc_FFB0:
 // Вход: e - прошлое состояние на входе
 // Выход: с - счетчик, e - прошлое состояние на входе, cf - ошшибка чтения или прервано нажатием F1
 
-void TapeReadHalfBitF1() {
+void TapeReadHalfBitF1(...) {
     KeyboardIsF1Pressed();
     if (flag_c) return;
-    noreturn;
+    return TapeReadHalfBit();
 }
 
 // Измерение длительности полупериода колебания на входе с ленты
 // Вход: e - прошлое состояние на входе
 // Выход: с - счетчик, e - прошлое состояние на входе, cf - ошшибка чтения
 
-void TapeReadHalfBit() {
+void TapeReadHalfBit(...) {
     c = 0;
-    noreturn;
+    return TapeReadEndBit();
 }
 
 // Измерение длительности полупериода колебания на входе с ленты без сброса счетчика
 // Вход: с - счетчик, e - прошлое состояние на входе
 // Выход: с - счетчик, e - прошлое состояние на входе, cf - ошшибка чтения
 
-void TapeReadEndBit() {
+void TapeReadEndBit(...) {
     do {
         c++;
         if (flag_z) return TapeReadEndBitOverflow();
-        a = in(PORT_TAPE_AND_IDX2);
+        a = In(PORT_TAPE_AND_IDX2);
         a ^= e;
     } while (flag_z);
     e = (a ^= e);
@@ -4499,35 +4594,34 @@ void TapeReadEndBit() {
 
 // Внутренняя функция. Испльзуется функцией TapeReadEndPeriod для установки флага CF
 
-void TapeReadEndBitOverflow() {
+void TapeReadEndBitOverflow(...) {
     c--;
 }
 
 // Измерение длительности целого периода колебания на входе с ленты
 // Выход: с - счетчик, e - прошлое состояние на входе, cf - ошшибка чтения
 
-void TapeReadBit() {
+void TapeReadBit(...) {
     // Ждем, пока на входе 1
     do {
         KeyboardIsF1Pressed();
         if (flag_c) return;
-        e = a = in(PORT_TAPE_AND_IDX2);
-        a >>r= 1;
+        e = a = In(PORT_TAPE_AND_IDX2);
+        CyclicRotateRight(a);
     } while (flag_c);
 
     // Измеряем длительность целого периода
     TapeReadHalfBit();
     return TapeReadEndBit();
-    noreturn;
 }
 
 // Проверка нажатия клавиши F1
 // Выход: cf - нажата
 
-void KeyboardIsF1Pressed() {
+void KeyboardIsF1Pressed(...) {
     out(PORT_KEYBOARD, a = 9);
-    a = in(PORT_KEYBOARD);
-    a >>r= 1;
+    a = In(PORT_KEYBOARD);
+    CyclicRotateRight(a);
 }
 
 uint8_t unused[4];
@@ -4535,8 +4629,8 @@ uint8_t unused[4];
 // Копирование из ПЗУ2 0C000h - 0C7FFh, ПЗУ 1 0D000h - 0FFFFh в ОЗУ
 // Вход: bc - откуда, de - конечный адрес откуда, hl - куда
 
-void CopyRom2() {
-    while () {
+void CopyRom2(...) {
+    for (;;) {
         if ((a = c) == e) {
             if ((a = b) == d) return;
         }
@@ -4547,7 +4641,6 @@ void CopyRom2() {
         bc++;
         hl++;
     }
-    noreturn;
 }
 
 // Последний байт ПЗУ
