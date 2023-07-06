@@ -2,7 +2,6 @@
 ./Makefile
 ./iskra1080.cxxflags
 ./iskra1080.includes
-./iskra1080.creator.user
 ./floppy_header1.bin
 ./disk_ws/print.tst
 ./disk_ws/ws.com
