@@ -47,6 +47,9 @@ function makeMenu() {
     let hideMenuTimer = 0;
     let a = document.querySelectorAll(".menu li");
     for (let i = 0; i < a.length; i++) {
+        if (a[i].parentNode.className != "menu" && a[i].querySelectorAll("ul").length > 0)
+            a[i].firstChild.classList.add("sub");
+    
         a[i].onmouseout = function(e) {
             if (hideMenuTimer)
                 clearTimeout(hideMenuTimer);
@@ -54,9 +57,8 @@ function makeMenu() {
             e.stopPropagation();
         };
         a[i].onmouseover = function(e) {
-            if (visibleMenuItem.length > 0) {
+            if (visibleMenuItem.length > 0)
                 showMenu(this);
-            }
             if (hideMenuTimer) {
                 clearTimeout(hideMenuTimer);
                 hideMenuTimer = 0;

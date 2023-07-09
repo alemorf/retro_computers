@@ -3764,23 +3764,23 @@
 3730   FB00             ;**************************************************************
 3731   FB00             ;
 3732   FB00                 include "ipc.inc"
-0001+  FB00 C3 96 FB    BOOT:    JP BIOS_BOOT
-0002+  FB03 C3 9E FB    WBOOT:   JP BIOS_WBOOT
-0003+  FB06 C3 A4 FB    CONST:   JP BIOS_CONST
-0004+  FB09 C3 AB FB    CONIN:   JP BIOS_CONIN
-0005+  FB0C C3 B2 FB    CONOUT:  JP BIOS_CONOUT
-0006+  FB0F C3 B9 FB    LIST:    JP BIOS_LIST
-0007+  FB12 C3 C0 FB    PUNCH:   JP BIOS_PUNCH
-0008+  FB15 C3 C7 FB    READER:  JP BIOS_READER
-0009+  FB18 C3 F5 FB    HOME:    JP BIOS_HOME
-0010+  FB1B C3 D5 FB    SELDSK:  JP BIOS_SELDSK
-0011+  FB1E C3 EE FB    SETTRK:  JP BIOS_SETTRK
-0012+  FB21 C3 FE FB    SETSEC:  JP BIOS_SETSEC
-0013+  FB24 C3 0C FC    SETDMA:  JP BIOS_SETDMA
-0014+  FB27 C3 17 FC    READ:    JP BIOS_READ
-0015+  FB2A C3 2F FC    WRITE:   JP BIOS_WRITE
-0016+  FB2D C3 45 FC    PRSTAT:  JP BIOS_PRSTAT
-0017+  FB30 C3 14 FC    SECTRN:  JP BIOS_SECTRN
+0001+  FB00 C3 9E FB    BOOT:    JP BIOS_BOOT
+0002+  FB03 C3 A6 FB    WBOOT:   JP BIOS_WBOOT
+0003+  FB06 C3 AC FB    CONST:   JP BIOS_CONST
+0004+  FB09 C3 B3 FB    CONIN:   JP BIOS_CONIN
+0005+  FB0C C3 BA FB    CONOUT:  JP BIOS_CONOUT
+0006+  FB0F C3 C1 FB    LIST:    JP BIOS_LIST
+0007+  FB12 C3 C8 FB    PUNCH:   JP BIOS_PUNCH
+0008+  FB15 C3 CF FB    READER:  JP BIOS_READER
+0009+  FB18 C3 FD FB    HOME:    JP BIOS_HOME
+0010+  FB1B C3 DD FB    SELDSK:  JP BIOS_SELDSK
+0011+  FB1E C3 F6 FB    SETTRK:  JP BIOS_SETTRK
+0012+  FB21 C3 06 FC    SETSEC:  JP BIOS_SETSEC
+0013+  FB24 C3 14 FC    SETDMA:  JP BIOS_SETDMA
+0014+  FB27 C3 1F FC    READ:    JP BIOS_READ
+0015+  FB2A C3 37 FC    WRITE:   JP BIOS_WRITE
+0016+  FB2D C3 4D FC    PRSTAT:  JP BIOS_PRSTAT
+0017+  FB30 C3 1C FC    SECTRN:  JP BIOS_SECTRN
 0018+  FB33             
 0019+  FB33             ;----------------------------------------------------------------------------
 0020+  FB33             
@@ -3867,289 +3867,297 @@
 0101+  FB76 E5              PUSH HL
 0102+  FB77 21 00 00        LD HL, 0
 0103+  FB7A 39              ADD HL, SP
-0104+  FB7B 22 90 FB        LD (INTERRUPT_SAVED_SP), HL
+0104+  FB7B 22 98 FB        LD (INTERRUPT_SAVED_SP), HL
 0105+  FB7E 31 00 01        LD SP, SYSCALL_STACK
 0106+  FB81 AF              XOR A
 0107+  FB82 D3 00           OUT (PORT_WINDOW_0), A
-0108+  FB84 C5              PUSH BC
-0109+  FB85 D5              PUSH DE
-0110+  FB86             
-0111+  FB86                 ; System call
-0112+  FB86 CD 05 00        CALL SYSCALL_INTERRUPT
-0113+  FB89             
-0114+  FB89                 ; Restore CPU state
-0115+  FB89 D1              POP DE
-0116+  FB8A C1              POP BC
-0117+  FB8B 3E 08           LD A, PAGE_RAM_0
-0118+  FB8D D3 00           OUT (PORT_WINDOW_0), A
-0119+  FB8F             INTERRUPT_SAVED_SP = $ + 1
-0120+  FB8F 31 00 00        LD SP, 0
-0121+  FB92 E1              POP HL
-0122+  FB93 F1              POP AF
-0123+  FB94             
-0124+  FB94                 ; End of interrupt handler
-0125+  FB94 FB              EI
-0126+  FB95 C9              RET
-0127+  FB96             
-0128+  FB96             ;----------------------------------------------------------------------------
-0129+  FB96                     
-0130+  FB96             BIOS_BOOT: 
-0131+  FB96 F3          	DI
-0132+  FB97 3E FF       	LD A, 0FFh
-0133+  FB99 D3 00       	OUT (PORT_WINDOW_0), A
-0134+  FB9B C3 00 00    	JP 0
-0135+  FB9E             
-0136+  FB9E             ;----------------------------------------------------------------------------
-0137+  FB9E             
-0138+  FB9E             BIOS_WBOOT: 
-0139+  FB9E 11 08 00    	LD DE, SYSCALL_WBOOT
-0140+  FBA1 C3 49 FC    	JP SYSCALL
-0141+  FBA4             
-0142+  FBA4             ;----------------------------------------------------------------------------
-0143+  FBA4             
-0144+  FBA4             BIOS_CONST: 
-0145+  FBA4 D5              PUSH DE
-0146+  FBA5 11 0B 00    	LD DE, SYSCALL_CONST
-0147+  FBA8 C3 49 FC    	JP SYSCALL
-0148+  FBAB             
-0149+  FBAB             ;----------------------------------------------------------------------------
-0150+  FBAB             
-0151+  FBAB             BIOS_CONIN: 
-0152+  FBAB D5              PUSH DE
-0153+  FBAC 11 0E 00    	LD DE, SYSCALL_CONIN
-0154+  FBAF C3 49 FC    	JP SYSCALL
-0155+  FBB2             
-0156+  FBB2             ;----------------------------------------------------------------------------
-0157+  FBB2             	
-0158+  FBB2             BIOS_CONOUT: 
-0159+  FBB2 D5                  PUSH DE
-0160+  FBB3 11 11 00            LD DE, SYSCALL_CONOUT
-0161+  FBB6 C3 49 FC            JP SYSCALL
-0162+  FBB9             
-0163+  FBB9             ;----------------------------------------------------------------------------
-0164+  FBB9             
-0165+  FBB9             BIOS_LIST: 
-0166+  FBB9 D5              PUSH DE
-0167+  FBBA 11 14 00    	LD DE, SYSCALL_LIST
-0168+  FBBD C3 49 FC    	JP SYSCALL
-0169+  FBC0             	
-0170+  FBC0             ;----------------------------------------------------------------------------
-0171+  FBC0             
-0172+  FBC0             BIOS_PUNCH: 
-0173+  FBC0 D5              PUSH DE
-0174+  FBC1 11 17 00    	LD DE, SYSCALL_PUNCH
-0175+  FBC4 C3 49 FC    	JP SYSCALL
-0176+  FBC7             	
-0177+  FBC7             ;----------------------------------------------------------------------------
-0178+  FBC7             
-0179+  FBC7             BIOS_READER: 
-0180+  FBC7 D5              PUSH DE
-0181+  FBC8 11 1A 00    	LD DE, SYSCALL_READER
-0182+  FBCB C3 49 FC    	JP SYSCALL
-0183+  FBCE             
-0184+  FBCE             ;----------------------------------------------------------------------------
-0185+  FBCE             
-0186+  FBCE             BIOS_SELDSK2: 
-0187+  FBCE D5              PUSH DE
-0188+  FBCF 11 1D 00    	LD DE, SYSCALL_SELDSK
-0189+  FBD2 C3 49 FC    	JP SYSCALL
-0190+  FBD5             
-0191+  FBD5             ;----------------------------------------------------------------------------
-0192+  FBD5             
-0193+  FBD5             BIOS_SELDSK: 
-0194+  FBD5                 ; Check device number
-0195+  FBD5 79              LD A, C
-0196+  FBD6 FE 02           CP MAX_DEVICES
-0197+  FBD8 21 00 00        LD HL, 0
-0198+  FBDB D0              RET NC
-0199+  FBDC                 
-0200+  FBDC                 ; System call
-0201+  FBDC CD CE FB        CALL BIOS_SELDSK2
-0202+  FBDF                 
-0203+  FBDF                 ; Check error
-0204+  FBDF B7              OR A
-0205+  FBE0 C0              RET NZ
-0206+  FBE1             	
-0207+  FBE1                 ; Save current device number
-0208+  FBE1 79              LD A, C
-0209+  FBE2 32 04 00        LD (TDRIVE), A
-0210+  FBE5             	
-0211+  FBE5                 ; Return DPH address
-0212+  FBE5 B7              OR A
-0213+  FBE6 21 60 FF        LD HL, BIOS_DPH_A
-0214+  FBE9 C8              RET Z
-0215+  FBEA 21 70 FF        LD HL, BIOS_DPH_B    
-0216+  FBED C9              RET
-0217+  FBEE             
-0218+  FBEE             ;----------------------------------------------------------------------------
-0219+  FBEE             
-0220+  FBEE             BIOS_SETTRK: 
-0221+  FBEE D5              PUSH DE
-0222+  FBEF 11 20 00    	LD DE, SYSCALL_SETTRK
-0223+  FBF2 C3 49 FC    	JP SYSCALL
-0224+  FBF5             	
-0225+  FBF5             ;----------------------------------------------------------------------------
-0226+  FBF5             
-0227+  FBF5             BIOS_HOME: 
-0228+  FBF5 C5              PUSH BC
-0229+  FBF6 01 00 00    	LD BC, 0
-0230+  FBF9 CD EE FB    	CALL BIOS_SETTRK
-0231+  FBFC C1          	POP BC
-0232+  FBFD C9          	RET
-0233+  FBFE             	
-0234+  FBFE             ;----------------------------------------------------------------------------
-0235+  FBFE             
-0236+  FBFE             BIOS_SETSEC: 
-0237+  FBFE D5              PUSH DE
-0238+  FBFF 11 23 00    	LD DE, SYSCALL_SETSEC
-0239+  FC02 C3 49 FC    	JP SYSCALL
-0240+  FC05             
-0241+  FC05             ;----------------------------------------------------------------------------
-0242+  FC05             
-0243+  FC05             BIOS_READ2:         
-0244+  FC05 D5              PUSH DE
-0245+  FC06 11 26 00        LD DE, SYSCALL_READ
-0246+  FC09 C3 49 FC        JP SYSCALL
-0247+  FC0C             	
-0248+  FC0C             ;----------------------------------------------------------------------------
-0249+  FC0C             
-0250+  FC0C             BIOS_SETDMA: 
-0251+  FC0C E5              PUSH HL
-0252+  FC0D 60 69           LD HL, BC
-0253+  FC0F 22 73 FB    	LD (BIOS_DMA), HL
-0254+  FC12 E1          	POP HL
-0255+  FC13 C9          	RET
-0256+  FC14             	
-0257+  FC14             ;----------------------------------------------------------------------------
-0258+  FC14             
-0259+  FC14             BIOS_SECTRN: 
-0260+  FC14 60 69       	LD HL, BC
-0261+  FC16 C9          	RET
-0262+  FC17             
-0263+  FC17             ;----------------------------------------------------------------------------
-0264+  FC17             
-0265+  FC17             BIOS_READ: 
-0266+  FC17 CD 05 FC        CALL BIOS_READ2
-0267+  FC1A                 
-0268+  FC1A             	; Check error
-0269+  FC1A B7          	OR A
-0270+  FC1B C0          	RET NZ
-0271+  FC1C             	
-0272+  FC1C                 ; Copy data from the system call buffer	
-0273+  FC1C D5              PUSH DE
-0274+  FC1D E5              PUSH HL
-0275+  FC1E 11 80 FF    	LD DE, BIOS_DMA_BUFFER
-0276+  FC21 2A 73 FB    	LD HL, (BIOS_DMA)
-0277+  FC24             BIOS_READ_1: 	
-0278+  FC24 1A          	LD A, (DE)
-0279+  FC25 77          	LD (HL), A
-0280+  FC26 23          	INC HL
-0281+  FC27 1C          	INC E
-0282+  FC28 C2 24 FC    	JP NZ, BIOS_READ_1
-0283+  FC2B E1          	POP HL
-0284+  FC2C D1          	POP DE
-0285+  FC2D             	
-0286+  FC2D             	; No error
-0287+  FC2D AF          	XOR A
-0288+  FC2E C9          	RET
-0289+  FC2F             
-0290+  FC2F             ;----------------------------------------------------------------------------
-0291+  FC2F             
-0292+  FC2F             BIOS_WRITE: 
-0293+  FC2F D5              PUSH DE
-0294+  FC30             
-0295+  FC30                 ; Copy data to the system call buffer
-0296+  FC30 E5              PUSH HL
-0297+  FC31 11 80 FF        LD DE, BIOS_DMA_BUFFER
-0298+  FC34 2A 73 FB        LD HL, (BIOS_DMA)
-0299+  FC37             BIOS_WRITE_1: 	
-0300+  FC37 7E              LD A, (HL)
-0301+  FC38 12              LD (DE), A
-0302+  FC39 23              INC HL
-0303+  FC3A 1C              INC E
-0304+  FC3B C2 37 FC        JP NZ, BIOS_WRITE_1
-0305+  FC3E E1              POP HL
-0306+  FC3F             	
-0307+  FC3F                 ; System call
-0308+  FC3F 11 29 00        LD DE, SYSCALL_WRITE
-0309+  FC42 C3 49 FC        JP SYSCALL
-0310+  FC45             
-0311+  FC45             ;----------------------------------------------------------------------------
-0312+  FC45             
-0313+  FC45             BIOS_PRSTAT: 
-0314+  FC45 D5                  PUSH DE
-0315+  FC46 11 2C 00            LD DE, SYSCALL_PRSTAT
-0316+  FC49             
-0317+  FC49             SYSCALL: 
-0318+  FC49 E5                  PUSH HL
-0319+  FC4A             
-0320+  FC4A                     ; Save stack pointer
-0321+  FC4A 21 00 00            LD HL, 0
-0322+  FC4D 39                  ADD HL, SP
-0323+  FC4E 22 65 FC            LD (BIOS_SAVED_SP), HL
-0324+  FC51             
-0325+  FC51                     ; Switch RAM and stack pointer
-0326+  FC51 AF                  XOR A
-0327+  FC52 F3                  DI
-0328+  FC53 31 00 01            LD SP, SYSCALL_STACK
-0329+  FC56 D3 00               OUT (PORT_WINDOW_0), A
-0330+  FC58 FB                  EI
-0331+  FC59             
-0332+  FC59                     ; System call
-0333+  FC59 EB                  EX HL, DE
-0334+  FC5A C5                  PUSH BC
-0335+  FC5B CD 6C FC            CALL CALL_HL
-0336+  FC5E C1                  POP BC
-0337+  FC5F             
-0338+  FC5F                     ; Switch RAM and stack pointer
-0339+  FC5F 3E 08               LD A, PAGE_RAM_0
-0340+  FC61 F3                  DI
-0341+  FC62 D3 00               OUT (PORT_WINDOW_0), A
-0342+  FC64             BIOS_SAVED_SP = $ + 1	
-0343+  FC64 31 00 00            LD SP, 0
-0344+  FC67 FB                  EI
-0345+  FC68             
-0346+  FC68                     ; Return
-0347+  FC68 7A                  LD A, D
-0348+  FC69 E1                  POP HL
-0349+  FC6A D1                  POP DE
-0350+  FC6B C9                  RET
-0351+  FC6C             
-0352+  FC6C             ;----------------------------------------------------------------------------
-0353+  FC6C                     
-0354+  FC6C             CALL_HL: 
-0355+  FC6C E9          	JP HL
-0356+  FC6D             
-0357+  FC6D             ;----------------------------------------------------------------------------
-0358+  FC6D             
-0359+  FC6D             BIOS_DPB_A DB 28h, 0, 4, 0Fh, 0, 8Ah, 1, 3Fh, 0, 080h, 0, 10h, 0, 2, 0
-0359+  FC6D 2800040F008A013F00800010000200
-0360+  FC7C             BIOS_DPB_B DB 28h, 0, 4, 0Fh, 0, 8Ah, 1, 3Fh, 0, 080h, 0, 10h, 0, 2, 0
-0360+  FC7C 2800040F008A013F00800010000200
-0361+  FC8B 00          BIOS_DIRBUF DS 128
-0362+  FD0B 00          BIOS_CSV_A DS MAX_FILES_COUNT / 4
-0363+  FD2B 00          BIOS_CSV_B DS MAX_FILES_COUNT / 4
-0364+  FD4B 00          BIOS_ALV_A DS MAX_BLOCKS_COUNT / 8
-0365+  FE4B 00          BIOS_ALV_B DS MAX_BLOCKS_COUNT / 8
-0366+  FF4B             
-0367+  FF4B             ; CP/M BIOS buffers
-0368+  FF4B             
-0369+  FF4B 00          		DS 0x10000 - 128 - 16 * MAX_DEVICES - $
-0370+  FF60             	
-0371+  FF60 00          BIOS_DPH_A DS 8
-0372+  FF68 8B FC                  DW BIOS_DIRBUF
-0373+  FF6A 6D FC                  DW BIOS_DPB_A
-0374+  FF6C 0B FD                  DW BIOS_CSV_A
-0375+  FF6E 4B FD                  DW BIOS_ALV_A
-0376+  FF70                        
-0377+  FF70 00          BIOS_DPH_B DS 8
-0378+  FF78 8B FC                  DW BIOS_DIRBUF
-0379+  FF7A 7C FC                  DW BIOS_DPB_B
-0380+  FF7C 2B FD                  DW BIOS_CSV_B
-0381+  FF7E 4B FE                  DW BIOS_ALV_B
-0382+  FF80             
-0383+  FF80 00          BIOS_DMA_BUFFER DS 128
-0384+  0000             
+0108+  FB84 3E 02           LD A, 2
+0109+  FB86 D3 01           OUT (PORT_WINDOW_1), A
+0110+  FB88 C5              PUSH BC
+0111+  FB89 D5              PUSH DE
+0112+  FB8A             
+0113+  FB8A                 ; System call
+0114+  FB8A CD 05 00        CALL SYSCALL_INTERRUPT
+0115+  FB8D             
+0116+  FB8D                 ; Restore CPU state
+0117+  FB8D D1              POP DE
+0118+  FB8E C1              POP BC
+0119+  FB8F 3E 08           LD A, PAGE_RAM_0
+0120+  FB91 D3 00           OUT (PORT_WINDOW_0), A
+0121+  FB93 3E 0A           LD A, PAGE_RAM_1
+0122+  FB95 D3 01           OUT (PORT_WINDOW_1), A
+0123+  FB97             INTERRUPT_SAVED_SP = $ + 1
+0124+  FB97 31 00 00        LD SP, 0
+0125+  FB9A E1              POP HL
+0126+  FB9B F1              POP AF
+0127+  FB9C             
+0128+  FB9C                 ; End of interrupt handler
+0129+  FB9C FB              EI
+0130+  FB9D C9              RET
+0131+  FB9E             
+0132+  FB9E             ;----------------------------------------------------------------------------
+0133+  FB9E                     
+0134+  FB9E             BIOS_BOOT: 
+0135+  FB9E F3          	DI
+0136+  FB9F 3E FF       	LD A, 0FFh
+0137+  FBA1 D3 00       	OUT (PORT_WINDOW_0), A
+0138+  FBA3 C3 00 00    	JP 0
+0139+  FBA6             
+0140+  FBA6             ;----------------------------------------------------------------------------
+0141+  FBA6             
+0142+  FBA6             BIOS_WBOOT: 
+0143+  FBA6 11 08 00    	LD DE, SYSCALL_WBOOT
+0144+  FBA9 C3 51 FC    	JP SYSCALL
+0145+  FBAC             
+0146+  FBAC             ;----------------------------------------------------------------------------
+0147+  FBAC             
+0148+  FBAC             BIOS_CONST: 
+0149+  FBAC D5              PUSH DE
+0150+  FBAD 11 0B 00    	LD DE, SYSCALL_CONST
+0151+  FBB0 C3 51 FC    	JP SYSCALL
+0152+  FBB3             
+0153+  FBB3             ;----------------------------------------------------------------------------
+0154+  FBB3             
+0155+  FBB3             BIOS_CONIN: 
+0156+  FBB3 D5              PUSH DE
+0157+  FBB4 11 0E 00    	LD DE, SYSCALL_CONIN
+0158+  FBB7 C3 51 FC    	JP SYSCALL
+0159+  FBBA             
+0160+  FBBA             ;----------------------------------------------------------------------------
+0161+  FBBA             	
+0162+  FBBA             BIOS_CONOUT: 
+0163+  FBBA D5                  PUSH DE
+0164+  FBBB 11 11 00            LD DE, SYSCALL_CONOUT
+0165+  FBBE C3 51 FC            JP SYSCALL
+0166+  FBC1             
+0167+  FBC1             ;----------------------------------------------------------------------------
+0168+  FBC1             
+0169+  FBC1             BIOS_LIST: 
+0170+  FBC1 D5              PUSH DE
+0171+  FBC2 11 14 00    	LD DE, SYSCALL_LIST
+0172+  FBC5 C3 51 FC    	JP SYSCALL
+0173+  FBC8             	
+0174+  FBC8             ;----------------------------------------------------------------------------
+0175+  FBC8             
+0176+  FBC8             BIOS_PUNCH: 
+0177+  FBC8 D5              PUSH DE
+0178+  FBC9 11 17 00    	LD DE, SYSCALL_PUNCH
+0179+  FBCC C3 51 FC    	JP SYSCALL
+0180+  FBCF             	
+0181+  FBCF             ;----------------------------------------------------------------------------
+0182+  FBCF             
+0183+  FBCF             BIOS_READER: 
+0184+  FBCF D5              PUSH DE
+0185+  FBD0 11 1A 00    	LD DE, SYSCALL_READER
+0186+  FBD3 C3 51 FC    	JP SYSCALL
+0187+  FBD6             
+0188+  FBD6             ;----------------------------------------------------------------------------
+0189+  FBD6             
+0190+  FBD6             BIOS_SELDSK2: 
+0191+  FBD6 D5              PUSH DE
+0192+  FBD7 11 1D 00    	LD DE, SYSCALL_SELDSK
+0193+  FBDA C3 51 FC    	JP SYSCALL
+0194+  FBDD             
+0195+  FBDD             ;----------------------------------------------------------------------------
+0196+  FBDD             
+0197+  FBDD             BIOS_SELDSK: 
+0198+  FBDD                 ; Check device number
+0199+  FBDD 79              LD A, C
+0200+  FBDE FE 02           CP MAX_DEVICES
+0201+  FBE0 21 00 00        LD HL, 0
+0202+  FBE3 D0              RET NC
+0203+  FBE4                 
+0204+  FBE4                 ; System call
+0205+  FBE4 CD D6 FB        CALL BIOS_SELDSK2
+0206+  FBE7                 
+0207+  FBE7                 ; Check error
+0208+  FBE7 B7              OR A
+0209+  FBE8 C0              RET NZ
+0210+  FBE9             	
+0211+  FBE9                 ; Save current device number
+0212+  FBE9 79              LD A, C
+0213+  FBEA 32 04 00        LD (TDRIVE), A
+0214+  FBED             	
+0215+  FBED                 ; Return DPH address
+0216+  FBED B7              OR A
+0217+  FBEE 21 60 FF        LD HL, BIOS_DPH_A
+0218+  FBF1 C8              RET Z
+0219+  FBF2 21 70 FF        LD HL, BIOS_DPH_B    
+0220+  FBF5 C9              RET
+0221+  FBF6             
+0222+  FBF6             ;----------------------------------------------------------------------------
+0223+  FBF6             
+0224+  FBF6             BIOS_SETTRK: 
+0225+  FBF6 D5              PUSH DE
+0226+  FBF7 11 20 00    	LD DE, SYSCALL_SETTRK
+0227+  FBFA C3 51 FC    	JP SYSCALL
+0228+  FBFD             	
+0229+  FBFD             ;----------------------------------------------------------------------------
+0230+  FBFD             
+0231+  FBFD             BIOS_HOME: 
+0232+  FBFD C5              PUSH BC
+0233+  FBFE 01 00 00    	LD BC, 0
+0234+  FC01 CD F6 FB    	CALL BIOS_SETTRK
+0235+  FC04 C1          	POP BC
+0236+  FC05 C9          	RET
+0237+  FC06             	
+0238+  FC06             ;----------------------------------------------------------------------------
+0239+  FC06             
+0240+  FC06             BIOS_SETSEC: 
+0241+  FC06 D5              PUSH DE
+0242+  FC07 11 23 00    	LD DE, SYSCALL_SETSEC
+0243+  FC0A C3 51 FC    	JP SYSCALL
+0244+  FC0D             
+0245+  FC0D             ;----------------------------------------------------------------------------
+0246+  FC0D             
+0247+  FC0D             BIOS_READ2:         
+0248+  FC0D D5              PUSH DE
+0249+  FC0E 11 26 00        LD DE, SYSCALL_READ
+0250+  FC11 C3 51 FC        JP SYSCALL
+0251+  FC14             	
+0252+  FC14             ;----------------------------------------------------------------------------
+0253+  FC14             
+0254+  FC14             BIOS_SETDMA: 
+0255+  FC14 E5              PUSH HL
+0256+  FC15 60 69           LD HL, BC
+0257+  FC17 22 73 FB    	LD (BIOS_DMA), HL
+0258+  FC1A E1          	POP HL
+0259+  FC1B C9          	RET
+0260+  FC1C             	
+0261+  FC1C             ;----------------------------------------------------------------------------
+0262+  FC1C             
+0263+  FC1C             BIOS_SECTRN: 
+0264+  FC1C 60 69       	LD HL, BC
+0265+  FC1E C9          	RET
+0266+  FC1F             
+0267+  FC1F             ;----------------------------------------------------------------------------
+0268+  FC1F             
+0269+  FC1F             BIOS_READ: 
+0270+  FC1F CD 0D FC        CALL BIOS_READ2
+0271+  FC22                 
+0272+  FC22             	; Check error
+0273+  FC22 B7          	OR A
+0274+  FC23 C0          	RET NZ
+0275+  FC24             	
+0276+  FC24                 ; Copy data from the system call buffer	
+0277+  FC24 D5              PUSH DE
+0278+  FC25 E5              PUSH HL
+0279+  FC26 11 80 FF    	LD DE, BIOS_DMA_BUFFER
+0280+  FC29 2A 73 FB    	LD HL, (BIOS_DMA)
+0281+  FC2C             BIOS_READ_1: 	
+0282+  FC2C 1A          	LD A, (DE)
+0283+  FC2D 77          	LD (HL), A
+0284+  FC2E 23          	INC HL
+0285+  FC2F 1C          	INC E
+0286+  FC30 C2 2C FC    	JP NZ, BIOS_READ_1
+0287+  FC33 E1          	POP HL
+0288+  FC34 D1          	POP DE
+0289+  FC35             	
+0290+  FC35             	; No error
+0291+  FC35 AF          	XOR A
+0292+  FC36 C9          	RET
+0293+  FC37             
+0294+  FC37             ;----------------------------------------------------------------------------
+0295+  FC37             
+0296+  FC37             BIOS_WRITE: 
+0297+  FC37 D5              PUSH DE
+0298+  FC38             
+0299+  FC38                 ; Copy data to the system call buffer
+0300+  FC38 E5              PUSH HL
+0301+  FC39 11 80 FF        LD DE, BIOS_DMA_BUFFER
+0302+  FC3C 2A 73 FB        LD HL, (BIOS_DMA)
+0303+  FC3F             BIOS_WRITE_1: 	
+0304+  FC3F 7E              LD A, (HL)
+0305+  FC40 12              LD (DE), A
+0306+  FC41 23              INC HL
+0307+  FC42 1C              INC E
+0308+  FC43 C2 3F FC        JP NZ, BIOS_WRITE_1
+0309+  FC46 E1              POP HL
+0310+  FC47             	
+0311+  FC47                 ; System call
+0312+  FC47 11 29 00        LD DE, SYSCALL_WRITE
+0313+  FC4A C3 51 FC        JP SYSCALL
+0314+  FC4D             
+0315+  FC4D             ;----------------------------------------------------------------------------
+0316+  FC4D             
+0317+  FC4D             BIOS_PRSTAT: 
+0318+  FC4D D5                  PUSH DE
+0319+  FC4E 11 2C 00            LD DE, SYSCALL_PRSTAT
+0320+  FC51             
+0321+  FC51             SYSCALL: 
+0322+  FC51 E5                  PUSH HL
+0323+  FC52             
+0324+  FC52                     ; Save stack pointer
+0325+  FC52 21 00 00            LD HL, 0
+0326+  FC55 39                  ADD HL, SP
+0327+  FC56 22 75 FC            LD (BIOS_SAVED_SP), HL
+0328+  FC59             
+0329+  FC59                     ; Switch RAM and stack pointer
+0330+  FC59 AF                  XOR A
+0331+  FC5A F3                  DI
+0332+  FC5B 31 00 01            LD SP, SYSCALL_STACK
+0333+  FC5E D3 00               OUT (PORT_WINDOW_0), A
+0334+  FC60 3E 02               LD A, 2
+0335+  FC62 D3 01               OUT (PORT_WINDOW_1), A
+0336+  FC64 FB                  EI
+0337+  FC65             
+0338+  FC65                     ; System call
+0339+  FC65 EB                  EX HL, DE
+0340+  FC66 C5                  PUSH BC
+0341+  FC67 CD 7C FC            CALL CALL_HL
+0342+  FC6A C1                  POP BC
+0343+  FC6B             
+0344+  FC6B                     ; Switch RAM and stack pointer
+0345+  FC6B 3E 08               LD A, PAGE_RAM_0
+0346+  FC6D F3                  DI
+0347+  FC6E D3 00               OUT (PORT_WINDOW_0), A
+0348+  FC70 3E 0A               LD A, PAGE_RAM_1
+0349+  FC72 D3 01               OUT (PORT_WINDOW_1), A
+0350+  FC74             BIOS_SAVED_SP = $ + 1
+0351+  FC74 31 00 00            LD SP, 0
+0352+  FC77 FB                  EI
+0353+  FC78             
+0354+  FC78                     ; Return
+0355+  FC78 7A                  LD A, D
+0356+  FC79 E1                  POP HL
+0357+  FC7A D1                  POP DE
+0358+  FC7B C9                  RET
+0359+  FC7C             
+0360+  FC7C             ;----------------------------------------------------------------------------
+0361+  FC7C                     
+0362+  FC7C             CALL_HL: 
+0363+  FC7C E9          	JP HL
+0364+  FC7D             
+0365+  FC7D             ;----------------------------------------------------------------------------
+0366+  FC7D             
+0367+  FC7D             BIOS_DPB_A DB 28h, 0, 4, 0Fh, 0, 8Ah, 1, 3Fh, 0, 080h, 0, 10h, 0, 2, 0
+0367+  FC7D 2800040F008A013F00800010000200
+0368+  FC8C             BIOS_DPB_B DB 28h, 0, 4, 0Fh, 0, 8Ah, 1, 3Fh, 0, 080h, 0, 10h, 0, 2, 0
+0368+  FC8C 2800040F008A013F00800010000200
+0369+  FC9B 00          BIOS_DIRBUF DS 128
+0370+  FD1B 00          BIOS_CSV_A DS MAX_FILES_COUNT / 4
+0371+  FD3B 00          BIOS_CSV_B DS MAX_FILES_COUNT / 4
+0372+  FD5B 00          BIOS_ALV_A DS MAX_BLOCKS_COUNT / 8
+0373+  FE5B 00          BIOS_ALV_B DS MAX_BLOCKS_COUNT / 8
+0374+  FF5B             
+0375+  FF5B             ; CP/M BIOS buffers
+0376+  FF5B             
+0377+  FF5B 00          		DS 0x10000 - 128 - 16 * MAX_DEVICES - $
+0378+  FF60             	
+0379+  FF60 00          BIOS_DPH_A DS 8
+0380+  FF68 9B FC                  DW BIOS_DIRBUF
+0381+  FF6A 7D FC                  DW BIOS_DPB_A
+0382+  FF6C 1B FD                  DW BIOS_CSV_A
+0383+  FF6E 5B FD                  DW BIOS_ALV_A
+0384+  FF70                        
+0385+  FF70 00          BIOS_DPH_B DS 8
+0386+  FF78 9B FC                  DW BIOS_DIRBUF
+0387+  FF7A 8C FC                  DW BIOS_DPB_B
+0388+  FF7C 3B FD                  DW BIOS_CSV_B
+0389+  FF7E 5B FE                  DW BIOS_ALV_B
+0390+  FF80             
+0391+  FF80 00          BIOS_DMA_BUFFER DS 128
+0392+  0000             
 3733   0000             ;*
 3734   0000             ;******************   E N D   O F   C P / M   *****************
 3735   0000             ;*

@@ -106,8 +106,6 @@ ClearScreenPoly3:
 const int SCROLL_COLUMN_UP = 0x100;
 const int BITPLANE_OFFSET = 0x4000;
 const int SCREEN_SIZE = 0x3000;
-const int SCREEN_0_ADDRESS = 0xD000;
-const int SCREEN_1_ADDRESS = 0x9000;
 
 void ScrollUpSubBw() {
     /* Копирование одной строки символов */
@@ -248,7 +246,7 @@ void DrawChar6(...) {
     b = a;
 
     a = l;
-    a += a += a;
+    a *= 4;
     a += l;
     a += a;
     invert(a);
@@ -539,7 +537,7 @@ void SetColor6(...) {
     }
     b = a;
     a = c;
-    a += a += a;
+    a *= 4;
     a &= 4;
     a ^= b;
     a = OPCODE_XOR_B;
@@ -582,7 +580,7 @@ void SetColor6(...) {
     }
     b = a;
     a = c;
-    a += a += a;
+    a *= 4;
     a &= 8;
     a ^= b;
     a = OPCODE_XOR_B;
@@ -600,21 +598,20 @@ void DrawCursor6() {
     /* Маска */
     a = h;
     a &= 3;
-    if (flag_z) {
-        de = 0x3F << 2;
-    } else if (flag_z(a--)) {
+    if (flag_z)
+        de = 0x00FC;
+    else if (flag_z(a--))
         de = 0xF003;
-    } else if (flag_z(a--)) {
-        de = 0xF003;
-    } else {
-        de = 0x3F;
-    }
+    else if (flag_z(a--))
+        de = 0xC00F;
+    else
+        de = 0x003F;
 
     /* Координаты в адрес */
     a = l;
-    a += a += a;
+    a *= 4;
     a += l;
-    a += a;
+    a *= 2;
     Invert(a);
     l = a;
     a = h;

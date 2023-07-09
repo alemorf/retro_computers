@@ -1,8 +1,8 @@
-#include "bios.h"
 #include "keyboard.h"
-#include "macro.h"
-#include "graph.h"
+#include "bios.h"
 #include "console.h"
+#include "graph.h"
+#include "macro.h"
 
 // TODO: ALT
 // TODO: Special keys with SHIFT, CTRL, ALT
@@ -27,12 +27,16 @@ uint8_t key_rus = 0;
 extern uint8_t key_buffer[KEY_BUFFER_SIZE];
 uint8_t key_read = &key_buffer;
 uint8_t key_write = &key_buffer;
+extern uint16_t key_read_l_write_h __address(key_read);
 
 /* Влияние SHIFT, CAP, NUM на нажатую клавишу */
 
 const int SHI = 0x40;
 const int CAP = 0x80;
 const int NUM = 0x20;
+#define CTL(C) ((C)&0x1F)
+
+// clang-format off
 
 uint8_t shiftLayout[] = {
     /* Латинская раскладка */
@@ -59,8 +63,6 @@ uint8_t shiftLayout[] = {
     0,   CAP, 0,   0,   SHI, NUM, NUM, NUM,
     0,   0,   0,   0,   0,   NUM, NUM, NUM,
 };
-
-#define CTL(C) ((C) & 0x1F)
 
 uint8_t ctrLayout[] = {
     0x1E,   CTL('u'), CTL('j'), CTL('m'), 0x1F,      CTL('i'),      CTL('k'),  CTL('`'),
@@ -125,15 +127,17 @@ uint8_t key_layout_table[] = {
     KEY_F3, 0, KEY_F1, KEY_F2, KEY_ESC, '9', '6', '3'
 };
 
+// clang-format on
+
 void CheckKeyboard() {
     /* Если буфер пуст, то выходим с флагом Z */
-    hl = key_read; /* h = key_write */
+    hl = key_read_l_write_h;
     Compare(a = h, l);
 }
 
 void ReadKeyboard() {
     /* Если буфер пуст, то выходим с флагом Z */
-    hl = key_read; /* h = key_write */
+    hl = key_read_l_write_h;
     if ((a = h) == l)
         return; /* Флаг Z */
 
@@ -148,14 +152,13 @@ void ReadKeyboard() {
         a = &key_buffer;
     key_read = a;
 
-    /* Выходим с флагом NZ */    
-    (a ^= a)++;
+    (a ^= a)++; /* Флаг NZ */
     a = d;
 }
 
 void KeyPush(...) {
-    push_pop (hl) {
-        hl = key_write;
+    push_pop(hl) {
+        hl = key_read_l_write_h;
         h = &key_buffer >> 8;
         *hl = a;
         l++;
@@ -167,23 +170,6 @@ void KeyPush(...) {
     // TODO: keyboard_read == keyboard_write
 }
 
-uint8_t special_keys[] = {
-    'O', 'P', 0,    // F1
-    'O', 'Q', 0,    // F2
-    'O', 'R', 0,    // F3
-    '[', 'A', 0,    // UP
-    '[', 'B', 0,    // DOWN
-    '[', 'C', 0,    // RIGHT
-    '[', 'D', 0,    // LEFT
-    '[', 'E', 0,    // 5
-    '[', 'F', 0,    // END
-    '[', 'H', 0,    // HOME
-    '[', '2', '~',  // INS
-    '[', '3', '~',  // DEL
-    '[', '5', '~',  // PG UP
-    '[', '6', '~',  // PG DN
-};
-
 void KeyPressed() {
     d = a;
     /* Повторные нажатия */
@@ -191,7 +177,8 @@ void KeyPressed() {
     if (a == l) {
         hl = &key_delay;
         (*hl)--;
-        if (flag_nz) return;
+        if (flag_nz)
+            return;
         *hl = NEXT_REPLAY_DELAY;
     } else {
         key_pressed = a;
@@ -233,7 +220,7 @@ void KeyPressed() {
     /* Определяем влияние SHIFT, CAP, NUM, RUS на нажатую клавишу */
     a = d;
     SET_HL_A_PLUS_CONST(&shiftLayout);
-    if (flag_nz((a = key_rus) |= a)) { // TODO: use e
+    if (flag_nz((a = key_rus) |= a)) {  // TODO: use e
         a = LAYOUT_SIZE;
         ADD_HL_A
     }
@@ -264,23 +251,7 @@ void KeyPressed() {
     }
     a = *hl;
 
-    /* Коды клавиш из одного байта сразу сохраненяем в буфер */
-    if (a < 0xF4)
-        return KeyPush(a);
-
-    /* Преобразование кодов специальных клавиш в коды VT100 */
-    a -= 0xF2;
-    b = a; a += a; a += b;
-    SET_HL_A_PLUS_CONST(&special_keys);
-    KeyPush(a = 0x1B);
-    KeyPush(a = *hl);
-    hl++;
-    KeyPush(a = *hl);
-    hl++;
-    a = *hl;
-    if (flag_z(a |= a))
-        return;
-    KeyPush(a = *hl);
+    return KeyPush(a);
 }
 
 void InterruptHandler() {
@@ -345,11 +316,11 @@ void InterruptHandler() {
                     d = a;
                     /* Номер нажатой клавиши */
                     a = b;
-                    a += a += a += a;
+                    a *= 8;
                     a += c;
                     /* Пропускаем CTL, SHIFT */
-                    if (a != 0x1B) // TODO:
-                        if (a != 0x43) // TODO:
+                    if (a != 0x1B)      // TODO:
+                        if (a != 0x43)  // TODO:
                             return KeyPressed(a);
                     a = d;
                 }

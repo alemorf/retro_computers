@@ -7,7 +7,7 @@ void Reboot() {
     return main();
 }
 
-/* Размер прошивки */
+/* Тут сохраняется размер прошивки */
 
 extern uint16_t file_end;
 uint16_t sector_count = (&file_end + 127) / 128;
@@ -73,9 +73,8 @@ void EntryCpmPrSta() {
 asm(" org 0x38");
 
 void EntryInterrupt() {
-    push_pop(a, bc, de, hl) {
+    push_pop(a, bc, de, hl)
         InterruptHandler();
-    }
     EnableInterrupts();
 }
 

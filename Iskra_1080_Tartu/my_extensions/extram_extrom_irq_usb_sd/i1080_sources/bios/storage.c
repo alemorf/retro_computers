@@ -21,6 +21,7 @@ void CpmSelDsk() {
     out(PORT_SD_DATA, a = SD_COMMAND_READ);
     a = c;
     a++;
+    a++;
     out(PORT_SD_DATA, a);
     out(PORT_SD_DATA, a ^= a);
     out(PORT_SD_DATA, a);
@@ -65,6 +66,7 @@ void ReadWriteSd(...) {
     out(PORT_SD_SIZE, a = b);
     out(PORT_SD_DATA, a = c);
     a = drive_number;
+    a++;
     a++;
     out(PORT_SD_DATA, a);
 
@@ -112,4 +114,73 @@ void CpmWrite() {
     } while(flag_nz);
     WaitSd();
     d = a; /* Error code */
+}
+
+void ReadWriteConfig(...) {
+    WaitSd();
+    out(PORT_SD_SIZE, a = b);
+    out(PORT_SD_DATA, a = c);
+    a = 1;
+    out(PORT_SD_DATA, a);
+    out(PORT_SD_DATA, a ^= a);
+    out(PORT_SD_DATA, a);
+    out(PORT_SD_DATA, a);
+    out(PORT_SD_DATA, a);
+}
+
+/* Прочитать настройки
+ * Вход:
+ *     hl - укзатель на настройки
+ *     с - длина настроек от 1 до 127 байт
+ * Выход:
+ *     a - код ошибки, если 0, то ошибок нет.
+ *     zf - устанвлен, елси ошибок нет
+ */
+
+void ReadConfig(...) {
+    b = ((a = 128) -= c);
+    if (flag_c) {
+        a = 1; /* Превышена мксимальная длина настроек */
+        return;
+    }
+    push_pop(hl, bc) {
+        ReadWriteConfig(bc = (SD_COMMAND_READ_SIZE << 8) | SD_COMMAND_READ);
+        WaitSd();
+    }
+    if (flag_nz(a |= a))
+        return; /* a - error code, flag NZ */
+    do {
+        *hl = a = in(PORT_SD_DATA);
+        hl++;
+    } while(flag_nz(c--));
+    do {
+        a = in(PORT_SD_DATA);
+    } while(flag_nz(b--));
+    a ^= a; /* Error code - No error, flag Z */
+}
+
+/* Сохранить настройки
+ * Вход:
+ *     hl - укзатель на настройки
+ *     с - длина настроек от 1 до 127 байт
+ * Выход:
+ *     a - код ошибки, если 0, то ошибок нет.
+ */
+
+void WriteConfig(...) {
+    b = ((a = 128) -= c);
+    push_pop(hl, bc) {
+        ReadWriteConfig(bc = (SD_COMMAND_WRITE_SIZE << 8) | SD_COMMAND_WRITE);
+    }
+    do {
+        out(PORT_SD_DATA, a = *hl);
+        hl++;
+    } while(flag_nz(c--));
+    a ^= a;
+    do {
+        out(PORT_SD_DATA, a);
+    } while(flag_nz(b--));
+    WaitSd();
+    a |= a; /* Для флага Z */
+    /* a - error code */
 }

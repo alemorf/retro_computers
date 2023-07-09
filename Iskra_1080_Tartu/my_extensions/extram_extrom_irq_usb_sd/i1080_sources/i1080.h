@@ -3,6 +3,10 @@
 #include "cmm.h"
 #include "cp866.h"
 
+/* Адреса */
+const int SCREEN_0_ADDRESS = 0xD000;
+const int SCREEN_1_ADDRESS = 0x9000;
+
 /* Цвета */
 const int PALETTE_WHITE = 0;
 const int PALETTE_CYAN = 1;

@@ -2,6 +2,23 @@
 // Copyright 9-Apr-2023 Alemorf, aleksey.f.morozov@yandex.ru
 
 function Iskra1080SdController(floppy) {
+    function toBase64(bytes) {
+        const len = bytes.byteLength;
+        let binary = '';
+        for (let i = 0; i < len; i++)
+            binary += String.fromCharCode(bytes[i]);
+        return window.btoa(binary);
+    }
+
+    function fromBase64(base64) {
+        const binary_string = window.atob(base64);
+        const len = binary_string.length;
+        let bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++)
+            bytes[i] = binary_string.charCodeAt(i);
+        return bytes.buffer;
+    }
+
     const RESULT_OK = 0;
     const RESULT_WORK = 0xFF;
     const RESULT_INVALID_COMMAND = 0xFF - 1;
@@ -24,6 +41,21 @@ function Iskra1080SdController(floppy) {
     let currentCommand = 0xFF;
     let recvCounter = 0;
     let recvTotal = 0;
+    let ext_config = 0;
+    
+    try {
+        ext_config = new Uint8Array(fromBase64(localStorage.getItem("ext_config")));
+        if (ext_config.length != 128)
+            throw "Incorrect config";
+    } catch (e) {
+        ext_config = new Uint8Array(128);
+    }
+
+    function saveConfig() {
+        localStorage.setItem("ext_config", toBase64(ext_config));
+    };
+     saveConfig();
+    
 
     this.readIo = function(address) {
         switch (address) {
@@ -64,8 +96,11 @@ function Iskra1080SdController(floppy) {
                         }
                         for (let i = 0; i < 128; i++)
                             buffer[i] = iskra1080extboot[i + o];
-                    } else if (drive - 1 < floppy.length) {
-                        buffer = floppy[drive - 1].read(offset);
+                    } else if (drive == 1) {
+                        for (let i = 0; i < 128; i++)
+                            buffer[i] = ext_config[i + offset * 128];
+                    } else if (drive - 2 < floppy.length) {
+                        buffer = floppy[drive - 2].read(offset);
                         if (buffer.length == 0) {
                             result = 1;
                             return;
@@ -87,10 +122,17 @@ function Iskra1080SdController(floppy) {
                         result = 1;
                         return;
                     }
+                    if (drive == 1) {
+                        for (let i = 0; i < 128; i++)
+                            ext_config[i + offset * 128] = buffer[6 + i];
+                        saveConfig();
+                        result = 0;
+                        return 0;
+                    }                     
                     var b = [];
                     for (let i = 0; i < 128; i++)
                         b[i] = buffer[6 + i];
-                    if (!floppy[drive - 1].write(offset, b)) {
+                    if (!floppy[drive - 2].write(offset, b)) {
                         result = 1;
                         return;
                     }

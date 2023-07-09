@@ -105,6 +105,8 @@ INTERRUPT:
     LD SP, SYSCALL_STACK
     XOR A
     OUT (PORT_WINDOW_0), A
+    LD A, 2
+    OUT (PORT_WINDOW_1), A
     PUSH BC
     PUSH DE
 
@@ -116,6 +118,8 @@ INTERRUPT:
     POP BC
     LD A, PAGE_RAM_0
     OUT (PORT_WINDOW_0), A
+    LD A, PAGE_RAM_1
+    OUT (PORT_WINDOW_1), A
 INTERRUPT_SAVED_SP = $ + 1
     LD SP, 0
     POP HL
@@ -327,6 +331,8 @@ SYSCALL:
         DI
         LD SP, SYSCALL_STACK
         OUT (PORT_WINDOW_0), A
+        LD A, 2
+        OUT (PORT_WINDOW_1), A
         EI
 
         ; System call
@@ -339,7 +345,9 @@ SYSCALL:
         LD A, PAGE_RAM_0
         DI
         OUT (PORT_WINDOW_0), A
-BIOS_SAVED_SP = $ + 1	
+        LD A, PAGE_RAM_1
+        OUT (PORT_WINDOW_1), A
+BIOS_SAVED_SP = $ + 1
         LD SP, 0
         EI
 

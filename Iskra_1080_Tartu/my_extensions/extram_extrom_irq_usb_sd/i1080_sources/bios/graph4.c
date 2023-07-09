@@ -32,7 +32,7 @@ void DrawChar4(...) {
     b = a;
 
     a = l;
-    a += a += a;
+    a *= 4;
     a += l;
     a += a;
     invert(a);
@@ -159,7 +159,7 @@ void SetColor4(...) {
     }
     b = a;
     a = c;
-    a += a += a;
+    a *= 4;
     a &= 4;
     a ^= b;
     a = OPCODE_XOR_B;
@@ -182,7 +182,7 @@ void SetColor4(...) {
     }
     b = a;
     a = c;
-    a += a += a;
+    a *= 4;
     a &= 8;
     a ^= b;
     a = OPCODE_XOR_B;
@@ -200,7 +200,7 @@ void DrawCursor4() {
     Invert(a);
     d = a;
     a = l;
-    a += a += a;
+    a *= 4;
     a += l;
     a += a;
     Invert(a);
