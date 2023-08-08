@@ -17,6 +17,13 @@ uint16_t long_code;
 extern uint8_t long_code_high __address(long_code + 1);
 uint8_t console_xlat[256];
 uint8_t console_xlat_back[256];
+uint8_t con_attrib = 0;
+uint8_t con_foreground = 0;
+uint8_t con_background = 0;
+uint8_t con_color_0;
+uint8_t con_color_1;
+uint8_t con_color_2;
+uint8_t con_color_3;
 
 /* Звуковой сигнал */
 void Beep(...) {
@@ -61,6 +68,10 @@ void EndConsoleChange() {
 }
 
 void ConReset() {
+    con_attrib = (a ^= a);
+    con_foreground = a = 9;
+    con_background = a;
+    ConUpdateColor();
     return ConClear();
 }
 
@@ -127,6 +138,83 @@ void ConEraseInLine() {
     }
 }
 
+void ConFindColor() {
+    hl = con_color_0; // TODO: Сбросить бит яркости и инвертировать
+    b = 0;
+    if (a == l)
+        return;
+    b++;
+    if (a == h)
+        return;
+    hl = con_color_2;
+    b++;
+    if (a == l)
+        return;
+    b++;
+    Compare(a, h);
+}
+
+void ConUpdateColor() {
+    /* Вычисление цвета фона */
+    e = a = con_background;
+    if (a == 9) { /* Выбран цвет фона по умочанию */
+        c = 0; /* По умолчанию цвет 0 */
+    } else {
+        ConFindColor();
+        c = b;
+        if (flag_nz)
+            c = 0; /* По умолчанию цвет 0 */
+    }
+
+    /* Вычисление цвета текста */
+    a = con_foreground;
+    if (a == 9) { /* Выбран цвет текста по умочанию */
+        d = 10;
+        b = 1; /* По умолчанию цвет 1 */
+        a = con_attrib;
+        if (flag_c(CyclicRotateRight(a))) {
+            b = 2; /* Цвет 2 для теста, если установлен атрибут bright */
+        } else if (flag_nz(a &= 0x1F)) {
+            b = 3; /* Цвет 3 для теста, если установлены атрибуты атрибуты: dim, underscore, blink */
+        }
+    } else {
+        d = a;
+        if (a == e) {
+            b = c;
+        } else {
+            ConFindColor();
+            if (flag_nz)
+                b = 1; /* По умолчанию цвет 1 */
+        }
+    }
+
+    /* Если фактические цвета получились иденичные, а исходные были разными, то меняем цвет текста */
+    if ((a = b) == c) {
+        if ((a = d) != e) {
+            a = b;
+            a++;
+            a &= 3;
+            b = a;
+        }
+    }
+
+    /* Если установлен атрибут hidden */
+    a = con_attrib;
+    if (flag_c(a += a)) {
+        b = c;
+    } else if (flag_c(a += a)) { /* Если установлен атрибут reverse */
+        a = c;
+        c = b;
+        b = a;
+    }
+
+    /* Готово */
+    a = c;
+    a *= 4;
+    a |= b;
+    return SetColor(a);
+}
+
 void CpmConoutCsi2() {
     a = c;
     if (a >= '0') {
@@ -172,11 +260,79 @@ void CpmConoutCsi2() {
         return;
     }
     if (a == 'm') {
-        if ((a = esc_param) == 0)
-            return SetColor(a = 1);
-        if ((a = esc_param) == 7)
-            return SetColor(a = 4);
-        return SetColor(a = 3);
+        a = esc_param;
+        /* [ 0 m 	Reset all attributes */
+        if (flag_z(a |= a)) {
+            con_attrib = a;
+            con_foreground = a = 9;
+            con_background = a;
+            return ConUpdateColor();
+        }
+        /* [ 1 m 	Set\ “bright” attribute */
+        /* [ 2 m 	Set “dim” attribute */
+        /* [ 4 m 	Set “underscore” (underlined text) attribute */
+        /* [ 5 m 	Set “blink” attribute */
+        /* [ 7 m 	Set “reverse” attribute */
+        /* [ 8 m 	Set “hidden” attribute */
+        if (a < 9) {
+            b = a;
+            a = 0x80;
+            do {
+                CyclicRotateLeft(a);
+            } while(flag_nz(b--));
+            hl = &con_attrib;
+            *hl = (a |= *hl);
+            return ConUpdateColor();
+        }
+        /*
+        // TODO:
+        if (a < 29) {
+            if (a < 21)
+                return;
+            b = a;
+            a = 0x80;
+            do {
+                CyclicRotateLeft(a);
+            } while(flag_nz(b--));
+            Invert(a);
+            hl = &con_attrib;
+            *hl = (a &= *hl);
+            return ConUpdateColor();
+        }
+        */
+        // [ 3 0 m 	Set foreground to color #0 – black
+        // [ 3 1 m 	Set foreground to color #1 – red
+        // [ 3 2 m 	Set foreground to color #2 – green
+        // [ 3 3 m 	Set foreground to color #3 – yellow
+        // [ 3 4 m 	Set foreground to color #4 – blue
+        // [ 3 5 m 	Set foreground to color #5 – magenta
+        // [ 3 6 m 	Set foreground to color #6 – cyan
+        // [ 3 7 m 	Set foreground to color #7 – white
+        // [ 3 9 m 	Set default color as foreground color
+        if (a < 38) {
+            if (a < 30)
+                return;
+            a -= 30;
+            con_foreground = a;
+            return ConUpdateColor();
+        }
+        // [ 4 0 m 	Set background to color #0 – black
+        // [ 4 1 m 	Set background to color #1 – red
+        // [ 4 2 m 	Set background to color #2 – green
+        // [ 4 3 m 	Set background to color #3 – yellow
+        // [ 4 4 m 	Set background to color #4 – blue
+        // [ 4 5 m 	Set background to color #5 – magenta
+        // [ 4 6 m 	Set background to color #6 – cyan
+        // [ 4 7 m 	Set background to color #7 – white
+        // [ 4 9 m 	Set default color as background color
+        if (a < 49) {
+            if (a < 40)
+                return;
+            a -= 40;
+            con_background = a;
+            return ConUpdateColor();
+        }
+        return;
     }
     return; // TODO: Remove, compiler bug
 }

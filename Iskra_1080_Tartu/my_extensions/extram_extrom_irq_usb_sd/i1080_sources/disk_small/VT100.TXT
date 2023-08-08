@@ -1,0 +1,21 @@
+[1mSet bright attribute[0m
+[2mSet dim attribute[0m
+[3mSet italicd attribute[0m
+[4mSet underscore [24m(underlined text) attribute [0m
+[21mSet 21 attribute[0m
+[5mSet blink attribute[0m
+[6mSet rapid blink attribute[0m
+[7mSet reverse attribute[0m
+[8mSet hidden attribute[0m
+[9mSet 9 attribute[0m
+
+[40m[30mXXX[31mXXX[32mXXX[33mXXX[34mXXX[35mXXX[36mXXX[37mXXX[39mXXX[0m
+[41m[30mXXX[31mXXX[32mXXX[33mXXX[34mXXX[35mXXX[36mXXX[37mXXX[39mXXX[0m
+[42m[30mXXX[31mXXX[32mXXX[33mXXX[34mXXX[35mXXX[36mXXX[37mXXX[39mXXX[0m
+[43m[30mXXX[31mXXX[32mXXX[33mXXX[34mXXX[35mXXX[36mXXX[37mXXX[39mXXX[0m
+[44m[30mXXX[31mXXX[32mXXX[33mXXX[34mXXX[35mXXX[36mXXX[37mXXX[39mXXX[0m
+[45m[30mXXX[31mXXX[32mXXX[33mXXX[34mXXX[35mXXX[36mXXX[37mXXX[39mXXX[0m
+[46m[30mXXX[31mXXX[32mXXX[33mXXX[34mXXX[35mXXX[36mXXX[37mXXX[39mXXX[0m
+[47m[30mXXX[31mXXX[32mXXX[33mXXX[34mXXX[35mXXX[36mXXX[37mXXX[39mXXX[0m
+[49m[30mXXX[31mXXX[32mXXX[33mXXX[34mXXX[35mXXX[36mXXX[37mXXX[39mXXX[0m
+

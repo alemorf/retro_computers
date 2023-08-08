@@ -73,6 +73,11 @@ void DrawCursor(...) {
     return DrawCursor6();
 }
 
+void SetColorSave(...) {
+    push_pop(bc, de, hl)
+        SetColor(a);
+}
+
 void ClearScreen() {
     ClearScreenSp = ((hl = 0) += sp);
     de = 0; // TODO: Залить текущим цветом фона
@@ -506,7 +511,7 @@ DrawChar_Xor10:
 void SetColor6(...) {
     /* TODO: Заменить на ^= 0x10, ^= 0xFF, ^= 0xA8 */
     c = a;
-    if (flag_z(a &= 4)) {
+    if (flag_z(a &= 8)) {
         hl = OPCODE_AND_CONST | (0x03 << 8);
         DrawChar_And1 = hl;
         DrawChar_And2 = hl;
@@ -538,7 +543,7 @@ void SetColor6(...) {
     b = a;
     a = c;
     a *= 4;
-    a &= 4;
+    a &= 8;
     a ^= b;
     a = OPCODE_XOR_B;
     if (flag_z)
@@ -551,7 +556,7 @@ void SetColor6(...) {
     DrawChar_Xor11 = a;
 
     a = c;
-    if (flag_z(a &= 8)) {
+    if (flag_z(a &= 4)) {
         hl = OPCODE_AND_CONST | (0x03 << 8);
         DrawChar_And2 = hl;
         h = 0xFC;
@@ -581,7 +586,7 @@ void SetColor6(...) {
     b = a;
     a = c;
     a *= 4;
-    a &= 8;
+    a &= 4;
     a ^= b;
     a = OPCODE_XOR_B;
     if (flag_z)

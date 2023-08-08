@@ -15,6 +15,7 @@ extern uint16_t DrawCursorAddress __address(DrawCursor + 1);
 void SetScreenBw6();
 void SetScreenColor6();
 void SetColor(...);
+void SetColorSave(...);
 void ClearScreen();
 void DrawText(...);
 void DrawChar(...);

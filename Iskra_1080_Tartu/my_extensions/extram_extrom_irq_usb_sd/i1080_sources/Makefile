@@ -17,7 +17,7 @@ bios/font4.tmp: bios/font4.bin bios/font4/font4
 	bios/font4/font4 bios/font4.bin bios/font4.tmp
 
 bios/boot.cpm: bios/*.c bios/*.h bios/cpm22/cpm22.bin bios/font4.tmp
-	cd bios && ../bin/asm80 --cmm entry.c console.c graph.c graph4.c keyboard.c main.c mulu16.c printer.c storage.c uart.c save.c
+	cd bios && ../bin/asm80 --cmm entry.c console.c graph.c graph4.c keyboard.c main.c mulu16.c printer.c storage.c uart.c menu.c save.c
 
 bios/cpm22/cpm22.bin: bios/cpm22/cpm22.asm bios/cpm22/ipc.inc
 	./bin/sjasmplus bios/cpm22/cpm22.asm --raw=bios/cpm22/cpm22.bin --lst=bios/cpm22/cpm22.lst || rm bios/cpm22/cpm22.bin bios/cpm22/cpm22.lst

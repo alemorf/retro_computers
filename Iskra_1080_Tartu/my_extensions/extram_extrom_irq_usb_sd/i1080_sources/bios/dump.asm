@@ -93,44 +93,44 @@
 0000          MOD_NUM equ 32
 0000           org 0
 Reboot:
-0000 C3 22 28  jp main
+0000 C3 8F 27  jp main
 sector_count:
-0003 93 00     dw (file_end+127)/128
+0003 95 00     dw (file_end+127)/128
 CpmInterrupt:
-0005 C3 EB 23  jp InterruptHandler
+0005 C3 C2 24  jp InterruptHandler
 EntryCpmWBoot:
-0008 C3 09 29  jp CpmWBoot
+0008 C3 90 28  jp CpmWBoot
 EntryCpmConst:
-000B C3 84 07  jp CpmConst
+000B C3 51 08  jp CpmConst
 EntryCpmConin:
-000E C3 90 07  jp CpmConin
+000E C3 5D 08  jp CpmConin
 EntryCpmConout:
-0011 C3 CE 06  jp CpmConout
+0011 C3 9B 07  jp CpmConout
 EntryCpmList:
-0014 C3 44 44  jp CpmList
+0014 C3 CB 43  jp CpmList
 EntryCpmPunch:
-0017 C3 69 45  jp CpmPunch
+0017 C3 F0 44  jp CpmPunch
 EntryCpmReader:
-001A C3 6A 45  jp CpmReader
+001A C3 F1 44  jp CpmReader
 EntryCpmSelDsk:
-001D C3 56 44  jp CpmSelDsk
+001D C3 DD 43  jp CpmSelDsk
 EntryCpmSetTrk:
-0020 C3 97 44  jp CpmSetTrk
+0020 C3 1E 44  jp CpmSetTrk
 EntryCpmSetSec:
-0023 C3 9D 44  jp CpmSetSec
+0023 C3 24 44  jp CpmSetSec
 EntryCpmRead:
-0026 C3 D6 44  jp CpmRead
+0026 C3 5D 44  jp CpmRead
 EntryCpmWrite:
-0029 C3 F2 44  jp CpmWrite
+0029 C3 79 44  jp CpmWrite
 EntryCpmPrSta:
-002C C3 45 44  jp CpmPrSta
+002C C3 CC 43  jp CpmPrSta
 002F 00 00 00  org 56
 EntryInterrupt:
 0038 F5        push af
 0039 C5        push bc
 003A D5        push de
 003B E5        push hl
-003C CD EB 23  call InterruptHandler
+003C CD C2 24  call InterruptHandler
 003F E1        pop hl
 0040 D1        pop de
 0041 C1        pop bc
@@ -263,1732 +263,1881 @@ console_xlat:
 010B 00 00 00  ds 256
 console_xlat_back:
 020B 00 00 00  ds 256
+con_attrib:
+030B 00        db 0
+con_foreground:
+030C 00        db 0
+con_background:
+030D 00        db 0
+con_color_0:
+030E 00        ds 1
+con_color_1:
+030F 00        ds 1
+con_color_2:
+0310 00        ds 1
+con_color_3:
+0311 00        ds 1
 Beep:
-030B F3        di
-030C 0E 00     ld c, 0
-_l33:
-030E D3 B0     out (PORT_TAPE_OUT), a
-0310 3E 30     ld a, 48
-_l36:
-_l38:
-0312 3D        dec a
-0313 C2 12 03  jp nz, _l36
-_l37:
-0316 0D        dec c
-_l35:
-0317 0D        dec c
-0318 C2 0E 03  jp nz, _l33
-_l34:
-031B FB        ei
-031C C9        ret
-BeginConsoleChange:
-031D 3E 01     ld a, 1
-031F D3 02     out (2), a
-0321 D3 03     out (3), a
-0323 21 01 01  ld hl, cursor_visible
-0326 F3        di
-0327 7E        ld a, (hl)
-0328 36 00     ld (hl), 0
-032A FB        ei
-032B FE 03     cp 3
-032D C2 38 03  jp nz, _l40
-0330 2A 03 01  ld hl, (cursor_y_l_x_h)
-0333 CD D6 07  call DrawCursor
-0336 3E 01     ld a, 1
+0312 F3        di
+0313 0E 00     ld c, 0
 _l40:
-0338 32 02 01  ld (cursor_visible_1), a
-033B C9        ret
-EndConsoleChange:
-033C 3E 02     ld a, 2
-033E 32 00 01  ld (cursor_blink_counter), a
-0341 3A 02 01  ld a, (cursor_visible_1)
-0344 32 01 01  ld (cursor_visible), a
-0347 3E 0C     ld a, 6*2
-0349 D3 02     out (2), a
-034B 3E 0E     ld a, 7*2
-034D D3 03     out (3), a
-034F C9        ret
-ConClear:
-ConReset:
-0350 AF        xor a
-0351 32 01 01  ld (cursor_visible), a
-0354 32 04 01  ld (cursor_x), a
-0357 32 03 01  ld (cursor_y), a
-035A C3 D9 07  jp ClearScreen
-ConNextLine:
-035D AF        xor a
-035E 32 04 01  ld (cursor_x), a
-0361 3A 03 01  ld a, (cursor_y)
-0364 3C        inc a
-0365 FE 19     cp TEXT_SCREEN_HEIGHT
-0367 D2 7F 08  jp nc, ScrollUp
-036A 32 03 01  ld (cursor_y), a
-036D C9        ret
-ConPrintChar:
-036E C6 0B     add console_xlat
-0370 6F        ld l, a
-0371 CE 01     adc console_xlat>>8
-0373 95        sub l
-0374 67        ld h, a
-0375 7E        ld a, (hl)
-0376 2A 03 01  ld hl, (cursor_y_l_x_h)
-0379 CD D0 07  call DrawChar
-037C 2A CF 07  ld hl, (text_screen_width)
-037F 3A 04 01  ld a, (cursor_x)
-0382 3C        inc a
-0383 BD        cp l
-0384 D2 5D 03  jp nc, ConNextLine
-0387 32 04 01  ld (cursor_x), a
-038A C9        ret
-ConEraseInLine:
-038B C9        ret
-038C 2A 03 01  ld hl, (cursor_y_l_x_h)
-_l48:
-038F E5        push hl
-0390 7C        ld a, h
-0391 E6 03     and 3
-0393 4F        ld c, a
-0394 7C        ld a, h
-0395 0F 0F     rrca
- rrca
-0397 E6 3F     and 63
-0399 2F        cpl
-039A 67        ld h, a
-039B EB        ex hl, de
-039C AF        xor a
-039D CD D0 07  call DrawChar
-03A0 E1        pop hl
-03A1 7C        ld a, h
-03A2 C6 03     add FONT_WIDTH
-03A4 67        ld h, a
-03A5 C3 8F 03  jp _l48
+0315 D3 B0     out (PORT_TAPE_OUT), a
+0317 3E 30     ld a, 48
+_l43:
+_l45:
+0319 3D        dec a
+031A C2 19 03  jp nz, _l43
+_l44:
+031D 0D        dec c
+_l42:
+031E 0D        dec c
+031F C2 15 03  jp nz, _l40
+_l41:
+0322 FB        ei
+0323 C9        ret
+BeginConsoleChange:
+0324 3E 01     ld a, 1
+0326 D3 02     out (2), a
+0328 D3 03     out (3), a
+032A 21 01 01  ld hl, cursor_visible
+032D F3        di
+032E 7E        ld a, (hl)
+032F 36 00     ld (hl), 0
+0331 FB        ei
+0332 FE 03     cp 3
+0334 C2 3F 03  jp nz, _l47
+0337 2A 03 01  ld hl, (cursor_y_l_x_h)
+033A CD A3 08  call DrawCursor
+033D 3E 01     ld a, 1
 _l47:
-CpmConoutCsi2:
-03A8 79        ld a, c
-03A9 FE 30     cp 48
-03AB DA C2 03  jp c, _l50
-03AE FE 3A     cp 57+1
-03B0 D2 C2 03  jp nc, _l51
-03B3 D6 30     sub 48
-03B5 4F        ld c, a
-03B6 2A 07 01  ld hl, (esc_param_ptr)
-03B9 7E        ld a, (hl)
-03BA 87        add a
-03BB 47        ld b, a
-03BC 87        add a
-03BD 87        add a
-03BE 80        add b
-03BF 81        add c
-03C0 77        ld (hl), a
-03C1 C9        ret
-_l50:
-_l51:
-03C2 FE 3B     cp 59
-03C4 C2 CE 03  jp nz, _l52
-03C7 21 06 01  ld hl, esc_param_2
-03CA 22 07 01  ld (esc_param_ptr), hl
-03CD C9        ret
-_l52:
-03CE 21 CE 06  ld hl, CpmConout
-03D1 22 12 00  ld (entry_cpm_conout_address), hl
-03D4 FE 48     cp 72
-03D6 C2 F4 03  jp nz, _l53
-03D9 3A 05 01  ld a, (esc_param)
-03DC FE 19     cp TEXT_SCREEN_HEIGHT
-03DE DA E2 03  jp c, _l54
-03E1 AF        xor a
-_l54:
-03E2 32 03 01  ld (cursor_y), a
-03E5 2A CF 07  ld hl, (text_screen_width)
-03E8 3A 06 01  ld a, (esc_param_2)
-03EB BD        cp l
-03EC DA F0 03  jp c, _l55
-03EF AF        xor a
+033F 32 02 01  ld (cursor_visible_1), a
+0342 C9        ret
+EndConsoleChange:
+0343 3E 02     ld a, 2
+0345 32 00 01  ld (cursor_blink_counter), a
+0348 3A 02 01  ld a, (cursor_visible_1)
+034B 32 01 01  ld (cursor_visible), a
+034E 3E 0C     ld a, 6*2
+0350 D3 02     out (2), a
+0352 3E 0E     ld a, 7*2
+0354 D3 03     out (3), a
+0356 C9        ret
+ConReset:
+0357 AF        xor a
+0358 32 0B 03  ld (con_attrib), a
+035B 3E 09     ld a, 9
+035D 32 0C 03  ld (con_foreground), a
+0360 32 0D 03  ld (con_background), a
+0363 CD D1 03  call ConUpdateColor
+ConClear:
+0366 AF        xor a
+0367 32 01 01  ld (cursor_visible), a
+036A 32 04 01  ld (cursor_x), a
+036D 32 03 01  ld (cursor_y), a
+0370 C3 B0 08  jp ClearScreen
+ConNextLine:
+0373 AF        xor a
+0374 32 04 01  ld (cursor_x), a
+0377 3A 03 01  ld a, (cursor_y)
+037A 3C        inc a
+037B FE 19     cp TEXT_SCREEN_HEIGHT
+037D D2 56 09  jp nc, ScrollUp
+0380 32 03 01  ld (cursor_y), a
+0383 C9        ret
+ConPrintChar:
+0384 C6 0B     add console_xlat
+0386 6F        ld l, a
+0387 CE 01     adc console_xlat>>8
+0389 95        sub l
+038A 67        ld h, a
+038B 7E        ld a, (hl)
+038C 2A 03 01  ld hl, (cursor_y_l_x_h)
+038F CD 9D 08  call DrawChar
+0392 2A 9C 08  ld hl, (text_screen_width)
+0395 3A 04 01  ld a, (cursor_x)
+0398 3C        inc a
+0399 BD        cp l
+039A D2 73 03  jp nc, ConNextLine
+039D 32 04 01  ld (cursor_x), a
+03A0 C9        ret
+ConEraseInLine:
+03A1 C9        ret
+03A2 2A 03 01  ld hl, (cursor_y_l_x_h)
 _l55:
-03F0 32 04 01  ld (cursor_x), a
-03F3 C9        ret
-_l53:
-03F4 FE 4A     cp 74
-03F6 C2 05 04  jp nz, _l56
-03F9 3A 05 01  ld a, (esc_param)
-03FC FE 02     cp 2
-03FE C2 04 04  jp nz, _l57
-0401 CD D9 07  call ClearScreen
-_l57:
-0404 C9        ret
-_l56:
-0405 FE 4B     cp 75
-0407 C2 16 04  jp nz, _l58
-040A 3A 05 01  ld a, (esc_param)
-040D B7        or a
-040E C2 15 04  jp nz, _l59
-0411 CD 8B 03  call ConEraseInLine
-0414 C9        ret
-_l59:
-0415 C9        ret
+03A5 E5        push hl
+03A6 7C        ld a, h
+03A7 E6 03     and 3
+03A9 4F        ld c, a
+03AA 7C        ld a, h
+03AB 0F 0F     rrca
+ rrca
+03AD E6 3F     and 63
+03AF 2F        cpl
+03B0 67        ld h, a
+03B1 EB        ex hl, de
+03B2 AF        xor a
+03B3 CD 9D 08  call DrawChar
+03B6 E1        pop hl
+03B7 7C        ld a, h
+03B8 C6 03     add FONT_WIDTH
+03BA 67        ld h, a
+03BB C3 A5 03  jp _l55
+_l54:
+ConFindColor:
+03BE 2A 0E 03  ld hl, (con_color_0)
+03C1 06 00     ld b, 0
+03C3 BD        cp l
+03C4 C8        ret z
+03C5 04        inc b
+03C6 BC        cp h
+03C7 C8        ret z
+03C8 2A 10 03  ld hl, (con_color_2)
+03CB 04        inc b
+03CC BD        cp l
+03CD C8        ret z
+03CE 04        inc b
+03CF BC        cp h
+03D0 C9        ret
+ConUpdateColor:
+03D1 3A 0D 03  ld a, (con_background)
+03D4 5F        ld e, a
+03D5 FE 09     cp 9
+03D7 C2 DF 03  jp nz, _l58
+03DA 0E 00     ld c, 0
+03DC C3 E8 03  jp _l59
 _l58:
-0416 FE 6D     cp 109
-0418 C2 34 04  jp nz, _l60
-041B 3A 05 01  ld a, (esc_param)
-041E FE 00     cp 0
-0420 3E 01     ld a, 1
-0422 CA D3 07  jp z, SetColor
-0425 3A 05 01  ld a, (esc_param)
-0428 FE 07     cp 7
-042A 3E 04     ld a, 4
-042C CA D3 07  jp z, SetColor
-042F 3E 03     ld a, 3
-0431 C3 D3 07  jp SetColor
+03DF CD BE 03  call ConFindColor
+03E2 48        ld c, b
+03E3 CA E8 03  jp z, _l60
+03E6 0E 00     ld c, 0
+_l59:
 _l60:
-0434 C9        ret
-CpmConoutCsi:
-0435 C5        push bc
-0436 CD 1D 03  call BeginConsoleChange
-0439 C1        pop bc
-043A CD A8 03  call CpmConoutCsi2
-043D CD 3C 03  call EndConsoleChange
-0440 C9        ret
-CpmConoutEscY1:
-0441 79        ld a, c
-0442 D6 20     sub 32
-0444 2A CF 07  ld hl, (text_screen_width)
-0447 BD        cp l
-0448 DA 4C 04  jp c, _l63
-044B AF        xor a
+03E8 3A 0C 03  ld a, (con_foreground)
+03EB FE 09     cp 9
+03ED C2 0A 04  jp nz, _l61
+03F0 16 0A     ld d, 10
+03F2 06 01     ld b, 1
+03F4 3A 0B 03  ld a, (con_attrib)
+03F7 0F        rrca
+03F8 D2 00 04  jp nc, _l62
+03FB 06 02     ld b, 2
+03FD C3 07 04  jp _l63
+_l62:
+0400 E6 1F     and 31
+0402 CA 07 04  jp z, _l64
+0405 06 03     ld b, 3
 _l63:
-044C F5        push af
-044D CD 1D 03  call BeginConsoleChange
-0450 F1        pop af
-0451 32 04 01  ld (cursor_x), a
-0454 3A 05 01  ld a, (esc_param)
-0457 32 03 01  ld (cursor_y), a
-045A CD 3C 03  call EndConsoleChange
-045D 21 CE 06  ld hl, CpmConout
-0460 22 12 00  ld (entry_cpm_conout_address), hl
-0463 C9        ret
-CpmConoutEscY:
-0464 79        ld a, c
-0465 D6 20     sub 32
-0467 FE 19     cp TEXT_SCREEN_HEIGHT
-0469 DA 6D 04  jp c, _l65
-046C AF        xor a
-_l65:
-046D 32 05 01  ld (esc_param), a
-0470 21 41 04  ld hl, CpmConoutEscY1
-0473 22 12 00  ld (entry_cpm_conout_address), hl
-0476 C9        ret
-CpmConoutEsc:
-0477 21 CE 06  ld hl, CpmConout
-047A 79        ld a, c
-047B FE 5B     cp 91
-047D C2 93 04  jp nz, _l67
-0480 AF        xor a
-0481 32 05 01  ld (esc_param), a
-0484 32 06 01  ld (esc_param_2), a
-0487 21 05 01  ld hl, esc_param
-048A 22 07 01  ld (esc_param_ptr), hl
-048D 21 35 04  ld hl, CpmConoutCsi
-0490 C3 CE 04  jp _l68
+_l64:
+0407 C3 1B 04  jp _l65
+_l61:
+040A 57        ld d, a
+040B BB        cp e
+040C C2 13 04  jp nz, _l66
+040F 41        ld b, c
+0410 C3 1B 04  jp _l67
+_l66:
+0413 CD BE 03  call ConFindColor
+0416 CA 1B 04  jp z, _l68
+0419 06 01     ld b, 1
 _l67:
-0493 FE 4B     cp 75
-0495 C2 A1 04  jp nz, _l69
-0498 CD 8B 03  call ConEraseInLine
-049B 21 CE 06  ld hl, CpmConout
-049E C3 CE 04  jp _l70
-_l69:
-04A1 FE 59     cp 89
-04A3 C2 AC 04  jp nz, _l71
-04A6 21 64 04  ld hl, CpmConoutEscY
-04A9 C3 CE 04  jp _l72
-_l71:
-04AC FE 3D     cp 61
-04AE C2 B7 04  jp nz, _l73
-04B1 21 64 04  ld hl, CpmConoutEscY
-04B4 C3 CE 04  jp _l74
-_l73:
-04B7 FE 3B     cp 59
-04B9 C2 CE 04  jp nz, _l75
-04BC CD 1D 03  call BeginConsoleChange
-04BF CD D9 07  call ClearScreen
-04C2 21 00 00  ld hl, 0
-04C5 22 03 01  ld (cursor_y_l_x_h), hl
-04C8 CD 3C 03  call EndConsoleChange
-04CB 21 CE 06  ld hl, CpmConout
-_l75:
-_l74:
-_l72:
-_l70:
 _l68:
-04CE 22 12 00  ld (entry_cpm_conout_address), hl
-04D1 C9        ret
-console_xlat_koi7:
-04D2 60        db 96
-04D3 9E        db 158
-04D4 80        db 128
-04D5 81        db 129
-04D6 96        db 150
-04D7 84        db 132
-04D8 85        db 133
-04D9 94        db 148
-04DA 83        db 131
-04DB 95        db 149
-04DC 88        db 136
-04DD 89        db 137
-04DE 8A        db 138
-04DF 8B        db 139
-04E0 8C        db 140
-04E1 8D        db 141
-04E2 8E        db 142
-04E3 8F        db 143
-04E4 9F        db 159
-04E5 90        db 144
-04E6 91        db 145
-04E7 92        db 146
-04E8 93        db 147
-04E9 86        db 134
-04EA 82        db 130
-04EB 9C        db 156
-04EC 9B        db 155
-04ED 87        db 135
-04EE 98        db 152
-04EF 9D        db 157
-04F0 99        db 153
-04F1 97        db 151
-04F2 7F        db 127
-04F3 00        db 0
-04F4 01        db 1
-04F5 02        db 2
-04F6 03        db 3
-04F7 04        db 4
-04F8 05        db 5
-04F9 06        db 6
-04FA 07        db 7
-04FB 08        db 8
-04FC 09        db 9
-04FD 0A        db 10
-04FE 0B        db 11
-04FF 0C        db 12
-0500 0D        db 13
-0501 0E        db 14
-0502 0F        db 15
-0503 10        db 16
-0504 11        db 17
-0505 12        db 18
-0506 13        db 19
-0507 14        db 20
-0508 15        db 21
-0509 16        db 22
-050A 17        db 23
-050B 18        db 24
-050C 19        db 25
-050D 1A        db 26
-050E 1B        db 27
-050F 1C        db 28
-0510 1D        db 29
-0511 1E        db 30
-0512 1F        db 31
-0513 20        db 32
-0514 21        db 33
-0515 22        db 34
-0516 23        db 35
-0517 FD        db 253
-0518 25        db 37
-0519 26        db 38
-051A 27        db 39
-051B 28        db 40
-051C 29        db 41
-051D 2A        db 42
-051E 2B        db 43
-051F 2C        db 44
-0520 2D        db 45
-0521 2E        db 46
-0522 2F        db 47
-0523 30        db 48
-0524 31        db 49
-0525 32        db 50
-0526 33        db 51
-0527 34        db 52
-0528 35        db 53
-0529 36        db 54
-052A 37        db 55
-052B 38        db 56
-052C 39        db 57
-052D 3A        db 58
-052E 3B        db 59
-052F 3C        db 60
-0530 3D        db 61
-0531 3E        db 62
-0532 3F        db 63
-0533 40        db 64
-0534 41        db 65
-0535 42        db 66
-0536 43        db 67
-0537 44        db 68
-0538 45        db 69
-0539 46        db 70
-053A 47        db 71
-053B 48        db 72
-053C 49        db 73
-053D 4A        db 74
-053E 4B        db 75
-053F 4C        db 76
-0540 4D        db 77
-0541 4E        db 78
-0542 4F        db 79
-0543 50        db 80
-0544 51        db 81
-0545 52        db 82
-0546 53        db 83
-0547 54        db 84
-0548 55        db 85
-0549 56        db 86
-054A 57        db 87
-054B 58        db 88
-054C 59        db 89
-054D 5A        db 90
-054E 5B        db 91
-054F 5C        db 92
-0550 5D        db 93
-0551 5E        db 94
-0552 5F        db 95
-0553 9E        db 158
-0554 80        db 128
-0555 81        db 129
-0556 96        db 150
-0557 84        db 132
-0558 85        db 133
-0559 94        db 148
-055A 83        db 131
-055B 95        db 149
-055C 88        db 136
-055D 89        db 137
-055E 8A        db 138
-055F 8B        db 139
-0560 8C        db 140
-0561 8D        db 141
-0562 8E        db 142
-0563 8F        db 143
-0564 9F        db 159
-0565 90        db 144
-0566 91        db 145
-0567 92        db 146
-0568 93        db 147
-0569 86        db 134
-056A 82        db 130
-056B 9C        db 156
-056C 9B        db 155
-056D 87        db 135
-056E 98        db 152
-056F 9D        db 157
-0570 99        db 153
-0571 97        db 151
-0572 7F        db 127
-console_xlat_koi8:
-0573 80        db 128
-0574 C4        db 196
-0575 B3        db 179
-0576 DA        db 218
-0577 BF        db 191
-0578 C0        db 192
-0579 D9        db 217
-057A C3        db 195
-057B B4        db 180
-057C C2        db 194
-057D C1        db 193
-057E C5        db 197
-057F DF        db 223
-0580 DC        db 220
-0581 DB        db 219
-0582 DD        db 221
-0583 DE        db 222
-0584 B0        db 176
-0585 B1        db 177
-0586 B2        db 178
-0587 F4        db 244
-0588 FE        db 254
-0589 F9        db 249
-058A FB        db 251
-058B F7        db 247
-058C F3        db 243
-058D F2        db 242
-058E FF        db 255
-058F F5        db 245
-0590 F8        db 248
-0591 FD        db 253
-0592 FA        db 250
-0593 F6        db 246
-0594 CD        db 205
-0595 BA        db 186
-0596 D5        db 213
-0597 F1        db 241
-0598 D6        db 214
-0599 C9        db 201
-059A B8        db 184
-059B B7        db 183
-059C BB        db 187
-059D D4        db 212
-059E D3        db 211
-059F C8        db 200
-05A0 BE        db 190
-05A1 BD        db 189
-05A2 BC        db 188
-05A3 C6        db 198
-05A4 C7        db 199
-05A5 CC        db 204
-05A6 B5        db 181
-05A7 F0        db 240
-05A8 B6        db 182
-05A9 B9        db 185
-05AA D1        db 209
-05AB D2        db 210
-05AC CB        db 203
-05AD CF        db 207
-05AE D0        db 208
-05AF CA        db 202
-05B0 D8        db 216
-05B1 D7        db 215
-05B2 CE        db 206
-05B3 FC        db 252
-05B4 EE        db 238
-05B5 A0        db 160
-05B6 A1        db 161
-05B7 E6        db 230
-05B8 A4        db 164
-05B9 A5        db 165
-05BA E4        db 228
-05BB A3        db 163
-05BC E5        db 229
-05BD A8        db 168
-05BE A9        db 169
-05BF AA        db 170
-05C0 AB        db 171
-05C1 AC        db 172
-05C2 AD        db 173
-05C3 AE        db 174
-05C4 AF        db 175
-05C5 EF        db 239
-05C6 E0        db 224
-05C7 E1        db 225
-05C8 E2        db 226
-05C9 E3        db 227
-05CA A6        db 166
-05CB A2        db 162
-05CC EC        db 236
-05CD EB        db 235
-05CE A7        db 167
-05CF E8        db 232
-05D0 ED        db 237
-05D1 E9        db 233
-05D2 E7        db 231
-05D3 EA        db 234
-05D4 9E        db 158
-05D5 80        db 128
-05D6 81        db 129
-05D7 96        db 150
-05D8 84        db 132
-05D9 85        db 133
-05DA 94        db 148
-05DB 83        db 131
-05DC 95        db 149
-05DD 88        db 136
-05DE 89        db 137
-05DF 8A        db 138
-05E0 8B        db 139
-05E1 8C        db 140
-05E2 8D        db 141
-05E3 8E        db 142
-05E4 8F        db 143
-05E5 9F        db 159
-05E6 90        db 144
-05E7 91        db 145
-05E8 92        db 146
-05E9 93        db 147
-05EA 86        db 134
-05EB 82        db 130
-05EC 9C        db 156
-05ED 9B        db 155
-05EE 87        db 135
-05EF 98        db 152
-05F0 9D        db 157
-05F1 99        db 153
-05F2 97        db 151
-05F3 9A        db 154
-console_xlat_1251:
-05F4 80        db 128
-05F5 B0        db 176
-05F6 B1        db 177
-05F7 B2        db 178
-05F8 B3        db 179
-05F9 B4        db 180
-05FA B5        db 181
-05FB B6        db 182
-05FC B7        db 183
-05FD B8        db 184
-05FE B9        db 185
-05FF BA        db 186
-0600 BB        db 187
-0601 BC        db 188
-0602 BD        db 189
-0603 BE        db 190
-0604 BF        db 191
-0605 C0        db 192
-0606 C1        db 193
-0607 C2        db 194
-0608 C3        db 195
-0609 C4        db 196
-060A C5        db 197
-060B C6        db 198
-060C C7        db 199
-060D C8        db 200
-060E C9        db 201
-060F CA        db 202
-0610 CB        db 203
-0611 CC        db 204
-0612 CD        db 205
-0613 CE        db 206
-0614 CF        db 207
-0615 D0        db 208
-0616 D1        db 209
-0617 D2        db 210
-0618 D3        db 211
-0619 D4        db 212
-061A D5        db 213
-061B D6        db 214
-061C D7        db 215
-061D D8        db 216
-061E D9        db 217
-061F DA        db 218
-0620 DB        db 219
-0621 DC        db 220
-0622 DD        db 221
-0623 DE        db 222
-0624 DF        db 223
-0625 F0        db 240
-0626 F1        db 241
-0627 F2        db 242
-0628 F3        db 243
-0629 F4        db 244
-062A F5        db 245
-062B F6        db 246
-062C F7        db 247
-062D F8        db 248
-062E F9        db 249
-062F FA        db 250
-0630 FB        db 251
-0631 FC        db 252
-0632 FD        db 253
-0633 FE        db 254
-0634 FF        db 255
-0635 80        db 128
-0636 81        db 129
-0637 82        db 130
-0638 83        db 131
-0639 84        db 132
-063A 85        db 133
-063B 86        db 134
-063C 87        db 135
-063D 88        db 136
-063E 89        db 137
-063F 8A        db 138
-0640 8B        db 139
-0641 8C        db 140
-0642 8D        db 141
-0643 8E        db 142
-0644 8F        db 143
-0645 90        db 144
-0646 91        db 145
-0647 92        db 146
-0648 93        db 147
-0649 94        db 148
-064A 95        db 149
-064B 96        db 150
-064C 97        db 151
-064D 98        db 152
-064E 99        db 153
-064F 9A        db 154
-0650 9B        db 155
-0651 9C        db 156
-0652 9D        db 157
-0653 9E        db 158
-0654 9F        db 159
-0655 A0        db 160
-0656 A1        db 161
-0657 A2        db 162
-0658 A3        db 163
-0659 A4        db 164
-065A A5        db 165
-065B A6        db 166
-065C A7        db 167
-065D A8        db 168
-065E A9        db 169
-065F AA        db 170
-0660 AB        db 171
-0661 AC        db 172
-0662 AD        db 173
-0663 AE        db 174
-0664 AF        db 175
-0665 E0        db 224
-0666 E1        db 225
-0667 E2        db 226
-0668 E3        db 227
-0669 E4        db 228
-066A E5        db 229
-066B E6        db 230
-066C E7        db 231
-066D E8        db 232
-066E E9        db 233
-066F EA        db 234
-0670 EB        db 235
-0671 EC        db 236
-0672 ED        db 237
-0673 EE        db 238
-0674 EF        db 239
-codepages:
-0675 D2 04     dw console_xlat_koi7
-0677 73 05     dw console_xlat_koi8
-0679 F4 05     dw console_xlat_1251
-ConSetXlat:
-067B F5        push af
-067C 11 0B 01  ld de, console_xlat
-067F 21 0B 02  ld hl, console_xlat_back
-0682 AF        xor a
-0683 06 3F     ld b, 63
-_l81:
-0685 70        ld (hl), b
-0686 12        ld (de), a
-0687 23        inc hl
-0688 13        inc de
-_l83:
-0689 3C        inc a
-068A C2 85 06  jp nz, _l81
+_l65:
+041B 78        ld a, b
+041C B9        cp c
+041D C2 2A 04  jp nz, _l69
+0420 7A        ld a, d
+0421 BB        cp e
+0422 CA 2A 04  jp z, _l70
+0425 78        ld a, b
+0426 3C        inc a
+0427 E6 03     and 3
+0429 47        ld b, a
+_l70:
+_l69:
+042A 3A 0B 03  ld a, (con_attrib)
+042D 87        add a
+042E D2 35 04  jp nc, _l71
+0431 41        ld b, c
+0432 C3 3C 04  jp _l72
+_l71:
+0435 87        add a
+0436 D2 3C 04  jp nc, _l73
+0439 79        ld a, c
+043A 48        ld c, b
+043B 47        ld b, a
+_l72:
+_l73:
+043C 79        ld a, c
+043D 87        add a
+043E 87        add a
+043F B0        or b
+0440 C3 A0 08  jp SetColor
+CpmConoutCsi2:
+0443 79        ld a, c
+0444 FE 30     cp 48
+0446 DA 5D 04  jp c, _l75
+0449 FE 3A     cp 57+1
+044B D2 5D 04  jp nc, _l76
+044E D6 30     sub 48
+0450 4F        ld c, a
+0451 2A 07 01  ld hl, (esc_param_ptr)
+0454 7E        ld a, (hl)
+0455 87        add a
+0456 47        ld b, a
+0457 87        add a
+0458 87        add a
+0459 80        add b
+045A 81        add c
+045B 77        ld (hl), a
+045C C9        ret
+_l75:
+_l76:
+045D FE 3B     cp 59
+045F C2 69 04  jp nz, _l77
+0462 21 06 01  ld hl, esc_param_2
+0465 22 07 01  ld (esc_param_ptr), hl
+0468 C9        ret
+_l77:
+0469 21 9B 07  ld hl, CpmConout
+046C 22 12 00  ld (entry_cpm_conout_address), hl
+046F FE 48     cp 72
+0471 C2 8F 04  jp nz, _l78
+0474 3A 05 01  ld a, (esc_param)
+0477 FE 19     cp TEXT_SCREEN_HEIGHT
+0479 DA 7D 04  jp c, _l79
+047C AF        xor a
+_l79:
+047D 32 03 01  ld (cursor_y), a
+0480 2A 9C 08  ld hl, (text_screen_width)
+0483 3A 06 01  ld a, (esc_param_2)
+0486 BD        cp l
+0487 DA 8B 04  jp c, _l80
+048A AF        xor a
+_l80:
+048B 32 04 01  ld (cursor_x), a
+048E C9        ret
+_l78:
+048F FE 4A     cp 74
+0491 C2 A0 04  jp nz, _l81
+0494 3A 05 01  ld a, (esc_param)
+0497 FE 02     cp 2
+0499 C2 9F 04  jp nz, _l82
+049C CD B0 08  call ClearScreen
 _l82:
-068D F1        pop af
-068E B7        or a
-068F CA BA 06  jp z, _l84
-0692 3D        dec a
-0693 C2 9C 06  jp nz, _l85
-0696 11 F4 05  ld de, console_xlat_1251
-0699 C3 A9 06  jp _l86
-_l85:
-069C 3D        dec a
-069D C2 A6 06  jp nz, _l87
-06A0 11 D2 04  ld de, console_xlat_koi7
-06A3 C3 A9 06  jp _l88
-_l87:
-06A6 11 73 05  ld de, console_xlat_koi8
-_l88:
-_l86:
-06A9 1A        ld a, (de)
-06AA 4F        ld c, a
-06AB C6 0B     add console_xlat
-06AD 6F        ld l, a
-06AE CE 01     adc console_xlat>>8
-06B0 95        sub l
-06B1 67        ld h, a
-_l89:
-06B2 13        inc de
-06B3 1A        ld a, (de)
-06B4 77        ld (hl), a
-06B5 23        inc hl
-_l91:
-06B6 0C        inc c
-06B7 C2 B2 06  jp nz, _l89
+049F C9        ret
+_l81:
+04A0 FE 4B     cp 75
+04A2 C2 B1 04  jp nz, _l83
+04A5 3A 05 01  ld a, (esc_param)
+04A8 B7        or a
+04A9 C2 B0 04  jp nz, _l84
+04AC CD A1 03  call ConEraseInLine
+04AF C9        ret
 _l84:
+04B0 C9        ret
+_l83:
+04B1 FE 6D     cp 109
+04B3 C2 01 05  jp nz, _l85
+04B6 3A 05 01  ld a, (esc_param)
+04B9 B7        or a
+04BA C2 CB 04  jp nz, _l86
+04BD 32 0B 03  ld (con_attrib), a
+04C0 3E 09     ld a, 9
+04C2 32 0C 03  ld (con_foreground), a
+04C5 32 0D 03  ld (con_background), a
+04C8 C3 D1 03  jp ConUpdateColor
+_l86:
+04CB FE 09     cp 9
+04CD D2 E0 04  jp nc, _l87
+04D0 47        ld b, a
+04D1 3E 80     ld a, 128
+_l88:
+04D3 07        rlca
 _l90:
-06BA 11 0A 02  ld de, console_xlat+255
-06BD 0E FF     ld c, 255
+04D4 05        dec b
+04D5 C2 D3 04  jp nz, _l88
+_l89:
+04D8 21 0B 03  ld hl, con_attrib
+04DB B6        or (hl)
+04DC 77        ld (hl), a
+04DD C3 D1 03  jp ConUpdateColor
+_l87:
+04E0 FE 26     cp 38
+04E2 D2 F0 04  jp nc, _l91
+04E5 FE 1E     cp 30
+04E7 D8        ret c
+04E8 D6 1E     sub 30
+04EA 32 0C 03  ld (con_foreground), a
+04ED C3 D1 03  jp ConUpdateColor
+_l91:
+04F0 FE 31     cp 49
+04F2 D2 00 05  jp nc, _l92
+04F5 FE 28     cp 40
+04F7 D8        ret c
+04F8 D6 28     sub 40
+04FA 32 0D 03  ld (con_background), a
+04FD C3 D1 03  jp ConUpdateColor
 _l92:
-06BF 1A        ld a, (de)
-06C0 C6 0B     add console_xlat_back
-06C2 6F        ld l, a
-06C3 CE 02     adc console_xlat_back>>8
-06C5 95        sub l
-06C6 67        ld h, a
-06C7 71        ld (hl), c
-06C8 1B        dec de
-_l94:
-06C9 0D        dec c
-06CA C2 BF 06  jp nz, _l92
-_l93:
-06CD C9        ret
-CpmConout:
-06CE 79        ld a, c
-06CF FE 1B     cp KEY_ESC
-06D1 C2 DB 06  jp nz, _l96
-06D4 21 77 04  ld hl, CpmConoutEsc
-06D7 22 12 00  ld (entry_cpm_conout_address), hl
-06DA C9        ret
-_l96:
-06DB FE 07     cp 7
-06DD CA 0B 03  jp z, Beep
-06E0 FE 0A     cp 10
-06E2 C8        ret z
-06E3 F5        push af
-06E4 CD 1D 03  call BeginConsoleChange
-06E7 F1        pop af
-06E8 FE 1C     cp 28
-06EA DA F3 06  jp c, _l97
-06ED CD 6E 03  call ConPrintChar
-06F0 C3 3C 03  jp EndConsoleChange
+0500 C9        ret
+_l85:
+0501 C9        ret
+CpmConoutCsi:
+0502 C5        push bc
+0503 CD 24 03  call BeginConsoleChange
+0506 C1        pop bc
+0507 CD 43 04  call CpmConoutCsi2
+050A CD 43 03  call EndConsoleChange
+050D C9        ret
+CpmConoutEscY1:
+050E 79        ld a, c
+050F D6 20     sub 32
+0511 2A 9C 08  ld hl, (text_screen_width)
+0514 BD        cp l
+0515 DA 19 05  jp c, _l95
+0518 AF        xor a
+_l95:
+0519 F5        push af
+051A CD 24 03  call BeginConsoleChange
+051D F1        pop af
+051E 32 04 01  ld (cursor_x), a
+0521 3A 05 01  ld a, (esc_param)
+0524 32 03 01  ld (cursor_y), a
+0527 CD 43 03  call EndConsoleChange
+052A 21 9B 07  ld hl, CpmConout
+052D 22 12 00  ld (entry_cpm_conout_address), hl
+0530 C9        ret
+CpmConoutEscY:
+0531 79        ld a, c
+0532 D6 20     sub 32
+0534 FE 19     cp TEXT_SCREEN_HEIGHT
+0536 DA 3A 05  jp c, _l97
+0539 AF        xor a
 _l97:
-06F3 FE 08     cp 8
-06F5 C2 19 07  jp nz, _l98
-06F8 3A 04 01  ld a, (cursor_x)
-06FB 3D        dec a
-06FC FA 05 07  jp m, _l99
-06FF 32 04 01  ld (cursor_x), a
-0702 C3 3C 03  jp EndConsoleChange
+053A 32 05 01  ld (esc_param), a
+053D 21 0E 05  ld hl, CpmConoutEscY1
+0540 22 12 00  ld (entry_cpm_conout_address), hl
+0543 C9        ret
+CpmConoutEsc:
+0544 21 9B 07  ld hl, CpmConout
+0547 79        ld a, c
+0548 FE 5B     cp 91
+054A C2 60 05  jp nz, _l99
+054D AF        xor a
+054E 32 05 01  ld (esc_param), a
+0551 32 06 01  ld (esc_param_2), a
+0554 21 05 01  ld hl, esc_param
+0557 22 07 01  ld (esc_param_ptr), hl
+055A 21 02 05  ld hl, CpmConoutCsi
+055D C3 9B 05  jp _l100
 _l99:
-0705 3A 03 01  ld a, (cursor_y)
-0708 3D        dec a
-0709 FA 3C 03  jp m, EndConsoleChange
-070C 32 03 01  ld (cursor_y), a
-070F 3A CF 07  ld a, (text_screen_width)
-0712 3D        dec a
-0713 32 04 01  ld (cursor_x), a
-0716 C3 3C 03  jp EndConsoleChange
-_l98:
-0719 FE 0C     cp 12
-071B C2 2A 07  jp nz, _l100
-071E CD D9 07  call ClearScreen
-0721 21 00 00  ld hl, 0
-0724 22 03 01  ld (cursor_y_l_x_h), hl
-0727 C3 3C 03  jp EndConsoleChange
-_l100:
-072A FE 1A     cp 26
-072C C2 3B 07  jp nz, _l101
-072F CD D9 07  call ClearScreen
-0732 21 00 00  ld hl, 0
-0735 22 03 01  ld (cursor_y_l_x_h), hl
-0738 C3 3C 03  jp EndConsoleChange
+0560 FE 4B     cp 75
+0562 C2 6E 05  jp nz, _l101
+0565 CD A1 03  call ConEraseInLine
+0568 21 9B 07  ld hl, CpmConout
+056B C3 9B 05  jp _l102
 _l101:
-073B FE 0D     cp 13
-073D C2 46 07  jp nz, _l102
-0740 CD 5D 03  call ConNextLine
-0743 C3 3C 03  jp EndConsoleChange
-_l102:
-0746 CD 6E 03  call ConPrintChar
-0749 C3 3C 03  jp EndConsoleChange
-con_special_keys:
-074C 5B        db 91
-074D 4F        db 79
-074E 50        db 80
-074F 00        db 0
-0750 5B        db 91
-0751 4F        db 79
-0752 51        db 81
-0753 00        db 0
-0754 5B        db 91
-0755 4F        db 79
-0756 52        db 82
-0757 00        db 0
-0758 5B        db 91
-0759 41        db 65
-075A 00        db 0
-075B 00        db 0
-075C 5B        db 91
-075D 42        db 66
-075E 00        db 0
-075F 00        db 0
-0760 5B        db 91
-0761 43        db 67
-0762 00        db 0
-0763 00        db 0
-0764 5B        db 91
-0765 44        db 68
-0766 00        db 0
-0767 00        db 0
-0768 5B        db 91
-0769 45        db 69
-076A 00        db 0
-076B 00        db 0
-076C 5B        db 91
-076D 46        db 70
-076E 00        db 0
-076F 00        db 0
-0770 5B        db 91
-0771 48        db 72
-0772 00        db 0
-0773 00        db 0
-0774 5B        db 91
-0775 32        db 50
-0776 7E        db 126
-0777 00        db 0
-0778 5B        db 91
-0779 33        db 51
-077A 7E        db 126
-077B 00        db 0
-077C 5B        db 91
-077D 35        db 53
-077E 7E        db 126
-077F 00        db 0
-0780 5B        db 91
-0781 36        db 54
-0782 7E        db 126
-0783 00        db 0
-CpmConst:
-0784 3A 0A 01  ld a, (long_code_high)
-0787 B7        or a
-0788 CC F1 22  call z, CheckKeyboard
-078B 16 00     ld d, 0
-078D C8        ret z
-078E 15        dec d
-078F C9        ret
-CpmConin:
-0790 3A 0A 01  ld a, (long_code_high)
-0793 B7        or a
-0794 CA AB 07  jp z, _l106
-0797 2A 09 01  ld hl, (long_code)
-079A 56        ld d, (hl)
-079B 23        inc hl
-079C 7E        ld a, (hl)
-079D B7        or a
-079E C2 A4 07  jp nz, _l107
-07A1 21 00 00  ld hl, 0
-_l107:
-07A4 22 09 01  ld (long_code), hl
-07A7 7A        ld a, d
-07A8 C3 C6 07  jp _l108
+056E FE 59     cp 89
+0570 C2 79 05  jp nz, _l103
+0573 21 31 05  ld hl, CpmConoutEscY
+0576 C3 9B 05  jp _l104
+_l103:
+0579 FE 3D     cp 61
+057B C2 84 05  jp nz, _l105
+057E 21 31 05  ld hl, CpmConoutEscY
+0581 C3 9B 05  jp _l106
+_l105:
+0584 FE 3B     cp 59
+0586 C2 9B 05  jp nz, _l107
+0589 CD 24 03  call BeginConsoleChange
+058C CD B0 08  call ClearScreen
+058F 21 00 00  ld hl, 0
+0592 22 03 01  ld (cursor_y_l_x_h), hl
+0595 CD 43 03  call EndConsoleChange
+0598 21 9B 07  ld hl, CpmConout
+_l104:
 _l106:
-_l109:
-07AB CD F7 22  call ReadKeyboard
-_l111:
-07AE CA AB 07  jp z, _l109
-_l110:
-07B1 FE F2     cp KEY_F1
-07B3 DA C6 07  jp c, _l112
-07B6 D6 F2     sub KEY_F1
-07B8 87        add a
-07B9 87        add a
-07BA C6 4C     add con_special_keys
-07BC 6F        ld l, a
-07BD CE 07     adc con_special_keys>>8
-07BF 95        sub l
-07C0 67        ld h, a
-07C1 22 09 01  ld (long_code), hl
-07C4 3E 1B     ld a, KEY_ESC
-_l112:
-_l108:
-07C6 C6 0B     add console_xlat_back
-07C8 6F        ld l, a
-07C9 CE 02     adc console_xlat_back>>8
-07CB 95        sub l
-07CC 67        ld h, a
-07CD 56        ld d, (hl)
-07CE C9        ret
-07CF          SCREEN_0_ADDRESS equ 53248
-07CF          SCREEN_1_ADDRESS equ 36864
-07CF          PALETTE_WHITE equ 0
-07CF          PALETTE_CYAN equ 1
-07CF          PALETTE_MAGENTA equ 2
-07CF          PALETTE_BLUE equ 3
-07CF          PALETTE_YELLOW equ 4
-07CF          PALETTE_GREEN equ 5
-07CF          PALETTE_RED equ 6
-07CF          PALETTE_XXX equ 7
-07CF          PALETTE_GRAY equ 8
-07CF          PALETTE_DARK_CYAN equ 9
-07CF          PALETTE_DARK_MAGENTA equ 10
-07CF          PALETTE_DARK_BLUE equ 11
-07CF          PALETTE_DARK_YELLOW equ 12
-07CF          PALETTE_DARK_GREEN equ 13
-07CF          PALETTE_DARK_RED equ 14
-07CF          PALETTE_BLACK equ 15
-07CF          KEY_BACKSPACE equ 8
-07CF          KEY_TAB equ 9
-07CF          KEY_ENTER equ 13
-07CF          KEY_ESC equ 27
-07CF          KEY_ALT equ 1
-07CF          KEY_F1 equ 242
-07CF          KEY_F2 equ 243
-07CF          KEY_F3 equ 244
-07CF          KEY_UP equ 245
-07CF          KEY_DOWN equ 246
-07CF          KEY_RIGHT equ 247
-07CF          KEY_LEFT equ 248
-07CF          KEY_EXT_5 equ 249
-07CF          KEY_END equ 250
-07CF          KEY_HOME equ 251
-07CF          KEY_INSERT equ 252
-07CF          KEY_DEL equ 253
-07CF          KEY_PG_UP equ 254
-07CF          KEY_PG_DN equ 255
-07CF          PORT_FRAME_IRQ_RESET equ 4
-07CF          PORT_SD_SIZE equ 9
-07CF          PORT_SD_RESULT equ 9
-07CF          PORT_SD_DATA equ 8
-07CF          PORT_UART_DATA equ 128
-07CF          PORT_UART_CONFIG equ 129
-07CF          PORT_UART_STATE equ 129
-07CF          PORT_EXT_DATA_OUT equ 136
-07CF          PORT_PALETTE_3 equ 144
-07CF          PORT_PALETTE_2 equ 145
-07CF          PORT_PALETTE_1 equ 146
-07CF          PORT_PALETTE_0 equ 147
-07CF          PORT_EXT_IN_DATA equ 137
-07CF          PORT_A0 equ 160
-07CF          PORT_ROM_0000 equ 168
-07CF          PORT_ROM_0000__ROM equ 0
-07CF          PORT_ROM_0000__RAM equ 128
-07CF          PORT_VIDEO_MODE_1_LOW equ 185
-07CF          PORT_VIDEO_MODE_1_HIGH equ 249
-07CF          PORT_VIDEO_MODE_0_LOW equ 184
-07CF          PORT_VIDEO_MODE_0_HIGH equ 248
-07CF          PORT_UART_SPEED_0 equ 187
-07CF          PORT_KEYBOARD equ 192
-07CF          PORT_UART_SPEED_1 equ 251
-07CF          PORT_CODE_ROM equ 186
-07CF          PORT_CHARGEN_ROM equ 250
-07CF          PORT_TAPE_AND_IDX2 equ 153
-07CF          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-07CF          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-07CF          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-07CF          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-07CF          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-07CF          PORT_RESET_CU1 equ 188
-07CF          PORT_RESET_CU2 equ 189
-07CF          PORT_RESET_CU3 equ 190
-07CF          PORT_RESET_CU4 equ 191
-07CF          PORT_SET_CU1 equ 252
-07CF          PORT_SET_CU2 equ 253
-07CF          PORT_SET_CU3 equ 254
-07CF          PORT_SET_CU4 equ 255
-07CF          PORT_TAPE_OUT equ 176
-07CF          SD_COMMAND_READ equ 1
-07CF          SD_COMMAND_READ_SIZE equ 5
-07CF          SD_COMMAND_WRITE equ 2
-07CF          SD_COMMAND_WRITE_SIZE equ 5+128
-07CF          SD_RESULT_BUSY equ 255
-07CF          SD_RESULT_OK equ 0
-07CF          TEXT_SCREEN_HEIGHT equ 25
-07CF          FONT_HEIGHT equ 10
-07CF          FONT_WIDTH equ 3
-07CF          DrawCharAddress equ DrawChar+1
-07CF          SetColorAddress equ SetColor+1
-07CF          DrawCursorAddress equ DrawCursor+1
-07CF          OPCODE_NOP equ 0
-07CF          OPCODE_LD_DE_CONST equ 17
-07CF          OPCODE_LD_A_CONST equ 62
-07CF          OPCODE_LD_H_A equ 103
-07CF          OPCODE_LD_A_D equ 122
-07CF          OPCODE_LD_A_H equ 124
-07CF          OPCODE_XOR_A equ 175
-07CF          OPCODE_XOR_B equ 168
-07CF          OPCODE_JP equ 195
-07CF          OPCODE_RET equ 201
-07CF          OPCODE_SUB_CONST equ 214
-07CF          OPCODE_AND_CONST equ 230
-07CF          OPCODE_OR_CONST equ 246
-07CF          OPCODE_OUT equ 211
-07CF          OPCODE_JMP equ 195
-text_screen_width:
-07CF 60        db 96
-07D0          ClearScreen_2 equ ClearScreen_1+1
-07D0          ClearScreen_3 equ ClearScreen_1+2
-07D0          ClearScreen_4 equ ClearScreenPoly3+1
-07D0          ClearScreenSp equ ClearScreenSetSp+1
-07D0          ScrollUpAddr equ ScrollUp+1
-07D0          ScrollUpSp equ ScrollUpSpInstr+1
-07D0          ScrollUpSp2 equ ScrollUpSpInstr2+1
-07D0          ScrollUpBwSp equ ScrollUpBwSpInstr+1
-07D0          ScrollUp_1 equ ScrollUpSub+1
-07D0          ScrollUp_2 equ ScrollUp_2
-07D0          ScrollUp_3 equ ScrollUp_2+1
-07D0          ScrollUpSpInstr2 equ ScrollUpSpInstr2
-DrawChar:
-07D0 C3 E6 08  jp DrawChar6
-SetColor:
-07D3 C3 E2 09  jp SetColor6
-DrawCursor:
-07D6 C3 B7 0A  jp DrawCursor6
-ClearScreen:
-07D9 21 00 00  ld hl, 0
-07DC 39        add hl, sp
-07DD 22 0C 08  ld (ClearScreenSp), hl
-07E0 11 00 00  ld de, 0
-07E3 0E 30     ld c, 48
-07E5 21 00 00  ld hl, 0
+_l107:
+_l102:
+_l100:
+059B 22 12 00  ld (entry_cpm_conout_address), hl
+059E C9        ret
+console_xlat_koi7:
+059F 60        db 96
+05A0 9E        db 158
+05A1 80        db 128
+05A2 81        db 129
+05A3 96        db 150
+05A4 84        db 132
+05A5 85        db 133
+05A6 94        db 148
+05A7 83        db 131
+05A8 95        db 149
+05A9 88        db 136
+05AA 89        db 137
+05AB 8A        db 138
+05AC 8B        db 139
+05AD 8C        db 140
+05AE 8D        db 141
+05AF 8E        db 142
+05B0 8F        db 143
+05B1 9F        db 159
+05B2 90        db 144
+05B3 91        db 145
+05B4 92        db 146
+05B5 93        db 147
+05B6 86        db 134
+05B7 82        db 130
+05B8 9C        db 156
+05B9 9B        db 155
+05BA 87        db 135
+05BB 98        db 152
+05BC 9D        db 157
+05BD 99        db 153
+05BE 97        db 151
+05BF 7F        db 127
+05C0 00        db 0
+05C1 01        db 1
+05C2 02        db 2
+05C3 03        db 3
+05C4 04        db 4
+05C5 05        db 5
+05C6 06        db 6
+05C7 07        db 7
+05C8 08        db 8
+05C9 09        db 9
+05CA 0A        db 10
+05CB 0B        db 11
+05CC 0C        db 12
+05CD 0D        db 13
+05CE 0E        db 14
+05CF 0F        db 15
+05D0 10        db 16
+05D1 11        db 17
+05D2 12        db 18
+05D3 13        db 19
+05D4 14        db 20
+05D5 15        db 21
+05D6 16        db 22
+05D7 17        db 23
+05D8 18        db 24
+05D9 19        db 25
+05DA 1A        db 26
+05DB 1B        db 27
+05DC 1C        db 28
+05DD 1D        db 29
+05DE 1E        db 30
+05DF 1F        db 31
+05E0 20        db 32
+05E1 21        db 33
+05E2 22        db 34
+05E3 23        db 35
+05E4 FD        db 253
+05E5 25        db 37
+05E6 26        db 38
+05E7 27        db 39
+05E8 28        db 40
+05E9 29        db 41
+05EA 2A        db 42
+05EB 2B        db 43
+05EC 2C        db 44
+05ED 2D        db 45
+05EE 2E        db 46
+05EF 2F        db 47
+05F0 30        db 48
+05F1 31        db 49
+05F2 32        db 50
+05F3 33        db 51
+05F4 34        db 52
+05F5 35        db 53
+05F6 36        db 54
+05F7 37        db 55
+05F8 38        db 56
+05F9 39        db 57
+05FA 3A        db 58
+05FB 3B        db 59
+05FC 3C        db 60
+05FD 3D        db 61
+05FE 3E        db 62
+05FF 3F        db 63
+0600 40        db 64
+0601 41        db 65
+0602 42        db 66
+0603 43        db 67
+0604 44        db 68
+0605 45        db 69
+0606 46        db 70
+0607 47        db 71
+0608 48        db 72
+0609 49        db 73
+060A 4A        db 74
+060B 4B        db 75
+060C 4C        db 76
+060D 4D        db 77
+060E 4E        db 78
+060F 4F        db 79
+0610 50        db 80
+0611 51        db 81
+0612 52        db 82
+0613 53        db 83
+0614 54        db 84
+0615 55        db 85
+0616 56        db 86
+0617 57        db 87
+0618 58        db 88
+0619 59        db 89
+061A 5A        db 90
+061B 5B        db 91
+061C 5C        db 92
+061D 5D        db 93
+061E 5E        db 94
+061F 5F        db 95
+0620 9E        db 158
+0621 80        db 128
+0622 81        db 129
+0623 96        db 150
+0624 84        db 132
+0625 85        db 133
+0626 94        db 148
+0627 83        db 131
+0628 95        db 149
+0629 88        db 136
+062A 89        db 137
+062B 8A        db 138
+062C 8B        db 139
+062D 8C        db 140
+062E 8D        db 141
+062F 8E        db 142
+0630 8F        db 143
+0631 9F        db 159
+0632 90        db 144
+0633 91        db 145
+0634 92        db 146
+0635 93        db 147
+0636 86        db 134
+0637 82        db 130
+0638 9C        db 156
+0639 9B        db 155
+063A 87        db 135
+063B 98        db 152
+063C 9D        db 157
+063D 99        db 153
+063E 97        db 151
+063F 7F        db 127
+console_xlat_koi8:
+0640 80        db 128
+0641 C4        db 196
+0642 B3        db 179
+0643 DA        db 218
+0644 BF        db 191
+0645 C0        db 192
+0646 D9        db 217
+0647 C3        db 195
+0648 B4        db 180
+0649 C2        db 194
+064A C1        db 193
+064B C5        db 197
+064C DF        db 223
+064D DC        db 220
+064E DB        db 219
+064F DD        db 221
+0650 DE        db 222
+0651 B0        db 176
+0652 B1        db 177
+0653 B2        db 178
+0654 F4        db 244
+0655 FE        db 254
+0656 F9        db 249
+0657 FB        db 251
+0658 F7        db 247
+0659 F3        db 243
+065A F2        db 242
+065B FF        db 255
+065C F5        db 245
+065D F8        db 248
+065E FD        db 253
+065F FA        db 250
+0660 F6        db 246
+0661 CD        db 205
+0662 BA        db 186
+0663 D5        db 213
+0664 F1        db 241
+0665 D6        db 214
+0666 C9        db 201
+0667 B8        db 184
+0668 B7        db 183
+0669 BB        db 187
+066A D4        db 212
+066B D3        db 211
+066C C8        db 200
+066D BE        db 190
+066E BD        db 189
+066F BC        db 188
+0670 C6        db 198
+0671 C7        db 199
+0672 CC        db 204
+0673 B5        db 181
+0674 F0        db 240
+0675 B6        db 182
+0676 B9        db 185
+0677 D1        db 209
+0678 D2        db 210
+0679 CB        db 203
+067A CF        db 207
+067B D0        db 208
+067C CA        db 202
+067D D8        db 216
+067E D7        db 215
+067F CE        db 206
+0680 FC        db 252
+0681 EE        db 238
+0682 A0        db 160
+0683 A1        db 161
+0684 E6        db 230
+0685 A4        db 164
+0686 A5        db 165
+0687 E4        db 228
+0688 A3        db 163
+0689 E5        db 229
+068A A8        db 168
+068B A9        db 169
+068C AA        db 170
+068D AB        db 171
+068E AC        db 172
+068F AD        db 173
+0690 AE        db 174
+0691 AF        db 175
+0692 EF        db 239
+0693 E0        db 224
+0694 E1        db 225
+0695 E2        db 226
+0696 E3        db 227
+0697 A6        db 166
+0698 A2        db 162
+0699 EC        db 236
+069A EB        db 235
+069B A7        db 167
+069C E8        db 232
+069D ED        db 237
+069E E9        db 233
+069F E7        db 231
+06A0 EA        db 234
+06A1 9E        db 158
+06A2 80        db 128
+06A3 81        db 129
+06A4 96        db 150
+06A5 84        db 132
+06A6 85        db 133
+06A7 94        db 148
+06A8 83        db 131
+06A9 95        db 149
+06AA 88        db 136
+06AB 89        db 137
+06AC 8A        db 138
+06AD 8B        db 139
+06AE 8C        db 140
+06AF 8D        db 141
+06B0 8E        db 142
+06B1 8F        db 143
+06B2 9F        db 159
+06B3 90        db 144
+06B4 91        db 145
+06B5 92        db 146
+06B6 93        db 147
+06B7 86        db 134
+06B8 82        db 130
+06B9 9C        db 156
+06BA 9B        db 155
+06BB 87        db 135
+06BC 98        db 152
+06BD 9D        db 157
+06BE 99        db 153
+06BF 97        db 151
+06C0 9A        db 154
+console_xlat_1251:
+06C1 80        db 128
+06C2 B0        db 176
+06C3 B1        db 177
+06C4 B2        db 178
+06C5 B3        db 179
+06C6 B4        db 180
+06C7 B5        db 181
+06C8 B6        db 182
+06C9 B7        db 183
+06CA B8        db 184
+06CB B9        db 185
+06CC BA        db 186
+06CD BB        db 187
+06CE BC        db 188
+06CF BD        db 189
+06D0 BE        db 190
+06D1 BF        db 191
+06D2 C0        db 192
+06D3 C1        db 193
+06D4 C2        db 194
+06D5 C3        db 195
+06D6 C4        db 196
+06D7 C5        db 197
+06D8 C6        db 198
+06D9 C7        db 199
+06DA C8        db 200
+06DB C9        db 201
+06DC CA        db 202
+06DD CB        db 203
+06DE CC        db 204
+06DF CD        db 205
+06E0 CE        db 206
+06E1 CF        db 207
+06E2 D0        db 208
+06E3 D1        db 209
+06E4 D2        db 210
+06E5 D3        db 211
+06E6 D4        db 212
+06E7 D5        db 213
+06E8 D6        db 214
+06E9 D7        db 215
+06EA D8        db 216
+06EB D9        db 217
+06EC DA        db 218
+06ED DB        db 219
+06EE DC        db 220
+06EF DD        db 221
+06F0 DE        db 222
+06F1 DF        db 223
+06F2 F0        db 240
+06F3 F1        db 241
+06F4 F2        db 242
+06F5 F3        db 243
+06F6 F4        db 244
+06F7 F5        db 245
+06F8 F6        db 246
+06F9 F7        db 247
+06FA F8        db 248
+06FB F9        db 249
+06FC FA        db 250
+06FD FB        db 251
+06FE FC        db 252
+06FF FD        db 253
+0700 FE        db 254
+0701 FF        db 255
+0702 80        db 128
+0703 81        db 129
+0704 82        db 130
+0705 83        db 131
+0706 84        db 132
+0707 85        db 133
+0708 86        db 134
+0709 87        db 135
+070A 88        db 136
+070B 89        db 137
+070C 8A        db 138
+070D 8B        db 139
+070E 8C        db 140
+070F 8D        db 141
+0710 8E        db 142
+0711 8F        db 143
+0712 90        db 144
+0713 91        db 145
+0714 92        db 146
+0715 93        db 147
+0716 94        db 148
+0717 95        db 149
+0718 96        db 150
+0719 97        db 151
+071A 98        db 152
+071B 99        db 153
+071C 9A        db 154
+071D 9B        db 155
+071E 9C        db 156
+071F 9D        db 157
+0720 9E        db 158
+0721 9F        db 159
+0722 A0        db 160
+0723 A1        db 161
+0724 A2        db 162
+0725 A3        db 163
+0726 A4        db 164
+0727 A5        db 165
+0728 A6        db 166
+0729 A7        db 167
+072A A8        db 168
+072B A9        db 169
+072C AA        db 170
+072D AB        db 171
+072E AC        db 172
+072F AD        db 173
+0730 AE        db 174
+0731 AF        db 175
+0732 E0        db 224
+0733 E1        db 225
+0734 E2        db 226
+0735 E3        db 227
+0736 E4        db 228
+0737 E5        db 229
+0738 E6        db 230
+0739 E7        db 231
+073A E8        db 232
+073B E9        db 233
+073C EA        db 234
+073D EB        db 235
+073E EC        db 236
+073F ED        db 237
+0740 EE        db 238
+0741 EF        db 239
+codepages:
+0742 9F 05     dw console_xlat_koi7
+0744 40 06     dw console_xlat_koi8
+0746 C1 06     dw console_xlat_1251
+ConSetXlat:
+0748 F5        push af
+0749 11 0B 01  ld de, console_xlat
+074C 21 0B 02  ld hl, console_xlat_back
+074F AF        xor a
+0750 06 3F     ld b, 63
+_l113:
+0752 70        ld (hl), b
+0753 12        ld (de), a
+0754 23        inc hl
+0755 13        inc de
+_l115:
+0756 3C        inc a
+0757 C2 52 07  jp nz, _l113
+_l114:
+075A F1        pop af
+075B B7        or a
+075C CA 87 07  jp z, _l116
+075F 3D        dec a
+0760 C2 69 07  jp nz, _l117
+0763 11 C1 06  ld de, console_xlat_1251
+0766 C3 76 07  jp _l118
+_l117:
+0769 3D        dec a
+076A C2 73 07  jp nz, _l119
+076D 11 9F 05  ld de, console_xlat_koi7
+0770 C3 76 07  jp _l120
+_l119:
+0773 11 40 06  ld de, console_xlat_koi8
+_l120:
+_l118:
+0776 1A        ld a, (de)
+0777 4F        ld c, a
+0778 C6 0B     add console_xlat
+077A 6F        ld l, a
+077B CE 01     adc console_xlat>>8
+077D 95        sub l
+077E 67        ld h, a
+_l121:
+077F 13        inc de
+0780 1A        ld a, (de)
+0781 77        ld (hl), a
+0782 23        inc hl
+_l123:
+0783 0C        inc c
+0784 C2 7F 07  jp nz, _l121
+_l116:
+_l122:
+0787 11 0A 02  ld de, console_xlat+255
+078A 0E FF     ld c, 255
 _l124:
-07E8 06 10     ld b, 16
-07EA F3        di
-07EB F9        ld sp, hl
-_l127:
-07EC D5        push de
-07ED D5        push de
-07EE D5        push de
-07EF D5        push de
-07F0 D5        push de
-07F1 D5        push de
-07F2 D5        push de
-07F3 D5        push de
-_l129:
-07F4 05        dec b
-07F5 C2 EC 07  jp nz, _l127
-_l128:
-07F8 7C        ld a, h
-ClearScreen_1:
-07F9 D6 40     sub 64
-07FB 67        ld h, a
-07FC 06 10     ld b, 16
-07FE F9        ld sp, hl
-_l130:
-07FF D5        push de
-0800 D5        push de
-0801 D5        push de
-0802 D5        push de
-0803 D5        push de
-0804 D5        push de
-0805 D5        push de
-0806 D5        push de
-_l132:
-0807 05        dec b
-0808 C2 FF 07  jp nz, _l130
-ClearScreenSetSp:
-_l131:
-080B 31 00 00  ld sp, 0
-080E FB        ei
-ClearScreenPoly3:
-080F C6 3F     add 63
-0811 67        ld h, a
+078C 1A        ld a, (de)
+078D C6 0B     add console_xlat_back
+078F 6F        ld l, a
+0790 CE 02     adc console_xlat_back>>8
+0792 95        sub l
+0793 67        ld h, a
+0794 71        ld (hl), c
+0795 1B        dec de
 _l126:
-0812 0D        dec c
-0813 C2 E8 07  jp nz, _l124
+0796 0D        dec c
+0797 C2 8C 07  jp nz, _l124
 _l125:
-0816 C9        ret
-0817          SCROLL_COLUMN_UP equ 256
-0817          BITPLANE_OFFSET equ 16384
-0817          SCREEN_SIZE equ 12288
+079A C9        ret
+CpmConout:
+079B 79        ld a, c
+079C FE 1B     cp KEY_ESC
+079E C2 A8 07  jp nz, _l128
+07A1 21 44 05  ld hl, CpmConoutEsc
+07A4 22 12 00  ld (entry_cpm_conout_address), hl
+07A7 C9        ret
+_l128:
+07A8 FE 07     cp 7
+07AA CA 12 03  jp z, Beep
+07AD FE 0A     cp 10
+07AF C8        ret z
+07B0 F5        push af
+07B1 CD 24 03  call BeginConsoleChange
+07B4 F1        pop af
+07B5 FE 1C     cp 28
+07B7 DA C0 07  jp c, _l129
+07BA CD 84 03  call ConPrintChar
+07BD C3 43 03  jp EndConsoleChange
+_l129:
+07C0 FE 08     cp 8
+07C2 C2 E6 07  jp nz, _l130
+07C5 3A 04 01  ld a, (cursor_x)
+07C8 3D        dec a
+07C9 FA D2 07  jp m, _l131
+07CC 32 04 01  ld (cursor_x), a
+07CF C3 43 03  jp EndConsoleChange
+_l131:
+07D2 3A 03 01  ld a, (cursor_y)
+07D5 3D        dec a
+07D6 FA 43 03  jp m, EndConsoleChange
+07D9 32 03 01  ld (cursor_y), a
+07DC 3A 9C 08  ld a, (text_screen_width)
+07DF 3D        dec a
+07E0 32 04 01  ld (cursor_x), a
+07E3 C3 43 03  jp EndConsoleChange
+_l130:
+07E6 FE 0C     cp 12
+07E8 C2 F7 07  jp nz, _l132
+07EB CD B0 08  call ClearScreen
+07EE 21 00 00  ld hl, 0
+07F1 22 03 01  ld (cursor_y_l_x_h), hl
+07F4 C3 43 03  jp EndConsoleChange
+_l132:
+07F7 FE 1A     cp 26
+07F9 C2 08 08  jp nz, _l133
+07FC CD B0 08  call ClearScreen
+07FF 21 00 00  ld hl, 0
+0802 22 03 01  ld (cursor_y_l_x_h), hl
+0805 C3 43 03  jp EndConsoleChange
+_l133:
+0808 FE 0D     cp 13
+080A C2 13 08  jp nz, _l134
+080D CD 73 03  call ConNextLine
+0810 C3 43 03  jp EndConsoleChange
 _l134:
-ScrollUpSubBw:
-0817 F9        ld sp, hl
-0818 19        add hl, de
-0819 46        ld b, (hl)
-081A 2D        dec l
-081B 4E        ld c, (hl)
-081C 2D        dec l
-081D C5        push bc
-081E 46        ld b, (hl)
-081F 2D        dec l
-0820 4E        ld c, (hl)
-0821 2D        dec l
-0822 C5        push bc
-0823 46        ld b, (hl)
-0824 2D        dec l
-0825 4E        ld c, (hl)
-0826 2D        dec l
-0827 C5        push bc
-0828 46        ld b, (hl)
-0829 2D        dec l
-082A 4E        ld c, (hl)
-082B 2D        dec l
-082C C5        push bc
-082D 46        ld b, (hl)
-082E 2D        dec l
-082F 4E        ld c, (hl)
-0830 C5        push bc
-0831 21 0A 01  ld hl, FONT_HEIGHT+256
-0834 39        add hl, sp
-_l136:
-0835 3D        dec a
-0836 C2 17 08  jp nz, _l134
-_l135:
-0839 C3 95 08  jp ScrollUpSpInstr
-_l138:
-ScrollUpSubColor:
-083C F9        ld sp, hl
-083D 19        add hl, de
-083E 46        ld b, (hl)
-083F 2D        dec l
-0840 4E        ld c, (hl)
-0841 2D        dec l
-0842 C5        push bc
-0843 46        ld b, (hl)
-0844 2D        dec l
-0845 4E        ld c, (hl)
-0846 2D        dec l
-0847 C5        push bc
-0848 46        ld b, (hl)
-0849 2D        dec l
-084A 4E        ld c, (hl)
-084B 2D        dec l
-084C C5        push bc
-084D 46        ld b, (hl)
-084E 2D        dec l
-084F 4E        ld c, (hl)
-0850 2D        dec l
-0851 C5        push bc
-0852 46        ld b, (hl)
-0853 2D        dec l
-0854 4E        ld c, (hl)
-0855 C5        push bc
-0856 21 0A C0  ld hl, FONT_HEIGHT-BITPLANE_OFFSET
-0859 39        add hl, sp
-085A F9        ld sp, hl
-085B 19        add hl, de
-085C 46        ld b, (hl)
-085D 2D        dec l
-085E 4E        ld c, (hl)
-085F 2D        dec l
-0860 C5        push bc
-0861 46        ld b, (hl)
-0862 2D        dec l
-0863 4E        ld c, (hl)
-0864 2D        dec l
-0865 C5        push bc
-0866 46        ld b, (hl)
-0867 2D        dec l
-0868 4E        ld c, (hl)
-0869 2D        dec l
-086A C5        push bc
-086B 46        ld b, (hl)
-086C 2D        dec l
-086D 4E        ld c, (hl)
-086E 2D        dec l
-086F C5        push bc
-0870 46        ld b, (hl)
-0871 2D        dec l
-0872 4E        ld c, (hl)
-0873 C5        push bc
-0874 21 0A 41  ld hl, (FONT_HEIGHT+BITPLANE_OFFSET)+256
-0877 39        add hl, sp
-_l140:
-0878 3D        dec a
-0879 C2 3C 08  jp nz, _l138
+0813 CD 84 03  call ConPrintChar
+0816 C3 43 03  jp EndConsoleChange
+con_special_keys:
+0819 5B        db 91
+081A 4F        db 79
+081B 50        db 80
+081C 00        db 0
+081D 5B        db 91
+081E 4F        db 79
+081F 51        db 81
+0820 00        db 0
+0821 5B        db 91
+0822 4F        db 79
+0823 52        db 82
+0824 00        db 0
+0825 5B        db 91
+0826 41        db 65
+0827 00        db 0
+0828 00        db 0
+0829 5B        db 91
+082A 42        db 66
+082B 00        db 0
+082C 00        db 0
+082D 5B        db 91
+082E 43        db 67
+082F 00        db 0
+0830 00        db 0
+0831 5B        db 91
+0832 44        db 68
+0833 00        db 0
+0834 00        db 0
+0835 5B        db 91
+0836 45        db 69
+0837 00        db 0
+0838 00        db 0
+0839 5B        db 91
+083A 46        db 70
+083B 00        db 0
+083C 00        db 0
+083D 5B        db 91
+083E 48        db 72
+083F 00        db 0
+0840 00        db 0
+0841 5B        db 91
+0842 32        db 50
+0843 7E        db 126
+0844 00        db 0
+0845 5B        db 91
+0846 33        db 51
+0847 7E        db 126
+0848 00        db 0
+0849 5B        db 91
+084A 35        db 53
+084B 7E        db 126
+084C 00        db 0
+084D 5B        db 91
+084E 36        db 54
+084F 7E        db 126
+0850 00        db 0
+CpmConst:
+0851 3A 0A 01  ld a, (long_code_high)
+0854 B7        or a
+0855 CC C8 23  call z, CheckKeyboard
+0858 16 00     ld d, 0
+085A C8        ret z
+085B 15        dec d
+085C C9        ret
+CpmConin:
+085D 3A 0A 01  ld a, (long_code_high)
+0860 B7        or a
+0861 CA 78 08  jp z, _l138
+0864 2A 09 01  ld hl, (long_code)
+0867 56        ld d, (hl)
+0868 23        inc hl
+0869 7E        ld a, (hl)
+086A B7        or a
+086B C2 71 08  jp nz, _l139
+086E 21 00 00  ld hl, 0
 _l139:
-087C C3 95 08  jp ScrollUpSpInstr
-ScrollUp:
-087F 21 00 00  ld hl, 0
-0882 39        add hl, sp
-0883 22 96 08  ld (ScrollUpSp), hl
-0886 22 D2 08  ld (ScrollUpSp2), hl
-0889 11 F5 FF  ld de, -FONT_HEIGHT-1
-088C 21 00 D1  ld hl, 53504
+0871 22 09 01  ld (long_code), hl
+0874 7A        ld a, d
+0875 C3 93 08  jp _l140
+_l138:
 _l141:
-088F F3        di
-0890 3E 30     ld a, 48
-ScrollUpSub:
-0892 C3 17 08  jp ScrollUpSubBw
-ScrollUpSpInstr:
-0895 31 00 00  ld sp, 0
-0898 FB        ei
-0899 7D        ld a, l
-089A D6 0A     sub FONT_HEIGHT
-089C 6F        ld l, a
-089D 26 D0     ld h, 208
+0878 CD CE 23  call ReadKeyboard
 _l143:
-089F FE 11     cp FONT_HEIGHT+7
-08A1 D2 8F 08  jp nc, _l141
+087B CA 78 08  jp z, _l141
 _l142:
-08A4 3E 30     ld a, 48
-08A6 11 00 00  ld de, 0
-08A9 F3        di
-08AA 31 10 FF  ld sp, (SCREEN_0_ADDRESS+SCREEN_SIZE)-(TEXT_SCREEN_HEIGHT-1)*FONT_HEIGHT
+087E FE F2     cp KEY_F1
+0880 DA 93 08  jp c, _l144
+0883 D6 F2     sub KEY_F1
+0885 87        add a
+0886 87        add a
+0887 C6 19     add con_special_keys
+0889 6F        ld l, a
+088A CE 08     adc con_special_keys>>8
+088C 95        sub l
+088D 67        ld h, a
+088E 22 09 01  ld (long_code), hl
+0891 3E 1B     ld a, KEY_ESC
+_l140:
 _l144:
-08AD D5        push de
-08AE D5        push de
-08AF D5        push de
-08B0 D5        push de
-08B1 D5        push de
-08B2 21 0A FF  ld hl, -SCROLL_COLUMN_UP+FONT_HEIGHT
-08B5 39        add hl, sp
-08B6 F9        ld sp, hl
-_l146:
-08B7 3D        dec a
-08B8 C2 AD 08  jp nz, _l144
-ScrollUp_2:
-_l145:
-08BB 3E 30     ld a, 48
-08BD 11 00 00  ld de, 0
-08C0 31 10 BF  ld sp, (SCREEN_1_ADDRESS+SCREEN_SIZE)-(TEXT_SCREEN_HEIGHT-1)*FONT_HEIGHT
-_l147:
+0893 C6 0B     add console_xlat_back
+0895 6F        ld l, a
+0896 CE 02     adc console_xlat_back>>8
+0898 95        sub l
+0899 67        ld h, a
+089A 56        ld d, (hl)
+089B C9        ret
+089C          SCREEN_0_ADDRESS equ 53248
+089C          SCREEN_1_ADDRESS equ 36864
+089C          PALETTE_WHITE equ 0
+089C          PALETTE_CYAN equ 1
+089C          PALETTE_MAGENTA equ 2
+089C          PALETTE_BLUE equ 3
+089C          PALETTE_YELLOW equ 4
+089C          PALETTE_GREEN equ 5
+089C          PALETTE_RED equ 6
+089C          PALETTE_XXX equ 7
+089C          PALETTE_GRAY equ 8
+089C          PALETTE_DARK_CYAN equ 9
+089C          PALETTE_DARK_MAGENTA equ 10
+089C          PALETTE_DARK_BLUE equ 11
+089C          PALETTE_DARK_YELLOW equ 12
+089C          PALETTE_DARK_GREEN equ 13
+089C          PALETTE_DARK_RED equ 14
+089C          PALETTE_BLACK equ 15
+089C          KEY_BACKSPACE equ 8
+089C          KEY_TAB equ 9
+089C          KEY_ENTER equ 13
+089C          KEY_ESC equ 27
+089C          KEY_ALT equ 1
+089C          KEY_F1 equ 242
+089C          KEY_F2 equ 243
+089C          KEY_F3 equ 244
+089C          KEY_UP equ 245
+089C          KEY_DOWN equ 246
+089C          KEY_RIGHT equ 247
+089C          KEY_LEFT equ 248
+089C          KEY_EXT_5 equ 249
+089C          KEY_END equ 250
+089C          KEY_HOME equ 251
+089C          KEY_INSERT equ 252
+089C          KEY_DEL equ 253
+089C          KEY_PG_UP equ 254
+089C          KEY_PG_DN equ 255
+089C          PORT_FRAME_IRQ_RESET equ 4
+089C          PORT_SD_SIZE equ 9
+089C          PORT_SD_RESULT equ 9
+089C          PORT_SD_DATA equ 8
+089C          PORT_UART_DATA equ 128
+089C          PORT_UART_CONFIG equ 129
+089C          PORT_UART_STATE equ 129
+089C          PORT_EXT_DATA_OUT equ 136
+089C          PORT_PALETTE_3 equ 144
+089C          PORT_PALETTE_2 equ 145
+089C          PORT_PALETTE_1 equ 146
+089C          PORT_PALETTE_0 equ 147
+089C          PORT_EXT_IN_DATA equ 137
+089C          PORT_A0 equ 160
+089C          PORT_ROM_0000 equ 168
+089C          PORT_ROM_0000__ROM equ 0
+089C          PORT_ROM_0000__RAM equ 128
+089C          PORT_VIDEO_MODE_1_LOW equ 185
+089C          PORT_VIDEO_MODE_1_HIGH equ 249
+089C          PORT_VIDEO_MODE_0_LOW equ 184
+089C          PORT_VIDEO_MODE_0_HIGH equ 248
+089C          PORT_UART_SPEED_0 equ 187
+089C          PORT_KEYBOARD equ 192
+089C          PORT_UART_SPEED_1 equ 251
+089C          PORT_CODE_ROM equ 186
+089C          PORT_CHARGEN_ROM equ 250
+089C          PORT_TAPE_AND_IDX2 equ 153
+089C          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+089C          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+089C          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+089C          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+089C          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+089C          PORT_RESET_CU1 equ 188
+089C          PORT_RESET_CU2 equ 189
+089C          PORT_RESET_CU3 equ 190
+089C          PORT_RESET_CU4 equ 191
+089C          PORT_SET_CU1 equ 252
+089C          PORT_SET_CU2 equ 253
+089C          PORT_SET_CU3 equ 254
+089C          PORT_SET_CU4 equ 255
+089C          PORT_TAPE_OUT equ 176
+089C          SD_COMMAND_READ equ 1
+089C          SD_COMMAND_READ_SIZE equ 5
+089C          SD_COMMAND_WRITE equ 2
+089C          SD_COMMAND_WRITE_SIZE equ 5+128
+089C          SD_RESULT_BUSY equ 255
+089C          SD_RESULT_OK equ 0
+089C          TEXT_SCREEN_HEIGHT equ 25
+089C          FONT_HEIGHT equ 10
+089C          FONT_WIDTH equ 3
+089C          DrawCharAddress equ DrawChar+1
+089C          SetColorAddress equ SetColor+1
+089C          DrawCursorAddress equ DrawCursor+1
+089C          OPCODE_NOP equ 0
+089C          OPCODE_LD_DE_CONST equ 17
+089C          OPCODE_LD_A_CONST equ 62
+089C          OPCODE_LD_H_A equ 103
+089C          OPCODE_LD_A_D equ 122
+089C          OPCODE_LD_A_H equ 124
+089C          OPCODE_XOR_A equ 175
+089C          OPCODE_XOR_B equ 168
+089C          OPCODE_JP equ 195
+089C          OPCODE_RET equ 201
+089C          OPCODE_SUB_CONST equ 214
+089C          OPCODE_AND_CONST equ 230
+089C          OPCODE_OR_CONST equ 246
+089C          OPCODE_OUT equ 211
+089C          OPCODE_JMP equ 195
+text_screen_width:
+089C 60        db 96
+089D          ClearScreen_2 equ ClearScreen_1+1
+089D          ClearScreen_3 equ ClearScreen_1+2
+089D          ClearScreen_4 equ ClearScreenPoly3+1
+089D          ClearScreenSp equ ClearScreenSetSp+1
+089D          ScrollUpAddr equ ScrollUp+1
+089D          ScrollUpSp equ ScrollUpSpInstr+1
+089D          ScrollUpSp2 equ ScrollUpSpInstr2+1
+089D          ScrollUpBwSp equ ScrollUpBwSpInstr+1
+089D          ScrollUp_1 equ ScrollUpSub+1
+089D          ScrollUp_2 equ ScrollUp_2
+089D          ScrollUp_3 equ ScrollUp_2+1
+089D          ScrollUpSpInstr2 equ ScrollUpSpInstr2
+DrawChar:
+089D C3 BD 09  jp DrawChar6
+SetColor:
+08A0 C3 B9 0A  jp SetColor6
+DrawCursor:
+08A3 C3 8E 0B  jp DrawCursor6
+SetColorSave:
+08A6 C5        push bc
+08A7 D5        push de
+08A8 E5        push hl
+08A9 CD A0 08  call SetColor
+08AC E1        pop hl
+08AD D1        pop de
+08AE C1        pop bc
+08AF C9        ret
+ClearScreen:
+08B0 21 00 00  ld hl, 0
+08B3 39        add hl, sp
+08B4 22 E3 08  ld (ClearScreenSp), hl
+08B7 11 00 00  ld de, 0
+08BA 0E 30     ld c, 48
+08BC 21 00 00  ld hl, 0
+_l157:
+08BF 06 10     ld b, 16
+08C1 F3        di
+08C2 F9        ld sp, hl
+_l160:
 08C3 D5        push de
 08C4 D5        push de
 08C5 D5        push de
 08C6 D5        push de
 08C7 D5        push de
-08C8 21 0A FF  ld hl, -SCROLL_COLUMN_UP+FONT_HEIGHT
-08CB 39        add hl, sp
-08CC F9        ld sp, hl
-_l149:
-08CD 3D        dec a
-08CE C2 C3 08  jp nz, _l147
-ScrollUpSpInstr2:
-_l148:
-08D1 31 00 00  ld sp, 0
-08D4 FB        ei
-08D5 C9        ret
-DrawText:
-_l152:
-08D6 7E        ld a, (hl)
-08D7 23        inc hl
-08D8 B7        or a
-08D9 C8        ret z
-08DA E5        push hl
-08DB D5        push de
-08DC EB        ex hl, de
-08DD CD D0 07  call DrawChar
-08E0 D1        pop de
-08E1 E1        pop hl
-08E2 14        inc d
-08E3 C3 D6 08  jp _l152
-_l151:
-DrawChar6:
-08E6 47        ld b, a
-08E7 7D        ld a, l
-08E8 87        add a
-08E9 87        add a
-08EA 85        add l
-08EB 87        add a
-08EC 2F        cpl
-08ED 5F        ld e, a
-08EE 7C        ld a, h
-08EF 87        add a
-08F0 84        add h
-08F1 4F        ld c, a
-08F2 1F        rra
-08F3 1F        rra
-08F4 E6 3F     and 63
-08F6 2F        cpl
-08F7 57        ld d, a
-08F8 78        ld a, b
-08F9 C6 84     add font
-08FB 6F        ld l, a
-08FC CE 0B     adc font>>8
-08FE 95        sub l
-08FF 67        ld h, a
-0900 79        ld a, c
-0901 E6 03     and 3
-0903 CA 55 09  jp z, DrawChar60
-0906 3D        dec a
-0907 CA 7C 09  jp z, DrawChar62
-090A 3D        dec a
-090B CA 9D 09  jp z, DrawChar64
-DrawChar66:
-090E 0E 0A     ld c, FONT_HEIGHT
-_l155:
-0910 7E        ld a, (hl)
-0911 0F 0F 0F  rrca
- rrca
- rrca
- rrca
-0915 F5        push af
-0916 E6 03     and 3
-0918 47        ld b, a
-0919 1A        ld a, (de)
-DrawChar_And3:
-091A E6 FC     and 252
-DrawChar_Xor3:
-091C A8        xor b
-091D 12        ld (de), a
-091E F1        pop af
-091F 15        dec d
-0920 E6 F0     and 240
-0922 47        ld b, a
-0923 1A        ld a, (de)
-DrawChar_And5:
-0924 E6 0F     and 15
-DrawChar_Xor4:
-0926 A8        xor b
-0927 12        ld (de), a
-0928 14        inc d
-0929 24        inc h
-092A 1D        dec e
-_l157:
-092B 0D        dec c
-092C C2 10 09  jp nz, _l155
-DrawChar_2:
-_l156:
-092F 7A        ld a, d
-0930 D6 40     sub 64
-0932 57        ld d, a
-0933 0E 0A     ld c, FONT_HEIGHT
+08C8 D5        push de
+08C9 D5        push de
+08CA D5        push de
+_l162:
+08CB 05        dec b
+08CC C2 C3 08  jp nz, _l160
+_l161:
+08CF 7C        ld a, h
+ClearScreen_1:
+08D0 D6 40     sub 64
+08D2 67        ld h, a
+08D3 06 10     ld b, 16
+08D5 F9        ld sp, hl
 _l163:
-0935 1C        inc e
-0936 25        dec h
-0937 7E        ld a, (hl)
-0938 0F 0F 0F  rrca
- rrca
- rrca
- rrca
-093C F5        push af
-093D E6 03     and 3
-093F 47        ld b, a
-0940 1A        ld a, (de)
-DrawChar_And4:
-0941 E6 FC     and 252
-DrawChar_Xor5:
-0943 A8        xor b
-0944 12        ld (de), a
-0945 F1        pop af
-0946 15        dec d
-0947 E6 F0     and 240
-0949 47        ld b, a
-094A 1A        ld a, (de)
-DrawChar_And6:
-094B E6 0F     and 15
-DrawChar_Xor6:
-094D A8        xor b
-094E 12        ld (de), a
-094F 14        inc d
+08D6 D5        push de
+08D7 D5        push de
+08D8 D5        push de
+08D9 D5        push de
+08DA D5        push de
+08DB D5        push de
+08DC D5        push de
+08DD D5        push de
 _l165:
-0950 0D        dec c
-0951 C2 35 09  jp nz, _l163
+08DE 05        dec b
+08DF C2 D6 08  jp nz, _l163
 _l164:
-0954 C9        ret
-DrawChar60:
-0955 0E 0A     ld c, FONT_HEIGHT
+ClearScreenSetSp:
+08E2 31 00 00  ld sp, 0
+08E5 FB        ei
+ClearScreenPoly3:
+08E6 C6 3F     add 63
+08E8 67        ld h, a
+_l159:
+08E9 0D        dec c
+08EA C2 BF 08  jp nz, _l157
+_l158:
+08ED C9        ret
+08EE          SCROLL_COLUMN_UP equ 256
+08EE          BITPLANE_OFFSET equ 16384
+08EE          SCREEN_SIZE equ 12288
+_l167:
+ScrollUpSubBw:
+08EE F9        ld sp, hl
+08EF 19        add hl, de
+08F0 46        ld b, (hl)
+08F1 2D        dec l
+08F2 4E        ld c, (hl)
+08F3 2D        dec l
+08F4 C5        push bc
+08F5 46        ld b, (hl)
+08F6 2D        dec l
+08F7 4E        ld c, (hl)
+08F8 2D        dec l
+08F9 C5        push bc
+08FA 46        ld b, (hl)
+08FB 2D        dec l
+08FC 4E        ld c, (hl)
+08FD 2D        dec l
+08FE C5        push bc
+08FF 46        ld b, (hl)
+0900 2D        dec l
+0901 4E        ld c, (hl)
+0902 2D        dec l
+0903 C5        push bc
+0904 46        ld b, (hl)
+0905 2D        dec l
+0906 4E        ld c, (hl)
+0907 C5        push bc
+0908 21 0A 01  ld hl, FONT_HEIGHT+256
+090B 39        add hl, sp
+_l169:
+090C 3D        dec a
+090D C2 EE 08  jp nz, _l167
+_l168:
+0910 C3 6C 09  jp ScrollUpSpInstr
+ScrollUpSubColor:
 _l171:
-0957 7E        ld a, (hl)
-0958 87        add a
-0959 87        add a
-095A 47        ld b, a
-095B 1A        ld a, (de)
-DrawChar_And1:
-095C E6 03     and 3
-DrawChar_Xor1:
-095E A8        xor b
-095F 12        ld (de), a
-0960 1D        dec e
-0961 24        inc h
+0913 F9        ld sp, hl
+0914 19        add hl, de
+0915 46        ld b, (hl)
+0916 2D        dec l
+0917 4E        ld c, (hl)
+0918 2D        dec l
+0919 C5        push bc
+091A 46        ld b, (hl)
+091B 2D        dec l
+091C 4E        ld c, (hl)
+091D 2D        dec l
+091E C5        push bc
+091F 46        ld b, (hl)
+0920 2D        dec l
+0921 4E        ld c, (hl)
+0922 2D        dec l
+0923 C5        push bc
+0924 46        ld b, (hl)
+0925 2D        dec l
+0926 4E        ld c, (hl)
+0927 2D        dec l
+0928 C5        push bc
+0929 46        ld b, (hl)
+092A 2D        dec l
+092B 4E        ld c, (hl)
+092C C5        push bc
+092D 21 0A C0  ld hl, FONT_HEIGHT-BITPLANE_OFFSET
+0930 39        add hl, sp
+0931 F9        ld sp, hl
+0932 19        add hl, de
+0933 46        ld b, (hl)
+0934 2D        dec l
+0935 4E        ld c, (hl)
+0936 2D        dec l
+0937 C5        push bc
+0938 46        ld b, (hl)
+0939 2D        dec l
+093A 4E        ld c, (hl)
+093B 2D        dec l
+093C C5        push bc
+093D 46        ld b, (hl)
+093E 2D        dec l
+093F 4E        ld c, (hl)
+0940 2D        dec l
+0941 C5        push bc
+0942 46        ld b, (hl)
+0943 2D        dec l
+0944 4E        ld c, (hl)
+0945 2D        dec l
+0946 C5        push bc
+0947 46        ld b, (hl)
+0948 2D        dec l
+0949 4E        ld c, (hl)
+094A C5        push bc
+094B 21 0A 41  ld hl, (FONT_HEIGHT+BITPLANE_OFFSET)+256
+094E 39        add hl, sp
 _l173:
-0962 0D        dec c
-0963 C2 57 09  jp nz, _l171
-DrawChar_1:
+094F 3D        dec a
+0950 C2 13 09  jp nz, _l171
 _l172:
-0966 7A        ld a, d
-0967 D6 40     sub 64
-0969 57        ld d, a
-096A 0E 0A     ld c, FONT_HEIGHT
+0953 C3 6C 09  jp ScrollUpSpInstr
+ScrollUp:
+0956 21 00 00  ld hl, 0
+0959 39        add hl, sp
+095A 22 6D 09  ld (ScrollUpSp), hl
+095D 22 A9 09  ld (ScrollUpSp2), hl
+0960 11 F5 FF  ld de, -FONT_HEIGHT-1
+0963 21 00 D1  ld hl, 53504
+_l174:
+0966 F3        di
+0967 3E 30     ld a, 48
+ScrollUpSub:
+0969 C3 EE 08  jp ScrollUpSubBw
+ScrollUpSpInstr:
+096C 31 00 00  ld sp, 0
+096F FB        ei
+0970 7D        ld a, l
+0971 D6 0A     sub FONT_HEIGHT
+0973 6F        ld l, a
+0974 26 D0     ld h, 208
+_l176:
+0976 FE 11     cp FONT_HEIGHT+7
+0978 D2 66 09  jp nc, _l174
+_l175:
+097B 3E 30     ld a, 48
+097D 11 00 00  ld de, 0
+0980 F3        di
+0981 31 10 FF  ld sp, (SCREEN_0_ADDRESS+SCREEN_SIZE)-(TEXT_SCREEN_HEIGHT-1)*FONT_HEIGHT
 _l177:
-096C 25        dec h
-096D 1C        inc e
-096E 7E        ld a, (hl)
-096F 87        add a
-0970 87        add a
-0971 47        ld b, a
-0972 1A        ld a, (de)
-DrawChar_And2:
-0973 E6 03     and 3
-DrawChar_Xor2:
-0975 A8        xor b
-0976 12        ld (de), a
+0984 D5        push de
+0985 D5        push de
+0986 D5        push de
+0987 D5        push de
+0988 D5        push de
+0989 21 0A FF  ld hl, -SCROLL_COLUMN_UP+FONT_HEIGHT
+098C 39        add hl, sp
+098D F9        ld sp, hl
 _l179:
-0977 0D        dec c
-0978 C2 6C 09  jp nz, _l177
+098E 3D        dec a
+098F C2 84 09  jp nz, _l177
 _l178:
-097B C9        ret
-DrawChar62:
-097C 0E 0A     ld c, FONT_HEIGHT
-_l183:
-097E 46        ld b, (hl)
-097F 1A        ld a, (de)
-DrawChar_And11:
-0980 E6 C0     and 192
-DrawChar_Xor11:
-0982 A8        xor b
-0983 12        ld (de), a
-0984 1D        dec e
-0985 24        inc h
+ScrollUp_2:
+0992 3E 30     ld a, 48
+0994 11 00 00  ld de, 0
+0997 31 10 BF  ld sp, (SCREEN_1_ADDRESS+SCREEN_SIZE)-(TEXT_SCREEN_HEIGHT-1)*FONT_HEIGHT
+_l180:
+099A D5        push de
+099B D5        push de
+099C D5        push de
+099D D5        push de
+099E D5        push de
+099F 21 0A FF  ld hl, -SCROLL_COLUMN_UP+FONT_HEIGHT
+09A2 39        add hl, sp
+09A3 F9        ld sp, hl
+_l182:
+09A4 3D        dec a
+09A5 C2 9A 09  jp nz, _l180
+ScrollUpSpInstr2:
+_l181:
+09A8 31 00 00  ld sp, 0
+09AB FB        ei
+09AC C9        ret
+DrawText:
 _l185:
-0986 0D        dec c
-0987 C2 7E 09  jp nz, _l183
+09AD 7E        ld a, (hl)
+09AE 23        inc hl
+09AF B7        or a
+09B0 C8        ret z
+09B1 E5        push hl
+09B2 D5        push de
+09B3 EB        ex hl, de
+09B4 CD 9D 08  call DrawChar
+09B7 D1        pop de
+09B8 E1        pop hl
+09B9 14        inc d
+09BA C3 AD 09  jp _l185
 _l184:
-DrawChar_3:
-098A 7A        ld a, d
-098B D6 40     sub 64
-098D 57        ld d, a
-098E 0E 0A     ld c, FONT_HEIGHT
-_l189:
-0990 25        dec h
-0991 1C        inc e
-0992 46        ld b, (hl)
-0993 1A        ld a, (de)
-DrawChar_And12:
-0994 E6 C0     and 192
-DrawChar_Xor12:
-0996 A8        xor b
-0997 12        ld (de), a
-_l191:
-0998 0D        dec c
-0999 C2 90 09  jp nz, _l189
+DrawChar6:
+09BD 47        ld b, a
+09BE 7D        ld a, l
+09BF 87        add a
+09C0 87        add a
+09C1 85        add l
+09C2 87        add a
+09C3 2F        cpl
+09C4 5F        ld e, a
+09C5 7C        ld a, h
+09C6 87        add a
+09C7 84        add h
+09C8 4F        ld c, a
+09C9 1F        rra
+09CA 1F        rra
+09CB E6 3F     and 63
+09CD 2F        cpl
+09CE 57        ld d, a
+09CF 78        ld a, b
+09D0 C6 5B     add font
+09D2 6F        ld l, a
+09D3 CE 0C     adc font>>8
+09D5 95        sub l
+09D6 67        ld h, a
+09D7 79        ld a, c
+09D8 E6 03     and 3
+09DA CA 2C 0A  jp z, DrawChar60
+09DD 3D        dec a
+09DE CA 53 0A  jp z, DrawChar62
+09E1 3D        dec a
+09E2 CA 74 0A  jp z, DrawChar64
+DrawChar66:
+09E5 0E 0A     ld c, FONT_HEIGHT
+_l188:
+09E7 7E        ld a, (hl)
+09E8 0F 0F 0F  rrca
+ rrca
+ rrca
+ rrca
+09EC F5        push af
+09ED E6 03     and 3
+09EF 47        ld b, a
+09F0 1A        ld a, (de)
+DrawChar_And3:
+09F1 E6 FC     and 252
+DrawChar_Xor3:
+09F3 A8        xor b
+09F4 12        ld (de), a
+09F5 F1        pop af
+09F6 15        dec d
+09F7 E6 F0     and 240
+09F9 47        ld b, a
+09FA 1A        ld a, (de)
+DrawChar_And5:
+09FB E6 0F     and 15
+DrawChar_Xor4:
+09FD A8        xor b
+09FE 12        ld (de), a
+09FF 14        inc d
+0A00 24        inc h
+0A01 1D        dec e
 _l190:
-099C C9        ret
-DrawChar64:
-099D 0E 0A     ld c, FONT_HEIGHT
-_l195:
-099F 7E        ld a, (hl)
-09A0 0F 0F     rrca
- rrca
-09A2 E6 0F     and 15
-09A4 47        ld b, a
-09A5 1A        ld a, (de)
-DrawChar_And7:
-09A6 E6 F0     and 240
-DrawChar_Xor7:
-09A8 A8        xor b
-09A9 12        ld (de), a
-09AA 15        dec d
-09AB 7E        ld a, (hl)
-09AC 0F 0F     rrca
- rrca
-09AE E6 C0     and 192
-09B0 47        ld b, a
-09B1 1A        ld a, (de)
-DrawChar_And9:
-09B2 E6 3F     and 63
-DrawChar_Xor8:
-09B4 A8        xor b
-09B5 12        ld (de), a
-09B6 14        inc d
-09B7 1D        dec e
-09B8 24        inc h
-_l197:
-09B9 0D        dec c
-09BA C2 9F 09  jp nz, _l195
+0A02 0D        dec c
+0A03 C2 E7 09  jp nz, _l188
+_l189:
+DrawChar_2:
+0A06 7A        ld a, d
+0A07 D6 40     sub 64
+0A09 57        ld d, a
+0A0A 0E 0A     ld c, FONT_HEIGHT
 _l196:
-DrawChar_4:
-09BD 7A        ld a, d
-09BE D6 40     sub 64
-09C0 57        ld d, a
-09C1 0E 0A     ld c, FONT_HEIGHT
-_l203:
-09C3 25        dec h
-09C4 1C        inc e
-09C5 7E        ld a, (hl)
-09C6 0F 0F     rrca
+0A0C 1C        inc e
+0A0D 25        dec h
+0A0E 7E        ld a, (hl)
+0A0F 0F 0F 0F  rrca
  rrca
-09C8 E6 0F     and 15
-09CA 47        ld b, a
-09CB 1A        ld a, (de)
-DrawChar_And8:
-09CC E6 F0     and 240
-DrawChar_Xor9:
-09CE A8        xor b
-09CF 12        ld (de), a
-09D0 15        dec d
-09D1 7E        ld a, (hl)
-09D2 0F 0F     rrca
  rrca
-09D4 E6 C0     and 192
-09D6 47        ld b, a
-09D7 1A        ld a, (de)
-DrawChar_And10:
-09D8 E6 3F     and 63
-DrawChar_Xor10:
-09DA A8        xor b
-09DB 12        ld (de), a
-09DC 14        inc d
-_l205:
-09DD 0D        dec c
-09DE C2 C3 09  jp nz, _l203
+ rrca
+0A13 F5        push af
+0A14 E6 03     and 3
+0A16 47        ld b, a
+0A17 1A        ld a, (de)
+DrawChar_And4:
+0A18 E6 FC     and 252
+DrawChar_Xor5:
+0A1A A8        xor b
+0A1B 12        ld (de), a
+0A1C F1        pop af
+0A1D 15        dec d
+0A1E E6 F0     and 240
+0A20 47        ld b, a
+0A21 1A        ld a, (de)
+DrawChar_And6:
+0A22 E6 0F     and 15
+DrawChar_Xor6:
+0A24 A8        xor b
+0A25 12        ld (de), a
+0A26 14        inc d
+_l198:
+0A27 0D        dec c
+0A28 C2 0C 0A  jp nz, _l196
+_l197:
+0A2B C9        ret
+DrawChar60:
+0A2C 0E 0A     ld c, FONT_HEIGHT
 _l204:
-09E1 C9        ret
-SetColor6:
-09E2 4F        ld c, a
-09E3 E6 04     and 4
-09E5 C2 0D 0A  jp nz, _l211
-09E8 21 E6 03  ld hl, OPCODE_AND_CONST|3<<8
-09EB 22 5C 09  ld (DrawChar_And1), hl
-09EE 22 73 09  ld (DrawChar_And2), hl
-09F1 26 FC     ld h, 252
-09F3 22 1A 09  ld (DrawChar_And3), hl
-09F6 26 0F     ld h, 15
-09F8 22 24 09  ld (DrawChar_And5), hl
-09FB 26 F0     ld h, 240
-09FD 22 A6 09  ld (DrawChar_And7), hl
-0A00 26 3F     ld h, 63
-0A02 22 B2 09  ld (DrawChar_And9), hl
-0A05 26 C0     ld h, 192
-0A07 22 80 09  ld (DrawChar_And11), hl
-0A0A C3 2F 0A  jp _l212
-_l211:
-0A0D 21 F6 FC  ld hl, OPCODE_OR_CONST|(255^3)<<8
-0A10 22 5C 09  ld (DrawChar_And1), hl
-0A13 22 73 09  ld (DrawChar_And2), hl
-0A16 26 03     ld h, 255^252
-0A18 22 1A 09  ld (DrawChar_And3), hl
-0A1B 26 F0     ld h, 255^15
-0A1D 22 24 09  ld (DrawChar_And5), hl
-0A20 26 0F     ld h, 255^240
-0A22 22 A6 09  ld (DrawChar_And7), hl
-0A25 26 C0     ld h, 255^63
-0A27 22 B2 09  ld (DrawChar_And9), hl
-0A2A 26 3F     ld h, 255^192
-0A2C 22 80 09  ld (DrawChar_And11), hl
-_l212:
-0A2F 47        ld b, a
-0A30 79        ld a, c
-0A31 87        add a
-0A32 87        add a
-0A33 E6 04     and 4
+0A2E 7E        ld a, (hl)
+0A2F 87        add a
+0A30 87        add a
+0A31 47        ld b, a
+0A32 1A        ld a, (de)
+DrawChar_And1:
+0A33 E6 03     and 3
+DrawChar_Xor1:
 0A35 A8        xor b
-0A36 3E A8     ld a, OPCODE_XOR_B
-0A38 C2 3D 0A  jp nz, _l213
-0A3B 3E 00     ld a, OPCODE_NOP
-_l213:
-0A3D 32 5E 09  ld (DrawChar_Xor1), a
-0A40 32 1C 09  ld (DrawChar_Xor3), a
-0A43 32 26 09  ld (DrawChar_Xor4), a
-0A46 32 A8 09  ld (DrawChar_Xor7), a
-0A49 32 B4 09  ld (DrawChar_Xor8), a
-0A4C 32 82 09  ld (DrawChar_Xor11), a
-0A4F 79        ld a, c
-0A50 E6 08     and 8
-0A52 C2 77 0A  jp nz, _l214
-0A55 21 E6 03  ld hl, OPCODE_AND_CONST|3<<8
-0A58 22 73 09  ld (DrawChar_And2), hl
-0A5B 26 FC     ld h, 252
-0A5D 22 41 09  ld (DrawChar_And4), hl
-0A60 26 0F     ld h, 15
-0A62 22 4B 09  ld (DrawChar_And6), hl
-0A65 26 F0     ld h, 240
-0A67 22 CC 09  ld (DrawChar_And8), hl
-0A6A 26 3F     ld h, 63
-0A6C 22 D8 09  ld (DrawChar_And10), hl
-0A6F 26 C0     ld h, 192
-0A71 22 94 09  ld (DrawChar_And12), hl
-0A74 C3 96 0A  jp _l215
-_l214:
-0A77 21 F6 FC  ld hl, OPCODE_OR_CONST|(255^3)<<8
-0A7A 22 73 09  ld (DrawChar_And2), hl
-0A7D 26 03     ld h, 255^252
-0A7F 22 41 09  ld (DrawChar_And4), hl
-0A82 26 F0     ld h, 255^15
-0A84 22 4B 09  ld (DrawChar_And6), hl
-0A87 26 0F     ld h, 255^240
-0A89 22 CC 09  ld (DrawChar_And8), hl
-0A8C 26 C0     ld h, 255^63
-0A8E 22 D8 09  ld (DrawChar_And10), hl
-0A91 26 3F     ld h, 255^192
-0A93 22 94 09  ld (DrawChar_And12), hl
-_l215:
-0A96 47        ld b, a
-0A97 79        ld a, c
-0A98 87        add a
-0A99 87        add a
-0A9A E6 08     and 8
-0A9C A8        xor b
-0A9D 3E A8     ld a, OPCODE_XOR_B
-0A9F C2 A4 0A  jp nz, _l216
-0AA2 3E 00     ld a, OPCODE_NOP
+0A36 12        ld (de), a
+0A37 1D        dec e
+0A38 24        inc h
+_l206:
+0A39 0D        dec c
+0A3A C2 2E 0A  jp nz, _l204
+_l205:
+DrawChar_1:
+0A3D 7A        ld a, d
+0A3E D6 40     sub 64
+0A40 57        ld d, a
+0A41 0E 0A     ld c, FONT_HEIGHT
+_l210:
+0A43 25        dec h
+0A44 1C        inc e
+0A45 7E        ld a, (hl)
+0A46 87        add a
+0A47 87        add a
+0A48 47        ld b, a
+0A49 1A        ld a, (de)
+DrawChar_And2:
+0A4A E6 03     and 3
+DrawChar_Xor2:
+0A4C A8        xor b
+0A4D 12        ld (de), a
+_l212:
+0A4E 0D        dec c
+0A4F C2 43 0A  jp nz, _l210
+_l211:
+0A52 C9        ret
+DrawChar62:
+0A53 0E 0A     ld c, FONT_HEIGHT
 _l216:
-0AA4 32 75 09  ld (DrawChar_Xor2), a
-0AA7 32 43 09  ld (DrawChar_Xor5), a
-0AAA 32 4D 09  ld (DrawChar_Xor6), a
-0AAD 32 CE 09  ld (DrawChar_Xor9), a
-0AB0 32 DA 09  ld (DrawChar_Xor10), a
-0AB3 32 96 09  ld (DrawChar_Xor12), a
-0AB6 C9        ret
-DrawCursor6:
-0AB7 7C        ld a, h
-0AB8 E6 03     and 3
-0ABA C2 C3 0A  jp nz, _l218
-0ABD 11 FC 00  ld de, 252
-0AC0 C3 DA 0A  jp _l219
+0A55 46        ld b, (hl)
+0A56 1A        ld a, (de)
+DrawChar_And11:
+0A57 E6 C0     and 192
+DrawChar_Xor11:
+0A59 A8        xor b
+0A5A 12        ld (de), a
+0A5B 1D        dec e
+0A5C 24        inc h
 _l218:
-0AC3 3D        dec a
-0AC4 C2 CD 0A  jp nz, _l220
-0AC7 11 03 F0  ld de, 61443
-0ACA C3 DA 0A  jp _l221
-_l220:
-0ACD 3D        dec a
-0ACE C2 D7 0A  jp nz, _l222
-0AD1 11 0F C0  ld de, 49167
-0AD4 C3 DA 0A  jp _l223
+0A5D 0D        dec c
+0A5E C2 55 0A  jp nz, _l216
+_l217:
+DrawChar_3:
+0A61 7A        ld a, d
+0A62 D6 40     sub 64
+0A64 57        ld d, a
+0A65 0E 0A     ld c, FONT_HEIGHT
 _l222:
-0AD7 11 3F 00  ld de, 63
-_l219:
-_l221:
-_l223:
-0ADA 7D        ld a, l
-0ADB 87        add a
-0ADC 87        add a
-0ADD 85        add l
-0ADE 87        add a
-0ADF 2F        cpl
-0AE0 6F        ld l, a
-0AE1 7C        ld a, h
-0AE2 87        add a
-0AE3 84        add h
-0AE4 0F 0F     rrca
- rrca
-0AE6 E6 3F     and 63
-0AE8 2F        cpl
-0AE9 67        ld h, a
-0AEA 0E 0A     ld c, FONT_HEIGHT
+0A67 25        dec h
+0A68 1C        inc e
+0A69 46        ld b, (hl)
+0A6A 1A        ld a, (de)
+DrawChar_And12:
+0A6B E6 C0     and 192
+DrawChar_Xor12:
+0A6D A8        xor b
+0A6E 12        ld (de), a
 _l224:
-0AEC 7E        ld a, (hl)
-0AED AB        xor e
-0AEE 77        ld (hl), a
-0AEF 25        dec h
-0AF0 7E        ld a, (hl)
-0AF1 AA        xor d
-0AF2 77        ld (hl), a
-0AF3 24        inc h
-0AF4 2D        dec l
-_l226:
-0AF5 0D        dec c
-0AF6 C2 EC 0A  jp nz, _l224
-_l225:
-0AF9 C9        ret
+0A6F 0D        dec c
+0A70 C2 67 0A  jp nz, _l222
+_l223:
+0A73 C9        ret
+DrawChar64:
+0A74 0E 0A     ld c, FONT_HEIGHT
+_l228:
+0A76 7E        ld a, (hl)
+0A77 0F 0F     rrca
+ rrca
+0A79 E6 0F     and 15
+0A7B 47        ld b, a
+0A7C 1A        ld a, (de)
+DrawChar_And7:
+0A7D E6 F0     and 240
+DrawChar_Xor7:
+0A7F A8        xor b
+0A80 12        ld (de), a
+0A81 15        dec d
+0A82 7E        ld a, (hl)
+0A83 0F 0F     rrca
+ rrca
+0A85 E6 C0     and 192
+0A87 47        ld b, a
+0A88 1A        ld a, (de)
+DrawChar_And9:
+0A89 E6 3F     and 63
+DrawChar_Xor8:
+0A8B A8        xor b
+0A8C 12        ld (de), a
+0A8D 14        inc d
+0A8E 1D        dec e
+0A8F 24        inc h
+_l230:
+0A90 0D        dec c
+0A91 C2 76 0A  jp nz, _l228
+_l229:
+DrawChar_4:
+0A94 7A        ld a, d
+0A95 D6 40     sub 64
+0A97 57        ld d, a
+0A98 0E 0A     ld c, FONT_HEIGHT
+_l236:
+0A9A 25        dec h
+0A9B 1C        inc e
+0A9C 7E        ld a, (hl)
+0A9D 0F 0F     rrca
+ rrca
+0A9F E6 0F     and 15
+0AA1 47        ld b, a
+0AA2 1A        ld a, (de)
+DrawChar_And8:
+0AA3 E6 F0     and 240
+DrawChar_Xor9:
+0AA5 A8        xor b
+0AA6 12        ld (de), a
+0AA7 15        dec d
+0AA8 7E        ld a, (hl)
+0AA9 0F 0F     rrca
+ rrca
+0AAB E6 C0     and 192
+0AAD 47        ld b, a
+0AAE 1A        ld a, (de)
+DrawChar_And10:
+0AAF E6 3F     and 63
+DrawChar_Xor10:
+0AB1 A8        xor b
+0AB2 12        ld (de), a
+0AB3 14        inc d
+_l238:
+0AB4 0D        dec c
+0AB5 C2 9A 0A  jp nz, _l236
+_l237:
+0AB8 C9        ret
+SetColor6:
+0AB9 4F        ld c, a
+0ABA E6 08     and 8
+0ABC C2 E4 0A  jp nz, _l244
+0ABF 21 E6 03  ld hl, OPCODE_AND_CONST|3<<8
+0AC2 22 33 0A  ld (DrawChar_And1), hl
+0AC5 22 4A 0A  ld (DrawChar_And2), hl
+0AC8 26 FC     ld h, 252
+0ACA 22 F1 09  ld (DrawChar_And3), hl
+0ACD 26 0F     ld h, 15
+0ACF 22 FB 09  ld (DrawChar_And5), hl
+0AD2 26 F0     ld h, 240
+0AD4 22 7D 0A  ld (DrawChar_And7), hl
+0AD7 26 3F     ld h, 63
+0AD9 22 89 0A  ld (DrawChar_And9), hl
+0ADC 26 C0     ld h, 192
+0ADE 22 57 0A  ld (DrawChar_And11), hl
+0AE1 C3 06 0B  jp _l245
+_l244:
+0AE4 21 F6 FC  ld hl, OPCODE_OR_CONST|(255^3)<<8
+0AE7 22 33 0A  ld (DrawChar_And1), hl
+0AEA 22 4A 0A  ld (DrawChar_And2), hl
+0AED 26 03     ld h, 255^252
+0AEF 22 F1 09  ld (DrawChar_And3), hl
+0AF2 26 F0     ld h, 255^15
+0AF4 22 FB 09  ld (DrawChar_And5), hl
+0AF7 26 0F     ld h, 255^240
+0AF9 22 7D 0A  ld (DrawChar_And7), hl
+0AFC 26 C0     ld h, 255^63
+0AFE 22 89 0A  ld (DrawChar_And9), hl
+0B01 26 3F     ld h, 255^192
+0B03 22 57 0A  ld (DrawChar_And11), hl
+_l245:
+0B06 47        ld b, a
+0B07 79        ld a, c
+0B08 87        add a
+0B09 87        add a
+0B0A E6 08     and 8
+0B0C A8        xor b
+0B0D 3E A8     ld a, OPCODE_XOR_B
+0B0F C2 14 0B  jp nz, _l246
+0B12 3E 00     ld a, OPCODE_NOP
+_l246:
+0B14 32 35 0A  ld (DrawChar_Xor1), a
+0B17 32 F3 09  ld (DrawChar_Xor3), a
+0B1A 32 FD 09  ld (DrawChar_Xor4), a
+0B1D 32 7F 0A  ld (DrawChar_Xor7), a
+0B20 32 8B 0A  ld (DrawChar_Xor8), a
+0B23 32 59 0A  ld (DrawChar_Xor11), a
+0B26 79        ld a, c
+0B27 E6 04     and 4
+0B29 C2 4E 0B  jp nz, _l247
+0B2C 21 E6 03  ld hl, OPCODE_AND_CONST|3<<8
+0B2F 22 4A 0A  ld (DrawChar_And2), hl
+0B32 26 FC     ld h, 252
+0B34 22 18 0A  ld (DrawChar_And4), hl
+0B37 26 0F     ld h, 15
+0B39 22 22 0A  ld (DrawChar_And6), hl
+0B3C 26 F0     ld h, 240
+0B3E 22 A3 0A  ld (DrawChar_And8), hl
+0B41 26 3F     ld h, 63
+0B43 22 AF 0A  ld (DrawChar_And10), hl
+0B46 26 C0     ld h, 192
+0B48 22 6B 0A  ld (DrawChar_And12), hl
+0B4B C3 6D 0B  jp _l248
+_l247:
+0B4E 21 F6 FC  ld hl, OPCODE_OR_CONST|(255^3)<<8
+0B51 22 4A 0A  ld (DrawChar_And2), hl
+0B54 26 03     ld h, 255^252
+0B56 22 18 0A  ld (DrawChar_And4), hl
+0B59 26 F0     ld h, 255^15
+0B5B 22 22 0A  ld (DrawChar_And6), hl
+0B5E 26 0F     ld h, 255^240
+0B60 22 A3 0A  ld (DrawChar_And8), hl
+0B63 26 C0     ld h, 255^63
+0B65 22 AF 0A  ld (DrawChar_And10), hl
+0B68 26 3F     ld h, 255^192
+0B6A 22 6B 0A  ld (DrawChar_And12), hl
+_l248:
+0B6D 47        ld b, a
+0B6E 79        ld a, c
+0B6F 87        add a
+0B70 87        add a
+0B71 E6 04     and 4
+0B73 A8        xor b
+0B74 3E A8     ld a, OPCODE_XOR_B
+0B76 C2 7B 0B  jp nz, _l249
+0B79 3E 00     ld a, OPCODE_NOP
+_l249:
+0B7B 32 4C 0A  ld (DrawChar_Xor2), a
+0B7E 32 1A 0A  ld (DrawChar_Xor5), a
+0B81 32 24 0A  ld (DrawChar_Xor6), a
+0B84 32 A5 0A  ld (DrawChar_Xor9), a
+0B87 32 B1 0A  ld (DrawChar_Xor10), a
+0B8A 32 6D 0A  ld (DrawChar_Xor12), a
+0B8D C9        ret
+DrawCursor6:
+0B8E 7C        ld a, h
+0B8F E6 03     and 3
+0B91 C2 9A 0B  jp nz, _l251
+0B94 11 FC 00  ld de, 252
+0B97 C3 B1 0B  jp _l252
+_l251:
+0B9A 3D        dec a
+0B9B C2 A4 0B  jp nz, _l253
+0B9E 11 03 F0  ld de, 61443
+0BA1 C3 B1 0B  jp _l254
+_l253:
+0BA4 3D        dec a
+0BA5 C2 AE 0B  jp nz, _l255
+0BA8 11 0F C0  ld de, 49167
+0BAB C3 B1 0B  jp _l256
+_l255:
+0BAE 11 3F 00  ld de, 63
+_l252:
+_l254:
+_l256:
+0BB1 7D        ld a, l
+0BB2 87        add a
+0BB3 87        add a
+0BB4 85        add l
+0BB5 87        add a
+0BB6 2F        cpl
+0BB7 6F        ld l, a
+0BB8 7C        ld a, h
+0BB9 87        add a
+0BBA 84        add h
+0BBB 0F 0F     rrca
+ rrca
+0BBD E6 3F     and 63
+0BBF 2F        cpl
+0BC0 67        ld h, a
+0BC1 0E 0A     ld c, FONT_HEIGHT
+_l257:
+0BC3 7E        ld a, (hl)
+0BC4 AB        xor e
+0BC5 77        ld (hl), a
+0BC6 25        dec h
+0BC7 7E        ld a, (hl)
+0BC8 AA        xor d
+0BC9 77        ld (hl), a
+0BCA 24        inc h
+0BCB 2D        dec l
+_l259:
+0BCC 0D        dec c
+0BCD C2 C3 0B  jp nz, _l257
+_l258:
+0BD0 C9        ret
 SetScreenBw6:
-0AFA 3E 40     ld a, 64
-0AFC 32 CF 07  ld (text_screen_width), a
-0AFF 21 E6 08  ld hl, DrawChar6
-0B02 22 D1 07  ld (DrawCharAddress), hl
-0B05 21 E2 09  ld hl, SetColor6
-0B08 22 D4 07  ld (SetColorAddress), hl
-0B0B 3E C9     ld a, OPCODE_RET
-0B0D 32 66 09  ld (DrawChar_1), a
-0B10 32 2F 09  ld (DrawChar_2), a
-0B13 32 8A 09  ld (DrawChar_3), a
-0B16 32 BD 09  ld (DrawChar_4), a
+0BD1 3E 40     ld a, 64
+0BD3 32 9C 08  ld (text_screen_width), a
+0BD6 21 BD 09  ld hl, DrawChar6
+0BD9 22 9E 08  ld (DrawCharAddress), hl
+0BDC 21 B9 0A  ld hl, SetColor6
+0BDF 22 A1 08  ld (SetColorAddress), hl
+0BE2 3E C9     ld a, OPCODE_RET
+0BE4 32 3D 0A  ld (DrawChar_1), a
+0BE7 32 06 0A  ld (DrawChar_2), a
+0BEA 32 61 0A  ld (DrawChar_3), a
+0BED 32 94 0A  ld (DrawChar_4), a
 SetScreenBw:
-0B19 D3 B8     out (PORT_VIDEO_MODE_0_LOW), a
-0B1B D3 F9     out (PORT_VIDEO_MODE_1_HIGH), a
-0B1D 3E C3     ld a, OPCODE_JP
-0B1F 32 F9 07  ld (ClearScreen_1), a
-0B22 21 0B 08  ld hl, ClearScreenSetSp
-0B25 22 FA 07  ld (ClearScreen_2), hl
-0B28 3E FF     ld a, 255
-0B2A 32 10 08  ld (ClearScreen_4), a
-0B2D 21 17 08  ld hl, ScrollUpSubBw
-0B30 22 93 08  ld (ScrollUp_1), hl
-0B33 3E C3     ld a, OPCODE_JP
-0B35 32 BB 08  ld (ScrollUp_2), a
-0B38 21 D1 08  ld hl, ScrollUpSpInstr2
-0B3B 22 BC 08  ld (ScrollUp_3), hl
-0B3E C9        ret
+0BF0 D3 B8     out (PORT_VIDEO_MODE_0_LOW), a
+0BF2 D3 F9     out (PORT_VIDEO_MODE_1_HIGH), a
+0BF4 3E C3     ld a, OPCODE_JP
+0BF6 32 D0 08  ld (ClearScreen_1), a
+0BF9 21 E2 08  ld hl, ClearScreenSetSp
+0BFC 22 D1 08  ld (ClearScreen_2), hl
+0BFF 3E FF     ld a, 255
+0C01 32 E7 08  ld (ClearScreen_4), a
+0C04 21 EE 08  ld hl, ScrollUpSubBw
+0C07 22 6A 09  ld (ScrollUp_1), hl
+0C0A 3E C3     ld a, OPCODE_JP
+0C0C 32 92 09  ld (ScrollUp_2), a
+0C0F 21 A8 09  ld hl, ScrollUpSpInstr2
+0C12 22 93 09  ld (ScrollUp_3), hl
+0C15 C9        ret
 SetScreenColor6:
-0B3F 3E 40     ld a, 64
-0B41 32 CF 07  ld (text_screen_width), a
-0B44 21 E6 08  ld hl, DrawChar6
-0B47 22 D1 07  ld (DrawCharAddress), hl
-0B4A 21 E2 09  ld hl, SetColor6
-0B4D 22 D4 07  ld (SetColorAddress), hl
-0B50 3E 7A     ld a, OPCODE_LD_A_D
-0B52 32 66 09  ld (DrawChar_1), a
-0B55 32 2F 09  ld (DrawChar_2), a
-0B58 32 8A 09  ld (DrawChar_3), a
-0B5B 32 BD 09  ld (DrawChar_4), a
+0C16 3E 40     ld a, 64
+0C18 32 9C 08  ld (text_screen_width), a
+0C1B 21 BD 09  ld hl, DrawChar6
+0C1E 22 9E 08  ld (DrawCharAddress), hl
+0C21 21 B9 0A  ld hl, SetColor6
+0C24 22 A1 08  ld (SetColorAddress), hl
+0C27 3E 7A     ld a, OPCODE_LD_A_D
+0C29 32 3D 0A  ld (DrawChar_1), a
+0C2C 32 06 0A  ld (DrawChar_2), a
+0C2F 32 61 0A  ld (DrawChar_3), a
+0C32 32 94 0A  ld (DrawChar_4), a
 SetScreenColor:
-0B5E D3 F8     out (PORT_VIDEO_MODE_0_HIGH), a
-0B60 D3 B9     out (PORT_VIDEO_MODE_1_LOW), a
-0B62 21 D6 40  ld hl, OPCODE_SUB_CONST|64<<8
-0B65 22 F9 07  ld (ClearScreen_1), hl
-0B68 3E 67     ld a, OPCODE_LD_H_A
-0B6A 32 FB 07  ld (ClearScreen_3), a
-0B6D 3E 3F     ld a, 63
-0B6F 32 10 08  ld (ClearScreen_4), a
-0B72 21 3C 08  ld hl, ScrollUpSubColor
-0B75 22 93 08  ld (ScrollUp_1), hl
-0B78 3E 3E     ld a, OPCODE_LD_A_CONST
-0B7A 32 BB 08  ld (ScrollUp_2), a
-0B7D 21 30 11  ld hl, 48|OPCODE_LD_DE_CONST<<8
-0B80 22 BC 08  ld (ScrollUp_3), hl
-0B83 C9        ret
+0C35 D3 F8     out (PORT_VIDEO_MODE_0_HIGH), a
+0C37 D3 B9     out (PORT_VIDEO_MODE_1_LOW), a
+0C39 21 D6 40  ld hl, OPCODE_SUB_CONST|64<<8
+0C3C 22 D0 08  ld (ClearScreen_1), hl
+0C3F 3E 67     ld a, OPCODE_LD_H_A
+0C41 32 D2 08  ld (ClearScreen_3), a
+0C44 3E 3F     ld a, 63
+0C46 32 E7 08  ld (ClearScreen_4), a
+0C49 21 13 09  ld hl, ScrollUpSubColor
+0C4C 22 6A 09  ld (ScrollUp_1), hl
+0C4F 3E 3E     ld a, OPCODE_LD_A_CONST
+0C51 32 92 09  ld (ScrollUp_2), a
+0C54 21 30 11  ld hl, 48|OPCODE_LD_DE_CONST<<8
+0C57 22 93 09  ld (ScrollUp_3), hl
+0C5A C9        ret
 font:
-0B84 00 00 00  db 0
+0C5B 00 00 00  db 0
  db 0
  db 0
  db 0
@@ -4548,113 +4697,113 @@ font:
  db 0
  db 0
  db 0
-1584          SCREEN_0_ADDRESS equ 53248
-1584          SCREEN_1_ADDRESS equ 36864
-1584          PALETTE_WHITE equ 0
-1584          PALETTE_CYAN equ 1
-1584          PALETTE_MAGENTA equ 2
-1584          PALETTE_BLUE equ 3
-1584          PALETTE_YELLOW equ 4
-1584          PALETTE_GREEN equ 5
-1584          PALETTE_RED equ 6
-1584          PALETTE_XXX equ 7
-1584          PALETTE_GRAY equ 8
-1584          PALETTE_DARK_CYAN equ 9
-1584          PALETTE_DARK_MAGENTA equ 10
-1584          PALETTE_DARK_BLUE equ 11
-1584          PALETTE_DARK_YELLOW equ 12
-1584          PALETTE_DARK_GREEN equ 13
-1584          PALETTE_DARK_RED equ 14
-1584          PALETTE_BLACK equ 15
-1584          KEY_BACKSPACE equ 8
-1584          KEY_TAB equ 9
-1584          KEY_ENTER equ 13
-1584          KEY_ESC equ 27
-1584          KEY_ALT equ 1
-1584          KEY_F1 equ 242
-1584          KEY_F2 equ 243
-1584          KEY_F3 equ 244
-1584          KEY_UP equ 245
-1584          KEY_DOWN equ 246
-1584          KEY_RIGHT equ 247
-1584          KEY_LEFT equ 248
-1584          KEY_EXT_5 equ 249
-1584          KEY_END equ 250
-1584          KEY_HOME equ 251
-1584          KEY_INSERT equ 252
-1584          KEY_DEL equ 253
-1584          KEY_PG_UP equ 254
-1584          KEY_PG_DN equ 255
-1584          PORT_FRAME_IRQ_RESET equ 4
-1584          PORT_SD_SIZE equ 9
-1584          PORT_SD_RESULT equ 9
-1584          PORT_SD_DATA equ 8
-1584          PORT_UART_DATA equ 128
-1584          PORT_UART_CONFIG equ 129
-1584          PORT_UART_STATE equ 129
-1584          PORT_EXT_DATA_OUT equ 136
-1584          PORT_PALETTE_3 equ 144
-1584          PORT_PALETTE_2 equ 145
-1584          PORT_PALETTE_1 equ 146
-1584          PORT_PALETTE_0 equ 147
-1584          PORT_EXT_IN_DATA equ 137
-1584          PORT_A0 equ 160
-1584          PORT_ROM_0000 equ 168
-1584          PORT_ROM_0000__ROM equ 0
-1584          PORT_ROM_0000__RAM equ 128
-1584          PORT_VIDEO_MODE_1_LOW equ 185
-1584          PORT_VIDEO_MODE_1_HIGH equ 249
-1584          PORT_VIDEO_MODE_0_LOW equ 184
-1584          PORT_VIDEO_MODE_0_HIGH equ 248
-1584          PORT_UART_SPEED_0 equ 187
-1584          PORT_KEYBOARD equ 192
-1584          PORT_UART_SPEED_1 equ 251
-1584          PORT_CODE_ROM equ 186
-1584          PORT_CHARGEN_ROM equ 250
-1584          PORT_TAPE_AND_IDX2 equ 153
-1584          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-1584          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-1584          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-1584          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-1584          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-1584          PORT_RESET_CU1 equ 188
-1584          PORT_RESET_CU2 equ 189
-1584          PORT_RESET_CU3 equ 190
-1584          PORT_RESET_CU4 equ 191
-1584          PORT_SET_CU1 equ 252
-1584          PORT_SET_CU2 equ 253
-1584          PORT_SET_CU3 equ 254
-1584          PORT_SET_CU4 equ 255
-1584          PORT_TAPE_OUT equ 176
-1584          SD_COMMAND_READ equ 1
-1584          SD_COMMAND_READ_SIZE equ 5
-1584          SD_COMMAND_WRITE equ 2
-1584          SD_COMMAND_WRITE_SIZE equ 5+128
-1584          SD_RESULT_BUSY equ 255
-1584          SD_RESULT_OK equ 0
-1584          TEXT_SCREEN_HEIGHT equ 25
-1584          FONT_HEIGHT equ 10
-1584          FONT_WIDTH equ 3
-1584          DrawCharAddress equ DrawChar+1
-1584          SetColorAddress equ SetColor+1
-1584          DrawCursorAddress equ DrawCursor+1
-1584          OPCODE_NOP equ 0
-1584          OPCODE_LD_DE_CONST equ 17
-1584          OPCODE_LD_A_CONST equ 62
-1584          OPCODE_LD_H_A equ 103
-1584          OPCODE_LD_A_D equ 122
-1584          OPCODE_LD_A_H equ 124
-1584          OPCODE_XOR_A equ 175
-1584          OPCODE_XOR_B equ 168
-1584          OPCODE_JP equ 195
-1584          OPCODE_RET equ 201
-1584          OPCODE_SUB_CONST equ 214
-1584          OPCODE_AND_CONST equ 230
-1584          OPCODE_OR_CONST equ 246
-1584          OPCODE_OUT equ 211
-1584          OPCODE_JMP equ 195
+165B          SCREEN_0_ADDRESS equ 53248
+165B          SCREEN_1_ADDRESS equ 36864
+165B          PALETTE_WHITE equ 0
+165B          PALETTE_CYAN equ 1
+165B          PALETTE_MAGENTA equ 2
+165B          PALETTE_BLUE equ 3
+165B          PALETTE_YELLOW equ 4
+165B          PALETTE_GREEN equ 5
+165B          PALETTE_RED equ 6
+165B          PALETTE_XXX equ 7
+165B          PALETTE_GRAY equ 8
+165B          PALETTE_DARK_CYAN equ 9
+165B          PALETTE_DARK_MAGENTA equ 10
+165B          PALETTE_DARK_BLUE equ 11
+165B          PALETTE_DARK_YELLOW equ 12
+165B          PALETTE_DARK_GREEN equ 13
+165B          PALETTE_DARK_RED equ 14
+165B          PALETTE_BLACK equ 15
+165B          KEY_BACKSPACE equ 8
+165B          KEY_TAB equ 9
+165B          KEY_ENTER equ 13
+165B          KEY_ESC equ 27
+165B          KEY_ALT equ 1
+165B          KEY_F1 equ 242
+165B          KEY_F2 equ 243
+165B          KEY_F3 equ 244
+165B          KEY_UP equ 245
+165B          KEY_DOWN equ 246
+165B          KEY_RIGHT equ 247
+165B          KEY_LEFT equ 248
+165B          KEY_EXT_5 equ 249
+165B          KEY_END equ 250
+165B          KEY_HOME equ 251
+165B          KEY_INSERT equ 252
+165B          KEY_DEL equ 253
+165B          KEY_PG_UP equ 254
+165B          KEY_PG_DN equ 255
+165B          PORT_FRAME_IRQ_RESET equ 4
+165B          PORT_SD_SIZE equ 9
+165B          PORT_SD_RESULT equ 9
+165B          PORT_SD_DATA equ 8
+165B          PORT_UART_DATA equ 128
+165B          PORT_UART_CONFIG equ 129
+165B          PORT_UART_STATE equ 129
+165B          PORT_EXT_DATA_OUT equ 136
+165B          PORT_PALETTE_3 equ 144
+165B          PORT_PALETTE_2 equ 145
+165B          PORT_PALETTE_1 equ 146
+165B          PORT_PALETTE_0 equ 147
+165B          PORT_EXT_IN_DATA equ 137
+165B          PORT_A0 equ 160
+165B          PORT_ROM_0000 equ 168
+165B          PORT_ROM_0000__ROM equ 0
+165B          PORT_ROM_0000__RAM equ 128
+165B          PORT_VIDEO_MODE_1_LOW equ 185
+165B          PORT_VIDEO_MODE_1_HIGH equ 249
+165B          PORT_VIDEO_MODE_0_LOW equ 184
+165B          PORT_VIDEO_MODE_0_HIGH equ 248
+165B          PORT_UART_SPEED_0 equ 187
+165B          PORT_KEYBOARD equ 192
+165B          PORT_UART_SPEED_1 equ 251
+165B          PORT_CODE_ROM equ 186
+165B          PORT_CHARGEN_ROM equ 250
+165B          PORT_TAPE_AND_IDX2 equ 153
+165B          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+165B          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+165B          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+165B          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+165B          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+165B          PORT_RESET_CU1 equ 188
+165B          PORT_RESET_CU2 equ 189
+165B          PORT_RESET_CU3 equ 190
+165B          PORT_RESET_CU4 equ 191
+165B          PORT_SET_CU1 equ 252
+165B          PORT_SET_CU2 equ 253
+165B          PORT_SET_CU3 equ 254
+165B          PORT_SET_CU4 equ 255
+165B          PORT_TAPE_OUT equ 176
+165B          SD_COMMAND_READ equ 1
+165B          SD_COMMAND_READ_SIZE equ 5
+165B          SD_COMMAND_WRITE equ 2
+165B          SD_COMMAND_WRITE_SIZE equ 5+128
+165B          SD_RESULT_BUSY equ 255
+165B          SD_RESULT_OK equ 0
+165B          TEXT_SCREEN_HEIGHT equ 25
+165B          FONT_HEIGHT equ 10
+165B          FONT_WIDTH equ 3
+165B          DrawCharAddress equ DrawChar+1
+165B          SetColorAddress equ SetColor+1
+165B          DrawCursorAddress equ DrawCursor+1
+165B          OPCODE_NOP equ 0
+165B          OPCODE_LD_DE_CONST equ 17
+165B          OPCODE_LD_A_CONST equ 62
+165B          OPCODE_LD_H_A equ 103
+165B          OPCODE_LD_A_D equ 122
+165B          OPCODE_LD_A_H equ 124
+165B          OPCODE_XOR_A equ 175
+165B          OPCODE_XOR_B equ 168
+165B          OPCODE_JP equ 195
+165B          OPCODE_RET equ 201
+165B          OPCODE_SUB_CONST equ 214
+165B          OPCODE_AND_CONST equ 230
+165B          OPCODE_OR_CONST equ 246
+165B          OPCODE_OUT equ 211
+165B          OPCODE_JMP equ 195
 font4:
-1584 00 00 00  db 0
+165B 00 00 00  db 0
  db 0
  db 0
  db 0
@@ -7215,2021 +7364,1755 @@ font4:
  db 0
  db 0
 DrawChar4:
-1F84 47        ld b, a
-1F85 7D        ld a, l
-1F86 87        add a
-1F87 87        add a
-1F88 85        add l
-1F89 87        add a
-1F8A 2F        cpl
-1F8B 5F        ld e, a
-1F8C 7C        ld a, h
-1F8D 4F        ld c, a
-1F8E B7        or a
-1F8F 1F        rra
-1F90 2F        cpl
-1F91 57        ld d, a
-1F92 78        ld a, b
-1F93 C6 84     add font4
-1F95 6F        ld l, a
-1F96 CE 15     adc font4>>8
-1F98 95        sub l
-1F99 67        ld h, a
-1F9A 79        ld a, c
-1F9B E6 01     and 1
-1F9D C2 C7 1F  jp nz, DrawChar40
-DrawChar44:
-1FA0 0E 0A     ld c, FONT_HEIGHT
-_l235:
-1FA2 7E        ld a, (hl)
-1FA3 E6 F0     and 240
-1FA5 47        ld b, a
-1FA6 1A        ld a, (de)
-DrawChar4a_And1:
-1FA7 E6 0F     and 15
-DrawChar4a_Xor1:
-1FA9 A8        xor b
-1FAA 12        ld (de), a
-1FAB 1D        dec e
-1FAC 24        inc h
-_l237:
-1FAD 0D        dec c
-1FAE C2 A2 1F  jp nz, _l235
-_l236:
-DrawChar4a:
-1FB1 7A        ld a, d
-1FB2 D6 40     sub 64
-1FB4 57        ld d, a
-1FB5 0E 0A     ld c, FONT_HEIGHT
-_l241:
-1FB7 25        dec h
-1FB8 1C        inc e
-1FB9 7E        ld a, (hl)
-1FBA E6 F0     and 240
-1FBC 47        ld b, a
-1FBD 1A        ld a, (de)
-DrawChar4a_And2:
-1FBE E6 0F     and 15
-DrawChar4a_Xor2:
-1FC0 A8        xor b
-1FC1 12        ld (de), a
-_l243:
-1FC2 0D        dec c
-1FC3 C2 B7 1F  jp nz, _l241
-_l242:
-1FC6 C9        ret
-DrawChar40:
-1FC7 0E 0A     ld c, FONT_HEIGHT
-_l247:
-1FC9 7E        ld a, (hl)
-1FCA E6 0F     and 15
-1FCC 47        ld b, a
-1FCD 1A        ld a, (de)
-DrawChar4b_And1:
-1FCE E6 F0     and 240
-DrawChar4b_Xor1:
-1FD0 A8        xor b
-1FD1 12        ld (de), a
-1FD2 1D        dec e
-1FD3 24        inc h
-_l249:
-1FD4 0D        dec c
-1FD5 C2 C9 1F  jp nz, _l247
-_l248:
-DrawChar4b:
-1FD8 7A        ld a, d
-1FD9 D6 40     sub 64
-1FDB 57        ld d, a
-1FDC 0E 0A     ld c, FONT_HEIGHT
-_l253:
-1FDE 25        dec h
-1FDF 1C        inc e
-1FE0 7E        ld a, (hl)
-1FE1 E6 0F     and 15
-1FE3 47        ld b, a
-1FE4 1A        ld a, (de)
-DrawChar4b_And2:
-1FE5 E6 F0     and 240
-DrawChar4b_Xor2:
-1FE7 A8        xor b
-1FE8 12        ld (de), a
-_l255:
-1FE9 0D        dec c
-1FEA C2 DE 1F  jp nz, _l253
-_l254:
-1FED C9        ret
-SetColor4:
-1FEE 4F        ld c, a
-1FEF E6 04     and 4
-1FF1 C2 02 20  jp nz, _l259
-1FF4 21 E6 0F  ld hl, OPCODE_AND_CONST|15<<8
-1FF7 22 A7 1F  ld (DrawChar4a_And1), hl
-1FFA 26 F0     ld h, 240
-1FFC 22 CE 1F  ld (DrawChar4b_And1), hl
-1FFF C3 0D 20  jp _l260
-_l259:
-2002 21 F6 F0  ld hl, OPCODE_OR_CONST|240<<8
-2005 22 A7 1F  ld (DrawChar4a_And1), hl
-2008 26 0F     ld h, 15
-200A 22 CE 1F  ld (DrawChar4b_And1), hl
-_l260:
-200D 47        ld b, a
-200E 79        ld a, c
-200F 87        add a
-2010 87        add a
-2011 E6 04     and 4
-2013 A8        xor b
-2014 3E A8     ld a, OPCODE_XOR_B
-2016 C2 1B 20  jp nz, _l261
-2019 3E 00     ld a, OPCODE_NOP
-_l261:
-201B 32 A9 1F  ld (DrawChar4a_Xor1), a
-201E 32 D0 1F  ld (DrawChar4b_Xor1), a
-2021 79        ld a, c
-2022 E6 08     and 8
-2024 C2 35 20  jp nz, _l262
-2027 21 E6 0F  ld hl, OPCODE_AND_CONST|15<<8
-202A 22 BE 1F  ld (DrawChar4a_And2), hl
-202D 26 F0     ld h, 240
-202F 22 E5 1F  ld (DrawChar4b_And2), hl
-2032 C3 40 20  jp _l263
-_l262:
-2035 21 F6 F0  ld hl, OPCODE_OR_CONST|240<<8
-2038 22 BE 1F  ld (DrawChar4a_And2), hl
-203B 26 0F     ld h, 15
-203D 22 E5 1F  ld (DrawChar4b_And2), hl
-_l263:
-2040 47        ld b, a
-2041 79        ld a, c
-2042 87        add a
-2043 87        add a
-2044 E6 08     and 8
-2046 A8        xor b
-2047 3E A8     ld a, OPCODE_XOR_B
-2049 C2 4E 20  jp nz, _l264
-204C 3E 00     ld a, OPCODE_NOP
-_l264:
-204E 32 C0 1F  ld (DrawChar4a_Xor2), a
-2051 32 E7 1F  ld (DrawChar4b_Xor2), a
-2054 C9        ret
-DrawCursor4:
-2055 7C        ld a, h
-2056 B7        or a
-2057 1F        rra
-2058 2F        cpl
-2059 57        ld d, a
-205A 7D        ld a, l
-205B 87        add a
-205C 87        add a
-205D 85        add l
+205B 47        ld b, a
+205C 7D        ld a, l
+205D 87        add a
 205E 87        add a
-205F 2F        cpl
-2060 5F        ld e, a
-2061 7C        ld a, h
-2062 E6 01     and 1
-2064 06 0F     ld b, 15
-2066 C2 6B 20  jp nz, _l266
-2069 06 F0     ld b, 240
-_l266:
-206B 0E 0A     ld c, FONT_HEIGHT
-_l267:
-206D 1A        ld a, (de)
-206E A8        xor b
-206F 12        ld (de), a
-2070 1D        dec e
-_l269:
-2071 0D        dec c
-2072 C2 6D 20  jp nz, _l267
+205F 85        add l
+2060 87        add a
+2061 2F        cpl
+2062 5F        ld e, a
+2063 7C        ld a, h
+2064 4F        ld c, a
+2065 B7        or a
+2066 1F        rra
+2067 2F        cpl
+2068 57        ld d, a
+2069 78        ld a, b
+206A C6 5B     add font4
+206C 6F        ld l, a
+206D CE 16     adc font4>>8
+206F 95        sub l
+2070 67        ld h, a
+2071 79        ld a, c
+2072 E6 01     and 1
+2074 C2 9E 20  jp nz, DrawChar40
+DrawChar44:
+2077 0E 0A     ld c, FONT_HEIGHT
 _l268:
-2075 C9        ret
-SetScreenBw4:
-2076 3E 60     ld a, 96
-2078 32 CF 07  ld (text_screen_width), a
-207B 21 EE 1F  ld hl, SetColor4
-207E 22 D4 07  ld (SetColorAddress), hl
-2081 21 84 1F  ld hl, DrawChar4
-2084 22 D1 07  ld (DrawCharAddress), hl
-2087 21 55 20  ld hl, DrawCursor4
-208A 22 D7 07  ld (DrawCursorAddress), hl
-208D 3E C9     ld a, OPCODE_RET
-208F 32 B1 1F  ld (DrawChar4a), a
-2092 32 D8 1F  ld (DrawChar4b), a
-2095 C3 19 0B  jp SetScreenBw
-SetScreenColor4:
-2098 3E 60     ld a, 96
-209A 32 CF 07  ld (text_screen_width), a
-209D 21 EE 1F  ld hl, SetColor4
-20A0 22 D4 07  ld (SetColorAddress), hl
-20A3 21 84 1F  ld hl, DrawChar4
-20A6 22 D1 07  ld (DrawCharAddress), hl
-20A9 21 55 20  ld hl, DrawCursor4
-20AC 22 D7 07  ld (DrawCursorAddress), hl
-20AF 3E 7A     ld a, OPCODE_LD_A_D
-20B1 32 B1 1F  ld (DrawChar4a), a
-20B4 32 D8 1F  ld (DrawChar4b), a
-20B7 C3 5E 0B  jp SetScreenColor
-20BA          MOD_CTR equ 1
-20BA          MOD_SHIFT equ 2
-20BA          MOD_CAPS equ 16
-20BA          MOD_NUM equ 32
-20BA          SCREEN_0_ADDRESS equ 53248
-20BA          SCREEN_1_ADDRESS equ 36864
-20BA          PALETTE_WHITE equ 0
-20BA          PALETTE_CYAN equ 1
-20BA          PALETTE_MAGENTA equ 2
-20BA          PALETTE_BLUE equ 3
-20BA          PALETTE_YELLOW equ 4
-20BA          PALETTE_GREEN equ 5
-20BA          PALETTE_RED equ 6
-20BA          PALETTE_XXX equ 7
-20BA          PALETTE_GRAY equ 8
-20BA          PALETTE_DARK_CYAN equ 9
-20BA          PALETTE_DARK_MAGENTA equ 10
-20BA          PALETTE_DARK_BLUE equ 11
-20BA          PALETTE_DARK_YELLOW equ 12
-20BA          PALETTE_DARK_GREEN equ 13
-20BA          PALETTE_DARK_RED equ 14
-20BA          PALETTE_BLACK equ 15
-20BA          KEY_BACKSPACE equ 8
-20BA          KEY_TAB equ 9
-20BA          KEY_ENTER equ 13
-20BA          KEY_ESC equ 27
-20BA          KEY_ALT equ 1
-20BA          KEY_F1 equ 242
-20BA          KEY_F2 equ 243
-20BA          KEY_F3 equ 244
-20BA          KEY_UP equ 245
-20BA          KEY_DOWN equ 246
-20BA          KEY_RIGHT equ 247
-20BA          KEY_LEFT equ 248
-20BA          KEY_EXT_5 equ 249
-20BA          KEY_END equ 250
-20BA          KEY_HOME equ 251
-20BA          KEY_INSERT equ 252
-20BA          KEY_DEL equ 253
-20BA          KEY_PG_UP equ 254
-20BA          KEY_PG_DN equ 255
-20BA          PORT_FRAME_IRQ_RESET equ 4
-20BA          PORT_SD_SIZE equ 9
-20BA          PORT_SD_RESULT equ 9
-20BA          PORT_SD_DATA equ 8
-20BA          PORT_UART_DATA equ 128
-20BA          PORT_UART_CONFIG equ 129
-20BA          PORT_UART_STATE equ 129
-20BA          PORT_EXT_DATA_OUT equ 136
-20BA          PORT_PALETTE_3 equ 144
-20BA          PORT_PALETTE_2 equ 145
-20BA          PORT_PALETTE_1 equ 146
-20BA          PORT_PALETTE_0 equ 147
-20BA          PORT_EXT_IN_DATA equ 137
-20BA          PORT_A0 equ 160
-20BA          PORT_ROM_0000 equ 168
-20BA          PORT_ROM_0000__ROM equ 0
-20BA          PORT_ROM_0000__RAM equ 128
-20BA          PORT_VIDEO_MODE_1_LOW equ 185
-20BA          PORT_VIDEO_MODE_1_HIGH equ 249
-20BA          PORT_VIDEO_MODE_0_LOW equ 184
-20BA          PORT_VIDEO_MODE_0_HIGH equ 248
-20BA          PORT_UART_SPEED_0 equ 187
-20BA          PORT_KEYBOARD equ 192
-20BA          PORT_UART_SPEED_1 equ 251
-20BA          PORT_CODE_ROM equ 186
-20BA          PORT_CHARGEN_ROM equ 250
-20BA          PORT_TAPE_AND_IDX2 equ 153
-20BA          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-20BA          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-20BA          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-20BA          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-20BA          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-20BA          PORT_RESET_CU1 equ 188
-20BA          PORT_RESET_CU2 equ 189
-20BA          PORT_RESET_CU3 equ 190
-20BA          PORT_RESET_CU4 equ 191
-20BA          PORT_SET_CU1 equ 252
-20BA          PORT_SET_CU2 equ 253
-20BA          PORT_SET_CU3 equ 254
-20BA          PORT_SET_CU4 equ 255
-20BA          PORT_TAPE_OUT equ 176
-20BA          SD_COMMAND_READ equ 1
-20BA          SD_COMMAND_READ_SIZE equ 5
-20BA          SD_COMMAND_WRITE equ 2
-20BA          SD_COMMAND_WRITE_SIZE equ 5+128
-20BA          SD_RESULT_BUSY equ 255
-20BA          SD_RESULT_OK equ 0
-20BA          stack equ 256
-20BA          entry_cpm_conout_address equ EntryCpmConout+1
-20BA          cpm_dph_a equ 65376
-20BA          cpm_dph_b equ 65392
-20BA          cpm_dma_buffer equ 65408
-20BA          TEXT_SCREEN_HEIGHT equ 25
-20BA          FONT_HEIGHT equ 10
-20BA          FONT_WIDTH equ 3
-20BA          DrawCharAddress equ DrawChar+1
-20BA          SetColorAddress equ SetColor+1
-20BA          DrawCursorAddress equ DrawCursor+1
-20BA          NEXT_REPLAY_DELAY equ 3
-20BA          FIRST_REPLAY_DELAY equ 30
-20BA          SCAN_LAT equ 25
-20BA          SCAN_RUS equ 24
-20BA          SCAN_CAP equ 30
-20BA          SCAN_NUM equ 28
-20BA          LAYOUT_SIZE equ 80
-20BA          CURSOR_BLINK_PERIOD equ 35
-frame_counter:
-20BA 00        db 0
-key_leds:
-20BB 20        db MOD_NUM
-key_pressed:
-20BC 00        db 0
-key_delay:
-20BD 00        db 0
-key_rus:
-20BE 00        db 0
-key_read:
-20BF 45        db key_buffer
-key_write:
-20C0 45        db key_buffer
-20C1          key_read_l_write_h equ key_read
-20C1          SHI equ 64
-20C1          CAP equ 128
-20C1          NUM equ 32
-shiftLayout:
-20C1 40        db SHI
-20C2 80        db CAP
-20C3 80        db CAP
-20C4 80        db CAP
-20C5 40        db SHI
-20C6 80        db CAP
-20C7 80        db CAP
-20C8 40        db SHI
-20C9 40        db SHI
-20CA 80        db CAP
-20CB 80        db CAP
-20CC 80        db CAP
-20CD 40        db SHI
-20CE 80        db CAP
-20CF 80        db CAP
-20D0 40        db SHI
-20D1 40        db SHI
-20D2 80        db CAP
-20D3 80        db CAP
-20D4 80        db CAP
-20D5 40        db SHI
-20D6 80        db CAP
-20D7 40        db SHI
-20D8 40        db SHI
-20D9 00        db 0
-20DA 00        db 0
-20DB 00        db 0
-20DC 00        db 0
-20DD 00        db 0
-20DE 00        db 0
-20DF 00        db 0
-20E0 00        db 0
-20E1 40        db SHI
-20E2 80        db CAP
-20E3 80        db CAP
-20E4 80        db CAP
-20E5 40        db SHI
-20E6 40        db SHI
-20E7 40        db SHI
-20E8 40        db SHI
-20E9 40        db SHI
-20EA 80        db CAP
-20EB 80        db CAP
-20EC 80        db CAP
-20ED 40        db SHI
-20EE 40        db SHI
-20EF 40        db SHI
-20F0 40        db SHI
-20F1 40        db SHI
-20F2 20        db NUM
-20F3 80        db CAP
-20F4 80        db CAP
-20F5 40        db SHI
-20F6 40        db SHI
-20F7 40        db SHI
-20F8 20        db NUM
-20F9 00        db 0
-20FA 80        db CAP
-20FB 80        db CAP
-20FC 80        db CAP
-20FD 00        db 0
-20FE 20        db NUM
-20FF 20        db NUM
-2100 20        db NUM
-2101 00        db 0
-2102 80        db CAP
-2103 00        db 0
-2104 00        db 0
-2105 40        db SHI
-2106 20        db NUM
-2107 20        db NUM
-2108 20        db NUM
-2109 00        db 0
-210A 00        db 0
-210B 00        db 0
-210C 00        db 0
-210D 00        db 0
-210E 20        db NUM
-210F 20        db NUM
-2110 20        db NUM
-2111 40        db SHI
-2112 80        db CAP
-2113 80        db CAP
-2114 80        db CAP
-2115 40        db SHI
-2116 80        db CAP
-2117 80        db CAP
-2118 80        db CAP
-2119 40        db SHI
-211A 80        db CAP
-211B 80        db CAP
-211C 80        db CAP
-211D 40        db SHI
-211E 80        db CAP
-211F 80        db CAP
-2120 80        db CAP
-2121 40        db SHI
-2122 80        db CAP
-2123 80        db CAP
-2124 80        db CAP
-2125 40        db SHI
-2126 80        db CAP
-2127 80        db CAP
-2128 80        db CAP
-2129 00        db 0
-212A 00        db 0
-212B 00        db 0
-212C 00        db 0
-212D 00        db 0
-212E 00        db 0
-212F 00        db 0
-2130 00        db 0
-2131 40        db SHI
-2132 80        db CAP
-2133 80        db CAP
-2134 80        db CAP
-2135 40        db SHI
-2136 80        db CAP
-2137 80        db CAP
-2138 40        db SHI
-2139 40        db SHI
-213A 80        db CAP
-213B 80        db CAP
-213C 80        db CAP
-213D 40        db SHI
-213E 80        db CAP
-213F 40        db SHI
-2140 40        db SHI
-2141 40        db SHI
-2142 20        db NUM
-2143 80        db CAP
-2144 80        db CAP
-2145 40        db SHI
-2146 40        db SHI
-2147 40        db SHI
-2148 20        db NUM
-2149 00        db 0
-214A 80        db CAP
-214B 80        db CAP
-214C 80        db CAP
-214D 00        db 0
-214E 20        db NUM
-214F 20        db NUM
-2150 20        db NUM
-2151 00        db 0
-2152 80        db CAP
-2153 00        db 0
-2154 00        db 0
-2155 40        db SHI
-2156 20        db NUM
-2157 20        db NUM
-2158 20        db NUM
-2159 00        db 0
-215A 00        db 0
-215B 00        db 0
-215C 00        db 0
-215D 00        db 0
-215E 20        db NUM
-215F 20        db NUM
-2160 20        db NUM
-ctrLayout:
-2161 1E        db 30
-2162 15        db 117&31
-2163 0A        db 106&31
-2164 0D        db 109&31
-2165 1F        db 31
-2166 09        db 105&31
-2167 0B        db 107&31
-2168 00        db 96&31
-2169 1D        db 29
-216A 19        db 121&31
-216B 08        db 104&31
-216C 0E        db 110&31
-216D 08        db 8
-216E 0F        db 111&31
-216F 0C        db 108&31
-2170 00        db 64&31
-2171 1C        db 28
-2172 14        db 116&31
-2173 07        db 103&31
-2174 02        db 98&31
-2175 39        db 57
-2176 10        db 112&31
-2177 1B        db 91&31
-2178 3F        db 63
-2179 3F        db 63
-217A 3F        db 63
-217B 01        db KEY_ALT
-217C 3F        db 63
-217D 3F        db 63
-217E 08        db KEY_BACKSPACE
-217F 3F        db 63
-2180 00        db 32&31
-2181 1B        db 27
-2182 12        db 114&31
-2183 06        db 102&31
-2184 16        db 118&31
-2185 00        db 0
-2186 1B        db 123&31
-2187 1D        db 93&31
-2188 2C        db 44
-2189 00        db 0
-218A 05        db 101&31
-218B 04        db 100&31
-218C 03        db 99&31
-218D 1F        db 95&31
-218E 1D        db 125&31
-218F 3A        db 58
-2190 2E        db 46
-2191 31        db 49
-2192 2E        db 46
-2193 01        db 97&31
-2194 1A        db 122&31
-2195 1E        db 94&31
-2196 0F        db 47&31
-2197 3B        db 59
-2198 30        db 48
-2199 3F        db 63
-219A 17        db 119&31
-219B 13        db 115&31
-219C 18        db 120&31
-219D 3F        db 63
-219E 37        db 55
-219F 34        db 52
-21A0 31        db 49
-21A1 0A        db 10
-21A2 11        db 113&31
-21A3 09        db KEY_TAB
-21A4 3F        db 63
-21A5 1C        db 92&31
-21A6 38        db 56
-21A7 35        db 53
-21A8 32        db 50
-21A9 F4        db KEY_F3
-21AA 3F        db 63
-21AB F2        db KEY_F1
-21AC F3        db KEY_F2
-21AD 1B        db KEY_ESC
-21AE 39        db 57
-21AF 36        db 54
-21B0 33        db 51
-key_layout_table:
-21B1 36        db 54
-21B2 75        db 117
-21B3 6A        db 106
-21B4 6D        db 109
-21B5 37        db 55
-21B6 69        db 105
-21B7 6B        db 107
-21B8 60        db 96
-21B9 35        db 53
-21BA 79        db 121
-21BB 68        db 104
-21BC 6E        db 110
-21BD 38        db 56
-21BE 6F        db 111
-21BF 6C        db 108
-21C0 40        db 64
-21C1 34        db 52
-21C2 74        db 116
-21C3 67        db 103
-21C4 62        db 98
-21C5 39        db 57
-21C6 70        db 112
-21C7 5B        db 91
-21C8 00        db 0
-21C9 00        db 0
-21CA 00        db 0
-21CB 01        db KEY_ALT
-21CC 00        db 0
-21CD 00        db 0
-21CE 08        db KEY_BACKSPACE
-21CF 00        db 0
-21D0 20        db 32
-21D1 33        db 51
-21D2 72        db 114
-21D3 66        db 102
-21D4 76        db 118
-21D5 30        db 48
-21D6 7B        db 123
-21D7 5D        db 93
-21D8 2C        db 44
-21D9 32        db 50
-21DA 65        db 101
-21DB 64        db 100
-21DC 63        db 99
-21DD 2D        db 45
-21DE 7D        db 125
-21DF 3A        db 58
-21E0 2E        db 46
-21E1 31        db 49
-21E2 FD        db KEY_DEL
-21E3 61        db 97
-21E4 7A        db 122
-21E5 5E        db 94
-21E6 2F        db 47
-21E7 3B        db 59
-21E8 FC        db KEY_INSERT
-21E9 00        db 0
-21EA 77        db 119
-21EB 73        db 115
-21EC 78        db 120
-21ED FD        db KEY_DEL
-21EE FB        db KEY_HOME
-21EF F8        db KEY_LEFT
-21F0 FA        db KEY_END
-21F1 0D        db KEY_ENTER
-21F2 71        db 113
-21F3 09        db KEY_TAB
-21F4 00        db 0
-21F5 5C        db 92
-21F6 F5        db KEY_UP
-21F7 F9        db KEY_EXT_5
-21F8 F6        db KEY_DOWN
-21F9 F4        db KEY_F3
-21FA 00        db 0
-21FB F2        db KEY_F1
-21FC F3        db KEY_F2
-21FD 1B        db KEY_ESC
-21FE FE        db KEY_PG_UP
-21FF F7        db KEY_RIGHT
-2200 FF        db KEY_PG_DN
-2201 26        db 38
-2202 55        db 85
-2203 4A        db 74
-2204 4D        db 77
-2205 27        db 39
-2206 49        db 73
-2207 4B        db 75
-2208 60        db 96
-2209 25        db 37
-220A 59        db 89
-220B 48        db 72
-220C 4E        db 78
-220D 28        db 40
-220E 4F        db 79
-220F 4C        db 76
-2210 40        db 64
-2211 24        db 36
-2212 54        db 84
-2213 47        db 71
-2214 42        db 66
-2215 29        db 41
-2216 50        db 80
-2217 5B        db 91
-2218 00        db 0
-2219 00        db 0
-221A 00        db 0
-221B 01        db KEY_ALT
-221C 00        db 0
-221D 00        db 0
-221E 08        db KEY_BACKSPACE
-221F 00        db 0
-2220 20        db 32
-2221 23        db 35
-2222 52        db 82
-2223 46        db 70
-2224 56        db 86
-2225 5F        db 95
-2226 7B        db 123
-2227 5D        db 93
-2228 3C        db 60
-2229 22        db 34
-222A 45        db 69
-222B 44        db 68
-222C 43        db 67
-222D 3D        db 61
-222E 7D        db 125
-222F 2A        db 42
-2230 3E        db 62
-2231 21        db 33
-2232 2E        db 46
-2233 41        db 65
-2234 5A        db 90
-2235 7E        db 126
-2236 3F        db 63
-2237 2B        db 43
-2238 30        db 48
-2239 00        db 0
-223A 57        db 87
-223B 53        db 83
-223C 58        db 88
-223D FD        db KEY_DEL
-223E 37        db 55
-223F 34        db 52
-2240 31        db 49
-2241 0D        db KEY_ENTER
-2242 51        db 81
-2243 09        db KEY_TAB
-2244 00        db 0
-2245 7C        db 124
-2246 38        db 56
-2247 35        db 53
-2248 32        db 50
-2249 F4        db KEY_F3
-224A 00        db 0
-224B F2        db KEY_F1
-224C F3        db KEY_F2
-224D 1B        db KEY_ESC
-224E 39        db 57
-224F 36        db 54
-2250 33        db 51
-2251 36        db 54
-2252 A3        db 163
-2253 AE        db 174
-2254 EC        db 236
-2255 37        db 55
-2256 E8        db 232
-2257 AB        db 171
-2258 A1        db 161
-2259 35        db 53
-225A AD        db 173
-225B E0        db 224
-225C E2        db 226
-225D 38        db 56
-225E E9        db 233
-225F A4        db 164
-2260 EE        db 238
-2261 34        db 52
-2262 A5        db 165
-2263 AF        db 175
-2264 A8        db 168
-2265 39        db 57
-2266 A7        db 167
-2267 A6        db 166
-2268 F1        db 241
-2269 00        db 0
-226A 00        db 0
-226B 01        db KEY_ALT
-226C 00        db 0
-226D 00        db 0
-226E 08        db KEY_BACKSPACE
-226F 00        db 0
-2270 20        db 32
-2271 33        db 51
-2272 AA        db 170
-2273 A0        db 160
-2274 AC        db 172
-2275 30        db 48
-2276 E5        db 229
-2277 ED        db 237
-2278 2C        db 44
-2279 32        db 50
-227A E3        db 227
-227B A2        db 162
-227C E1        db 225
-227D 2D        db 45
-227E EA        db 234
-227F 3A        db 58
-2280 2E        db 46
-2281 31        db 49
-2282 FD        db KEY_DEL
-2283 E4        db 228
-2284 EF        db 239
-2285 5E        db 94
-2286 2F        db 47
-2287 3B        db 59
-2288 FC        db KEY_INSERT
-2289 00        db 0
-228A E6        db 230
-228B EB        db 235
-228C E7        db 231
-228D FD        db KEY_DEL
-228E FB        db KEY_HOME
-228F F8        db KEY_LEFT
-2290 FA        db KEY_END
-2291 0D        db KEY_ENTER
-2292 A9        db 169
-2293 09        db KEY_TAB
-2294 00        db 0
-2295 5C        db 92
-2296 F5        db KEY_UP
-2297 F9        db KEY_EXT_5
-2298 F6        db KEY_DOWN
-2299 F4        db KEY_F3
-229A 00        db 0
-229B F2        db KEY_F1
-229C F3        db KEY_F2
-229D 1B        db KEY_ESC
-229E FE        db KEY_PG_UP
-229F F7        db KEY_RIGHT
-22A0 FF        db KEY_PG_DN
-22A1 26        db 38
-22A2 83        db 131
-22A3 8E        db 142
-22A4 9C        db 156
-22A5 27        db 39
-22A6 98        db 152
-22A7 8B        db 139
-22A8 81        db 129
-22A9 25        db 37
-22AA 8D        db 141
-22AB 90        db 144
-22AC 92        db 146
-22AD 28        db 40
-22AE 99        db 153
-22AF 84        db 132
-22B0 9E        db 158
-22B1 24        db 36
-22B2 85        db 133
-22B3 8F        db 143
-22B4 88        db 136
-22B5 29        db 41
-22B6 58        db 88
-22B7 86        db 134
-22B8 F0        db 240
-22B9 00        db 0
-22BA 00        db 0
-22BB 01        db KEY_ALT
-22BC 00        db 0
-22BD 00        db 0
-22BE 08        db KEY_BACKSPACE
-22BF 00        db 0
-22C0 20        db 32
-22C1 23        db 35
-22C2 8A        db 138
-22C3 80        db 128
-22C4 8C        db 140
-22C5 5F        db 95
-22C6 58        db 88
-22C7 9D        db 157
-22C8 3C        db 60
-22C9 22        db 34
-22CA 93        db 147
-22CB 82        db 130
-22CC 91        db 145
-22CD 3D        db 61
-22CE 9A        db 154
-22CF 2A        db 42
-22D0 3E        db 62
-22D1 21        db 33
-22D2 2E        db 46
-22D3 94        db 148
-22D4 9F        db 159
-22D5 7E        db 126
-22D6 3F        db 63
-22D7 2B        db 43
-22D8 30        db 48
-22D9 00        db 0
-22DA 96        db 150
-22DB 9B        db 155
-22DC 97        db 151
-22DD FD        db KEY_DEL
-22DE 37        db 55
-22DF 34        db 52
-22E0 31        db 49
-22E1 0D        db KEY_ENTER
-22E2 89        db 137
-22E3 09        db KEY_TAB
-22E4 00        db 0
-22E5 7C        db 124
-22E6 38        db 56
-22E7 35        db 53
-22E8 32        db 50
-22E9 F4        db KEY_F3
-22EA 00        db 0
-22EB F2        db KEY_F1
-22EC F3        db KEY_F2
-22ED 1B        db KEY_ESC
-22EE 39        db 57
-22EF 36        db 54
-22F0 33        db 51
-CheckKeyboard:
-22F1 2A BF 20  ld hl, (key_read_l_write_h)
-22F4 7C        ld a, h
-22F5 BD        cp l
-22F6 C9        ret
-ReadKeyboard:
-22F7 2A BF 20  ld hl, (key_read_l_write_h)
-22FA 7C        ld a, h
-22FB BD        cp l
-22FC C8        ret z
-22FD 26 00     ld h, key_buffer>>8
-22FF 56        ld d, (hl)
-2300 2C        inc l
-2301 7D        ld a, l
-2302 FE 55     cp key_buffer+16
-2304 C2 09 23  jp nz, _l284
-2307 3E 45     ld a, key_buffer
-_l284:
-2309 32 BF 20  ld (key_read), a
-230C AF        xor a
-230D 3C        inc a
-230E 7A        ld a, d
-230F C9        ret
-KeyPush:
-2310 E5        push hl
-2311 2A BF 20  ld hl, (key_read_l_write_h)
-2314 26 00     ld h, key_buffer>>8
-2316 77        ld (hl), a
-2317 2C        inc l
-2318 7D        ld a, l
-2319 FE 55     cp key_buffer+16&255
-231B C2 20 23  jp nz, _l286
-231E 3E 45     ld a, key_buffer
+2079 7E        ld a, (hl)
+207A E6 F0     and 240
+207C 47        ld b, a
+207D 1A        ld a, (de)
+DrawChar4a_And1:
+207E E6 0F     and 15
+DrawChar4a_Xor1:
+2080 A8        xor b
+2081 12        ld (de), a
+2082 1D        dec e
+2083 24        inc h
+_l270:
+2084 0D        dec c
+2085 C2 79 20  jp nz, _l268
+_l269:
+DrawChar4a:
+2088 7A        ld a, d
+2089 D6 40     sub 64
+208B 57        ld d, a
+208C 0E 0A     ld c, FONT_HEIGHT
+_l274:
+208E 25        dec h
+208F 1C        inc e
+2090 7E        ld a, (hl)
+2091 E6 F0     and 240
+2093 47        ld b, a
+2094 1A        ld a, (de)
+DrawChar4a_And2:
+2095 E6 0F     and 15
+DrawChar4a_Xor2:
+2097 A8        xor b
+2098 12        ld (de), a
+_l276:
+2099 0D        dec c
+209A C2 8E 20  jp nz, _l274
+_l275:
+209D C9        ret
+DrawChar40:
+209E 0E 0A     ld c, FONT_HEIGHT
+_l280:
+20A0 7E        ld a, (hl)
+20A1 E6 0F     and 15
+20A3 47        ld b, a
+20A4 1A        ld a, (de)
+DrawChar4b_And1:
+20A5 E6 F0     and 240
+DrawChar4b_Xor1:
+20A7 A8        xor b
+20A8 12        ld (de), a
+20A9 1D        dec e
+20AA 24        inc h
+_l282:
+20AB 0D        dec c
+20AC C2 A0 20  jp nz, _l280
+_l281:
+DrawChar4b:
+20AF 7A        ld a, d
+20B0 D6 40     sub 64
+20B2 57        ld d, a
+20B3 0E 0A     ld c, FONT_HEIGHT
 _l286:
-2320 32 C0 20  ld (key_write), a
-2323 E1        pop hl
-2324 C9        ret
-KeyPressed:
-2325 57        ld d, a
-2326 2A BC 20  ld hl, (key_pressed)
-2329 BD        cp l
-232A C2 37 23  jp nz, _l288
-232D 21 BD 20  ld hl, key_delay
-2330 35        dec (hl)
-2331 C0        ret nz
-2332 36 03     ld (hl), NEXT_REPLAY_DELAY
-2334 C3 3F 23  jp _l289
+20B5 25        dec h
+20B6 1C        inc e
+20B7 7E        ld a, (hl)
+20B8 E6 0F     and 15
+20BA 47        ld b, a
+20BB 1A        ld a, (de)
+DrawChar4b_And2:
+20BC E6 F0     and 240
+DrawChar4b_Xor2:
+20BE A8        xor b
+20BF 12        ld (de), a
 _l288:
-2337 32 BC 20  ld (key_pressed), a
-233A 21 BD 20  ld hl, key_delay
-233D 36 1E     ld (hl), FIRST_REPLAY_DELAY
-_l289:
-233F FE 19     cp SCAN_LAT
-2341 C2 49 23  jp nz, _l290
-2344 AF        xor a
-2345 32 BE 20  ld (key_rus), a
-2348 C9        ret
-_l290:
-2349 FE 18     cp SCAN_RUS
-234B C2 54 23  jp nz, _l291
-234E 3E 50     ld a, LAYOUT_SIZE
-2350 32 BE 20  ld (key_rus), a
-2353 C9        ret
-_l291:
-2354 FE 1E     cp SCAN_CAP
-2356 C2 62 23  jp nz, _l292
-2359 3A BB 20  ld a, (key_leds)
-235C EE 10     xor MOD_CAPS
-235E 32 BB 20  ld (key_leds), a
-2361 C9        ret
+20C0 0D        dec c
+20C1 C2 B5 20  jp nz, _l286
+_l287:
+20C4 C9        ret
+SetColor4:
+20C5 4F        ld c, a
+20C6 E6 04     and 4
+20C8 C2 D9 20  jp nz, _l292
+20CB 21 E6 0F  ld hl, OPCODE_AND_CONST|15<<8
+20CE 22 7E 20  ld (DrawChar4a_And1), hl
+20D1 26 F0     ld h, 240
+20D3 22 A5 20  ld (DrawChar4b_And1), hl
+20D6 C3 E4 20  jp _l293
 _l292:
-2362 FE 1C     cp SCAN_NUM
-2364 C2 70 23  jp nz, _l293
-2367 3A BB 20  ld a, (key_leds)
-236A EE 20     xor MOD_NUM
-236C 32 BB 20  ld (key_leds), a
-236F C9        ret
+20D9 21 F6 F0  ld hl, OPCODE_OR_CONST|240<<8
+20DC 22 7E 20  ld (DrawChar4a_And1), hl
+20DF 26 0F     ld h, 15
+20E1 22 A5 20  ld (DrawChar4b_And1), hl
 _l293:
-2370 7B        ld a, e
-2371 E6 01     and MOD_CTR
-2373 CA 83 23  jp z, _l294
-2376 7A        ld a, d
-2377 C6 61     add ctrLayout
-2379 6F        ld l, a
-237A CE 21     adc ctrLayout>>8
-237C 95        sub l
-237D 67        ld h, a
-237E 7E        ld a, (hl)
-237F CD 10 23  call KeyPush
-2382 C9        ret
+20E4 47        ld b, a
+20E5 79        ld a, c
+20E6 87        add a
+20E7 87        add a
+20E8 E6 04     and 4
+20EA A8        xor b
+20EB 3E A8     ld a, OPCODE_XOR_B
+20ED C2 F2 20  jp nz, _l294
+20F0 3E 00     ld a, OPCODE_NOP
 _l294:
-2383 7A        ld a, d
-2384 C6 C1     add shiftLayout
-2386 6F        ld l, a
-2387 CE 20     adc shiftLayout>>8
-2389 95        sub l
-238A 67        ld h, a
-238B 3A BE 20  ld a, (key_rus)
-238E B7        or a
-238F CA 99 23  jp z, _l295
-2392 3E 50     ld a, LAYOUT_SIZE
-2394 85        add l
-2395 6F        ld l, a
-2396 8C        adc h
-2397 95        sub l
-2398 67        ld h, a
+20F2 32 80 20  ld (DrawChar4a_Xor1), a
+20F5 32 A7 20  ld (DrawChar4b_Xor1), a
+20F8 79        ld a, c
+20F9 E6 08     and 8
+20FB C2 0C 21  jp nz, _l295
+20FE 21 E6 0F  ld hl, OPCODE_AND_CONST|15<<8
+2101 22 95 20  ld (DrawChar4a_And2), hl
+2104 26 F0     ld h, 240
+2106 22 BC 20  ld (DrawChar4b_And2), hl
+2109 C3 17 21  jp _l296
 _l295:
-2399 7E        ld a, (hl)
-239A 26 00     ld h, 0
-239C 87        add a
-239D D2 B5 23  jp nc, _l296
-23A0 7B        ld a, e
-23A1 E6 02     and MOD_SHIFT
-23A3 CA A8 23  jp z, _l297
-23A6 26 50     ld h, LAYOUT_SIZE
-_l297:
-23A8 7B        ld a, e
-23A9 E6 10     and MOD_CAPS
-23AB C2 B2 23  jp nz, _l298
-23AE 3E 50     ld a, LAYOUT_SIZE
-23B0 94        sub h
-23B1 67        ld h, a
-_l298:
-23B2 C3 D0 23  jp _l299
+210C 21 F6 F0  ld hl, OPCODE_OR_CONST|240<<8
+210F 22 95 20  ld (DrawChar4a_And2), hl
+2112 26 0F     ld h, 15
+2114 22 BC 20  ld (DrawChar4b_And2), hl
 _l296:
-23B5 87        add a
-23B6 D2 C4 23  jp nc, _l300
-23B9 7B        ld a, e
-23BA E6 02     and MOD_SHIFT
-23BC CA C1 23  jp z, _l301
-23BF 26 50     ld h, LAYOUT_SIZE
-_l301:
-23C1 C3 D0 23  jp _l302
-_l300:
-23C4 87        add a
-23C5 D2 D0 23  jp nc, _l303
-23C8 7B        ld a, e
-23C9 E6 20     and MOD_NUM
-23CB C2 D0 23  jp nz, _l304
-23CE 26 50     ld h, LAYOUT_SIZE
+2117 47        ld b, a
+2118 79        ld a, c
+2119 87        add a
+211A 87        add a
+211B E6 08     and 8
+211D A8        xor b
+211E 3E A8     ld a, OPCODE_XOR_B
+2120 C2 25 21  jp nz, _l297
+2123 3E 00     ld a, OPCODE_NOP
+_l297:
+2125 32 97 20  ld (DrawChar4a_Xor2), a
+2128 32 BE 20  ld (DrawChar4b_Xor2), a
+212B C9        ret
+DrawCursor4:
+212C 7C        ld a, h
+212D B7        or a
+212E 1F        rra
+212F 2F        cpl
+2130 57        ld d, a
+2131 7D        ld a, l
+2132 87        add a
+2133 87        add a
+2134 85        add l
+2135 87        add a
+2136 2F        cpl
+2137 5F        ld e, a
+2138 7C        ld a, h
+2139 E6 01     and 1
+213B 06 0F     ld b, 15
+213D C2 42 21  jp nz, _l299
+2140 06 F0     ld b, 240
 _l299:
+2142 0E 0A     ld c, FONT_HEIGHT
+_l300:
+2144 1A        ld a, (de)
+2145 A8        xor b
+2146 12        ld (de), a
+2147 1D        dec e
 _l302:
-_l303:
-_l304:
-23D0 7A        ld a, d
-23D1 84        add h
-23D2 C6 B1     add key_layout_table
-23D4 6F        ld l, a
-23D5 CE 21     adc key_layout_table>>8
-23D7 95        sub l
-23D8 67        ld h, a
-23D9 3A BE 20  ld a, (key_rus)
-23DC B7        or a
-23DD CA E7 23  jp z, _l305
-23E0 3E A0     ld a, LAYOUT_SIZE*2
-23E2 85        add l
-23E3 6F        ld l, a
-23E4 8C        adc h
-23E5 95        sub l
-23E6 67        ld h, a
-_l305:
-23E7 7E        ld a, (hl)
-23E8 C3 10 23  jp KeyPush
-InterruptHandler:
-23EB DB 04     in a, (PORT_FRAME_IRQ_RESET)
-23ED 0F        rrca
-23EE D8        ret c
-23EF D3 04     out (PORT_FRAME_IRQ_RESET), a
-23F1 21 BA 20  ld hl, frame_counter
-23F4 34        inc (hl)
-23F5 3A 01 01  ld a, (cursor_visible)
-23F8 B7        or a
-23F9 CA 23 24  jp z, _l307
-23FC 3A 00 01  ld a, (cursor_blink_counter)
-23FF 3D        dec a
-2400 C2 20 24  jp nz, _l308
-2403 3A 01 01  ld a, (cursor_visible)
-2406 EE 02     xor 2
-2408 32 01 01  ld (cursor_visible), a
-240B DB 03     in a, (3)
-240D F5        push af
-240E 3E 01     ld a, 1
-2410 D3 03     out (3), a
-2412 2A 03 01  ld hl, (cursor_y)
-2415 CD D6 07  call DrawCursor
-2418 F1        pop af
-2419 D3 03     out (3), a
-241B 3E 23     ld a, CURSOR_BLINK_PERIOD
-241D 32 00 01  ld (cursor_blink_counter), a
-_l308:
-2420 32 00 01  ld (cursor_blink_counter), a
-_l307:
-2423 3A BB 20  ld a, (key_leds)
-2426 F6 08     or 8
-2428 D3 C0     out (PORT_KEYBOARD), a
-242A DB C0     in a, (PORT_KEYBOARD)
-242C E6 08     and 8
-242E 3A BB 20  ld a, (key_leds)
-2431 CA 36 24  jp z, _l309
-2434 F6 01     or MOD_CTR
-_l309:
-2436 5F        ld e, a
-2437 3A BB 20  ld a, (key_leds)
-243A F6 03     or 3
-243C D3 C0     out (PORT_KEYBOARD), a
-243E DB C0     in a, (PORT_KEYBOARD)
-2440 E6 08     and 8
-2442 CA 49 24  jp z, _l310
-2445 3E 02     ld a, MOD_SHIFT
-2447 B3        or e
-2448 5F        ld e, a
-_l310:
-2449 06 09     ld b, 9
-_l311:
-244B 3A BB 20  ld a, (key_leds)
-244E B0        or b
-244F D3 C0     out (PORT_KEYBOARD), a
-2451 DB C0     in a, (PORT_KEYBOARD)
-2453 B7        or a
-2454 CA 72 24  jp z, _l314
-2457 0E 07     ld c, 7
-_l315:
-2459 87        add a
-245A D2 6E 24  jp nc, _l318
-245D 57        ld d, a
-245E 78        ld a, b
-245F 87        add a
-2460 87        add a
-2461 87        add a
-2462 81        add c
-2463 FE 1B     cp 27
-2465 CA 6D 24  jp z, _l319
-2468 FE 43     cp 67
-246A C2 25 23  jp nz, KeyPressed
-_l319:
-246D 7A        ld a, d
+2148 0D        dec c
+2149 C2 44 21  jp nz, _l300
+_l301:
+214C C9        ret
+SetScreenBw4:
+214D 3E 60     ld a, 96
+214F 32 9C 08  ld (text_screen_width), a
+2152 21 C5 20  ld hl, SetColor4
+2155 22 A1 08  ld (SetColorAddress), hl
+2158 21 5B 20  ld hl, DrawChar4
+215B 22 9E 08  ld (DrawCharAddress), hl
+215E 21 2C 21  ld hl, DrawCursor4
+2161 22 A4 08  ld (DrawCursorAddress), hl
+2164 3E C9     ld a, OPCODE_RET
+2166 32 88 20  ld (DrawChar4a), a
+2169 32 AF 20  ld (DrawChar4b), a
+216C C3 F0 0B  jp SetScreenBw
+SetScreenColor4:
+216F 3E 60     ld a, 96
+2171 32 9C 08  ld (text_screen_width), a
+2174 21 C5 20  ld hl, SetColor4
+2177 22 A1 08  ld (SetColorAddress), hl
+217A 21 5B 20  ld hl, DrawChar4
+217D 22 9E 08  ld (DrawCharAddress), hl
+2180 21 2C 21  ld hl, DrawCursor4
+2183 22 A4 08  ld (DrawCursorAddress), hl
+2186 3E 7A     ld a, OPCODE_LD_A_D
+2188 32 88 20  ld (DrawChar4a), a
+218B 32 AF 20  ld (DrawChar4b), a
+218E C3 35 0C  jp SetScreenColor
+2191          MOD_CTR equ 1
+2191          MOD_SHIFT equ 2
+2191          MOD_CAPS equ 16
+2191          MOD_NUM equ 32
+2191          SCREEN_0_ADDRESS equ 53248
+2191          SCREEN_1_ADDRESS equ 36864
+2191          PALETTE_WHITE equ 0
+2191          PALETTE_CYAN equ 1
+2191          PALETTE_MAGENTA equ 2
+2191          PALETTE_BLUE equ 3
+2191          PALETTE_YELLOW equ 4
+2191          PALETTE_GREEN equ 5
+2191          PALETTE_RED equ 6
+2191          PALETTE_XXX equ 7
+2191          PALETTE_GRAY equ 8
+2191          PALETTE_DARK_CYAN equ 9
+2191          PALETTE_DARK_MAGENTA equ 10
+2191          PALETTE_DARK_BLUE equ 11
+2191          PALETTE_DARK_YELLOW equ 12
+2191          PALETTE_DARK_GREEN equ 13
+2191          PALETTE_DARK_RED equ 14
+2191          PALETTE_BLACK equ 15
+2191          KEY_BACKSPACE equ 8
+2191          KEY_TAB equ 9
+2191          KEY_ENTER equ 13
+2191          KEY_ESC equ 27
+2191          KEY_ALT equ 1
+2191          KEY_F1 equ 242
+2191          KEY_F2 equ 243
+2191          KEY_F3 equ 244
+2191          KEY_UP equ 245
+2191          KEY_DOWN equ 246
+2191          KEY_RIGHT equ 247
+2191          KEY_LEFT equ 248
+2191          KEY_EXT_5 equ 249
+2191          KEY_END equ 250
+2191          KEY_HOME equ 251
+2191          KEY_INSERT equ 252
+2191          KEY_DEL equ 253
+2191          KEY_PG_UP equ 254
+2191          KEY_PG_DN equ 255
+2191          PORT_FRAME_IRQ_RESET equ 4
+2191          PORT_SD_SIZE equ 9
+2191          PORT_SD_RESULT equ 9
+2191          PORT_SD_DATA equ 8
+2191          PORT_UART_DATA equ 128
+2191          PORT_UART_CONFIG equ 129
+2191          PORT_UART_STATE equ 129
+2191          PORT_EXT_DATA_OUT equ 136
+2191          PORT_PALETTE_3 equ 144
+2191          PORT_PALETTE_2 equ 145
+2191          PORT_PALETTE_1 equ 146
+2191          PORT_PALETTE_0 equ 147
+2191          PORT_EXT_IN_DATA equ 137
+2191          PORT_A0 equ 160
+2191          PORT_ROM_0000 equ 168
+2191          PORT_ROM_0000__ROM equ 0
+2191          PORT_ROM_0000__RAM equ 128
+2191          PORT_VIDEO_MODE_1_LOW equ 185
+2191          PORT_VIDEO_MODE_1_HIGH equ 249
+2191          PORT_VIDEO_MODE_0_LOW equ 184
+2191          PORT_VIDEO_MODE_0_HIGH equ 248
+2191          PORT_UART_SPEED_0 equ 187
+2191          PORT_KEYBOARD equ 192
+2191          PORT_UART_SPEED_1 equ 251
+2191          PORT_CODE_ROM equ 186
+2191          PORT_CHARGEN_ROM equ 250
+2191          PORT_TAPE_AND_IDX2 equ 153
+2191          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+2191          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+2191          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+2191          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+2191          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+2191          PORT_RESET_CU1 equ 188
+2191          PORT_RESET_CU2 equ 189
+2191          PORT_RESET_CU3 equ 190
+2191          PORT_RESET_CU4 equ 191
+2191          PORT_SET_CU1 equ 252
+2191          PORT_SET_CU2 equ 253
+2191          PORT_SET_CU3 equ 254
+2191          PORT_SET_CU4 equ 255
+2191          PORT_TAPE_OUT equ 176
+2191          SD_COMMAND_READ equ 1
+2191          SD_COMMAND_READ_SIZE equ 5
+2191          SD_COMMAND_WRITE equ 2
+2191          SD_COMMAND_WRITE_SIZE equ 5+128
+2191          SD_RESULT_BUSY equ 255
+2191          SD_RESULT_OK equ 0
+2191          stack equ 256
+2191          entry_cpm_conout_address equ EntryCpmConout+1
+2191          cpm_dph_a equ 65376
+2191          cpm_dph_b equ 65392
+2191          cpm_dma_buffer equ 65408
+2191          TEXT_SCREEN_HEIGHT equ 25
+2191          FONT_HEIGHT equ 10
+2191          FONT_WIDTH equ 3
+2191          DrawCharAddress equ DrawChar+1
+2191          SetColorAddress equ SetColor+1
+2191          DrawCursorAddress equ DrawCursor+1
+2191          NEXT_REPLAY_DELAY equ 3
+2191          FIRST_REPLAY_DELAY equ 30
+2191          SCAN_LAT equ 25
+2191          SCAN_RUS equ 24
+2191          SCAN_CAP equ 30
+2191          SCAN_NUM equ 28
+2191          LAYOUT_SIZE equ 80
+2191          CURSOR_BLINK_PERIOD equ 35
+frame_counter:
+2191 00        db 0
+key_leds:
+2192 20        db MOD_NUM
+key_pressed:
+2193 00        db 0
+key_delay:
+2194 00        db 0
+key_rus:
+2195 00        db 0
+key_read:
+2196 45        db key_buffer
+key_write:
+2197 45        db key_buffer
+2198          key_read_l_write_h equ key_read
+2198          SHI equ 64
+2198          CAP equ 128
+2198          NUM equ 32
+shiftLayout:
+2198 40        db SHI
+2199 80        db CAP
+219A 80        db CAP
+219B 80        db CAP
+219C 40        db SHI
+219D 80        db CAP
+219E 80        db CAP
+219F 40        db SHI
+21A0 40        db SHI
+21A1 80        db CAP
+21A2 80        db CAP
+21A3 80        db CAP
+21A4 40        db SHI
+21A5 80        db CAP
+21A6 80        db CAP
+21A7 40        db SHI
+21A8 40        db SHI
+21A9 80        db CAP
+21AA 80        db CAP
+21AB 80        db CAP
+21AC 40        db SHI
+21AD 80        db CAP
+21AE 40        db SHI
+21AF 40        db SHI
+21B0 00        db 0
+21B1 00        db 0
+21B2 00        db 0
+21B3 00        db 0
+21B4 00        db 0
+21B5 00        db 0
+21B6 00        db 0
+21B7 00        db 0
+21B8 40        db SHI
+21B9 80        db CAP
+21BA 80        db CAP
+21BB 80        db CAP
+21BC 40        db SHI
+21BD 40        db SHI
+21BE 40        db SHI
+21BF 40        db SHI
+21C0 40        db SHI
+21C1 80        db CAP
+21C2 80        db CAP
+21C3 80        db CAP
+21C4 40        db SHI
+21C5 40        db SHI
+21C6 40        db SHI
+21C7 40        db SHI
+21C8 40        db SHI
+21C9 20        db NUM
+21CA 80        db CAP
+21CB 80        db CAP
+21CC 40        db SHI
+21CD 40        db SHI
+21CE 40        db SHI
+21CF 20        db NUM
+21D0 00        db 0
+21D1 80        db CAP
+21D2 80        db CAP
+21D3 80        db CAP
+21D4 00        db 0
+21D5 20        db NUM
+21D6 20        db NUM
+21D7 20        db NUM
+21D8 00        db 0
+21D9 80        db CAP
+21DA 00        db 0
+21DB 00        db 0
+21DC 40        db SHI
+21DD 20        db NUM
+21DE 20        db NUM
+21DF 20        db NUM
+21E0 00        db 0
+21E1 00        db 0
+21E2 00        db 0
+21E3 00        db 0
+21E4 00        db 0
+21E5 20        db NUM
+21E6 20        db NUM
+21E7 20        db NUM
+21E8 40        db SHI
+21E9 80        db CAP
+21EA 80        db CAP
+21EB 80        db CAP
+21EC 40        db SHI
+21ED 80        db CAP
+21EE 80        db CAP
+21EF 80        db CAP
+21F0 40        db SHI
+21F1 80        db CAP
+21F2 80        db CAP
+21F3 80        db CAP
+21F4 40        db SHI
+21F5 80        db CAP
+21F6 80        db CAP
+21F7 80        db CAP
+21F8 40        db SHI
+21F9 80        db CAP
+21FA 80        db CAP
+21FB 80        db CAP
+21FC 40        db SHI
+21FD 80        db CAP
+21FE 80        db CAP
+21FF 80        db CAP
+2200 00        db 0
+2201 00        db 0
+2202 00        db 0
+2203 00        db 0
+2204 00        db 0
+2205 00        db 0
+2206 00        db 0
+2207 00        db 0
+2208 40        db SHI
+2209 80        db CAP
+220A 80        db CAP
+220B 80        db CAP
+220C 40        db SHI
+220D 80        db CAP
+220E 80        db CAP
+220F 40        db SHI
+2210 40        db SHI
+2211 80        db CAP
+2212 80        db CAP
+2213 80        db CAP
+2214 40        db SHI
+2215 80        db CAP
+2216 40        db SHI
+2217 40        db SHI
+2218 40        db SHI
+2219 20        db NUM
+221A 80        db CAP
+221B 80        db CAP
+221C 40        db SHI
+221D 40        db SHI
+221E 40        db SHI
+221F 20        db NUM
+2220 00        db 0
+2221 80        db CAP
+2222 80        db CAP
+2223 80        db CAP
+2224 00        db 0
+2225 20        db NUM
+2226 20        db NUM
+2227 20        db NUM
+2228 00        db 0
+2229 80        db CAP
+222A 00        db 0
+222B 00        db 0
+222C 40        db SHI
+222D 20        db NUM
+222E 20        db NUM
+222F 20        db NUM
+2230 00        db 0
+2231 00        db 0
+2232 00        db 0
+2233 00        db 0
+2234 00        db 0
+2235 20        db NUM
+2236 20        db NUM
+2237 20        db NUM
+ctrLayout:
+2238 1E        db 30
+2239 15        db 117&31
+223A 0A        db 106&31
+223B 0D        db 109&31
+223C 1F        db 31
+223D 09        db 105&31
+223E 0B        db 107&31
+223F 00        db 96&31
+2240 1D        db 29
+2241 19        db 121&31
+2242 08        db 104&31
+2243 0E        db 110&31
+2244 08        db 8
+2245 0F        db 111&31
+2246 0C        db 108&31
+2247 00        db 64&31
+2248 1C        db 28
+2249 14        db 116&31
+224A 07        db 103&31
+224B 02        db 98&31
+224C 39        db 57
+224D 10        db 112&31
+224E 1B        db 91&31
+224F 3F        db 63
+2250 3F        db 63
+2251 3F        db 63
+2252 01        db KEY_ALT
+2253 3F        db 63
+2254 3F        db 63
+2255 08        db KEY_BACKSPACE
+2256 3F        db 63
+2257 00        db 32&31
+2258 1B        db 27
+2259 12        db 114&31
+225A 06        db 102&31
+225B 16        db 118&31
+225C 00        db 0
+225D 1B        db 123&31
+225E 1D        db 93&31
+225F 2C        db 44
+2260 00        db 0
+2261 05        db 101&31
+2262 04        db 100&31
+2263 03        db 99&31
+2264 1F        db 95&31
+2265 1D        db 125&31
+2266 3A        db 58
+2267 2E        db 46
+2268 31        db 49
+2269 2E        db 46
+226A 01        db 97&31
+226B 1A        db 122&31
+226C 1E        db 94&31
+226D 0F        db 47&31
+226E 3B        db 59
+226F 30        db 48
+2270 3F        db 63
+2271 17        db 119&31
+2272 13        db 115&31
+2273 18        db 120&31
+2274 3F        db 63
+2275 37        db 55
+2276 34        db 52
+2277 31        db 49
+2278 0A        db 10
+2279 11        db 113&31
+227A 09        db KEY_TAB
+227B 3F        db 63
+227C 1C        db 92&31
+227D 38        db 56
+227E 35        db 53
+227F 32        db 50
+2280 F4        db KEY_F3
+2281 3F        db 63
+2282 F2        db KEY_F1
+2283 F3        db KEY_F2
+2284 1B        db KEY_ESC
+2285 39        db 57
+2286 36        db 54
+2287 33        db 51
+key_layout_table:
+2288 36        db 54
+2289 75        db 117
+228A 6A        db 106
+228B 6D        db 109
+228C 37        db 55
+228D 69        db 105
+228E 6B        db 107
+228F 60        db 96
+2290 35        db 53
+2291 79        db 121
+2292 68        db 104
+2293 6E        db 110
+2294 38        db 56
+2295 6F        db 111
+2296 6C        db 108
+2297 40        db 64
+2298 34        db 52
+2299 74        db 116
+229A 67        db 103
+229B 62        db 98
+229C 39        db 57
+229D 70        db 112
+229E 5B        db 91
+229F 00        db 0
+22A0 00        db 0
+22A1 00        db 0
+22A2 01        db KEY_ALT
+22A3 00        db 0
+22A4 00        db 0
+22A5 08        db KEY_BACKSPACE
+22A6 00        db 0
+22A7 20        db 32
+22A8 33        db 51
+22A9 72        db 114
+22AA 66        db 102
+22AB 76        db 118
+22AC 30        db 48
+22AD 7B        db 123
+22AE 5D        db 93
+22AF 2C        db 44
+22B0 32        db 50
+22B1 65        db 101
+22B2 64        db 100
+22B3 63        db 99
+22B4 2D        db 45
+22B5 7D        db 125
+22B6 3A        db 58
+22B7 2E        db 46
+22B8 31        db 49
+22B9 FD        db KEY_DEL
+22BA 61        db 97
+22BB 7A        db 122
+22BC 5E        db 94
+22BD 2F        db 47
+22BE 3B        db 59
+22BF FC        db KEY_INSERT
+22C0 00        db 0
+22C1 77        db 119
+22C2 73        db 115
+22C3 78        db 120
+22C4 FD        db KEY_DEL
+22C5 FB        db KEY_HOME
+22C6 F8        db KEY_LEFT
+22C7 FA        db KEY_END
+22C8 0D        db KEY_ENTER
+22C9 71        db 113
+22CA 09        db KEY_TAB
+22CB 00        db 0
+22CC 5C        db 92
+22CD F5        db KEY_UP
+22CE F9        db KEY_EXT_5
+22CF F6        db KEY_DOWN
+22D0 F4        db KEY_F3
+22D1 00        db 0
+22D2 F2        db KEY_F1
+22D3 F3        db KEY_F2
+22D4 1B        db KEY_ESC
+22D5 FE        db KEY_PG_UP
+22D6 F7        db KEY_RIGHT
+22D7 FF        db KEY_PG_DN
+22D8 26        db 38
+22D9 55        db 85
+22DA 4A        db 74
+22DB 4D        db 77
+22DC 27        db 39
+22DD 49        db 73
+22DE 4B        db 75
+22DF 60        db 96
+22E0 25        db 37
+22E1 59        db 89
+22E2 48        db 72
+22E3 4E        db 78
+22E4 28        db 40
+22E5 4F        db 79
+22E6 4C        db 76
+22E7 40        db 64
+22E8 24        db 36
+22E9 54        db 84
+22EA 47        db 71
+22EB 42        db 66
+22EC 29        db 41
+22ED 50        db 80
+22EE 5B        db 91
+22EF 00        db 0
+22F0 00        db 0
+22F1 00        db 0
+22F2 01        db KEY_ALT
+22F3 00        db 0
+22F4 00        db 0
+22F5 08        db KEY_BACKSPACE
+22F6 00        db 0
+22F7 20        db 32
+22F8 23        db 35
+22F9 52        db 82
+22FA 46        db 70
+22FB 56        db 86
+22FC 5F        db 95
+22FD 7B        db 123
+22FE 5D        db 93
+22FF 3C        db 60
+2300 22        db 34
+2301 45        db 69
+2302 44        db 68
+2303 43        db 67
+2304 3D        db 61
+2305 7D        db 125
+2306 2A        db 42
+2307 3E        db 62
+2308 21        db 33
+2309 2E        db 46
+230A 41        db 65
+230B 5A        db 90
+230C 7E        db 126
+230D 3F        db 63
+230E 2B        db 43
+230F 30        db 48
+2310 00        db 0
+2311 57        db 87
+2312 53        db 83
+2313 58        db 88
+2314 FD        db KEY_DEL
+2315 37        db 55
+2316 34        db 52
+2317 31        db 49
+2318 0D        db KEY_ENTER
+2319 51        db 81
+231A 09        db KEY_TAB
+231B 00        db 0
+231C 7C        db 124
+231D 38        db 56
+231E 35        db 53
+231F 32        db 50
+2320 F4        db KEY_F3
+2321 00        db 0
+2322 F2        db KEY_F1
+2323 F3        db KEY_F2
+2324 1B        db KEY_ESC
+2325 39        db 57
+2326 36        db 54
+2327 33        db 51
+2328 36        db 54
+2329 A3        db 163
+232A AE        db 174
+232B EC        db 236
+232C 37        db 55
+232D E8        db 232
+232E AB        db 171
+232F A1        db 161
+2330 35        db 53
+2331 AD        db 173
+2332 E0        db 224
+2333 E2        db 226
+2334 38        db 56
+2335 E9        db 233
+2336 A4        db 164
+2337 EE        db 238
+2338 34        db 52
+2339 A5        db 165
+233A AF        db 175
+233B A8        db 168
+233C 39        db 57
+233D A7        db 167
+233E A6        db 166
+233F F1        db 241
+2340 00        db 0
+2341 00        db 0
+2342 01        db KEY_ALT
+2343 00        db 0
+2344 00        db 0
+2345 08        db KEY_BACKSPACE
+2346 00        db 0
+2347 20        db 32
+2348 33        db 51
+2349 AA        db 170
+234A A0        db 160
+234B AC        db 172
+234C 30        db 48
+234D E5        db 229
+234E ED        db 237
+234F 2C        db 44
+2350 32        db 50
+2351 E3        db 227
+2352 A2        db 162
+2353 E1        db 225
+2354 2D        db 45
+2355 EA        db 234
+2356 3A        db 58
+2357 2E        db 46
+2358 31        db 49
+2359 FD        db KEY_DEL
+235A E4        db 228
+235B EF        db 239
+235C 5E        db 94
+235D 2F        db 47
+235E 3B        db 59
+235F FC        db KEY_INSERT
+2360 00        db 0
+2361 E6        db 230
+2362 EB        db 235
+2363 E7        db 231
+2364 FD        db KEY_DEL
+2365 FB        db KEY_HOME
+2366 F8        db KEY_LEFT
+2367 FA        db KEY_END
+2368 0D        db KEY_ENTER
+2369 A9        db 169
+236A 09        db KEY_TAB
+236B 00        db 0
+236C 5C        db 92
+236D F5        db KEY_UP
+236E F9        db KEY_EXT_5
+236F F6        db KEY_DOWN
+2370 F4        db KEY_F3
+2371 00        db 0
+2372 F2        db KEY_F1
+2373 F3        db KEY_F2
+2374 1B        db KEY_ESC
+2375 FE        db KEY_PG_UP
+2376 F7        db KEY_RIGHT
+2377 FF        db KEY_PG_DN
+2378 26        db 38
+2379 83        db 131
+237A 8E        db 142
+237B 9C        db 156
+237C 27        db 39
+237D 98        db 152
+237E 8B        db 139
+237F 81        db 129
+2380 25        db 37
+2381 8D        db 141
+2382 90        db 144
+2383 92        db 146
+2384 28        db 40
+2385 99        db 153
+2386 84        db 132
+2387 9E        db 158
+2388 24        db 36
+2389 85        db 133
+238A 8F        db 143
+238B 88        db 136
+238C 29        db 41
+238D 58        db 88
+238E 86        db 134
+238F F0        db 240
+2390 00        db 0
+2391 00        db 0
+2392 01        db KEY_ALT
+2393 00        db 0
+2394 00        db 0
+2395 08        db KEY_BACKSPACE
+2396 00        db 0
+2397 20        db 32
+2398 23        db 35
+2399 8A        db 138
+239A 80        db 128
+239B 8C        db 140
+239C 5F        db 95
+239D 58        db 88
+239E 9D        db 157
+239F 3C        db 60
+23A0 22        db 34
+23A1 93        db 147
+23A2 82        db 130
+23A3 91        db 145
+23A4 3D        db 61
+23A5 9A        db 154
+23A6 2A        db 42
+23A7 3E        db 62
+23A8 21        db 33
+23A9 2E        db 46
+23AA 94        db 148
+23AB 9F        db 159
+23AC 7E        db 126
+23AD 3F        db 63
+23AE 2B        db 43
+23AF 30        db 48
+23B0 00        db 0
+23B1 96        db 150
+23B2 9B        db 155
+23B3 97        db 151
+23B4 FD        db KEY_DEL
+23B5 37        db 55
+23B6 34        db 52
+23B7 31        db 49
+23B8 0D        db KEY_ENTER
+23B9 89        db 137
+23BA 09        db KEY_TAB
+23BB 00        db 0
+23BC 7C        db 124
+23BD 38        db 56
+23BE 35        db 53
+23BF 32        db 50
+23C0 F4        db KEY_F3
+23C1 00        db 0
+23C2 F2        db KEY_F1
+23C3 F3        db KEY_F2
+23C4 1B        db KEY_ESC
+23C5 39        db 57
+23C6 36        db 54
+23C7 33        db 51
+CheckKeyboard:
+23C8 2A 96 21  ld hl, (key_read_l_write_h)
+23CB 7C        ld a, h
+23CC BD        cp l
+23CD C9        ret
+ReadKeyboard:
+23CE 2A 96 21  ld hl, (key_read_l_write_h)
+23D1 7C        ld a, h
+23D2 BD        cp l
+23D3 C8        ret z
+23D4 26 00     ld h, key_buffer>>8
+23D6 56        ld d, (hl)
+23D7 2C        inc l
+23D8 7D        ld a, l
+23D9 FE 55     cp key_buffer+16
+23DB C2 E0 23  jp nz, _l317
+23DE 3E 45     ld a, key_buffer
 _l317:
-_l318:
-246E 0D        dec c
-246F F2 59 24  jp p, _l315
-_l313:
-_l314:
-_l316:
-2472 05        dec b
-2473 F2 4B 24  jp p, _l311
-_l312:
-2476 3E FF     ld a, 255
-2478 32 BC 20  ld (key_pressed), a
-247B C9        ret
-247C          SCREEN_0_ADDRESS equ 53248
-247C          SCREEN_1_ADDRESS equ 36864
-247C          PALETTE_WHITE equ 0
-247C          PALETTE_CYAN equ 1
-247C          PALETTE_MAGENTA equ 2
-247C          PALETTE_BLUE equ 3
-247C          PALETTE_YELLOW equ 4
-247C          PALETTE_GREEN equ 5
-247C          PALETTE_RED equ 6
-247C          PALETTE_XXX equ 7
-247C          PALETTE_GRAY equ 8
-247C          PALETTE_DARK_CYAN equ 9
-247C          PALETTE_DARK_MAGENTA equ 10
-247C          PALETTE_DARK_BLUE equ 11
-247C          PALETTE_DARK_YELLOW equ 12
-247C          PALETTE_DARK_GREEN equ 13
-247C          PALETTE_DARK_RED equ 14
-247C          PALETTE_BLACK equ 15
-247C          KEY_BACKSPACE equ 8
-247C          KEY_TAB equ 9
-247C          KEY_ENTER equ 13
-247C          KEY_ESC equ 27
-247C          KEY_ALT equ 1
-247C          KEY_F1 equ 242
-247C          KEY_F2 equ 243
-247C          KEY_F3 equ 244
-247C          KEY_UP equ 245
-247C          KEY_DOWN equ 246
-247C          KEY_RIGHT equ 247
-247C          KEY_LEFT equ 248
-247C          KEY_EXT_5 equ 249
-247C          KEY_END equ 250
-247C          KEY_HOME equ 251
-247C          KEY_INSERT equ 252
-247C          KEY_DEL equ 253
-247C          KEY_PG_UP equ 254
-247C          KEY_PG_DN equ 255
-247C          PORT_FRAME_IRQ_RESET equ 4
-247C          PORT_SD_SIZE equ 9
-247C          PORT_SD_RESULT equ 9
-247C          PORT_SD_DATA equ 8
-247C          PORT_UART_DATA equ 128
-247C          PORT_UART_CONFIG equ 129
-247C          PORT_UART_STATE equ 129
-247C          PORT_EXT_DATA_OUT equ 136
-247C          PORT_PALETTE_3 equ 144
-247C          PORT_PALETTE_2 equ 145
-247C          PORT_PALETTE_1 equ 146
-247C          PORT_PALETTE_0 equ 147
-247C          PORT_EXT_IN_DATA equ 137
-247C          PORT_A0 equ 160
-247C          PORT_ROM_0000 equ 168
-247C          PORT_ROM_0000__ROM equ 0
-247C          PORT_ROM_0000__RAM equ 128
-247C          PORT_VIDEO_MODE_1_LOW equ 185
-247C          PORT_VIDEO_MODE_1_HIGH equ 249
-247C          PORT_VIDEO_MODE_0_LOW equ 184
-247C          PORT_VIDEO_MODE_0_HIGH equ 248
-247C          PORT_UART_SPEED_0 equ 187
-247C          PORT_KEYBOARD equ 192
-247C          PORT_UART_SPEED_1 equ 251
-247C          PORT_CODE_ROM equ 186
-247C          PORT_CHARGEN_ROM equ 250
-247C          PORT_TAPE_AND_IDX2 equ 153
-247C          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-247C          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-247C          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-247C          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-247C          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-247C          PORT_RESET_CU1 equ 188
-247C          PORT_RESET_CU2 equ 189
-247C          PORT_RESET_CU3 equ 190
-247C          PORT_RESET_CU4 equ 191
-247C          PORT_SET_CU1 equ 252
-247C          PORT_SET_CU2 equ 253
-247C          PORT_SET_CU3 equ 254
-247C          PORT_SET_CU4 equ 255
-247C          PORT_TAPE_OUT equ 176
-247C          SD_COMMAND_READ equ 1
-247C          SD_COMMAND_READ_SIZE equ 5
-247C          SD_COMMAND_WRITE equ 2
-247C          SD_COMMAND_WRITE_SIZE equ 5+128
-247C          SD_RESULT_BUSY equ 255
-247C          SD_RESULT_OK equ 0
-247C          stack equ 256
-247C          entry_cpm_conout_address equ EntryCpmConout+1
-247C          cpm_dph_a equ 65376
-247C          cpm_dph_b equ 65392
-247C          cpm_dma_buffer equ 65408
-247C          TEXT_SCREEN_HEIGHT equ 25
-247C          FONT_HEIGHT equ 10
-247C          FONT_WIDTH equ 3
-247C          DrawCharAddress equ DrawChar+1
-247C          SetColorAddress equ SetColor+1
-247C          DrawCursorAddress equ DrawCursor+1
-247C          MOD_CTR equ 1
-247C          MOD_SHIFT equ 2
-247C          MOD_CAPS equ 16
-247C          MOD_NUM equ 32
-247C          OPCODE_NOP equ 0
-247C          OPCODE_LD_DE_CONST equ 17
-247C          OPCODE_LD_A_CONST equ 62
-247C          OPCODE_LD_H_A equ 103
-247C          OPCODE_LD_A_D equ 122
-247C          OPCODE_LD_A_H equ 124
-247C          OPCODE_XOR_A equ 175
-247C          OPCODE_XOR_B equ 168
-247C          OPCODE_JP equ 195
-247C          OPCODE_RET equ 201
-247C          OPCODE_SUB_CONST equ 214
-247C          OPCODE_AND_CONST equ 230
-247C          OPCODE_OR_CONST equ 246
-247C          OPCODE_OUT equ 211
-247C          OPCODE_JMP equ 195
-247C          MIT_SUBMENU equ 1
-247C          MIT_JUMP equ 2
-247C          cpm_load_address equ 58624
-247C          CpmEntryPoint equ 64307
-config_begin:
-247C           ds 0
-screen_mode:
-247C 00        ds 1
-color_0:
-247D 0B        db PALETTE_DARK_BLUE
-color_1:
-247E 01        db PALETTE_CYAN
-color_2:
-247F 00        db PALETTE_WHITE
-color_3:
-2480 04        db PALETTE_YELLOW
-drive_0:
-2481 00        db 0
-drive_1:
-2482 01        db 1
-codepage:
-2483 00        db 0
-uart_baud_rate:
-2484 03        db 3
-uart_data_bits:
-2485 03        db 3
-uart_parity:
-2486 00        db 0
-uart_stop_bits:
-2487 00        db 0
-uart_flow:
-2488 00        db 0
-config_check_sum:
-2489 00        db 0
-248A          MENU_FIRST_ITEM_Y equ 3
-248A          MENU_VALUES_X equ 20
-menu_item_address:
-248A 7B        ld a, e
-248B 87        add a
+23E0 32 96 21  ld (key_read), a
+23E3 AF        xor a
+23E4 3C        inc a
+23E5 7A        ld a, d
+23E6 C9        ret
+KeyPush:
+23E7 E5        push hl
+23E8 2A 96 21  ld hl, (key_read_l_write_h)
+23EB 26 00     ld h, key_buffer>>8
+23ED 77        ld (hl), a
+23EE 2C        inc l
+23EF 7D        ld a, l
+23F0 FE 55     cp key_buffer+16&255
+23F2 C2 F7 23  jp nz, _l319
+23F5 3E 45     ld a, key_buffer
+_l319:
+23F7 32 97 21  ld (key_write), a
+23FA E1        pop hl
+23FB C9        ret
+KeyPressed:
+23FC 57        ld d, a
+23FD 2A 93 21  ld hl, (key_pressed)
+2400 BD        cp l
+2401 C2 0E 24  jp nz, _l321
+2404 21 94 21  ld hl, key_delay
+2407 35        dec (hl)
+2408 C0        ret nz
+2409 36 03     ld (hl), NEXT_REPLAY_DELAY
+240B C3 16 24  jp _l322
+_l321:
+240E 32 93 21  ld (key_pressed), a
+2411 21 94 21  ld hl, key_delay
+2414 36 1E     ld (hl), FIRST_REPLAY_DELAY
+_l322:
+2416 FE 19     cp SCAN_LAT
+2418 C2 20 24  jp nz, _l323
+241B AF        xor a
+241C 32 95 21  ld (key_rus), a
+241F C9        ret
+_l323:
+2420 FE 18     cp SCAN_RUS
+2422 C2 2B 24  jp nz, _l324
+2425 3E 50     ld a, LAYOUT_SIZE
+2427 32 95 21  ld (key_rus), a
+242A C9        ret
+_l324:
+242B FE 1E     cp SCAN_CAP
+242D C2 39 24  jp nz, _l325
+2430 3A 92 21  ld a, (key_leds)
+2433 EE 10     xor MOD_CAPS
+2435 32 92 21  ld (key_leds), a
+2438 C9        ret
+_l325:
+2439 FE 1C     cp SCAN_NUM
+243B C2 47 24  jp nz, _l326
+243E 3A 92 21  ld a, (key_leds)
+2441 EE 20     xor MOD_NUM
+2443 32 92 21  ld (key_leds), a
+2446 C9        ret
+_l326:
+2447 7B        ld a, e
+2448 E6 01     and MOD_CTR
+244A CA 5A 24  jp z, _l327
+244D 7A        ld a, d
+244E C6 38     add ctrLayout
+2450 6F        ld l, a
+2451 CE 22     adc ctrLayout>>8
+2453 95        sub l
+2454 67        ld h, a
+2455 7E        ld a, (hl)
+2456 CD E7 23  call KeyPush
+2459 C9        ret
+_l327:
+245A 7A        ld a, d
+245B C6 98     add shiftLayout
+245D 6F        ld l, a
+245E CE 21     adc shiftLayout>>8
+2460 95        sub l
+2461 67        ld h, a
+2462 3A 95 21  ld a, (key_rus)
+2465 B7        or a
+2466 CA 70 24  jp z, _l328
+2469 3E 50     ld a, LAYOUT_SIZE
+246B 85        add l
+246C 6F        ld l, a
+246D 8C        adc h
+246E 95        sub l
+246F 67        ld h, a
+_l328:
+2470 7E        ld a, (hl)
+2471 26 00     ld h, 0
+2473 87        add a
+2474 D2 8C 24  jp nc, _l329
+2477 7B        ld a, e
+2478 E6 02     and MOD_SHIFT
+247A CA 7F 24  jp z, _l330
+247D 26 50     ld h, LAYOUT_SIZE
+_l330:
+247F 7B        ld a, e
+2480 E6 10     and MOD_CAPS
+2482 C2 89 24  jp nz, _l331
+2485 3E 50     ld a, LAYOUT_SIZE
+2487 94        sub h
+2488 67        ld h, a
+_l331:
+2489 C3 A7 24  jp _l332
+_l329:
 248C 87        add a
-248D 87        add a
-248E C6 02     add 2
-2490 85        add l
-2491 6F        ld l, a
-2492 8C        adc h
-2493 95        sub l
-2494 67        ld h, a
-2495 C9        ret
-menu_item_is_empty:
-2496 E5        push hl
-2497 C5        push bc
-2498 CD 8A 24  call menu_item_address
-249B 7E        ld a, (hl)
-249C 23        inc hl
-249D 66        ld h, (hl)
-249E 6F        ld l, a
-249F 7E        ld a, (hl)
-24A0 B7        or a
-24A1 C1        pop bc
-24A2 E1        pop hl
-24A3 C9        ret
-SetColorEx:
-24A4 C5        push bc
-24A5 D5        push de
-24A6 E5        push hl
-24A7 CD D3 07  call SetColor
-24AA E1        pop hl
-24AB D1        pop de
-24AC C1        pop bc
-24AD C9        ret
-Menu:
-24AE D5        push de
-24AF E5        push hl
-24B0 3E 02     ld a, 2
-24B2 CD D3 07  call SetColor
-24B5 CD D9 07  call ClearScreen
-24B8 E1        pop hl
-24B9 E5        push hl
-24BA 5E        ld e, (hl)
-24BB 23        inc hl
-24BC 56        ld d, (hl)
-24BD 23        inc hl
-24BE E5        push hl
-24BF EB        ex hl, de
-24C0 0E 00     ld c, 0
-24C2 11 01 03  ld de, 769
-24C5 CD D6 08  call DrawText
-24C8 3E 01     ld a, 1
-24CA CD D3 07  call SetColor
-24CD E1        pop hl
-24CE 06 00     ld b, 0
-24D0 E5        push hl
-_l340:
-24D1 5E        ld e, (hl)
-24D2 23        inc hl
-24D3 56        ld d, (hl)
-24D4 23        inc hl
-24D5 7B        ld a, e
-24D6 B7        or a
-24D7 CA 41 25  jp z, _l339
-24DA D5        push de
-24DB E5        push hl
-24DC C5        push bc
-24DD EB        ex hl, de
-24DE 16 03     ld d, 3
-24E0 58        ld e, b
-24E1 1C        inc e
-24E2 1C        inc e
-24E3 1C        inc e
-24E4 3E 01     ld a, 1
-24E6 CD A4 24  call SetColorEx
-24E9 0E 00     ld c, 0
-24EB CD D6 08  call DrawText
-24EE C1        pop bc
-24EF E1        pop hl
-24F0 23        inc hl
-24F1 23        inc hl
-24F2 23        inc hl
-24F3 23        inc hl
-24F4 E5        push hl
-24F5 C5        push bc
-24F6 58        ld e, b
-24F7 4E        ld c, (hl)
-24F8 23        inc hl
-24F9 46        ld b, (hl)
-24FA 78        ld a, b
-24FB B1        or c
-24FC CA 38 25  jp z, _l341
-24FF 0A        ld a, (bc)
-2500 47        ld b, a
-2501 2B        dec hl
-2502 2B        dec hl
-2503 4E        ld c, (hl)
-2504 2B        dec hl
-2505 6E        ld l, (hl)
-2506 61        ld h, c
-2507 23        inc hl
-2508 23        inc hl
-_l343:
-2509 7E        ld a, (hl)
-250A 23        inc hl
-250B B6        or (hl)
-250C 23        inc hl
-250D CA 38 25  jp z, _l342
-2510 23        inc hl
-2511 23        inc hl
-2512 78        ld a, b
-2513 BE        cp (hl)
-2514 C2 31 25  jp nz, _l344
-2517 2B        dec hl
-2518 2B        dec hl
-2519 2B        dec hl
-251A 2B        dec hl
-251B 4E        ld c, (hl)
-251C 23        inc hl
-251D 66        ld h, (hl)
-251E 69        ld l, c
-251F 3E 03     ld a, 3
-2521 CD A4 24  call SetColorEx
-2524 16 14     ld d, MENU_VALUES_X
-2526 1C        inc e
-2527 1C        inc e
-2528 1C        inc e
-2529 0E 00     ld c, 0
-252B CD D6 08  call DrawText
-252E C3 38 25  jp _l342
-_l344:
-2531 23        inc hl
-2532 23        inc hl
-2533 23        inc hl
-2534 23        inc hl
-2535 C3 09 25  jp _l343
+248D D2 9B 24  jp nc, _l333
+2490 7B        ld a, e
+2491 E6 02     and MOD_SHIFT
+2493 CA 98 24  jp z, _l334
+2496 26 50     ld h, LAYOUT_SIZE
+_l334:
+2498 C3 A7 24  jp _l335
+_l333:
+249B 87        add a
+249C D2 A7 24  jp nc, _l336
+249F 7B        ld a, e
+24A0 E6 20     and MOD_NUM
+24A2 C2 A7 24  jp nz, _l337
+24A5 26 50     ld h, LAYOUT_SIZE
+_l332:
+_l335:
+_l336:
+_l337:
+24A7 7A        ld a, d
+24A8 84        add h
+24A9 C6 88     add key_layout_table
+24AB 6F        ld l, a
+24AC CE 22     adc key_layout_table>>8
+24AE 95        sub l
+24AF 67        ld h, a
+24B0 3A 95 21  ld a, (key_rus)
+24B3 B7        or a
+24B4 CA BE 24  jp z, _l338
+24B7 3E A0     ld a, LAYOUT_SIZE*2
+24B9 85        add l
+24BA 6F        ld l, a
+24BB 8C        adc h
+24BC 95        sub l
+24BD 67        ld h, a
+_l338:
+24BE 7E        ld a, (hl)
+24BF C3 E7 23  jp KeyPush
+InterruptHandler:
+24C2 DB 04     in a, (PORT_FRAME_IRQ_RESET)
+24C4 0F        rrca
+24C5 D8        ret c
+24C6 D3 04     out (PORT_FRAME_IRQ_RESET), a
+24C8 21 91 21  ld hl, frame_counter
+24CB 34        inc (hl)
+24CC 3A 01 01  ld a, (cursor_visible)
+24CF B7        or a
+24D0 CA FA 24  jp z, _l340
+24D3 3A 00 01  ld a, (cursor_blink_counter)
+24D6 3D        dec a
+24D7 C2 F7 24  jp nz, _l341
+24DA 3A 01 01  ld a, (cursor_visible)
+24DD EE 02     xor 2
+24DF 32 01 01  ld (cursor_visible), a
+24E2 DB 03     in a, (3)
+24E4 F5        push af
+24E5 3E 01     ld a, 1
+24E7 D3 03     out (3), a
+24E9 2A 03 01  ld hl, (cursor_y)
+24EC CD A3 08  call DrawCursor
+24EF F1        pop af
+24F0 D3 03     out (3), a
+24F2 3E 23     ld a, CURSOR_BLINK_PERIOD
+24F4 32 00 01  ld (cursor_blink_counter), a
 _l341:
+24F7 32 00 01  ld (cursor_blink_counter), a
+_l340:
+24FA 3A 92 21  ld a, (key_leds)
+24FD F6 08     or 8
+24FF D3 C0     out (PORT_KEYBOARD), a
+2501 DB C0     in a, (PORT_KEYBOARD)
+2503 E6 08     and 8
+2505 3A 92 21  ld a, (key_leds)
+2508 CA 0D 25  jp z, _l342
+250B F6 01     or MOD_CTR
 _l342:
-2538 C1        pop bc
-2539 E1        pop hl
-253A 23        inc hl
-253B 23        inc hl
-253C D1        pop de
-253D 04        inc b
-253E C3 D1 24  jp _l340
-_l339:
-2541 E1        pop hl
-2542 E1        pop hl
-2543 D1        pop de
-2544 3E 02     ld a, 2
-2546 CD A4 24  call SetColorEx
-2549 05        dec b
-_l346:
-254A D5        push de
-254B C5        push bc
-254C E5        push hl
-254D 1C        inc e
-254E 1C        inc e
-254F 1C        inc e
-2550 0E 00     ld c, 0
-2552 16 01     ld d, 1
-2554 21 70 45  ld hl, _l347
-2557 CD D6 08  call DrawText
-255A E1        pop hl
-255B C1        pop bc
-255C D1        pop de
-255D 53        ld d, e
+250D 5F        ld e, a
+250E 3A 92 21  ld a, (key_leds)
+2511 F6 03     or 3
+2513 D3 C0     out (PORT_KEYBOARD), a
+2515 DB C0     in a, (PORT_KEYBOARD)
+2517 E6 08     and 8
+2519 CA 20 25  jp z, _l343
+251C 3E 02     ld a, MOD_SHIFT
+251E B3        or e
+251F 5F        ld e, a
+_l343:
+2520 06 09     ld b, 9
+_l344:
+2522 3A 92 21  ld a, (key_leds)
+2525 B0        or b
+2526 D3 C0     out (PORT_KEYBOARD), a
+2528 DB C0     in a, (PORT_KEYBOARD)
+252A B7        or a
+252B CA 49 25  jp z, _l347
+252E 0E 07     ld c, 7
 _l348:
-255E D5        push de
-255F C5        push bc
-2560 E5        push hl
-2561 CD F7 22  call ReadKeyboard
-2564 E1        pop hl
-2565 C1        pop bc
-2566 D1        pop de
-_l350:
-2567 CA 5E 25  jp z, _l348
-_l349:
-256A FE 0D     cp KEY_ENTER
-256C C2 B1 25  jp nz, _l351
-256F E5        push hl
-2570 CD 8A 24  call menu_item_address
-2573 23        inc hl
-2574 23        inc hl
-2575 7E        ld a, (hl)
-2576 B7        or a
-2577 C2 84 25  jp nz, _l352
-257A 23        inc hl
-257B 23        inc hl
-257C 5E        ld e, (hl)
-257D 23        inc hl
-257E 56        ld d, (hl)
-257F E1        pop hl
-2580 C9        ret
-2581 C3 AD 25  jp _l353
+2530 87        add a
+2531 D2 45 25  jp nc, _l351
+2534 57        ld d, a
+2535 78        ld a, b
+2536 87        add a
+2537 87        add a
+2538 87        add a
+2539 81        add c
+253A FE 1B     cp 27
+253C CA 44 25  jp z, _l352
+253F FE 43     cp 67
+2541 C2 FC 23  jp nz, KeyPressed
 _l352:
-2584 3D        dec a
-2585 C2 A1 25  jp nz, _l354
-2588 23        inc hl
-2589 23        inc hl
-258A 56        ld d, (hl)
-258B 23        inc hl
-258C E5        push hl
-258D 66        ld h, (hl)
-258E 6A        ld l, d
-258F D5        push de
-2590 1E 00     ld e, 0
-2592 CD AE 24  call Menu
-2595 7B        ld a, e
-2596 D1        pop de
-2597 E1        pop hl
-2598 23        inc hl
-2599 56        ld d, (hl)
-259A 23        inc hl
-259B 66        ld h, (hl)
-259C 6A        ld l, d
-259D 77        ld (hl), a
-259E C3 AD 25  jp _l355
-_l354:
-25A1 3D        dec a
-25A2 C2 AD 25  jp nz, _l356
-25A5 23        inc hl
-25A6 23        inc hl
-25A7 56        ld d, (hl)
-25A8 23        inc hl
-25A9 66        ld h, (hl)
-25AA 6A        ld l, d
-25AB D1        pop de
-25AC E9        jp hl
-_l353:
-_l355:
-_l356:
-25AD E1        pop hl
-25AE C3 AE 24  jp Menu
+2544 7A        ld a, d
+_l350:
 _l351:
-25B1 FE F5     cp KEY_UP
-25B3 C2 C9 25  jp nz, _l357
-_l359:
-25B6 7B        ld a, e
-25B7 FE 00     cp 0
-25B9 CA C6 25  jp z, _l358
-25BC 1D        dec e
-25BD CD 96 24  call menu_item_is_empty
-25C0 C2 C6 25  jp nz, _l358
-25C3 C3 B6 25  jp _l359
-_l358:
-25C6 C3 DD 25  jp _l360
-_l357:
-25C9 FE F6     cp KEY_DOWN
-25CB C2 4A 25  jp nz, _l346
-_l362:
-25CE 7B        ld a, e
-25CF B8        cp b
-25D0 CA DD 25  jp z, _l361
-25D3 1C        inc e
-25D4 CD 96 24  call menu_item_is_empty
-25D7 C2 DD 25  jp nz, _l361
-25DA C3 CE 25  jp _l362
-_l361:
-_l360:
-25DD D5        push de
-25DE C5        push bc
-25DF E5        push hl
-25E0 5A        ld e, d
-25E1 1C        inc e
-25E2 1C        inc e
-25E3 1C        inc e
-25E4 0E 00     ld c, 0
-25E6 16 01     ld d, 1
-25E8 21 74 45  ld hl, _l363
-25EB CD D6 08  call DrawText
-25EE E1        pop hl
-25EF C1        pop bc
-25F0 D1        pop de
-25F1 C3 4A 25  jp _l346
-SaveConfig:
+2545 0D        dec c
+2546 F2 30 25  jp p, _l348
+_l346:
+_l347:
+_l349:
+2549 05        dec b
+254A F2 22 25  jp p, _l344
 _l345:
-25F4 21 7C 24  ld hl, config_begin
-25F7 0E 0D     ld c, config_check_sum-config_begin
-25F9 3E AA     ld a, 170
-_l365:
-25FB AE        xor (hl)
-25FC 23        inc hl
-_l367:
-25FD 0D        dec c
-25FE C2 FB 25  jp nz, _l365
-_l366:
-2601 77        ld (hl), a
-2602 21 7C 24  ld hl, config_begin
-2605 0E 0E     ld c, (config_check_sum-config_begin)+1
-2607 C3 47 45  jp WriteConfig
+254D 3E FF     ld a, 255
+254F 32 93 21  ld (key_pressed), a
+2552 C9        ret
+2553          SCREEN_0_ADDRESS equ 53248
+2553          SCREEN_1_ADDRESS equ 36864
+2553          PALETTE_WHITE equ 0
+2553          PALETTE_CYAN equ 1
+2553          PALETTE_MAGENTA equ 2
+2553          PALETTE_BLUE equ 3
+2553          PALETTE_YELLOW equ 4
+2553          PALETTE_GREEN equ 5
+2553          PALETTE_RED equ 6
+2553          PALETTE_XXX equ 7
+2553          PALETTE_GRAY equ 8
+2553          PALETTE_DARK_CYAN equ 9
+2553          PALETTE_DARK_MAGENTA equ 10
+2553          PALETTE_DARK_BLUE equ 11
+2553          PALETTE_DARK_YELLOW equ 12
+2553          PALETTE_DARK_GREEN equ 13
+2553          PALETTE_DARK_RED equ 14
+2553          PALETTE_BLACK equ 15
+2553          KEY_BACKSPACE equ 8
+2553          KEY_TAB equ 9
+2553          KEY_ENTER equ 13
+2553          KEY_ESC equ 27
+2553          KEY_ALT equ 1
+2553          KEY_F1 equ 242
+2553          KEY_F2 equ 243
+2553          KEY_F3 equ 244
+2553          KEY_UP equ 245
+2553          KEY_DOWN equ 246
+2553          KEY_RIGHT equ 247
+2553          KEY_LEFT equ 248
+2553          KEY_EXT_5 equ 249
+2553          KEY_END equ 250
+2553          KEY_HOME equ 251
+2553          KEY_INSERT equ 252
+2553          KEY_DEL equ 253
+2553          KEY_PG_UP equ 254
+2553          KEY_PG_DN equ 255
+2553          PORT_FRAME_IRQ_RESET equ 4
+2553          PORT_SD_SIZE equ 9
+2553          PORT_SD_RESULT equ 9
+2553          PORT_SD_DATA equ 8
+2553          PORT_UART_DATA equ 128
+2553          PORT_UART_CONFIG equ 129
+2553          PORT_UART_STATE equ 129
+2553          PORT_EXT_DATA_OUT equ 136
+2553          PORT_PALETTE_3 equ 144
+2553          PORT_PALETTE_2 equ 145
+2553          PORT_PALETTE_1 equ 146
+2553          PORT_PALETTE_0 equ 147
+2553          PORT_EXT_IN_DATA equ 137
+2553          PORT_A0 equ 160
+2553          PORT_ROM_0000 equ 168
+2553          PORT_ROM_0000__ROM equ 0
+2553          PORT_ROM_0000__RAM equ 128
+2553          PORT_VIDEO_MODE_1_LOW equ 185
+2553          PORT_VIDEO_MODE_1_HIGH equ 249
+2553          PORT_VIDEO_MODE_0_LOW equ 184
+2553          PORT_VIDEO_MODE_0_HIGH equ 248
+2553          PORT_UART_SPEED_0 equ 187
+2553          PORT_KEYBOARD equ 192
+2553          PORT_UART_SPEED_1 equ 251
+2553          PORT_CODE_ROM equ 186
+2553          PORT_CHARGEN_ROM equ 250
+2553          PORT_TAPE_AND_IDX2 equ 153
+2553          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+2553          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+2553          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+2553          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+2553          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+2553          PORT_RESET_CU1 equ 188
+2553          PORT_RESET_CU2 equ 189
+2553          PORT_RESET_CU3 equ 190
+2553          PORT_RESET_CU4 equ 191
+2553          PORT_SET_CU1 equ 252
+2553          PORT_SET_CU2 equ 253
+2553          PORT_SET_CU3 equ 254
+2553          PORT_SET_CU4 equ 255
+2553          PORT_TAPE_OUT equ 176
+2553          SD_COMMAND_READ equ 1
+2553          SD_COMMAND_READ_SIZE equ 5
+2553          SD_COMMAND_WRITE equ 2
+2553          SD_COMMAND_WRITE_SIZE equ 5+128
+2553          SD_RESULT_BUSY equ 255
+2553          SD_RESULT_OK equ 0
+2553          stack equ 256
+2553          entry_cpm_conout_address equ EntryCpmConout+1
+2553          cpm_dph_a equ 65376
+2553          cpm_dph_b equ 65392
+2553          cpm_dma_buffer equ 65408
+2553          TEXT_SCREEN_HEIGHT equ 25
+2553          FONT_HEIGHT equ 10
+2553          FONT_WIDTH equ 3
+2553          DrawCharAddress equ DrawChar+1
+2553          SetColorAddress equ SetColor+1
+2553          DrawCursorAddress equ DrawCursor+1
+2553          MOD_CTR equ 1
+2553          MOD_SHIFT equ 2
+2553          MOD_CAPS equ 16
+2553          MOD_NUM equ 32
+2553          OPCODE_NOP equ 0
+2553          OPCODE_LD_DE_CONST equ 17
+2553          OPCODE_LD_A_CONST equ 62
+2553          OPCODE_LD_H_A equ 103
+2553          OPCODE_LD_A_D equ 122
+2553          OPCODE_LD_A_H equ 124
+2553          OPCODE_XOR_A equ 175
+2553          OPCODE_XOR_B equ 168
+2553          OPCODE_JP equ 195
+2553          OPCODE_RET equ 201
+2553          OPCODE_SUB_CONST equ 214
+2553          OPCODE_AND_CONST equ 230
+2553          OPCODE_OR_CONST equ 246
+2553          OPCODE_OUT equ 211
+2553          OPCODE_JMP equ 195
+2553          MIT_RETURN equ 0
+2553          MIT_SUBMENU equ 1
+2553          MIT_JUMP equ 2
+2553          cpm_load_address equ 58624
+2553          CpmEntryPoint equ 64307
+cfg_begin:
+2553           ds 0
+cfg_screen_mode:
+2553 00        ds 1
+cfg_color_0:
+2554 0B        db PALETTE_DARK_BLUE
+cfg_color_1:
+2555 01        db PALETTE_CYAN
+cfg_color_2:
+2556 00        db PALETTE_WHITE
+cfg_color_3:
+2557 04        db PALETTE_YELLOW
+cfg_drive_0:
+2558 00        db 0
+cfg_drive_1:
+2559 01        db 1
+cfg_codepage:
+255A 00        db 0
+cfg_uart_baud_rate:
+255B 03        db 3
+cfg_uart_data_bits:
+255C 03        db 3
+cfg_uart_parity:
+255D 00        db 0
+cfg_uart_stop:
+255E 00        db 0
+cfg_uart_flow:
+255F 00        db 0
+cfg_check_sum:
+2560 00        db 0
+SaveConfig:
+2561 21 53 25  ld hl, cfg_begin
+2564 0E 0D     ld c, cfg_check_sum-cfg_begin
+2566 3E AA     ld a, 170
+_l369:
+2568 AE        xor (hl)
+2569 23        inc hl
+_l371:
+256A 0D        dec c
+256B C2 68 25  jp nz, _l369
+_l370:
+256E 77        ld (hl), a
+256F 21 53 25  ld hl, cfg_begin
+2572 0E 0E     ld c, (cfg_check_sum-cfg_begin)+1
+2574 C3 CE 44  jp WriteConfig
 menu_screen:
-260A 3E 47     dw _l369
-260C B6 45     dw _l370
-260E 00 00     dw 0
-2610 00 00     dw 0
-2612 00 00     dw 0
-2614 C6 45     dw _l371
-2616 00 00     dw 0
-2618 01 00     dw 1
-261A 00 00     dw 0
-261C EF 45     dw _l372
-261E 00 00     dw 0
-2620 02 00     dw 2
-2622 00 00     dw 0
-2624 FF 45     dw _l373
-2626 00 00     dw 0
-2628 03 00     dw 3
-262A 00 00     dw 0
-262C 00 00     dw 0
+2577 6B 48     dw _l373
+2579 E3 46     dw _l374
+257B 00 00     dw 0
+257D 00 00     dw 0
+257F 00 00     dw 0
+2581 F3 46     dw _l375
+2583 00 00     dw 0
+2585 01 00     dw 1
+2587 00 00     dw 0
+2589 1C 47     dw _l376
+258B 00 00     dw 0
+258D 02 00     dw 2
+258F 00 00     dw 0
+2591 2C 47     dw _l377
+2593 00 00     dw 0
+2595 03 00     dw 3
+2597 00 00     dw 0
+2599 00 00     dw 0
 menu_drive:
-262E 8C 46     dw _l375
-2630 23 48     dw _l376
-2632 00 00     dw 0
-2634 00 00     dw 0
-2636 00 00     dw 0
-2638 30 48     dw _l377
-263A 00 00     dw 0
-263C 01 00     dw 1
-263E 00 00     dw 0
-2640 6C 46     dw _l378
-2642 00 00     dw 0
-2644 02 00     dw 2
-2646 00 00     dw 0
-2648 00 00     dw 0
+259B B9 47     dw _l379
+259D 50 49     dw _l380
+259F 00 00     dw 0
+25A1 00 00     dw 0
+25A3 00 00     dw 0
+25A5 5D 49     dw _l381
+25A7 00 00     dw 0
+25A9 01 00     dw 1
+25AB 00 00     dw 0
+25AD 99 47     dw _l382
+25AF 00 00     dw 0
+25B1 02 00     dw 2
+25B3 00 00     dw 0
+25B5 00 00     dw 0
 menu_code_page:
-264A A0 46     dw _l380
-264C DE 45     dw _l381
-264E 00 00     dw 0
-2650 00 00     dw 0
-2652 00 00     dw 0
-2654 8D 45     dw _l382
-2656 00 00     dw 0
-2658 01 00     dw 1
-265A 00 00     dw 0
-265C EB 47     dw _l383
-265E 00 00     dw 0
-2660 02 00     dw 2
-2662 00 00     dw 0
-2664 F3 47     dw _l384
-2666 00 00     dw 0
-2668 03 00     dw 3
-266A 00 00     dw 0
-266C 00 00     dw 0
+25B7 CD 47     dw _l384
+25B9 0B 47     dw _l385
+25BB 00 00     dw 0
+25BD 00 00     dw 0
+25BF 00 00     dw 0
+25C1 BA 46     dw _l386
+25C3 00 00     dw 0
+25C5 01 00     dw 1
+25C7 00 00     dw 0
+25C9 18 49     dw _l387
+25CB 00 00     dw 0
+25CD 02 00     dw 2
+25CF 00 00     dw 0
+25D1 20 49     dw _l388
+25D3 00 00     dw 0
+25D5 03 00     dw 3
+25D7 00 00     dw 0
+25D9 00 00     dw 0
 menu_uart_baud_rate:
-266E 56 47     dw _l386
-2670 82 45     dw _l387
-2672 00 00     dw 0
-2674 00 00     dw 0
-2676 00 00     dw 0
-2678 98 45     dw _l388
-267A 00 00     dw 0
-267C 01 00     dw 1
-267E 00 00     dw 0
-2680 A3 45     dw _l389
-2682 00 00     dw 0
-2684 02 00     dw 2
-2686 00 00     dw 0
-2688 E4 45     dw _l390
-268A 00 00     dw 0
-268C 03 00     dw 3
-268E 00 00     dw 0
-2690 00 00     dw 0
+25DB 83 48     dw _l390
+25DD AF 46     dw _l391
+25DF 00 00     dw 0
+25E1 00 00     dw 0
+25E3 00 00     dw 0
+25E5 C5 46     dw _l392
+25E7 00 00     dw 0
+25E9 01 00     dw 1
+25EB 00 00     dw 0
+25ED D0 46     dw _l393
+25EF 00 00     dw 0
+25F1 02 00     dw 2
+25F3 00 00     dw 0
+25F5 11 47     dw _l394
+25F7 00 00     dw 0
+25F9 03 00     dw 3
+25FB 00 00     dw 0
+25FD 00 00     dw 0
 menu_uart_data_bits:
-2692 B5 46     dw _l392
-2694 AE 45     dw _l393
-2696 00 00     dw 0
-2698 00 00     dw 0
-269A 00 00     dw 0
-269C B2 45     dw _l394
-269E 00 00     dw 0
-26A0 01 00     dw 1
-26A2 00 00     dw 0
-26A4 D6 45     dw _l395
-26A6 00 00     dw 0
-26A8 02 00     dw 2
-26AA 00 00     dw 0
-26AC DA 45     dw _l396
-26AE 00 00     dw 0
-26B0 03 00     dw 3
-26B2 00 00     dw 0
-26B4 00 00     dw 0
+25FF E2 47     dw _l396
+2601 DB 46     dw _l397
+2603 00 00     dw 0
+2605 00 00     dw 0
+2607 00 00     dw 0
+2609 DF 46     dw _l398
+260B 00 00     dw 0
+260D 01 00     dw 1
+260F 00 00     dw 0
+2611 03 47     dw _l399
+2613 00 00     dw 0
+2615 02 00     dw 2
+2617 00 00     dw 0
+2619 07 47     dw _l400
+261B 00 00     dw 0
+261D 03 00     dw 3
+261F 00 00     dw 0
+2621 00 00     dw 0
 menu_uart_stop_bits:
-26B6 D7 46     dw _l398
-26B8 78 45     dw _l399
-26BA 00 00     dw 0
-26BC 00 00     dw 0
-26BE 00 00     dw 0
-26C0 7C 45     dw _l400
-26C2 00 00     dw 0
-26C4 01 00     dw 1
-26C6 00 00     dw 0
-26C8 94 45     dw _l401
-26CA 00 00     dw 0
-26CC 02 00     dw 2
-26CE 00 00     dw 0
-26D0 00 00     dw 0
+2623 04 48     dw _l402
+2625 A5 46     dw _l403
+2627 00 00     dw 0
+2629 00 00     dw 0
+262B 00 00     dw 0
+262D A9 46     dw _l404
+262F 00 00     dw 0
+2631 01 00     dw 1
+2633 00 00     dw 0
+2635 C1 46     dw _l405
+2637 00 00     dw 0
+2639 02 00     dw 2
+263B 00 00     dw 0
+263D 00 00     dw 0
 menu_uart_parity:
-26D2 1C 47     dw _l403
-26D4 1D 48     dw _l404
-26D6 00 00     dw 0
-26D8 00 00     dw 0
-26DA 00 00     dw 0
-26DC FD 48     dw _l405
-26DE 00 00     dw 0
-26E0 01 00     dw 1
-26E2 00 00     dw 0
-26E4 11 48     dw _l406
-26E6 00 00     dw 0
-26E8 02 00     dw 2
-26EA 00 00     dw 0
-26EC 00 00     dw 0
+263F 49 48     dw _l407
+2641 4A 49     dw _l408
+2643 00 00     dw 0
+2645 00 00     dw 0
+2647 00 00     dw 0
+2649 2A 4A     dw _l409
+264B 00 00     dw 0
+264D 01 00     dw 1
+264F 00 00     dw 0
+2651 3E 49     dw _l410
+2653 00 00     dw 0
+2655 02 00     dw 2
+2657 00 00     dw 0
+2659 00 00     dw 0
 menu_uart_flow:
-26EE FB 46     dw _l408
-26F0 1D 48     dw _l404
-26F2 00 00     dw 0
-26F4 00 00     dw 0
-26F6 00 00     dw 0
-26F8 0F 46     dw _l409
-26FA 00 00     dw 0
-26FC 01 00     dw 1
-26FE 00 00     dw 0
-2700 00 00     dw 0
+265B 28 48     dw _l412
+265D 4A 49     dw _l408
+265F 00 00     dw 0
+2661 00 00     dw 0
+2663 00 00     dw 0
+2665 3C 47     dw _l413
+2667 00 00     dw 0
+2669 01 00     dw 1
+266B 00 00     dw 0
+266D 00 00     dw 0
 menu_color:
-2702 6F 47     dw _l411
-2704 F4 48     dw _l412
-2706 00 00     dw 0
-2708 0F 00     dw PALETTE_BLACK
-270A 00 00     dw 0
-270C 92 48     dw _l413
-270E 00 00     dw 0
-2710 0E 00     dw PALETTE_DARK_RED
-2712 00 00     dw 0
-2714 82 48     dw _l414
-2716 00 00     dw 0
-2718 0D 00     dw PALETTE_DARK_GREEN
-271A 00 00     dw 0
-271C 73 48     dw _l415
-271E 00 00     dw 0
-2720 0C 00     dw PALETTE_DARK_YELLOW
-2722 00 00     dw 0
-2724 A2 48     dw _l416
-2726 00 00     dw 0
-2728 0B 00     dw PALETTE_DARK_BLUE
-272A 00 00     dw 0
-272C B0 48     dw _l417
-272E 00 00     dw 0
-2730 0A 00     dw PALETTE_DARK_MAGENTA
-2732 00 00     dw 0
-2734 63 48     dw _l418
-2736 00 00     dw 0
-2738 09 00     dw PALETTE_DARK_CYAN
-273A 00 00     dw 0
-273C 3D 48     dw _l419
-273E 00 00     dw 0
-2740 08 00     dw PALETTE_GRAY
-2742 00 00     dw 0
-2744 07 48     dw _l420
-2746 00 00     dw 0
-2748 06 00     dw PALETTE_RED
-274A 00 00     dw 0
-274C C5 47     dw _l421
-274E 00 00     dw 0
-2750 05 00     dw PALETTE_GREEN
-2752 00 00     dw 0
-2754 9D 47     dw _l422
-2756 00 00     dw 0
-2758 04 00     dw PALETTE_YELLOW
-275A 00 00     dw 0
-275C 45 48     dw _l423
-275E 00 00     dw 0
-2760 03 00     dw PALETTE_BLUE
-2762 00 00     dw 0
-2764 C3 48     dw _l424
-2766 00 00     dw 0
-2768 02 00     dw PALETTE_MAGENTA
-276A 00 00     dw 0
-276C 7F 47     dw _l425
-276E 00 00     dw 0
-2770 01 00     dw PALETTE_CYAN
-2772 00 00     dw 0
-2774 84 46     dw _l426
-2776 00 00     dw 0
-2778 00 00     dw PALETTE_WHITE
-277A 00 00     dw 0
-277C 00 00     dw 0
+266F 9C 48     dw _l415
+2671 21 4A     dw _l416
+2673 00 00     dw 0
+2675 0F 00     dw PALETTE_BLACK
+2677 00 00     dw 0
+2679 BF 49     dw _l417
+267B 00 00     dw 0
+267D 0E 00     dw PALETTE_DARK_RED
+267F 00 00     dw 0
+2681 AF 49     dw _l418
+2683 00 00     dw 0
+2685 0D 00     dw PALETTE_DARK_GREEN
+2687 00 00     dw 0
+2689 A0 49     dw _l419
+268B 00 00     dw 0
+268D 0C 00     dw PALETTE_DARK_YELLOW
+268F 00 00     dw 0
+2691 CF 49     dw _l420
+2693 00 00     dw 0
+2695 0B 00     dw PALETTE_DARK_BLUE
+2697 00 00     dw 0
+2699 DD 49     dw _l421
+269B 00 00     dw 0
+269D 0A 00     dw PALETTE_DARK_MAGENTA
+269F 00 00     dw 0
+26A1 90 49     dw _l422
+26A3 00 00     dw 0
+26A5 09 00     dw PALETTE_DARK_CYAN
+26A7 00 00     dw 0
+26A9 6A 49     dw _l423
+26AB 00 00     dw 0
+26AD 08 00     dw PALETTE_GRAY
+26AF 00 00     dw 0
+26B1 34 49     dw _l424
+26B3 00 00     dw 0
+26B5 06 00     dw PALETTE_RED
+26B7 00 00     dw 0
+26B9 F2 48     dw _l425
+26BB 00 00     dw 0
+26BD 05 00     dw PALETTE_GREEN
+26BF 00 00     dw 0
+26C1 CA 48     dw _l426
+26C3 00 00     dw 0
+26C5 04 00     dw PALETTE_YELLOW
+26C7 00 00     dw 0
+26C9 72 49     dw _l427
+26CB 00 00     dw 0
+26CD 03 00     dw PALETTE_BLUE
+26CF 00 00     dw 0
+26D1 F0 49     dw _l428
+26D3 00 00     dw 0
+26D5 02 00     dw PALETTE_MAGENTA
+26D7 00 00     dw 0
+26D9 AC 48     dw _l429
+26DB 00 00     dw 0
+26DD 01 00     dw PALETTE_CYAN
+26DF 00 00     dw 0
+26E1 B1 47     dw _l430
+26E3 00 00     dw 0
+26E5 00 00     dw PALETTE_WHITE
+26E7 00 00     dw 0
+26E9 00 00     dw 0
 menu_root:
-277E DD 47     dw _l428
-2780 A6 47     dw _l429
-2782 02 00     dw MIT_JUMP
-2784 AE 28     dw StartCpm
-2786 00 00     dw 0
-2788 B4 47     dw _l430
-278A 02 00     dw MIT_JUMP
-278C 91 28     dw StartBasic
-278E 00 00     dw 0
-2790 6D 45     dw _l431
-2792 00 00     dw 0
-2794 00 00     dw 0
-2796 00 00     dw 0
-2798 FB 47     dw _l432
-279A 01 00     dw MIT_SUBMENU
-279C 4A 26     dw menu_code_page
-279E 83 24     dw codepage
-27A0 06 49     dw _l433
-27A2 01 00     dw MIT_SUBMENU
-27A4 0A 26     dw menu_screen
-27A6 7C 24     dw screen_mode
-27A8 D0 48     dw _l434
-27AA 01 00     dw MIT_SUBMENU
-27AC 02 27     dw menu_color
-27AE 7D 24     dw color_0
-27B0 D9 48     dw _l435
-27B2 01 00     dw MIT_SUBMENU
-27B4 02 27     dw menu_color
-27B6 7E 24     dw color_1
-27B8 E2 48     dw _l436
-27BA 01 00     dw MIT_SUBMENU
-27BC 02 27     dw menu_color
-27BE 7F 24     dw color_2
-27C0 EB 48     dw _l437
-27C2 01 00     dw MIT_SUBMENU
-27C4 02 27     dw menu_color
-27C6 80 24     dw color_3
-27C8 6D 45     dw _l431
-27CA 00 00     dw 0
-27CC 00 00     dw 0
-27CE 00 00     dw 0
-27D0 3B 46     dw _l438
-27D2 01 00     dw MIT_SUBMENU
-27D4 6E 26     dw menu_uart_baud_rate
-27D6 84 24     dw uart_baud_rate
-27D8 19 46     dw _l439
-27DA 01 00     dw MIT_SUBMENU
-27DC 92 26     dw menu_uart_data_bits
-27DE 85 24     dw uart_data_bits
-27E0 5C 46     dw _l440
-27E2 01 00     dw MIT_SUBMENU
-27E4 D2 26     dw menu_uart_parity
-27E6 86 24     dw uart_parity
-27E8 4B 46     dw _l441
-27EA 01 00     dw MIT_SUBMENU
-27EC B6 26     dw menu_uart_stop_bits
-27EE 87 24     dw uart_stop_bits
-27F0 2B 46     dw _l442
-27F2 01 00     dw MIT_SUBMENU
-27F4 EE 26     dw menu_uart_flow
-27F6 88 24     dw uart_flow
-27F8 6D 45     dw _l431
-27FA 00 00     dw 0
-27FC 00 00     dw 0
-27FE 00 00     dw 0
-2800 89 47     dw _l443
-2802 01 00     dw MIT_SUBMENU
-2804 2E 26     dw menu_drive
-2806 81 24     dw drive_0
-2808 93 47     dw _l444
-280A 01 00     dw MIT_SUBMENU
-280C 2E 26     dw menu_drive
-280E 82 24     dw drive_1
-2810 6D 45     dw _l431
-2812 00 00     dw 0
-2814 00 00     dw 0
-2816 00 00     dw 0
-2818 4D 48     dw _l445
-281A 02 00     dw MIT_JUMP
-281C F4 25     dw SaveConfig
-281E 00 00     dw 0
-2820 00 00     dw 0
+26EB 0A 49     dw _l432
+26ED D3 48     dw _l433
+26EF 02 00     dw MIT_JUMP
+26F1 1B 28     dw StartCpm
+26F3 00 00     dw 0
+26F5 E1 48     dw _l434
+26F7 02 00     dw MIT_JUMP
+26F9 FE 27     dw StartBasic
+26FB 00 00     dw 0
+26FD 9A 46     dw _l435
+26FF 00 00     dw 0
+2701 00 00     dw 0
+2703 00 00     dw 0
+2705 28 49     dw _l436
+2707 01 00     dw MIT_SUBMENU
+2709 B7 25     dw menu_code_page
+270B 5A 25     dw cfg_codepage
+270D 33 4A     dw _l437
+270F 01 00     dw MIT_SUBMENU
+2711 77 25     dw menu_screen
+2713 53 25     dw cfg_screen_mode
+2715 FD 49     dw _l438
+2717 01 00     dw MIT_SUBMENU
+2719 6F 26     dw menu_color
+271B 54 25     dw cfg_color_0
+271D 06 4A     dw _l439
+271F 01 00     dw MIT_SUBMENU
+2721 6F 26     dw menu_color
+2723 55 25     dw cfg_color_1
+2725 0F 4A     dw _l440
+2727 01 00     dw MIT_SUBMENU
+2729 6F 26     dw menu_color
+272B 56 25     dw cfg_color_2
+272D 18 4A     dw _l441
+272F 01 00     dw MIT_SUBMENU
+2731 6F 26     dw menu_color
+2733 57 25     dw cfg_color_3
+2735 9A 46     dw _l435
+2737 00 00     dw 0
+2739 00 00     dw 0
+273B 00 00     dw 0
+273D 68 47     dw _l442
+273F 01 00     dw MIT_SUBMENU
+2741 DB 25     dw menu_uart_baud_rate
+2743 5B 25     dw cfg_uart_baud_rate
+2745 46 47     dw _l443
+2747 01 00     dw MIT_SUBMENU
+2749 FF 25     dw menu_uart_data_bits
+274B 5C 25     dw cfg_uart_data_bits
+274D 89 47     dw _l444
+274F 01 00     dw MIT_SUBMENU
+2751 3F 26     dw menu_uart_parity
+2753 5D 25     dw cfg_uart_parity
+2755 78 47     dw _l445
+2757 01 00     dw MIT_SUBMENU
+2759 23 26     dw menu_uart_stop_bits
+275B 5E 25     dw cfg_uart_stop
+275D 58 47     dw _l446
+275F 01 00     dw MIT_SUBMENU
+2761 5B 26     dw menu_uart_flow
+2763 5F 25     dw cfg_uart_flow
+2765 9A 46     dw _l435
+2767 00 00     dw 0
+2769 00 00     dw 0
+276B 00 00     dw 0
+276D B6 48     dw _l447
+276F 01 00     dw MIT_SUBMENU
+2771 9B 25     dw menu_drive
+2773 58 25     dw cfg_drive_0
+2775 C0 48     dw _l448
+2777 01 00     dw MIT_SUBMENU
+2779 9B 25     dw menu_drive
+277B 59 25     dw cfg_drive_1
+277D 9A 46     dw _l435
+277F 00 00     dw 0
+2781 00 00     dw 0
+2783 00 00     dw 0
+2785 7A 49     dw _l449
+2787 02 00     dw MIT_JUMP
+2789 61 25     dw SaveConfig
+278B 00 00     dw 0
+278D 00 00     dw 0
 main:
-2822 31 00 01  ld sp, stack
-2825 3E 00     ld a, 0*2
-2827 D3 00     out (0), a
-2829 3E 02     ld a, 1*2
-282B D3 01     out (1), a
-282D 3E 01     ld a, 1
-282F D3 02     out (2), a
-2831 3E 01     ld a, 1
-2833 D3 03     out (3), a
-2835 21 00 D0  ld hl, SCREEN_0_ADDRESS
-2838 0E 0E     ld c, (config_check_sum-config_begin)+1
-283A CD 1E 45  call ReadConfig
-283D C2 61 28  jp nz, _l447
-2840 21 00 D0  ld hl, SCREEN_0_ADDRESS
-2843 0E 0E     ld c, (config_check_sum-config_begin)+1
-2845 3E AA     ld a, 170
-_l448:
-2847 AE        xor (hl)
-2848 23        inc hl
-_l450:
-2849 0D        dec c
-284A C2 47 28  jp nz, _l448
-_l449:
-284D B7        or a
-284E C2 61 28  jp nz, _l451
-2851 21 7C 24  ld hl, config_begin
-2854 11 00 D0  ld de, SCREEN_0_ADDRESS
-2857 0E 0D     ld c, config_check_sum-config_begin
+278F 31 00 01  ld sp, stack
+2792 3E 00     ld a, 0*2
+2794 D3 00     out (0), a
+2796 3E 02     ld a, 1*2
+2798 D3 01     out (1), a
+279A 3E 01     ld a, 1
+279C D3 02     out (2), a
+279E 3E 01     ld a, 1
+27A0 D3 03     out (3), a
+27A2 21 00 D0  ld hl, SCREEN_0_ADDRESS
+27A5 0E 0E     ld c, (cfg_check_sum-cfg_begin)+1
+27A7 CD A5 44  call ReadConfig
+27AA C2 CE 27  jp nz, _l451
+27AD 21 00 D0  ld hl, SCREEN_0_ADDRESS
+27B0 0E 0E     ld c, (cfg_check_sum-cfg_begin)+1
+27B2 3E AA     ld a, 170
 _l452:
-2859 1A        ld a, (de)
-285A 77        ld (hl), a
-285B 23        inc hl
-285C 13        inc de
+27B4 AE        xor (hl)
+27B5 23        inc hl
 _l454:
-285D 0D        dec c
-285E C2 59 28  jp nz, _l452
-_l447:
+27B6 0D        dec c
+27B7 C2 B4 27  jp nz, _l452
 _l453:
-_l451:
-2861 CD 3F 0B  call SetScreenColor6
-2864 3E 03     ld a, 3
-2866 CD D3 07  call SetColor
-2869 CD 50 03  call ConReset
-286C 3E 0B     ld a, PALETTE_DARK_BLUE
-286E D3 90     out (144+(0&3)), a
-2870 3E 04     ld a, PALETTE_YELLOW
-2872 D3 91     out (144+(1&3)), a
-2874 3E 00     ld a, PALETTE_WHITE
-2876 D3 92     out (144+(2&3)), a
-2878 3E 01     ld a, PALETTE_CYAN
-287A D3 93     out (144+(3&3)), a
+27BA B7        or a
+27BB C2 CE 27  jp nz, _l455
+27BE 21 53 25  ld hl, cfg_begin
+27C1 11 00 D0  ld de, SCREEN_0_ADDRESS
+27C4 0E 0D     ld c, cfg_check_sum-cfg_begin
 _l456:
-287C 1E 00     ld e, 0
-287E 21 7E 27  ld hl, menu_root
-2881 CD AE 24  call Menu
-2884 C3 7C 28  jp _l456
-StartBasic4000:
+27C6 1A        ld a, (de)
+27C7 77        ld (hl), a
+27C8 23        inc hl
+27C9 13        inc de
+_l458:
+27CA 0D        dec c
+27CB C2 C6 27  jp nz, _l456
+_l451:
+_l457:
 _l455:
-2887 3E 01     ld a, 1
-2889 D3 00     out (0), a
-288B AF        xor a
-288C D3 A8     out (PORT_ROM_0000), a
-288E C3 00 00  jp 0
-StartBasic:
-2891 F3        di
-2892 3E 01     ld a, 1
-2894 D3 01     out (1), a
-2896 D3 02     out (2), a
-2898 D3 03     out (3), a
-289A 21 00 40  ld hl, 16384
-289D 11 87 28  ld de, StartBasic4000
-28A0 0E 0A     ld c, StartBasic-StartBasic4000
-_l459:
-28A2 1A        ld a, (de)
-28A3 77        ld (hl), a
-28A4 23        inc hl
-28A5 13        inc de
-_l461:
-28A6 0D        dec c
-28A7 C2 A2 28  jp nz, _l459
+27CE CD 16 0C  call SetScreenColor6
+27D1 3E 03     ld a, 3
+27D3 CD A0 08  call SetColor
+27D6 CD 57 03  call ConReset
+27D9 3E 0B     ld a, PALETTE_DARK_BLUE
+27DB D3 90     out (144+(0&3)), a
+27DD 3E 00     ld a, PALETTE_WHITE
+27DF D3 91     out (144+(1&3)), a
+27E1 3E 04     ld a, PALETTE_YELLOW
+27E3 D3 92     out (144+(2&3)), a
+27E5 3E 01     ld a, PALETTE_CYAN
+27E7 D3 93     out (144+(3&3)), a
 _l460:
-28AA CD 00 40  call 16384
-28AD C9        ret
-StartCpm:
-28AE 3A 83 24  ld a, (codepage)
-28B1 CD 7B 06  call ConSetXlat
-28B4 3A 7C 24  ld a, (screen_mode)
-28B7 B7        or a
-28B8 C2 C1 28  jp nz, _l463
-28BB CD FA 0A  call SetScreenBw6
-28BE C3 D8 28  jp _l464
+27E9 1E 00     ld e, 0
+27EB 21 EB 26  ld hl, menu_root
+27EE CD 42 45  call Menu
+27F1 C3 E9 27  jp _l460
+StartBasic4000:
+_l459:
+27F4 3E 01     ld a, 1
+27F6 D3 00     out (0), a
+27F8 AF        xor a
+27F9 D3 A8     out (PORT_ROM_0000), a
+27FB C3 00 00  jp 0
+StartBasic:
+27FE F3        di
+27FF 3E 01     ld a, 1
+2801 D3 01     out (1), a
+2803 D3 02     out (2), a
+2805 D3 03     out (3), a
+2807 21 00 40  ld hl, 16384
+280A 11 F4 27  ld de, StartBasic4000
+280D 0E 0A     ld c, StartBasic-StartBasic4000
 _l463:
-28C1 3D        dec a
-28C2 C2 CB 28  jp nz, _l465
-28C5 CD 3F 0B  call SetScreenColor6
-28C8 C3 D8 28  jp _l466
+280F 1A        ld a, (de)
+2810 77        ld (hl), a
+2811 23        inc hl
+2812 13        inc de
 _l465:
-28CB 3D        dec a
-28CC C2 D5 28  jp nz, _l467
-28CF CD 76 20  call SetScreenBw4
-28D2 C3 D8 28  jp _l468
-_l467:
-28D5 CD 98 20  call SetScreenColor4
-_l466:
+2813 0D        dec c
+2814 C2 0F 28  jp nz, _l463
 _l464:
-_l468:
-28D8 3E 03     ld a, 3
-28DA CD D3 07  call SetColor
-28DD CD D9 07  call ClearScreen
-28E0 3A 7D 24  ld a, (color_0)
-28E3 D3 90     out (144+(0&3)), a
-28E5 3A 7E 24  ld a, (color_1)
-28E8 D3 91     out (144+(1&3)), a
-28EA 3A 7F 24  ld a, (color_2)
-28ED D3 92     out (144+(2&3)), a
-28EF 3A 80 24  ld a, (color_3)
-28F2 D3 93     out (144+(3&3)), a
-28F4 0E 00     ld c, 0
-28F6 11 00 00  ld de, 0
-28F9 21 CF 47  ld hl, _l469
-28FC CD D6 08  call DrawText
-28FF 3E 01     ld a, 1
-2901 CD D3 07  call SetColor
-2904 3E 01     ld a, 1
-2906 32 01 01  ld (cursor_visible), a
-CpmWBoot:
-2909 3E 0E     ld a, 7*2
-290B D3 03     out (3), a
-290D 11 00 E5  ld de, cpm_load_address
-2910 21 23 29  ld hl, cpm_start
+2817 CD 00 40  call 16384
+281A C9        ret
+StartCpm:
+281B 3A 5A 25  ld a, (cfg_codepage)
+281E CD 48 07  call ConSetXlat
+2821 3A 53 25  ld a, (cfg_screen_mode)
+2824 B7        or a
+2825 C2 2E 28  jp nz, _l467
+2828 CD D1 0B  call SetScreenBw6
+282B C3 45 28  jp _l468
+_l467:
+282E 3D        dec a
+282F C2 38 28  jp nz, _l469
+2832 CD 16 0C  call SetScreenColor6
+2835 C3 45 28  jp _l470
+_l469:
+2838 3D        dec a
+2839 C2 42 28  jp nz, _l471
+283C CD 4D 21  call SetScreenBw4
+283F C3 45 28  jp _l472
 _l471:
-2913 7E        ld a, (hl)
-2914 12        ld (de), a
-2915 23        inc hl
-2916 13        inc de
-_l473:
-2917 7A        ld a, d
-2918 B7        or a
-2919 C2 13 29  jp nz, _l471
+2842 CD 6F 21  call SetScreenColor4
 _l472:
-291C 3A 48 44  ld a, (drive_number)
-291F 4F        ld c, a
-2920 C3 33 FB  jp CpmEntryPoint
+_l468:
+_l470:
+2845 3E 03     ld a, 3
+2847 CD A0 08  call SetColor
+284A CD B0 08  call ClearScreen
+284D 3A 54 25  ld a, (cfg_color_0)
+2850 D3 90     out (144+(0&3)), a
+2852 EE 07     xor 7
+2854 E6 07     and 7
+2856 32 0E 03  ld (con_color_0), a
+2859 3A 55 25  ld a, (cfg_color_1)
+285C D3 91     out (144+(1&3)), a
+285E EE 07     xor 7
+2860 E6 07     and 7
+2862 32 0F 03  ld (con_color_1), a
+2865 3A 56 25  ld a, (cfg_color_2)
+2868 D3 92     out (144+(2&3)), a
+286A EE 07     xor 7
+286C E6 07     and 7
+286E 32 10 03  ld (con_color_2), a
+2871 3A 57 25  ld a, (cfg_color_3)
+2874 D3 93     out (144+(3&3)), a
+2876 EE 07     xor 7
+2878 E6 07     and 7
+287A 32 11 03  ld (con_color_3), a
+287D 0E 00     ld c, 0
+287F 11 00 00  ld de, 0
+2882 21 FC 48  ld hl, _l473
+2885 CD AD 09  call DrawText
+2888 CD D1 03  call ConUpdateColor
+288B 3E 01     ld a, 1
+288D 32 01 01  ld (cursor_visible), a
+CpmWBoot:
+2890 3E 0E     ld a, 7*2
+2892 D3 03     out (3), a
+2894 11 00 E5  ld de, cpm_load_address
+2897 21 AA 28  ld hl, cpm_start
+_l475:
+289A 7E        ld a, (hl)
+289B 12        ld (de), a
+289C 23        inc hl
+289D 13        inc de
+_l477:
+289E 7A        ld a, d
+289F B7        or a
+28A0 C2 9A 28  jp nz, _l475
+_l476:
+28A3 3A CF 43  ld a, (drive_number)
+28A6 4F        ld c, a
+28A7 C3 33 FB  jp CpmEntryPoint
 cpm_start:
-2923 C3 5C E8  db 195
+28AA C3 5C E8  db 195
  db 92
  db 232
  db 195
@@ -16142,542 +16025,963 @@ cpm_start:
  db 0
  db 0
 cpm_stop:
-4423 00        db 0
+43AA 00        db 0
 MulU16:
-4424 44        ld b, h
-4425 4D        ld c, l
-4426 21 00 00  ld hl, 0
-4429 3E 11     ld a, 17
-_l478:
-442B 3D        dec a
-442C C8        ret z
-442D 29        add hl, hl
-442E EB        ex hl, de
-442F D2 37 44  jp nc, _l479
-4432 29        add hl, hl
-4433 23        inc hl
-4434 C3 38 44  jp _l480
-_l479:
-4437 29        add hl, hl
-_l480:
-4438 EB        ex hl, de
-4439 D2 2B 44  jp nc, _l478
-443C 09        add hl, bc
-443D D2 2B 44  jp nc, _l478
-4440 13        inc de
-4441 C3 2B 44  jp _l478
-_l477:
-4444          SCREEN_0_ADDRESS equ 53248
-4444          SCREEN_1_ADDRESS equ 36864
-4444          PALETTE_WHITE equ 0
-4444          PALETTE_CYAN equ 1
-4444          PALETTE_MAGENTA equ 2
-4444          PALETTE_BLUE equ 3
-4444          PALETTE_YELLOW equ 4
-4444          PALETTE_GREEN equ 5
-4444          PALETTE_RED equ 6
-4444          PALETTE_XXX equ 7
-4444          PALETTE_GRAY equ 8
-4444          PALETTE_DARK_CYAN equ 9
-4444          PALETTE_DARK_MAGENTA equ 10
-4444          PALETTE_DARK_BLUE equ 11
-4444          PALETTE_DARK_YELLOW equ 12
-4444          PALETTE_DARK_GREEN equ 13
-4444          PALETTE_DARK_RED equ 14
-4444          PALETTE_BLACK equ 15
-4444          KEY_BACKSPACE equ 8
-4444          KEY_TAB equ 9
-4444          KEY_ENTER equ 13
-4444          KEY_ESC equ 27
-4444          KEY_ALT equ 1
-4444          KEY_F1 equ 242
-4444          KEY_F2 equ 243
-4444          KEY_F3 equ 244
-4444          KEY_UP equ 245
-4444          KEY_DOWN equ 246
-4444          KEY_RIGHT equ 247
-4444          KEY_LEFT equ 248
-4444          KEY_EXT_5 equ 249
-4444          KEY_END equ 250
-4444          KEY_HOME equ 251
-4444          KEY_INSERT equ 252
-4444          KEY_DEL equ 253
-4444          KEY_PG_UP equ 254
-4444          KEY_PG_DN equ 255
-4444          PORT_FRAME_IRQ_RESET equ 4
-4444          PORT_SD_SIZE equ 9
-4444          PORT_SD_RESULT equ 9
-4444          PORT_SD_DATA equ 8
-4444          PORT_UART_DATA equ 128
-4444          PORT_UART_CONFIG equ 129
-4444          PORT_UART_STATE equ 129
-4444          PORT_EXT_DATA_OUT equ 136
-4444          PORT_PALETTE_3 equ 144
-4444          PORT_PALETTE_2 equ 145
-4444          PORT_PALETTE_1 equ 146
-4444          PORT_PALETTE_0 equ 147
-4444          PORT_EXT_IN_DATA equ 137
-4444          PORT_A0 equ 160
-4444          PORT_ROM_0000 equ 168
-4444          PORT_ROM_0000__ROM equ 0
-4444          PORT_ROM_0000__RAM equ 128
-4444          PORT_VIDEO_MODE_1_LOW equ 185
-4444          PORT_VIDEO_MODE_1_HIGH equ 249
-4444          PORT_VIDEO_MODE_0_LOW equ 184
-4444          PORT_VIDEO_MODE_0_HIGH equ 248
-4444          PORT_UART_SPEED_0 equ 187
-4444          PORT_KEYBOARD equ 192
-4444          PORT_UART_SPEED_1 equ 251
-4444          PORT_CODE_ROM equ 186
-4444          PORT_CHARGEN_ROM equ 250
-4444          PORT_TAPE_AND_IDX2 equ 153
-4444          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-4444          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-4444          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-4444          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-4444          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-4444          PORT_RESET_CU1 equ 188
-4444          PORT_RESET_CU2 equ 189
-4444          PORT_RESET_CU3 equ 190
-4444          PORT_RESET_CU4 equ 191
-4444          PORT_SET_CU1 equ 252
-4444          PORT_SET_CU2 equ 253
-4444          PORT_SET_CU3 equ 254
-4444          PORT_SET_CU4 equ 255
-4444          PORT_TAPE_OUT equ 176
-4444          SD_COMMAND_READ equ 1
-4444          SD_COMMAND_READ_SIZE equ 5
-4444          SD_COMMAND_WRITE equ 2
-4444          SD_COMMAND_WRITE_SIZE equ 5+128
-4444          SD_RESULT_BUSY equ 255
-4444          SD_RESULT_OK equ 0
-4444          stack equ 256
-4444          entry_cpm_conout_address equ EntryCpmConout+1
-4444          cpm_dph_a equ 65376
-4444          cpm_dph_b equ 65392
-4444          cpm_dma_buffer equ 65408
+43AB 44        ld b, h
+43AC 4D        ld c, l
+43AD 21 00 00  ld hl, 0
+43B0 3E 11     ld a, 17
+_l482:
+43B2 3D        dec a
+43B3 C8        ret z
+43B4 29        add hl, hl
+43B5 EB        ex hl, de
+43B6 D2 BE 43  jp nc, _l483
+43B9 29        add hl, hl
+43BA 23        inc hl
+43BB C3 BF 43  jp _l484
+_l483:
+43BE 29        add hl, hl
+_l484:
+43BF EB        ex hl, de
+43C0 D2 B2 43  jp nc, _l482
+43C3 09        add hl, bc
+43C4 D2 B2 43  jp nc, _l482
+43C7 13        inc de
+43C8 C3 B2 43  jp _l482
+_l481:
+43CB          SCREEN_0_ADDRESS equ 53248
+43CB          SCREEN_1_ADDRESS equ 36864
+43CB          PALETTE_WHITE equ 0
+43CB          PALETTE_CYAN equ 1
+43CB          PALETTE_MAGENTA equ 2
+43CB          PALETTE_BLUE equ 3
+43CB          PALETTE_YELLOW equ 4
+43CB          PALETTE_GREEN equ 5
+43CB          PALETTE_RED equ 6
+43CB          PALETTE_XXX equ 7
+43CB          PALETTE_GRAY equ 8
+43CB          PALETTE_DARK_CYAN equ 9
+43CB          PALETTE_DARK_MAGENTA equ 10
+43CB          PALETTE_DARK_BLUE equ 11
+43CB          PALETTE_DARK_YELLOW equ 12
+43CB          PALETTE_DARK_GREEN equ 13
+43CB          PALETTE_DARK_RED equ 14
+43CB          PALETTE_BLACK equ 15
+43CB          KEY_BACKSPACE equ 8
+43CB          KEY_TAB equ 9
+43CB          KEY_ENTER equ 13
+43CB          KEY_ESC equ 27
+43CB          KEY_ALT equ 1
+43CB          KEY_F1 equ 242
+43CB          KEY_F2 equ 243
+43CB          KEY_F3 equ 244
+43CB          KEY_UP equ 245
+43CB          KEY_DOWN equ 246
+43CB          KEY_RIGHT equ 247
+43CB          KEY_LEFT equ 248
+43CB          KEY_EXT_5 equ 249
+43CB          KEY_END equ 250
+43CB          KEY_HOME equ 251
+43CB          KEY_INSERT equ 252
+43CB          KEY_DEL equ 253
+43CB          KEY_PG_UP equ 254
+43CB          KEY_PG_DN equ 255
+43CB          PORT_FRAME_IRQ_RESET equ 4
+43CB          PORT_SD_SIZE equ 9
+43CB          PORT_SD_RESULT equ 9
+43CB          PORT_SD_DATA equ 8
+43CB          PORT_UART_DATA equ 128
+43CB          PORT_UART_CONFIG equ 129
+43CB          PORT_UART_STATE equ 129
+43CB          PORT_EXT_DATA_OUT equ 136
+43CB          PORT_PALETTE_3 equ 144
+43CB          PORT_PALETTE_2 equ 145
+43CB          PORT_PALETTE_1 equ 146
+43CB          PORT_PALETTE_0 equ 147
+43CB          PORT_EXT_IN_DATA equ 137
+43CB          PORT_A0 equ 160
+43CB          PORT_ROM_0000 equ 168
+43CB          PORT_ROM_0000__ROM equ 0
+43CB          PORT_ROM_0000__RAM equ 128
+43CB          PORT_VIDEO_MODE_1_LOW equ 185
+43CB          PORT_VIDEO_MODE_1_HIGH equ 249
+43CB          PORT_VIDEO_MODE_0_LOW equ 184
+43CB          PORT_VIDEO_MODE_0_HIGH equ 248
+43CB          PORT_UART_SPEED_0 equ 187
+43CB          PORT_KEYBOARD equ 192
+43CB          PORT_UART_SPEED_1 equ 251
+43CB          PORT_CODE_ROM equ 186
+43CB          PORT_CHARGEN_ROM equ 250
+43CB          PORT_TAPE_AND_IDX2 equ 153
+43CB          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+43CB          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+43CB          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+43CB          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+43CB          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+43CB          PORT_RESET_CU1 equ 188
+43CB          PORT_RESET_CU2 equ 189
+43CB          PORT_RESET_CU3 equ 190
+43CB          PORT_RESET_CU4 equ 191
+43CB          PORT_SET_CU1 equ 252
+43CB          PORT_SET_CU2 equ 253
+43CB          PORT_SET_CU3 equ 254
+43CB          PORT_SET_CU4 equ 255
+43CB          PORT_TAPE_OUT equ 176
+43CB          SD_COMMAND_READ equ 1
+43CB          SD_COMMAND_READ_SIZE equ 5
+43CB          SD_COMMAND_WRITE equ 2
+43CB          SD_COMMAND_WRITE_SIZE equ 5+128
+43CB          SD_RESULT_BUSY equ 255
+43CB          SD_RESULT_OK equ 0
+43CB          stack equ 256
+43CB          entry_cpm_conout_address equ EntryCpmConout+1
+43CB          cpm_dph_a equ 65376
+43CB          cpm_dph_b equ 65392
+43CB          cpm_dma_buffer equ 65408
 CpmList:
-4444 C9        ret
+43CB C9        ret
 CpmPrSta:
-4445 16 00     ld d, 0
-4447 C9        ret
-4448          SCREEN_0_ADDRESS equ 53248
-4448          SCREEN_1_ADDRESS equ 36864
-4448          PALETTE_WHITE equ 0
-4448          PALETTE_CYAN equ 1
-4448          PALETTE_MAGENTA equ 2
-4448          PALETTE_BLUE equ 3
-4448          PALETTE_YELLOW equ 4
-4448          PALETTE_GREEN equ 5
-4448          PALETTE_RED equ 6
-4448          PALETTE_XXX equ 7
-4448          PALETTE_GRAY equ 8
-4448          PALETTE_DARK_CYAN equ 9
-4448          PALETTE_DARK_MAGENTA equ 10
-4448          PALETTE_DARK_BLUE equ 11
-4448          PALETTE_DARK_YELLOW equ 12
-4448          PALETTE_DARK_GREEN equ 13
-4448          PALETTE_DARK_RED equ 14
-4448          PALETTE_BLACK equ 15
-4448          KEY_BACKSPACE equ 8
-4448          KEY_TAB equ 9
-4448          KEY_ENTER equ 13
-4448          KEY_ESC equ 27
-4448          KEY_ALT equ 1
-4448          KEY_F1 equ 242
-4448          KEY_F2 equ 243
-4448          KEY_F3 equ 244
-4448          KEY_UP equ 245
-4448          KEY_DOWN equ 246
-4448          KEY_RIGHT equ 247
-4448          KEY_LEFT equ 248
-4448          KEY_EXT_5 equ 249
-4448          KEY_END equ 250
-4448          KEY_HOME equ 251
-4448          KEY_INSERT equ 252
-4448          KEY_DEL equ 253
-4448          KEY_PG_UP equ 254
-4448          KEY_PG_DN equ 255
-4448          PORT_FRAME_IRQ_RESET equ 4
-4448          PORT_SD_SIZE equ 9
-4448          PORT_SD_RESULT equ 9
-4448          PORT_SD_DATA equ 8
-4448          PORT_UART_DATA equ 128
-4448          PORT_UART_CONFIG equ 129
-4448          PORT_UART_STATE equ 129
-4448          PORT_EXT_DATA_OUT equ 136
-4448          PORT_PALETTE_3 equ 144
-4448          PORT_PALETTE_2 equ 145
-4448          PORT_PALETTE_1 equ 146
-4448          PORT_PALETTE_0 equ 147
-4448          PORT_EXT_IN_DATA equ 137
-4448          PORT_A0 equ 160
-4448          PORT_ROM_0000 equ 168
-4448          PORT_ROM_0000__ROM equ 0
-4448          PORT_ROM_0000__RAM equ 128
-4448          PORT_VIDEO_MODE_1_LOW equ 185
-4448          PORT_VIDEO_MODE_1_HIGH equ 249
-4448          PORT_VIDEO_MODE_0_LOW equ 184
-4448          PORT_VIDEO_MODE_0_HIGH equ 248
-4448          PORT_UART_SPEED_0 equ 187
-4448          PORT_KEYBOARD equ 192
-4448          PORT_UART_SPEED_1 equ 251
-4448          PORT_CODE_ROM equ 186
-4448          PORT_CHARGEN_ROM equ 250
-4448          PORT_TAPE_AND_IDX2 equ 153
-4448          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-4448          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-4448          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-4448          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-4448          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-4448          PORT_RESET_CU1 equ 188
-4448          PORT_RESET_CU2 equ 189
-4448          PORT_RESET_CU3 equ 190
-4448          PORT_RESET_CU4 equ 191
-4448          PORT_SET_CU1 equ 252
-4448          PORT_SET_CU2 equ 253
-4448          PORT_SET_CU3 equ 254
-4448          PORT_SET_CU4 equ 255
-4448          PORT_TAPE_OUT equ 176
-4448          SD_COMMAND_READ equ 1
-4448          SD_COMMAND_READ_SIZE equ 5
-4448          SD_COMMAND_WRITE equ 2
-4448          SD_COMMAND_WRITE_SIZE equ 5+128
-4448          SD_RESULT_BUSY equ 255
-4448          SD_RESULT_OK equ 0
-4448          stack equ 256
-4448          entry_cpm_conout_address equ EntryCpmConout+1
-4448          cpm_dph_a equ 65376
-4448          cpm_dph_b equ 65392
-4448          cpm_dma_buffer equ 65408
+43CC 16 00     ld d, 0
+43CE C9        ret
+43CF          SCREEN_0_ADDRESS equ 53248
+43CF          SCREEN_1_ADDRESS equ 36864
+43CF          PALETTE_WHITE equ 0
+43CF          PALETTE_CYAN equ 1
+43CF          PALETTE_MAGENTA equ 2
+43CF          PALETTE_BLUE equ 3
+43CF          PALETTE_YELLOW equ 4
+43CF          PALETTE_GREEN equ 5
+43CF          PALETTE_RED equ 6
+43CF          PALETTE_XXX equ 7
+43CF          PALETTE_GRAY equ 8
+43CF          PALETTE_DARK_CYAN equ 9
+43CF          PALETTE_DARK_MAGENTA equ 10
+43CF          PALETTE_DARK_BLUE equ 11
+43CF          PALETTE_DARK_YELLOW equ 12
+43CF          PALETTE_DARK_GREEN equ 13
+43CF          PALETTE_DARK_RED equ 14
+43CF          PALETTE_BLACK equ 15
+43CF          KEY_BACKSPACE equ 8
+43CF          KEY_TAB equ 9
+43CF          KEY_ENTER equ 13
+43CF          KEY_ESC equ 27
+43CF          KEY_ALT equ 1
+43CF          KEY_F1 equ 242
+43CF          KEY_F2 equ 243
+43CF          KEY_F3 equ 244
+43CF          KEY_UP equ 245
+43CF          KEY_DOWN equ 246
+43CF          KEY_RIGHT equ 247
+43CF          KEY_LEFT equ 248
+43CF          KEY_EXT_5 equ 249
+43CF          KEY_END equ 250
+43CF          KEY_HOME equ 251
+43CF          KEY_INSERT equ 252
+43CF          KEY_DEL equ 253
+43CF          KEY_PG_UP equ 254
+43CF          KEY_PG_DN equ 255
+43CF          PORT_FRAME_IRQ_RESET equ 4
+43CF          PORT_SD_SIZE equ 9
+43CF          PORT_SD_RESULT equ 9
+43CF          PORT_SD_DATA equ 8
+43CF          PORT_UART_DATA equ 128
+43CF          PORT_UART_CONFIG equ 129
+43CF          PORT_UART_STATE equ 129
+43CF          PORT_EXT_DATA_OUT equ 136
+43CF          PORT_PALETTE_3 equ 144
+43CF          PORT_PALETTE_2 equ 145
+43CF          PORT_PALETTE_1 equ 146
+43CF          PORT_PALETTE_0 equ 147
+43CF          PORT_EXT_IN_DATA equ 137
+43CF          PORT_A0 equ 160
+43CF          PORT_ROM_0000 equ 168
+43CF          PORT_ROM_0000__ROM equ 0
+43CF          PORT_ROM_0000__RAM equ 128
+43CF          PORT_VIDEO_MODE_1_LOW equ 185
+43CF          PORT_VIDEO_MODE_1_HIGH equ 249
+43CF          PORT_VIDEO_MODE_0_LOW equ 184
+43CF          PORT_VIDEO_MODE_0_HIGH equ 248
+43CF          PORT_UART_SPEED_0 equ 187
+43CF          PORT_KEYBOARD equ 192
+43CF          PORT_UART_SPEED_1 equ 251
+43CF          PORT_CODE_ROM equ 186
+43CF          PORT_CHARGEN_ROM equ 250
+43CF          PORT_TAPE_AND_IDX2 equ 153
+43CF          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+43CF          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+43CF          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+43CF          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+43CF          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+43CF          PORT_RESET_CU1 equ 188
+43CF          PORT_RESET_CU2 equ 189
+43CF          PORT_RESET_CU3 equ 190
+43CF          PORT_RESET_CU4 equ 191
+43CF          PORT_SET_CU1 equ 252
+43CF          PORT_SET_CU2 equ 253
+43CF          PORT_SET_CU3 equ 254
+43CF          PORT_SET_CU4 equ 255
+43CF          PORT_TAPE_OUT equ 176
+43CF          SD_COMMAND_READ equ 1
+43CF          SD_COMMAND_READ_SIZE equ 5
+43CF          SD_COMMAND_WRITE equ 2
+43CF          SD_COMMAND_WRITE_SIZE equ 5+128
+43CF          SD_RESULT_BUSY equ 255
+43CF          SD_RESULT_OK equ 0
+43CF          stack equ 256
+43CF          entry_cpm_conout_address equ EntryCpmConout+1
+43CF          cpm_dph_a equ 65376
+43CF          cpm_dph_b equ 65392
+43CF          cpm_dma_buffer equ 65408
 drive_number:
-4448 00        db 0
+43CF 00        db 0
 drive_track:
-4449 00 00     dw 0
+43D0 00 00     dw 0
 drive_sector:
-444B 00        db 0
+43D2 00        db 0
 drive_dpb:
-444C 60 FF     dw cpm_dph_a
-WaitSd:
-_l488:
-444E DB 09     in a, (PORT_SD_RESULT)
-_l490:
-4450 FE FF     cp SD_RESULT_BUSY
-4452 CA 4E 44  jp z, _l488
-_l489:
-4455 C9        ret
-CpmSelDsk:
-4456 CD 4E 44  call WaitSd
-4459 3E 05     ld a, SD_COMMAND_READ_SIZE
-445B D3 09     out (PORT_SD_SIZE), a
-445D 3E 01     ld a, SD_COMMAND_READ
-445F D3 08     out (PORT_SD_DATA), a
-4461 79        ld a, c
-4462 3C        inc a
-4463 3C        inc a
-4464 D3 08     out (PORT_SD_DATA), a
-4466 AF        xor a
-4467 D3 08     out (PORT_SD_DATA), a
-4469 D3 08     out (PORT_SD_DATA), a
-446B D3 08     out (PORT_SD_DATA), a
-446D D3 08     out (PORT_SD_DATA), a
-446F CD 4E 44  call WaitSd
-4472 B7        or a
-4473 CA 78 44  jp z, _l492
-4476 57        ld d, a
-4477 C9        ret
+43D3 60 FF     dw cpm_dph_a
 _l492:
-4478 79        ld a, c
-4479 2A 6A FF  ld hl, (cpm_dph_a+10)
-447C FE 01     cp 1
-447E C2 84 44  jp nz, _l493
-4481 2A 7A FF  ld hl, (cpm_dph_b+10)
-_l493:
-4484 32 48 44  ld (drive_number), a
-4487 22 4C 44  ld (drive_dpb), hl
-448A 06 0F     ld b, 15
+WaitSd:
+43D5 DB 09     in a, (PORT_SD_RESULT)
 _l494:
-448C DB 08     in a, (PORT_SD_DATA)
-448E 77        ld (hl), a
-448F 23        inc hl
+43D7 FE FF     cp SD_RESULT_BUSY
+43D9 CA D5 43  jp z, _l492
+_l493:
+43DC C9        ret
+CpmSelDsk:
+43DD CD D5 43  call WaitSd
+43E0 3E 05     ld a, SD_COMMAND_READ_SIZE
+43E2 D3 09     out (PORT_SD_SIZE), a
+43E4 3E 01     ld a, SD_COMMAND_READ
+43E6 D3 08     out (PORT_SD_DATA), a
+43E8 79        ld a, c
+43E9 3C        inc a
+43EA 3C        inc a
+43EB D3 08     out (PORT_SD_DATA), a
+43ED AF        xor a
+43EE D3 08     out (PORT_SD_DATA), a
+43F0 D3 08     out (PORT_SD_DATA), a
+43F2 D3 08     out (PORT_SD_DATA), a
+43F4 D3 08     out (PORT_SD_DATA), a
+43F6 CD D5 43  call WaitSd
+43F9 B7        or a
+43FA CA FF 43  jp z, _l496
+43FD 57        ld d, a
+43FE C9        ret
 _l496:
-4490 05        dec b
-4491 C2 8C 44  jp nz, _l494
-_l495:
-4494 16 00     ld d, 0
-4496 C9        ret
-CpmSetTrk:
-4497 60        ld h, b
-4498 69        ld l, c
-4499 22 49 44  ld (drive_track), hl
-449C C9        ret
-CpmSetSec:
-449D 79        ld a, c
-449E 32 4B 44  ld (drive_sector), a
-44A1 C9        ret
-ReadWriteSd:
-44A2 CD 4E 44  call WaitSd
-44A5 78        ld a, b
-44A6 D3 09     out (PORT_SD_SIZE), a
-44A8 79        ld a, c
-44A9 D3 08     out (PORT_SD_DATA), a
-44AB 3A 48 44  ld a, (drive_number)
-44AE 3C        inc a
-44AF 3C        inc a
-44B0 D3 08     out (PORT_SD_DATA), a
-44B2 2A 4C 44  ld hl, (drive_dpb)
-44B5 5E        ld e, (hl)
-44B6 23        inc hl
-44B7 56        ld d, (hl)
-44B8 2A 49 44  ld hl, (drive_track)
-44BB CD 24 44  call MulU16
-44BE 06 00     ld b, 0
-44C0 3A 4B 44  ld a, (drive_sector)
-44C3 4F        ld c, a
-44C4 09        add hl, bc
-44C5 D2 C9 44  jp nc, _l500
-44C8 13        inc de
+43FF 79        ld a, c
+4400 2A 6A FF  ld hl, (cpm_dph_a+10)
+4403 FE 01     cp 1
+4405 C2 0B 44  jp nz, _l497
+4408 2A 7A FF  ld hl, (cpm_dph_b+10)
+_l497:
+440B 32 CF 43  ld (drive_number), a
+440E 22 D3 43  ld (drive_dpb), hl
+4411 06 0F     ld b, 15
+_l498:
+4413 DB 08     in a, (PORT_SD_DATA)
+4415 77        ld (hl), a
+4416 23        inc hl
 _l500:
-44C9 7D        ld a, l
-44CA D3 08     out (PORT_SD_DATA), a
-44CC 7C        ld a, h
-44CD D3 08     out (PORT_SD_DATA), a
-44CF 7B        ld a, e
-44D0 D3 08     out (PORT_SD_DATA), a
-44D2 7A        ld a, d
-44D3 D3 08     out (PORT_SD_DATA), a
-44D5 C9        ret
-CpmRead:
-44D6 01 01 05  ld bc, SD_COMMAND_READ_SIZE<<8|SD_COMMAND_READ
-44D9 CD A2 44  call ReadWriteSd
-44DC CD 4E 44  call WaitSd
-44DF B7        or a
-44E0 CA E5 44  jp z, _l502
-44E3 57        ld d, a
-44E4 C9        ret
-_l502:
-44E5 21 80 FF  ld hl, cpm_dma_buffer
-_l503:
-44E8 DB 08     in a, (PORT_SD_DATA)
-44EA 77        ld (hl), a
-44EB 2C        inc l
-_l505:
-44EC C2 E8 44  jp nz, _l503
+4417 05        dec b
+4418 C2 13 44  jp nz, _l498
+_l499:
+441B 16 00     ld d, 0
+441D C9        ret
+CpmSetTrk:
+441E 60        ld h, b
+441F 69        ld l, c
+4420 22 D0 43  ld (drive_track), hl
+4423 C9        ret
+CpmSetSec:
+4424 79        ld a, c
+4425 32 D2 43  ld (drive_sector), a
+4428 C9        ret
+ReadWriteSd:
+4429 CD D5 43  call WaitSd
+442C 78        ld a, b
+442D D3 09     out (PORT_SD_SIZE), a
+442F 79        ld a, c
+4430 D3 08     out (PORT_SD_DATA), a
+4432 3A CF 43  ld a, (drive_number)
+4435 3C        inc a
+4436 3C        inc a
+4437 D3 08     out (PORT_SD_DATA), a
+4439 2A D3 43  ld hl, (drive_dpb)
+443C 5E        ld e, (hl)
+443D 23        inc hl
+443E 56        ld d, (hl)
+443F 2A D0 43  ld hl, (drive_track)
+4442 CD AB 43  call MulU16
+4445 06 00     ld b, 0
+4447 3A D2 43  ld a, (drive_sector)
+444A 4F        ld c, a
+444B 09        add hl, bc
+444C D2 50 44  jp nc, _l504
+444F 13        inc de
 _l504:
-44EF 16 00     ld d, 0
-44F1 C9        ret
-CpmWrite:
-44F2 01 02 85  ld bc, SD_COMMAND_WRITE_SIZE<<8|SD_COMMAND_WRITE
-44F5 CD A2 44  call ReadWriteSd
-44F8 21 80 FF  ld hl, cpm_dma_buffer
+4450 7D        ld a, l
+4451 D3 08     out (PORT_SD_DATA), a
+4453 7C        ld a, h
+4454 D3 08     out (PORT_SD_DATA), a
+4456 7B        ld a, e
+4457 D3 08     out (PORT_SD_DATA), a
+4459 7A        ld a, d
+445A D3 08     out (PORT_SD_DATA), a
+445C C9        ret
+CpmRead:
+445D 01 01 05  ld bc, SD_COMMAND_READ_SIZE<<8|SD_COMMAND_READ
+4460 CD 29 44  call ReadWriteSd
+4463 CD D5 43  call WaitSd
+4466 B7        or a
+4467 CA 6C 44  jp z, _l506
+446A 57        ld d, a
+446B C9        ret
+_l506:
+446C 21 80 FF  ld hl, cpm_dma_buffer
 _l507:
-44FB 7E        ld a, (hl)
-44FC D3 08     out (PORT_SD_DATA), a
-44FE 2C        inc l
+446F DB 08     in a, (PORT_SD_DATA)
+4471 77        ld (hl), a
+4472 2C        inc l
 _l509:
-44FF C2 FB 44  jp nz, _l507
+4473 C2 6F 44  jp nz, _l507
 _l508:
-4502 CD 4E 44  call WaitSd
-4505 57        ld d, a
-4506 C9        ret
-ReadWriteConfig:
-4507 CD 4E 44  call WaitSd
-450A 78        ld a, b
-450B D3 09     out (PORT_SD_SIZE), a
-450D 79        ld a, c
-450E D3 08     out (PORT_SD_DATA), a
-4510 3E 01     ld a, 1
-4512 D3 08     out (PORT_SD_DATA), a
-4514 AF        xor a
-4515 D3 08     out (PORT_SD_DATA), a
-4517 D3 08     out (PORT_SD_DATA), a
-4519 D3 08     out (PORT_SD_DATA), a
-451B D3 08     out (PORT_SD_DATA), a
-451D C9        ret
-ReadConfig:
-451E 3E 80     ld a, 128
-4520 91        sub c
-4521 47        ld b, a
-4522 D2 28 45  jp nc, _l512
-4525 3E 01     ld a, 1
-4527 C9        ret
-_l512:
-4528 E5        push hl
-4529 C5        push bc
-452A 01 01 05  ld bc, SD_COMMAND_READ_SIZE<<8|SD_COMMAND_READ
-452D CD 07 45  call ReadWriteConfig
-4530 CD 4E 44  call WaitSd
-4533 C1        pop bc
-4534 E1        pop hl
-4535 B7        or a
-4536 C0        ret nz
+4476 16 00     ld d, 0
+4478 C9        ret
+CpmWrite:
+4479 01 02 85  ld bc, SD_COMMAND_WRITE_SIZE<<8|SD_COMMAND_WRITE
+447C CD 29 44  call ReadWriteSd
+447F 21 80 FF  ld hl, cpm_dma_buffer
+_l511:
+4482 7E        ld a, (hl)
+4483 D3 08     out (PORT_SD_DATA), a
+4485 2C        inc l
 _l513:
-4537 DB 08     in a, (PORT_SD_DATA)
-4539 77        ld (hl), a
-453A 23        inc hl
-_l515:
-453B 0D        dec c
-453C C2 37 45  jp nz, _l513
+4486 C2 82 44  jp nz, _l511
+_l512:
+4489 CD D5 43  call WaitSd
+448C 57        ld d, a
+448D C9        ret
+ReadWriteConfig:
+448E CD D5 43  call WaitSd
+4491 78        ld a, b
+4492 D3 09     out (PORT_SD_SIZE), a
+4494 79        ld a, c
+4495 D3 08     out (PORT_SD_DATA), a
+4497 3E 01     ld a, 1
+4499 D3 08     out (PORT_SD_DATA), a
+449B AF        xor a
+449C D3 08     out (PORT_SD_DATA), a
+449E D3 08     out (PORT_SD_DATA), a
+44A0 D3 08     out (PORT_SD_DATA), a
+44A2 D3 08     out (PORT_SD_DATA), a
+44A4 C9        ret
+ReadConfig:
+44A5 3E 80     ld a, 128
+44A7 91        sub c
+44A8 47        ld b, a
+44A9 D2 AF 44  jp nc, _l516
+44AC 3E 01     ld a, 1
+44AE C9        ret
 _l516:
-_l514:
-453F DB 08     in a, (PORT_SD_DATA)
-_l518:
-4541 05        dec b
-4542 C2 3F 45  jp nz, _l516
+44AF E5        push hl
+44B0 C5        push bc
+44B1 01 01 05  ld bc, SD_COMMAND_READ_SIZE<<8|SD_COMMAND_READ
+44B4 CD 8E 44  call ReadWriteConfig
+44B7 CD D5 43  call WaitSd
+44BA C1        pop bc
+44BB E1        pop hl
+44BC B7        or a
+44BD C0        ret nz
 _l517:
-4545 AF        xor a
-4546 C9        ret
-WriteConfig:
-4547 3E 80     ld a, 128
-4549 91        sub c
-454A 47        ld b, a
-454B E5        push hl
-454C C5        push bc
-454D 01 02 85  ld bc, SD_COMMAND_WRITE_SIZE<<8|SD_COMMAND_WRITE
-4550 CD 07 45  call ReadWriteConfig
-4553 C1        pop bc
-4554 E1        pop hl
+44BE DB 08     in a, (PORT_SD_DATA)
+44C0 77        ld (hl), a
+44C1 23        inc hl
+_l519:
+44C2 0D        dec c
+44C3 C2 BE 44  jp nz, _l517
+_l518:
 _l520:
-4555 7E        ld a, (hl)
-4556 D3 08     out (PORT_SD_DATA), a
-4558 23        inc hl
+44C6 DB 08     in a, (PORT_SD_DATA)
 _l522:
-4559 0D        dec c
-455A C2 55 45  jp nz, _l520
+44C8 05        dec b
+44C9 C2 C6 44  jp nz, _l520
 _l521:
-455D AF        xor a
-_l523:
-455E D3 08     out (PORT_SD_DATA), a
-_l525:
-4560 05        dec b
-4561 C2 5E 45  jp nz, _l523
+44CC AF        xor a
+44CD C9        ret
+WriteConfig:
+44CE 3E 80     ld a, 128
+44D0 91        sub c
+44D1 47        ld b, a
+44D2 E5        push hl
+44D3 C5        push bc
+44D4 01 02 85  ld bc, SD_COMMAND_WRITE_SIZE<<8|SD_COMMAND_WRITE
+44D7 CD 8E 44  call ReadWriteConfig
+44DA C1        pop bc
+44DB E1        pop hl
 _l524:
-4564 CD 4E 44  call WaitSd
-4567 B7        or a
-4568 C9        ret
-4569          SCREEN_0_ADDRESS equ 53248
-4569          SCREEN_1_ADDRESS equ 36864
-4569          PALETTE_WHITE equ 0
-4569          PALETTE_CYAN equ 1
-4569          PALETTE_MAGENTA equ 2
-4569          PALETTE_BLUE equ 3
-4569          PALETTE_YELLOW equ 4
-4569          PALETTE_GREEN equ 5
-4569          PALETTE_RED equ 6
-4569          PALETTE_XXX equ 7
-4569          PALETTE_GRAY equ 8
-4569          PALETTE_DARK_CYAN equ 9
-4569          PALETTE_DARK_MAGENTA equ 10
-4569          PALETTE_DARK_BLUE equ 11
-4569          PALETTE_DARK_YELLOW equ 12
-4569          PALETTE_DARK_GREEN equ 13
-4569          PALETTE_DARK_RED equ 14
-4569          PALETTE_BLACK equ 15
-4569          KEY_BACKSPACE equ 8
-4569          KEY_TAB equ 9
-4569          KEY_ENTER equ 13
-4569          KEY_ESC equ 27
-4569          KEY_ALT equ 1
-4569          KEY_F1 equ 242
-4569          KEY_F2 equ 243
-4569          KEY_F3 equ 244
-4569          KEY_UP equ 245
-4569          KEY_DOWN equ 246
-4569          KEY_RIGHT equ 247
-4569          KEY_LEFT equ 248
-4569          KEY_EXT_5 equ 249
-4569          KEY_END equ 250
-4569          KEY_HOME equ 251
-4569          KEY_INSERT equ 252
-4569          KEY_DEL equ 253
-4569          KEY_PG_UP equ 254
-4569          KEY_PG_DN equ 255
-4569          PORT_FRAME_IRQ_RESET equ 4
-4569          PORT_SD_SIZE equ 9
-4569          PORT_SD_RESULT equ 9
-4569          PORT_SD_DATA equ 8
-4569          PORT_UART_DATA equ 128
-4569          PORT_UART_CONFIG equ 129
-4569          PORT_UART_STATE equ 129
-4569          PORT_EXT_DATA_OUT equ 136
-4569          PORT_PALETTE_3 equ 144
-4569          PORT_PALETTE_2 equ 145
-4569          PORT_PALETTE_1 equ 146
-4569          PORT_PALETTE_0 equ 147
-4569          PORT_EXT_IN_DATA equ 137
-4569          PORT_A0 equ 160
-4569          PORT_ROM_0000 equ 168
-4569          PORT_ROM_0000__ROM equ 0
-4569          PORT_ROM_0000__RAM equ 128
-4569          PORT_VIDEO_MODE_1_LOW equ 185
-4569          PORT_VIDEO_MODE_1_HIGH equ 249
-4569          PORT_VIDEO_MODE_0_LOW equ 184
-4569          PORT_VIDEO_MODE_0_HIGH equ 248
-4569          PORT_UART_SPEED_0 equ 187
-4569          PORT_KEYBOARD equ 192
-4569          PORT_UART_SPEED_1 equ 251
-4569          PORT_CODE_ROM equ 186
-4569          PORT_CHARGEN_ROM equ 250
-4569          PORT_TAPE_AND_IDX2 equ 153
-4569          PORT_TAPE_AND_IDX2_ID1_2 equ 2
-4569          PORT_TAPE_AND_IDX2_ID2_2 equ 4
-4569          PORT_TAPE_AND_IDX2_ID3_2 equ 8
-4569          PORT_TAPE_AND_IDX2_ID6_2 equ 64
-4569          PORT_TAPE_AND_IDX2_ID7_2 equ 128
-4569          PORT_RESET_CU1 equ 188
-4569          PORT_RESET_CU2 equ 189
-4569          PORT_RESET_CU3 equ 190
-4569          PORT_RESET_CU4 equ 191
-4569          PORT_SET_CU1 equ 252
-4569          PORT_SET_CU2 equ 253
-4569          PORT_SET_CU3 equ 254
-4569          PORT_SET_CU4 equ 255
-4569          PORT_TAPE_OUT equ 176
-4569          SD_COMMAND_READ equ 1
-4569          SD_COMMAND_READ_SIZE equ 5
-4569          SD_COMMAND_WRITE equ 2
-4569          SD_COMMAND_WRITE_SIZE equ 5+128
-4569          SD_RESULT_BUSY equ 255
-4569          SD_RESULT_OK equ 0
-4569          stack equ 256
-4569          entry_cpm_conout_address equ EntryCpmConout+1
-4569          cpm_dph_a equ 65376
-4569          cpm_dph_b equ 65392
-4569          cpm_dma_buffer equ 65408
+44DC 7E        ld a, (hl)
+44DD D3 08     out (PORT_SD_DATA), a
+44DF 23        inc hl
+_l526:
+44E0 0D        dec c
+44E1 C2 DC 44  jp nz, _l524
+_l525:
+44E4 AF        xor a
+_l527:
+44E5 D3 08     out (PORT_SD_DATA), a
+_l529:
+44E7 05        dec b
+44E8 C2 E5 44  jp nz, _l527
+_l528:
+44EB CD D5 43  call WaitSd
+44EE B7        or a
+44EF C9        ret
+44F0          SCREEN_0_ADDRESS equ 53248
+44F0          SCREEN_1_ADDRESS equ 36864
+44F0          PALETTE_WHITE equ 0
+44F0          PALETTE_CYAN equ 1
+44F0          PALETTE_MAGENTA equ 2
+44F0          PALETTE_BLUE equ 3
+44F0          PALETTE_YELLOW equ 4
+44F0          PALETTE_GREEN equ 5
+44F0          PALETTE_RED equ 6
+44F0          PALETTE_XXX equ 7
+44F0          PALETTE_GRAY equ 8
+44F0          PALETTE_DARK_CYAN equ 9
+44F0          PALETTE_DARK_MAGENTA equ 10
+44F0          PALETTE_DARK_BLUE equ 11
+44F0          PALETTE_DARK_YELLOW equ 12
+44F0          PALETTE_DARK_GREEN equ 13
+44F0          PALETTE_DARK_RED equ 14
+44F0          PALETTE_BLACK equ 15
+44F0          KEY_BACKSPACE equ 8
+44F0          KEY_TAB equ 9
+44F0          KEY_ENTER equ 13
+44F0          KEY_ESC equ 27
+44F0          KEY_ALT equ 1
+44F0          KEY_F1 equ 242
+44F0          KEY_F2 equ 243
+44F0          KEY_F3 equ 244
+44F0          KEY_UP equ 245
+44F0          KEY_DOWN equ 246
+44F0          KEY_RIGHT equ 247
+44F0          KEY_LEFT equ 248
+44F0          KEY_EXT_5 equ 249
+44F0          KEY_END equ 250
+44F0          KEY_HOME equ 251
+44F0          KEY_INSERT equ 252
+44F0          KEY_DEL equ 253
+44F0          KEY_PG_UP equ 254
+44F0          KEY_PG_DN equ 255
+44F0          PORT_FRAME_IRQ_RESET equ 4
+44F0          PORT_SD_SIZE equ 9
+44F0          PORT_SD_RESULT equ 9
+44F0          PORT_SD_DATA equ 8
+44F0          PORT_UART_DATA equ 128
+44F0          PORT_UART_CONFIG equ 129
+44F0          PORT_UART_STATE equ 129
+44F0          PORT_EXT_DATA_OUT equ 136
+44F0          PORT_PALETTE_3 equ 144
+44F0          PORT_PALETTE_2 equ 145
+44F0          PORT_PALETTE_1 equ 146
+44F0          PORT_PALETTE_0 equ 147
+44F0          PORT_EXT_IN_DATA equ 137
+44F0          PORT_A0 equ 160
+44F0          PORT_ROM_0000 equ 168
+44F0          PORT_ROM_0000__ROM equ 0
+44F0          PORT_ROM_0000__RAM equ 128
+44F0          PORT_VIDEO_MODE_1_LOW equ 185
+44F0          PORT_VIDEO_MODE_1_HIGH equ 249
+44F0          PORT_VIDEO_MODE_0_LOW equ 184
+44F0          PORT_VIDEO_MODE_0_HIGH equ 248
+44F0          PORT_UART_SPEED_0 equ 187
+44F0          PORT_KEYBOARD equ 192
+44F0          PORT_UART_SPEED_1 equ 251
+44F0          PORT_CODE_ROM equ 186
+44F0          PORT_CHARGEN_ROM equ 250
+44F0          PORT_TAPE_AND_IDX2 equ 153
+44F0          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+44F0          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+44F0          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+44F0          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+44F0          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+44F0          PORT_RESET_CU1 equ 188
+44F0          PORT_RESET_CU2 equ 189
+44F0          PORT_RESET_CU3 equ 190
+44F0          PORT_RESET_CU4 equ 191
+44F0          PORT_SET_CU1 equ 252
+44F0          PORT_SET_CU2 equ 253
+44F0          PORT_SET_CU3 equ 254
+44F0          PORT_SET_CU4 equ 255
+44F0          PORT_TAPE_OUT equ 176
+44F0          SD_COMMAND_READ equ 1
+44F0          SD_COMMAND_READ_SIZE equ 5
+44F0          SD_COMMAND_WRITE equ 2
+44F0          SD_COMMAND_WRITE_SIZE equ 5+128
+44F0          SD_RESULT_BUSY equ 255
+44F0          SD_RESULT_OK equ 0
+44F0          stack equ 256
+44F0          entry_cpm_conout_address equ EntryCpmConout+1
+44F0          cpm_dph_a equ 65376
+44F0          cpm_dph_b equ 65392
+44F0          cpm_dma_buffer equ 65408
 CpmPunch:
-4569 C9        ret
+44F0 C9        ret
 CpmReader:
-456A 16 00     ld d, 0
-456C C9        ret
-456D          ; Const strings
-_l431:
-456D 00 2C 00  db 0
+44F1 16 00     ld d, 0
+44F3 C9        ret
+44F4          SCREEN_0_ADDRESS equ 53248
+44F4          SCREEN_1_ADDRESS equ 36864
+44F4          PALETTE_WHITE equ 0
+44F4          PALETTE_CYAN equ 1
+44F4          PALETTE_MAGENTA equ 2
+44F4          PALETTE_BLUE equ 3
+44F4          PALETTE_YELLOW equ 4
+44F4          PALETTE_GREEN equ 5
+44F4          PALETTE_RED equ 6
+44F4          PALETTE_XXX equ 7
+44F4          PALETTE_GRAY equ 8
+44F4          PALETTE_DARK_CYAN equ 9
+44F4          PALETTE_DARK_MAGENTA equ 10
+44F4          PALETTE_DARK_BLUE equ 11
+44F4          PALETTE_DARK_YELLOW equ 12
+44F4          PALETTE_DARK_GREEN equ 13
+44F4          PALETTE_DARK_RED equ 14
+44F4          PALETTE_BLACK equ 15
+44F4          KEY_BACKSPACE equ 8
+44F4          KEY_TAB equ 9
+44F4          KEY_ENTER equ 13
+44F4          KEY_ESC equ 27
+44F4          KEY_ALT equ 1
+44F4          KEY_F1 equ 242
+44F4          KEY_F2 equ 243
+44F4          KEY_F3 equ 244
+44F4          KEY_UP equ 245
+44F4          KEY_DOWN equ 246
+44F4          KEY_RIGHT equ 247
+44F4          KEY_LEFT equ 248
+44F4          KEY_EXT_5 equ 249
+44F4          KEY_END equ 250
+44F4          KEY_HOME equ 251
+44F4          KEY_INSERT equ 252
+44F4          KEY_DEL equ 253
+44F4          KEY_PG_UP equ 254
+44F4          KEY_PG_DN equ 255
+44F4          PORT_FRAME_IRQ_RESET equ 4
+44F4          PORT_SD_SIZE equ 9
+44F4          PORT_SD_RESULT equ 9
+44F4          PORT_SD_DATA equ 8
+44F4          PORT_UART_DATA equ 128
+44F4          PORT_UART_CONFIG equ 129
+44F4          PORT_UART_STATE equ 129
+44F4          PORT_EXT_DATA_OUT equ 136
+44F4          PORT_PALETTE_3 equ 144
+44F4          PORT_PALETTE_2 equ 145
+44F4          PORT_PALETTE_1 equ 146
+44F4          PORT_PALETTE_0 equ 147
+44F4          PORT_EXT_IN_DATA equ 137
+44F4          PORT_A0 equ 160
+44F4          PORT_ROM_0000 equ 168
+44F4          PORT_ROM_0000__ROM equ 0
+44F4          PORT_ROM_0000__RAM equ 128
+44F4          PORT_VIDEO_MODE_1_LOW equ 185
+44F4          PORT_VIDEO_MODE_1_HIGH equ 249
+44F4          PORT_VIDEO_MODE_0_LOW equ 184
+44F4          PORT_VIDEO_MODE_0_HIGH equ 248
+44F4          PORT_UART_SPEED_0 equ 187
+44F4          PORT_KEYBOARD equ 192
+44F4          PORT_UART_SPEED_1 equ 251
+44F4          PORT_CODE_ROM equ 186
+44F4          PORT_CHARGEN_ROM equ 250
+44F4          PORT_TAPE_AND_IDX2 equ 153
+44F4          PORT_TAPE_AND_IDX2_ID1_2 equ 2
+44F4          PORT_TAPE_AND_IDX2_ID2_2 equ 4
+44F4          PORT_TAPE_AND_IDX2_ID3_2 equ 8
+44F4          PORT_TAPE_AND_IDX2_ID6_2 equ 64
+44F4          PORT_TAPE_AND_IDX2_ID7_2 equ 128
+44F4          PORT_RESET_CU1 equ 188
+44F4          PORT_RESET_CU2 equ 189
+44F4          PORT_RESET_CU3 equ 190
+44F4          PORT_RESET_CU4 equ 191
+44F4          PORT_SET_CU1 equ 252
+44F4          PORT_SET_CU2 equ 253
+44F4          PORT_SET_CU3 equ 254
+44F4          PORT_SET_CU4 equ 255
+44F4          PORT_TAPE_OUT equ 176
+44F4          SD_COMMAND_READ equ 1
+44F4          SD_COMMAND_READ_SIZE equ 5
+44F4          SD_COMMAND_WRITE equ 2
+44F4          SD_COMMAND_WRITE_SIZE equ 5+128
+44F4          SD_RESULT_BUSY equ 255
+44F4          SD_RESULT_OK equ 0
+44F4          MIT_RETURN equ 0
+44F4          MIT_SUBMENU equ 1
+44F4          MIT_JUMP equ 2
+44F4          TEXT_SCREEN_HEIGHT equ 25
+44F4          FONT_HEIGHT equ 10
+44F4          FONT_WIDTH equ 3
+44F4          DrawCharAddress equ DrawChar+1
+44F4          SetColorAddress equ SetColor+1
+44F4          DrawCursorAddress equ DrawCursor+1
+44F4          MOD_CTR equ 1
+44F4          MOD_SHIFT equ 2
+44F4          MOD_CAPS equ 16
+44F4          MOD_NUM equ 32
+44F4          MENU_FIRST_ITEM_Y equ 3
+44F4          MENU_ITEMS_X equ 3
+44F4          MENU_VALUES_X equ 20
+44F4          MENU_COLOR_TITLE equ 2
+44F4          MENU_COLOR_VALUE equ 3
+44F4          MENU_COLOR_ITEM equ 1
+44F4          MENU_COLOR_CURSOR equ 2
+44F4          MENU_CURSOR_X equ 1
+GetMenuItemAddress:
+44F4 7B        ld a, e
+44F5 87        add a
+44F6 87        add a
+44F7 87        add a
+44F8 C6 02     add 2
+44FA 85        add l
+44FB 6F        ld l, a
+44FC 8C        adc h
+44FD 95        sub l
+44FE 67        ld h, a
+44FF C9        ret
+MenuMoveCursor:
+4500 E5        push hl
+_l534:
+4501 7B        ld a, e
+4502 80        add b
+4503 FE FF     cp 255
+4505 CA 26 45  jp z, _l535
+4508 87        add a
+4509 87        add a
+450A 87        add a
+450B C6 02     add 2
+450D 85        add l
+450E 6F        ld l, a
+450F 8C        adc h
+4510 95        sub l
+4511 67        ld h, a
+4512 7E        ld a, (hl)
+4513 23        inc hl
+4514 66        ld h, (hl)
+4515 6F        ld l, a
+4516 7C        ld a, h
+4517 B5        or l
+4518 B7        or a
+4519 C2 1E 45  jp nz, _l537
+451C E1        pop hl
+451D C9        ret
+_l537:
+451E 7B        ld a, e
+451F 80        add b
+4520 5F        ld e, a
+_l536:
+4521 7E        ld a, (hl)
+4522 B7        or a
+4523 CA 01 45  jp z, _l534
+_l535:
+4526 E1        pop hl
+4527 C9        ret
+MenuFindItem:
+4528 1E 00     ld e, 0
+452A 23        inc hl
+452B 23        inc hl
+_l540:
+452C 7E        ld a, (hl)
+452D 23        inc hl
+452E B6        or (hl)
+452F 23        inc hl
+4530 C2 35 45  jp nz, _l541
+4533 3C        inc a
+4534 C9        ret
+_l541:
+4535 23        inc hl
+4536 23        inc hl
+4537 78        ld a, b
+4538 BE        cp (hl)
+4539 C8        ret z
+453A 23        inc hl
+453B 23        inc hl
+453C 23        inc hl
+453D 23        inc hl
+453E 1C        inc e
+453F C3 2C 45  jp _l540
+_l539:
+Menu:
+4542 3E 0B     ld a, PALETTE_DARK_BLUE
+4544 D3 90     out (144+(0&3)), a
+4546 D3 91     out (144+(1&3)), a
+4548 D3 92     out (144+(2&3)), a
+454A D3 93     out (144+(3&3)), a
+454C D3 B8     out (PORT_VIDEO_MODE_0_LOW), a
+454E D3 F9     out (PORT_VIDEO_MODE_1_HIGH), a
+4550 D5        push de
+4551 E5        push hl
+4552 3E 02     ld a, MENU_COLOR_TITLE
+4554 CD A0 08  call SetColor
+4557 CD B0 08  call ClearScreen
+455A E1        pop hl
+455B E5        push hl
+455C 5E        ld e, (hl)
+455D 23        inc hl
+455E 56        ld d, (hl)
+455F 23        inc hl
+4560 E5        push hl
+4561 EB        ex hl, de
+4562 0E 00     ld c, 0
+4564 11 01 03  ld de, 769
+4567 CD AD 09  call DrawText
+456A 3E 01     ld a, MENU_COLOR_ITEM
+456C CD A0 08  call SetColor
+456F E1        pop hl
+4570 06 03     ld b, MENU_FIRST_ITEM_Y
+_l544:
+4572 5E        ld e, (hl)
+4573 23        inc hl
+4574 56        ld d, (hl)
+4575 23        inc hl
+4576 7A        ld a, d
+4577 B7        or a
+4578 CA DB 45  jp z, _l543
+457B E5        push hl
+457C C5        push bc
+457D EB        ex hl, de
+457E 16 03     ld d, MENU_ITEMS_X
+4580 58        ld e, b
+4581 0E 00     ld c, 0
+4583 CD AD 09  call DrawText
+4586 C1        pop bc
+4587 E1        pop hl
+4588 23        inc hl
+4589 23        inc hl
+458A 23        inc hl
+458B 23        inc hl
+458C E5        push hl
+458D C5        push bc
+458E 58        ld e, b
+458F 4E        ld c, (hl)
+4590 23        inc hl
+4591 46        ld b, (hl)
+4592 78        ld a, b
+4593 B1        or c
+4594 B7        or a
+4595 CA D3 45  jp z, _l545
+4598 0A        ld a, (bc)
+4599 47        ld b, a
+459A 2B        dec hl
+459B 2B        dec hl
+459C 4E        ld c, (hl)
+459D 2B        dec hl
+459E 6E        ld l, (hl)
+459F 61        ld h, c
+45A0 23        inc hl
+45A1 23        inc hl
+_l547:
+45A2 7E        ld a, (hl)
+45A3 23        inc hl
+45A4 B6        or (hl)
+45A5 23        inc hl
+45A6 CA D3 45  jp z, _l546
+45A9 23        inc hl
+45AA 23        inc hl
+45AB 78        ld a, b
+45AC BE        cp (hl)
+45AD C2 CC 45  jp nz, _l548
+45B0 2B        dec hl
+45B1 2B        dec hl
+45B2 2B        dec hl
+45B3 2B        dec hl
+45B4 4E        ld c, (hl)
+45B5 23        inc hl
+45B6 66        ld h, (hl)
+45B7 69        ld l, c
+45B8 3E 03     ld a, MENU_COLOR_VALUE
+45BA CD A6 08  call SetColorSave
+45BD 16 14     ld d, MENU_VALUES_X
+45BF 0E 00     ld c, 0
+45C1 CD AD 09  call DrawText
+45C4 3E 01     ld a, MENU_COLOR_ITEM
+45C6 CD A6 08  call SetColorSave
+45C9 C3 D3 45  jp _l546
+_l548:
+45CC 23        inc hl
+45CD 23        inc hl
+45CE 23        inc hl
+45CF 23        inc hl
+45D0 C3 A2 45  jp _l547
+_l546:
+_l545:
+45D3 C1        pop bc
+45D4 E1        pop hl
+45D5 23        inc hl
+45D6 23        inc hl
+45D7 04        inc b
+45D8 C3 72 45  jp _l544
+_l543:
+45DB E1        pop hl
+45DC D1        pop de
+45DD D3 F8     out (PORT_VIDEO_MODE_0_HIGH), a
+45DF D3 B9     out (PORT_VIDEO_MODE_1_LOW), a
+45E1 3E 0B     ld a, PALETTE_DARK_BLUE
+45E3 D3 90     out (144+(0&3)), a
+45E5 3E 00     ld a, PALETTE_WHITE
+45E7 D3 91     out (144+(1&3)), a
+45E9 3E 04     ld a, PALETTE_YELLOW
+45EB D3 92     out (144+(2&3)), a
+45ED 3E 01     ld a, PALETTE_CYAN
+45EF D3 93     out (144+(3&3)), a
+45F1 3E 02     ld a, MENU_COLOR_CURSOR
+45F3 CD A6 08  call SetColorSave
+45F6 05        dec b
+45F7 53        ld d, e
+_l550:
+45F8 E5        push hl
+45F9 7A        ld a, d
+45FA BB        cp e
+45FB CA 0E 46  jp z, _l551
+45FE D5        push de
+45FF 7A        ld a, d
+4600 C6 03     add MENU_FIRST_ITEM_Y
+4602 5F        ld e, a
+4603 0E 00     ld c, 0
+4605 16 01     ld d, MENU_CURSOR_X
+4607 21 A1 46  ld hl, _l552
+460A CD AD 09  call DrawText
+460D D1        pop de
+_l551:
+460E D5        push de
+460F 7B        ld a, e
+4610 C6 03     add MENU_FIRST_ITEM_Y
+4612 5F        ld e, a
+4613 0E 00     ld c, 0
+4615 16 01     ld d, MENU_CURSOR_X
+4617 21 9D 46  ld hl, _l553
+461A CD AD 09  call DrawText
+461D D1        pop de
+461E 53        ld d, e
+461F E1        pop hl
+_l556:
+_l555:
+4620 D5        push de
+4621 E5        push hl
+4622 CD CE 23  call ReadKeyboard
+4625 E1        pop hl
+4626 D1        pop de
+_l558:
+4627 CA 20 46  jp z, _l556
+_l557:
+462A FE 0D     cp KEY_ENTER
+462C C2 7A 46  jp nz, _l559
+462F E5        push hl
+4630 CD F4 44  call GetMenuItemAddress
+4633 23        inc hl
+4634 23        inc hl
+4635 7E        ld a, (hl)
+4636 B7        or a
+4637 C2 41 46  jp nz, _l560
+463A 23        inc hl
+463B 23        inc hl
+463C 5E        ld e, (hl)
+463D 23        inc hl
+463E 56        ld d, (hl)
+463F E1        pop hl
+4640 C9        ret
+_l560:
+4641 FE 02     cp MIT_JUMP
+4643 C2 4E 46  jp nz, _l561
+4646 23        inc hl
+4647 23        inc hl
+4648 56        ld d, (hl)
+4649 23        inc hl
+464A 66        ld h, (hl)
+464B 6A        ld l, d
+464C D1        pop de
+464D E9        jp hl
+_l561:
+464E FE 01     cp MIT_SUBMENU
+4650 C2 76 46  jp nz, _l562
+4653 D5        push de
+4654 23        inc hl
+4655 23        inc hl
+4656 23        inc hl
+4657 23        inc hl
+4658 5E        ld e, (hl)
+4659 23        inc hl
+465A 56        ld d, (hl)
+465B 2B        dec hl
+465C D5        push de
+465D 1A        ld a, (de)
+465E 47        ld b, a
+465F 2B        dec hl
+4660 2B        dec hl
+4661 56        ld d, (hl)
+4662 23        inc hl
+4663 66        ld h, (hl)
+4664 6A        ld l, d
+4665 E5        push hl
+4666 CD 28 45  call MenuFindItem
+4669 CA 6E 46  jp z, _l563
+466C 1E 00     ld e, 0
+_l563:
+466E E1        pop hl
+466F CD 42 45  call Menu
+4672 7B        ld a, e
+4673 D1        pop de
+4674 12        ld (de), a
+4675 D1        pop de
+_l562:
+4676 E1        pop hl
+4677 C3 42 45  jp Menu
+_l559:
+467A FE F5     cp KEY_UP
+467C C2 87 46  jp nz, _l564
+467F 06 FF     ld b, -1
+4681 CD 00 45  call MenuMoveCursor
+4684 C3 97 46  jp _l554
+_l564:
+4687 FE F6     cp KEY_DOWN
+4689 C2 94 46  jp nz, _l565
+468C 06 01     ld b, 1
+468E CD 00 45  call MenuMoveCursor
+4691 C3 97 46  jp _l554
+_l565:
+4694 C3 20 46  jp _l555
+_l554:
+4697 C3 F8 45  jp _l550
+_l549:
+469A          ; Const strings
+_l435:
+469A 00 2C 00  db 0
  db 44
  db 0
-_l347:
-4570 10 00 29  db 16
+_l553:
+469D 10 00 29  db 16
  db 0
  db 41
  db 0
-_l363:
-4574 20 00 29  db 32
+_l552:
+46A1 20 00 29  db 32
  db 0
  db 41
  db 0
-_l399:
-4578 31 00 2C  db 49
+_l403:
+46A5 31 00 2C  db 49
  db 0
  db 44
  db 0
-_l400:
-457C 31 2E 35  db 49
+_l404:
+46A9 31 2E 35  db 49
  db 46
  db 53
  db 0
  db 44
  db 0
-_l387:
-4582 31 32 30  db 49
+_l391:
+46AF 31 32 30  db 49
  db 50
  db 48
  db 48
@@ -16688,34 +16992,22 @@ _l387:
  db 0
  db 44
  db 0
-_l382:
-458D 31 32 35  db 49
+_l386:
+46BA 31 32 35  db 49
  db 50
  db 53
  db 49
  db 0
  db 44
  db 0
-_l401:
-4594 32 00 2C  db 50
+_l405:
+46C1 32 00 2C  db 50
  db 0
  db 44
  db 0
-_l388:
-4598 32 34 30  db 50
+_l392:
+46C5 32 34 30  db 50
  db 52
- db 48
- db 48
- db 32
- db 161
- db 174
- db 164
- db 0
- db 44
- db 0
-_l389:
-45A3 34 38 30  db 52
- db 56
  db 48
  db 48
  db 32
@@ -16726,68 +17018,80 @@ _l389:
  db 44
  db 0
 _l393:
-45AE 35 00 2C  db 53
+46D0 34 38 30  db 52
+ db 56
+ db 48
+ db 48
+ db 32
+ db 161
+ db 174
+ db 164
+ db 0
+ db 44
+ db 0
+_l397:
+46DB 35 00 2C  db 53
+ db 0
+ db 44
+ db 0
+_l398:
+46DF 36 00 2C  db 54
+ db 0
+ db 44
+ db 0
+_l374:
+46E3 36 34 78  db 54
+ db 52
+ db 120
+ db 50
+ db 53
+ db 32
+ db 50
+ db 32
+ db 230
+ db 162
+ db 165
+ db 226
+ db 160
+ db 0
+ db 44
+ db 0
+_l375:
+46F3 36 34 78  db 54
+ db 52
+ db 120
+ db 50
+ db 53
+ db 32
+ db 52
+ db 32
+ db 230
+ db 162
+ db 165
+ db 226
+ db 160
+ db 0
+ db 44
+ db 0
+_l399:
+4703 37 00 2C  db 55
+ db 0
+ db 44
+ db 0
+_l400:
+4707 38 00 2C  db 56
+ db 0
+ db 44
+ db 0
+_l385:
+470B 38 36 36  db 56
+ db 54
+ db 54
  db 0
  db 44
  db 0
 _l394:
-45B2 36 00 2C  db 54
- db 0
- db 44
- db 0
-_l370:
-45B6 36 34 78  db 54
- db 52
- db 120
- db 50
- db 53
- db 32
- db 50
- db 32
- db 230
- db 162
- db 165
- db 226
- db 160
- db 0
- db 44
- db 0
-_l371:
-45C6 36 34 78  db 54
- db 52
- db 120
- db 50
- db 53
- db 32
- db 52
- db 32
- db 230
- db 162
- db 165
- db 226
- db 160
- db 0
- db 44
- db 0
-_l395:
-45D6 37 00 2C  db 55
- db 0
- db 44
- db 0
-_l396:
-45DA 38 00 2C  db 56
- db 0
- db 44
- db 0
-_l381:
-45DE 38 36 36  db 56
- db 54
- db 54
- db 0
- db 44
- db 0
-_l390:
-45E4 39 36 30  db 57
+4711 39 36 30  db 57
  db 54
  db 48
  db 48
@@ -16798,8 +17102,8 @@ _l390:
  db 0
  db 44
  db 0
-_l372:
-45EF 39 36 78  db 57
+_l376:
+471C 39 36 78  db 57
  db 54
  db 120
  db 50
@@ -16815,8 +17119,8 @@ _l372:
  db 0
  db 44
  db 0
-_l373:
-45FF 39 36 78  db 57
+_l377:
+472C 39 36 78  db 57
  db 54
  db 120
  db 50
@@ -16832,8 +17136,8 @@ _l373:
  db 0
  db 44
  db 0
-_l409:
-460F 43 54 53  db 67
+_l413:
+473C 43 54 53  db 67
  db 84
  db 83
  db 47
@@ -16843,8 +17147,8 @@ _l409:
  db 0
  db 44
  db 0
-_l439:
-4619 55 41 52  db 85
+_l443:
+4746 55 41 52  db 85
  db 65
  db 82
  db 84
@@ -16862,8 +17166,8 @@ _l439:
  db 0
  db 44
  db 0
-_l442:
-462B 55 41 52  db 85
+_l446:
+4758 55 41 52  db 85
  db 65
  db 82
  db 84
@@ -16879,8 +17183,8 @@ _l442:
  db 0
  db 44
  db 0
-_l438:
-463B 55 41 52  db 85
+_l442:
+4768 55 41 52  db 85
  db 65
  db 82
  db 84
@@ -16896,8 +17200,8 @@ _l438:
  db 0
  db 44
  db 0
-_l441:
-464B 55 41 52  db 85
+_l445:
+4778 55 41 52  db 85
  db 65
  db 82
  db 84
@@ -16914,8 +17218,8 @@ _l441:
  db 0
  db 44
  db 0
-_l440:
-465C 55 41 52  db 85
+_l444:
+4789 55 41 52  db 85
  db 65
  db 82
  db 84
@@ -16931,8 +17235,8 @@ _l440:
  db 0
  db 44
  db 0
-_l378:
-466C 55 53 42  db 85
+_l382:
+4799 55 53 42  db 85
  db 83
  db 66
  db 32
@@ -16956,8 +17260,8 @@ _l378:
  db 0
  db 44
  db 0
-_l426:
-4684 81 A5 AB  db 129
+_l430:
+47B1 81 A5 AB  db 129
  db 165
  db 171
  db 235
@@ -16965,8 +17269,8 @@ _l426:
  db 0
  db 44
  db 0
-_l375:
-468C 82 EB A1  db 130
+_l379:
+47B9 82 EB A1  db 130
  db 235
  db 161
  db 165
@@ -16986,8 +17290,8 @@ _l375:
  db 0
  db 44
  db 0
-_l380:
-46A0 82 EB A1  db 130
+_l384:
+47CD 82 EB A1  db 130
  db 235
  db 161
  db 165
@@ -17008,8 +17312,8 @@ _l380:
  db 0
  db 44
  db 0
-_l392:
-46B5 82 EB A1  db 130
+_l396:
+47E2 82 EB A1  db 130
  db 235
  db 161
  db 165
@@ -17043,8 +17347,8 @@ _l392:
  db 0
  db 44
  db 0
-_l398:
-46D7 82 EB A1  db 130
+_l402:
+4804 82 EB A1  db 130
  db 235
  db 161
  db 165
@@ -17080,8 +17384,8 @@ _l398:
  db 0
  db 44
  db 0
-_l408:
-46FB 82 EB A1  db 130
+_l412:
+4828 82 EB A1  db 130
  db 235
  db 161
  db 165
@@ -17114,8 +17418,8 @@ _l408:
  db 0
  db 44
  db 0
-_l403:
-471C 82 EB A1  db 130
+_l407:
+4849 82 EB A1  db 130
  db 235
  db 161
  db 165
@@ -17149,8 +17453,8 @@ _l403:
  db 0
  db 44
  db 0
-_l369:
-473E 82 EB A1  db 130
+_l373:
+486B 82 EB A1  db 130
  db 235
  db 161
  db 165
@@ -17174,8 +17478,8 @@ _l369:
  db 0
  db 44
  db 0
-_l386:
-4756 82 EB A1  db 130
+_l390:
+4883 82 EB A1  db 130
  db 235
  db 161
  db 165
@@ -17200,8 +17504,8 @@ _l386:
  db 0
  db 44
  db 0
-_l411:
-476F 82 EB A1  db 130
+_l415:
+489C 82 EB A1  db 130
  db 235
  db 161
  db 165
@@ -17217,8 +17521,8 @@ _l411:
  db 0
  db 44
  db 0
-_l425:
-477F 83 AE AB  db 131
+_l429:
+48AC 83 AE AB  db 131
  db 174
  db 171
  db 227
@@ -17228,8 +17532,8 @@ _l425:
  db 0
  db 44
  db 0
-_l443:
-4789 84 A8 E1  db 132
+_l447:
+48B6 84 A8 E1  db 132
  db 168
  db 225
  db 170
@@ -17239,8 +17543,8 @@ _l443:
  db 0
  db 44
  db 0
-_l444:
-4793 84 A8 E1  db 132
+_l448:
+48C0 84 A8 E1  db 132
  db 168
  db 225
  db 170
@@ -17250,8 +17554,8 @@ _l444:
  db 0
  db 44
  db 0
-_l422:
-479D 86 F1 AB  db 134
+_l426:
+48CA 86 F1 AB  db 134
  db 241
  db 171
  db 226
@@ -17260,8 +17564,8 @@ _l422:
  db 0
  db 44
  db 0
-_l429:
-47A6 87 A0 AF  db 135
+_l433:
+48D3 87 A0 AF  db 135
  db 160
  db 175
  db 227
@@ -17275,8 +17579,8 @@ _l429:
  db 0
  db 44
  db 0
-_l430:
-47B4 87 A0 AF  db 135
+_l434:
+48E1 87 A0 AF  db 135
  db 160
  db 175
  db 227
@@ -17293,8 +17597,8 @@ _l430:
  db 0
  db 44
  db 0
-_l421:
-47C5 87 A5 AB  db 135
+_l425:
+48F2 87 A5 AB  db 135
  db 165
  db 171
  db 165
@@ -17304,8 +17608,8 @@ _l421:
  db 0
  db 44
  db 0
-_l469:
-47CF 88 E1 AA  db 136
+_l473:
+48FC 88 E1 AA  db 136
  db 225
  db 170
  db 224
@@ -17319,8 +17623,8 @@ _l469:
  db 0
  db 41
  db 0
-_l428:
-47DD 88 E1 AA  db 136
+_l432:
+490A 88 E1 AA  db 136
  db 225
  db 170
  db 224
@@ -17334,8 +17638,8 @@ _l428:
  db 0
  db 44
  db 0
-_l383:
-47EB 8A 8E 88  db 138
+_l387:
+4918 8A 8E 88  db 138
  db 142
  db 136
  db 45
@@ -17343,8 +17647,8 @@ _l383:
  db 0
  db 44
  db 0
-_l384:
-47F3 8A 8E 88  db 138
+_l388:
+4920 8A 8E 88  db 138
  db 142
  db 136
  db 45
@@ -17352,8 +17656,8 @@ _l384:
  db 0
  db 44
  db 0
-_l432:
-47FB 8A AE A4  db 138
+_l436:
+4928 8A AE A4  db 138
  db 174
  db 164
  db 168
@@ -17365,8 +17669,8 @@ _l432:
  db 0
  db 44
  db 0
-_l420:
-4807 8A E0 A0  db 138
+_l424:
+4934 8A E0 A0  db 138
  db 224
  db 160
  db 225
@@ -17376,8 +17680,8 @@ _l420:
  db 0
  db 44
  db 0
-_l406:
-4811 8D A5 20  db 141
+_l410:
+493E 8D A5 20  db 141
  db 165
  db 32
  db 231
@@ -17389,15 +17693,15 @@ _l406:
  db 0
  db 44
  db 0
-_l404:
-481D 8D A5 E2  db 141
+_l408:
+494A 8D A5 E2  db 141
  db 165
  db 226
  db 0
  db 44
  db 0
-_l376:
-4823 90 A5 A0  db 144
+_l380:
+4950 90 A5 A0  db 144
  db 165
  db 160
  db 171
@@ -17410,8 +17714,8 @@ _l376:
  db 0
  db 44
  db 0
-_l377:
-4830 90 A5 A0  db 144
+_l381:
+495D 90 A5 A0  db 144
  db 165
  db 160
  db 171
@@ -17424,8 +17728,8 @@ _l377:
  db 0
  db 44
  db 0
-_l419:
-483D 91 A5 E0  db 145
+_l423:
+496A 91 A5 E0  db 145
  db 165
  db 224
  db 235
@@ -17433,8 +17737,8 @@ _l419:
  db 0
  db 44
  db 0
-_l423:
-4845 91 A8 AD  db 145
+_l427:
+4972 91 A8 AD  db 145
  db 168
  db 173
  db 168
@@ -17442,8 +17746,8 @@ _l423:
  db 0
  db 44
  db 0
-_l445:
-484D 91 AE E5  db 145
+_l449:
+497A 91 AE E5  db 145
  db 174
  db 229
  db 224
@@ -17465,8 +17769,8 @@ _l445:
  db 0
  db 44
  db 0
-_l418:
-4863 92 A5 AC  db 146
+_l422:
+4990 92 A5 AC  db 146
  db 165
  db 172
  db 173
@@ -17482,8 +17786,8 @@ _l418:
  db 0
  db 44
  db 0
-_l415:
-4873 92 F1 AC  db 146
+_l419:
+49A0 92 F1 AC  db 146
  db 241
  db 172
  db 173
@@ -17498,8 +17802,8 @@ _l415:
  db 0
  db 44
  db 0
-_l414:
-4882 92 F1 AC  db 146
+_l418:
+49AF 92 F1 AC  db 146
  db 241
  db 172
  db 173
@@ -17515,8 +17819,8 @@ _l414:
  db 0
  db 44
  db 0
-_l413:
-4892 92 F1 AC  db 146
+_l417:
+49BF 92 F1 AC  db 146
  db 241
  db 172
  db 173
@@ -17532,8 +17836,8 @@ _l413:
  db 0
  db 44
  db 0
-_l416:
-48A2 92 F1 AC  db 146
+_l420:
+49CF 92 F1 AC  db 146
  db 241
  db 172
  db 173
@@ -17547,8 +17851,8 @@ _l416:
  db 0
  db 44
  db 0
-_l417:
-48B0 92 F1 AC  db 146
+_l421:
+49DD 92 F1 AC  db 146
  db 241
  db 172
  db 173
@@ -17567,8 +17871,8 @@ _l417:
  db 0
  db 44
  db 0
-_l424:
-48C3 94 A8 AE  db 148
+_l428:
+49F0 94 A8 AE  db 148
  db 168
  db 174
  db 171
@@ -17581,8 +17885,8 @@ _l424:
  db 0
  db 44
  db 0
-_l434:
-48D0 96 A2 A5  db 150
+_l438:
+49FD 96 A2 A5  db 150
  db 162
  db 165
  db 226
@@ -17591,8 +17895,8 @@ _l434:
  db 0
  db 44
  db 0
-_l435:
-48D9 96 A2 A5  db 150
+_l439:
+4A06 96 A2 A5  db 150
  db 162
  db 165
  db 226
@@ -17601,8 +17905,8 @@ _l435:
  db 0
  db 44
  db 0
-_l436:
-48E2 96 A2 A5  db 150
+_l440:
+4A0F 96 A2 A5  db 150
  db 162
  db 165
  db 226
@@ -17611,8 +17915,8 @@ _l436:
  db 0
  db 44
  db 0
-_l437:
-48EB 96 A2 A5  db 150
+_l441:
+4A18 96 A2 A5  db 150
  db 162
  db 165
  db 226
@@ -17621,8 +17925,8 @@ _l437:
  db 0
  db 44
  db 0
-_l412:
-48F4 97 F1 E0  db 151
+_l416:
+4A21 97 F1 E0  db 151
  db 241
  db 224
  db 173
@@ -17631,8 +17935,8 @@ _l412:
  db 0
  db 44
  db 0
-_l405:
-48FD 97 F1 E2  db 151
+_l409:
+4A2A 97 F1 E2  db 151
  db 241
  db 226
  db 173
@@ -17641,8 +17945,8 @@ _l405:
  db 0
  db 44
  db 0
-_l433:
-4906 9D AA E0  db 157
+_l437:
+4A33 9D AA E0  db 157
  db 170
  db 224
  db 160
@@ -17650,6 +17954,6 @@ _l433:
  db 0
  db 44
  db 0
-490E 00 00 00  align 128
+4A3B 00 00 00  align 128
 file_end:
-4980 00 00 00  savebin "boot.cpm", 0, $
+4A80 00 00 00  savebin "boot.cpm", 0, $

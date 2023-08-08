@@ -495,14 +495,6 @@ static void halt() {
     Nop();
 }
 
-static void GotoHl(...) {
-    assert(false);
-}
-
-static void goto_hl(...) {
-    GotoHl();
-}
-
 static RegisterA& Compare(RegisterA& x, uint8_t value) {
     uint8_t temp = x.value_ - value;
     assert(false);  // TODO
