@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="обрезка.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="1.282695"
+     inkscape:cx="360.56897"
+     inkscape:cy="1016.9994"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid9" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2">
+    <marker
+       id="CheckToolsAndOPMarker"
+       orient="auto"
+       refX="-4"
+       refY="-1.687441"
+       style="overflow:visible">
+      <path
+         d="m 4.588864,-1.687441 0.0,0.0 L 9.177728,0.0 c -0.73311,-0.996261 -0.728882,-2.359329 0.0,-3.374882"
+         style="fill:#000044;fill-rule:evenodd;stroke:none"
+         id="path2342" />
+    </marker>
+    <marker
+       id="DrawCurveMarker"
+       orient="auto"
+       refX="-4"
+       refY="-1.687441"
+       style="overflow:visible">
+      <path
+         d="m 4.588864,-1.687441 0.0,0.0 L 9.177728,0.0 c -0.73311,-0.996261 -0.728882,-2.359329 0.0,-3.374882"
+         style="fill:#000044;fill-rule:evenodd;stroke:none"
+         id="path2345" />
+    </marker>
+    <marker
+       id="DrawCurveMarker_r"
+       orient="auto"
+       refX="4"
+       refY="-1.687441"
+       style="overflow:visible">
+      <path
+         d="m -4.588864,-1.687441 0.0,0.0 L -9.177728,0.0 c 0.73311,-0.996261 0.728882,-2.359329 0.0,-3.374882"
+         style="fill:#000044;fill-rule:evenodd;stroke:none"
+         id="path2348" />
+    </marker>
+    <marker
+       id="InOutPathMarker"
+       orient="auto"
+       refX="-4"
+       refY="-1.687441"
+       style="overflow:visible">
+      <path
+         d="m 4.588864,-1.687441 0.0,0.0 L 9.177728,0.0 c -0.73311,-0.996261 -0.728882,-2.359329 0.0,-3.374882"
+         style="fill:#0072a7;fill-rule:evenodd;stroke:none"
+         id="path2351" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Слой 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 0,297.12708 v -11.64167 h 8.9958332 v -8.73125 H 88.899999 V 285.75 h 8.995833 v 11.37708 z"
+       id="path226" />
+    <image
+       width="98"
+       height="20.751944"
+       preserveAspectRatio="none"
+       xlink:href="data:image/png;base64,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 "
+       id="image41"
+       x="-98"
+       y="301.77554"
+       transform="scale(-1,1)"
+       style="opacity:0.383727;stroke-width:6.24741" />
+    <path
+       id="path1758"
+       style="opacity:1;fill:none;stroke:#000000;stroke-width:0.3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers fill stroke"
+       d="m 5.9032445,291.34232 a 1.25,1.25 0 0 1 -1.25,1.25 1.25,1.25 0 0 1 -1.25,-1.25 1.25,1.25 0 0 1 1.25,-1.25 1.25,1.25 0 0 1 1.25,1.25 z" />
+    <path
+       id="path1758-3"
+       style="fill:none;stroke:#000000;stroke-width:0.3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers fill stroke"
+       d="m 94.562782,291.34232 a 1.25,1.25 0 0 1 -1.25,1.25 1.25,1.25 0 0 1 -1.25,-1.25 1.25,1.25 0 0 1 1.25,-1.25 1.25,1.25 0 0 1 1.25,1.25 z" />
+    <g
+       gcodetools="Gcodetools orientation group"
+       id="g2375"
+       style="fill:#b3b3b3">
+      <g
+         gcodetools="Gcodetools orientation point (2 points)"
+         id="g2365"
+         style="fill:#b3b3b3">
+        <path
+           style="stroke:none;fill:#b3b3b3"
+           gcodetools="Gcodetools orientation point arrow"
+           d="m 0 297 l 2.9375 -6.34375 l 0.8125 1.90625 l 6.84375 -6.84375 l 0 0 l 0.6875 0.6875 l -6.84375 6.84375 l 1.90625 0.8125 z"
+           id="path2359" />
+        <text
+           x="10.0"
+           y="287.0"
+           style="font-family:DejaVu Sans;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#b3b3b3;fill-opacity:1;stroke:none;font-size:10px"
+           gcodetools="Gcodetools orientation point text"
+           xml:space="preserve"
+           id="text2363"><tspan
+             x="10.0"
+             y="287.0"
+             sodipodi:role="line"
+             id="tspan2361">(0.0; 0.0; 0.0)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools orientation point (2 points)"
+         id="g2373"
+         style="fill:#b3b3b3">
+        <path
+           style="stroke:none;fill:#b3b3b3"
+           gcodetools="Gcodetools orientation point arrow"
+           d="m 100 297 l 2.9375 -6.34375 l 0.8125 1.90625 l 6.84375 -6.84375 l 0 0 l 0.6875 0.6875 l -6.84375 6.84375 l 1.90625 0.8125 z"
+           id="path2367" />
+        <text
+           x="110.0"
+           y="287.0"
+           style="font-family:DejaVu Sans;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#b3b3b3;fill-opacity:1;stroke:none;font-size:10px"
+           gcodetools="Gcodetools orientation point text"
+           xml:space="preserve"
+           id="text2371"><tspan
+             x="110.0"
+             y="287.0"
+             sodipodi:role="line"
+             id="tspan2369">(100.0; 0.0; -0.125)</tspan></text>
+      </g>
+    </g>
+    <g
+       gcodetools="Gcodetools tool definition"
+       transform="translate(-25.458333,363.95833)"
+       id="g2589">
+      <path
+         gcodetools="Gcodetools tool background"
+         style="fill-opacity:0.5;stroke:#444444"
+         d="M -20,-20 H 380 V 350 H -20 Z"
+         id="path2377" />
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2387">
+        <text
+           x="0"
+           y="0"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2381"><tspan
+             x="0"
+             y="0"
+             sodipodi:role="line"
+             id="tspan2379">name</tspan></text>
+        <text
+           x="150"
+           y="0"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2385"><tspan
+             x="150"
+             y="0"
+             sodipodi:role="line"
+             id="tspan2383">Default tool</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2397">
+        <text
+           x="0"
+           y="20"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2391"><tspan
+             x="0"
+             y="20"
+             sodipodi:role="line"
+             id="tspan2389">id</tspan></text>
+        <text
+           x="150"
+           y="20"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2395"><tspan
+             x="150"
+             y="20"
+             sodipodi:role="line"
+             id="tspan2393">default tool</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2407">
+        <text
+           x="0"
+           y="35"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2401"><tspan
+             x="0"
+             y="35"
+             sodipodi:role="line"
+             id="tspan2399">diameter</tspan></text>
+        <text
+           x="150"
+           y="35"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2405"><tspan
+             x="150"
+             y="35"
+             sodipodi:role="line"
+             id="tspan2403">10.0</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2417">
+        <text
+           x="0"
+           y="50"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2411"><tspan
+             x="0"
+             y="50"
+             sodipodi:role="line"
+             id="tspan2409">feed</tspan></text>
+        <text
+           x="150"
+           y="50"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2415"><tspan
+             x="150"
+             y="50"
+             sodipodi:role="line"
+             id="tspan2413">100.0</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2427">
+        <text
+           x="0"
+           y="65"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2421"><tspan
+             x="0"
+             y="65"
+             sodipodi:role="line"
+             id="tspan2419">shape</tspan></text>
+        <text
+           x="150"
+           y="65"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2425"><tspan
+             x="150"
+             y="65"
+             sodipodi:role="line"
+             id="tspan2423">10</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2437">
+        <text
+           x="0"
+           y="80"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2431"><tspan
+             x="0"
+             y="80"
+             sodipodi:role="line"
+             id="tspan2429">penetration angle</tspan></text>
+        <text
+           x="150"
+           y="80"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2435"><tspan
+             x="150"
+             y="80"
+             sodipodi:role="line"
+             id="tspan2433">90.0</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2447">
+        <text
+           x="0"
+           y="95"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2441"><tspan
+             x="0"
+             y="95"
+             sodipodi:role="line"
+             id="tspan2439">penetration feed</tspan></text>
+        <text
+           x="150"
+           y="95"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2445"><tspan
+             x="150"
+             y="95"
+             sodipodi:role="line"
+             id="tspan2443">100.0</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2457">
+        <text
+           x="0"
+           y="110"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2451"><tspan
+             x="0"
+             y="110"
+             sodipodi:role="line"
+             id="tspan2449">passing feed</tspan></text>
+        <text
+           x="150"
+           y="110"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2455"><tspan
+             x="150"
+             y="110"
+             sodipodi:role="line"
+             id="tspan2453">800</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2467">
+        <text
+           x="0"
+           y="125"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2461"><tspan
+             x="0"
+             y="125"
+             sodipodi:role="line"
+             id="tspan2459">depth step</tspan></text>
+        <text
+           x="150"
+           y="125"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2465"><tspan
+             x="150"
+             y="125"
+             sodipodi:role="line"
+             id="tspan2463">1.0</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2477">
+        <text
+           x="0"
+           y="140"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2471"><tspan
+             x="0"
+             y="140"
+             sodipodi:role="line"
+             id="tspan2469">in trajectotry</tspan></text>
+        <text
+           x="150"
+           y="140"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2475"><tspan
+             x="150"
+             y="140"
+             sodipodi:role="line"
+             id="tspan2473">(None)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2487">
+        <text
+           x="0"
+           y="155"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2481"><tspan
+             x="0"
+             y="155"
+             sodipodi:role="line"
+             id="tspan2479">out trajectotry</tspan></text>
+        <text
+           x="150"
+           y="155"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2485"><tspan
+             x="150"
+             y="155"
+             sodipodi:role="line"
+             id="tspan2483">(None)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2497">
+        <text
+           x="0"
+           y="170"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2491"><tspan
+             x="0"
+             y="170"
+             sodipodi:role="line"
+             id="tspan2489">gcode before path</tspan></text>
+        <text
+           x="150"
+           y="170"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2495"><tspan
+             x="150"
+             y="170"
+             sodipodi:role="line"
+             id="tspan2493">(None)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2507">
+        <text
+           x="0"
+           y="185"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2501"><tspan
+             x="0"
+             y="185"
+             sodipodi:role="line"
+             id="tspan2499">gcode after path</tspan></text>
+        <text
+           x="150"
+           y="185"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2505"><tspan
+             x="150"
+             y="185"
+             sodipodi:role="line"
+             id="tspan2503">(None)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2517">
+        <text
+           x="0"
+           y="200"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2511"><tspan
+             x="0"
+             y="200"
+             sodipodi:role="line"
+             id="tspan2509">sog</tspan></text>
+        <text
+           x="150"
+           y="200"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2515"><tspan
+             x="150"
+             y="200"
+             sodipodi:role="line"
+             id="tspan2513">(None)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2527">
+        <text
+           x="0"
+           y="215"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2521"><tspan
+             x="0"
+             y="215"
+             sodipodi:role="line"
+             id="tspan2519">spinlde rpm</tspan></text>
+        <text
+           x="150"
+           y="215"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2525"><tspan
+             x="150"
+             y="215"
+             sodipodi:role="line"
+             id="tspan2523">(None)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2537">
+        <text
+           x="0"
+           y="230"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2531"><tspan
+             x="0"
+             y="230"
+             sodipodi:role="line"
+             id="tspan2529">CW or CCW</tspan></text>
+        <text
+           x="150"
+           y="230"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2535"><tspan
+             x="150"
+             y="230"
+             sodipodi:role="line"
+             id="tspan2533">(None)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2547">
+        <text
+           x="0"
+           y="245"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2541"><tspan
+             x="0"
+             y="245"
+             sodipodi:role="line"
+             id="tspan2539">tool change gcode</tspan></text>
+        <text
+           x="150"
+           y="245"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2545"><tspan
+             x="150"
+             y="245"
+             sodipodi:role="line"
+             id="tspan2543">(None)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2557">
+        <text
+           x="0"
+           y="260"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2551"><tspan
+             x="0"
+             y="260"
+             sodipodi:role="line"
+             id="tspan2549">4th axis meaning</tspan></text>
+        <text
+           x="150"
+           y="260"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2555"><tspan
+             x="150"
+             y="260"
+             sodipodi:role="line"
+             id="tspan2553">(None)</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2567">
+        <text
+           x="0"
+           y="275"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2561"><tspan
+             x="0"
+             y="275"
+             sodipodi:role="line"
+             id="tspan2559">4th axis scale</tspan></text>
+        <text
+           x="150"
+           y="275"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2565"><tspan
+             x="150"
+             y="275"
+             sodipodi:role="line"
+             id="tspan2563">1.0</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2577">
+        <text
+           x="0"
+           y="290"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2571"><tspan
+             x="0"
+             y="290"
+             sodipodi:role="line"
+             id="tspan2569">4th axis offset</tspan></text>
+        <text
+           x="150"
+           y="290"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2575"><tspan
+             x="150"
+             y="290"
+             sodipodi:role="line"
+             id="tspan2573">0.0</tspan></text>
+      </g>
+      <g
+         gcodetools="Gcodetools tool parameter"
+         id="g2587">
+        <text
+           x="0"
+           y="305"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field name"
+           xml:space="preserve"
+           id="text2581"><tspan
+             x="0"
+             y="305"
+             sodipodi:role="line"
+             id="tspan2579">fine feed</tspan></text>
+        <text
+           x="150"
+           y="305"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:'DejaVu Sans';fill:#000000;fill-opacity:1;stroke:none"
+           gcodetools="Gcodetools tool definition field value"
+           xml:space="preserve"
+           id="text2585"><tspan
+             x="150"
+             y="305"
+             sodipodi:role="line"
+             id="tspan2583">800</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g2591" />
+    <g
+       id="g9109" />
+    <g
+       gcodetools="Preview group"
+       id="g9197" />
+    <g
+       gcodetools="Preview group"
+       id="g9199" />
+    <g
+       id="g12320" />
+    <g
+       id="g12725" />
+  </g>
+</svg>

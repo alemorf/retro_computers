@@ -103,7 +103,7 @@ function emptyFont()
 var defaultParams = {
     font:            { value:emptyFont(), type:"integerarray", hidden:1 },
     fontName:        { value:"font.bin", type:"string" },
-    charWidth:       { value:8,  minValue:1, maxValue:8,   type:"integer" },
+    charWidth:       { value:8,  minValue:1, maxValue:9,   type:"integer" },
     charHeight:      { value:8,  minValue:1, maxValue:32,  type:"integer" },
     charFileHeight:  { value:8,  minValue:1, maxValue:32,  type:"integer" },
     editCellWidth:   { value:21, minValue:1, maxValue:128, type:"integer" },
@@ -233,7 +233,7 @@ function arrayToBinary(a)
 {
     var b = "";
     for (var i in a)
-        b += String.fromCharCode(a[i]);
+        b += String.fromCharCode(a[i] & 0xFF);
     return b;
 }
 
@@ -540,6 +540,10 @@ function createFontList(canvas, onselect)
         for (var y = 0; y < params.charHeight; y++)
         {
             var l = y < params.charFileHeight ? params.font[y * (params.swapAddrXY ? 256 : 1) + oc] : 0;
+            
+            if (params.charWidth == 9)
+                l = (l << 1) | (l & 1);
+            
             for (var x = params.charWidth - 1; x >= 0; x--, l >>= 1)
             {
                 context.fillStyle = colors[t][l & 1];
