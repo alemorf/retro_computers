@@ -1,0 +1,9 @@
+Micro 80
+
+Year	1983
+RAM	64 kB
+ROM	2 kB
+CPU	К580ВМ80А 2.5 MHz
+Text	64x32 16 colors
+
+TODO
