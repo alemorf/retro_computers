@@ -1,9 +1,15 @@
+/* Прошивка компьютера Микро 80 из журнала Радио за 1983 год
+ * Реверc-инженеринг 5-06-2024 Алексей Морозов aleksey.f.morozov@gmail.com
+ */
+
 #include "cmm.h"
 
 const int SCREEN_WIDTH = 64;
 const int SCREEN_HEIGHT = 32;
+const int SCREEN_ATTRIB_BEGIN = 0xE000;
 const int SCREEN_BEGIN = 0xE800;
-const int SCREEN_END = 0xF000;
+const int SCREEN_END = SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_HEIGHT;
+const int SCREEN_ATTRIB_DEFAULT = 0x00;
 const int SCREEN_ATTRIB_UNDERLINE = 0x80;
 
 const int PORT_TAPE = 1;
@@ -14,6 +20,7 @@ const int PORT_KEYBOARD_MODS = 5;
 
 const int KEYBOARD_ROW_MASK = 0x7F;
 const int KEYBOARD_MODS_MASK = 0x07;
+const int KEYBOARD_RUS_MOD = 1 << 0;
 const int KEYBOARD_COLUMN_COUNT = 8;
 const int KEYBOARD_ROW_COUNT = 7;
 
@@ -40,7 +47,7 @@ void IsKeyPressed();
 void PrintHexByte(...);
 void PrintString(...);
 void Monitor();
-void MonitorExecute(...);
+void MonitorExecute();
 void PrintCharA(...);
 void ReadString();
 void MonitorError();
@@ -57,10 +64,10 @@ void CmpHlDe(...);
 void ReturnCf(...);
 void ParseDword1(...);
 void PrintHex(...);
-void PrintParam1();
-void PrintHexWord(...);
+void PrintParam1Space();
+void PrintHexWordSpace(...);
 void IncWord(...);
-void PrintRegs(...);
+void PrintRegs();
 void CmdXS(...);
 void FindRegister(...);
 void ReadKey(...);
@@ -77,7 +84,7 @@ void ReadTapeDelay(...);
 void PrintCharInt(...);
 void WriteTapeDelay(...);
 void TapeDelay(...);
-void CleanScreenHome();
+void ClearScreenHome();
 void MoveCursorLeft(...);
 void MoveCursorRight(...);
 void MoveCursorUp(...);
@@ -139,10 +146,10 @@ extern uint8_t cmdBuffer __address(0xF77B);
 extern uint8_t cmdBuffer1 __address(0xF77B + 1);
 extern uint8_t cmdBufferEnd __address(0xF79A);  // 32 bytes
 
-extern uint8_t aPrompt;
-extern uint8_t monitorCommands;
-extern uint8_t regList;
-extern uint8_t aLf;
+extern uint8_t aPrompt[];
+extern uint8_t monitorCommands[];
+extern uint8_t regList[];
+extern uint8_t aLf[];
 extern uint8_t keyTable[];
 
 asm(" org 0F800h");
@@ -199,7 +206,7 @@ void Monitor() {
     MonitorExecute();
 }
 
-void MonitorExecute(...) {
+void MonitorExecute() {
     hl = &cmdBuffer;
     b = *hl;
     hl = &monitorCommands;
@@ -422,14 +429,14 @@ void PrintHex(...) {
 
 void PrintLfParam1(...) {
     PrintLf();
-    PrintParam1();
+    PrintParam1Space();
 }
 
-void PrintParam1() {
-    PrintHexWord(hl = &param1h);
+void PrintParam1Space() {
+    PrintHexWordSpace(hl = &param1h);
 }
 
-void PrintHexWord(...) {
+void PrintHexWordSpace(...) {
     PrintHexByte(a = *hl);
     hl--;
     PrintHexByte(a = *hl);
@@ -493,7 +500,7 @@ void CmdX() {
 
 void CmdXS() {
     PrintSpace();
-    PrintHexWord(hl = &regSPH);
+    PrintHexWordSpace(hl = &regSPH);
     Input();
     if (flag_nc)
         return Monitor();
@@ -533,9 +540,9 @@ void PrintRegs(...) {
     c = a = *de;
     PrintRegMinus();
     param1 = hl = regs;
-    PrintParam1();
+    PrintParam1Space();
     PrintRegMinus(c = 'O');
-    PrintHexWord(hl = &lastBreakAddressHigh);
+    PrintHexWordSpace(hl = &lastBreakAddressHigh);
     PrintLf();
 }
 
@@ -617,7 +624,7 @@ void CmdG() {
     ParseParams();
     if ((a = cmdBuffer1) == 0x0D)
         param1 = hl = lastBreakAddress;
-    return Run();
+    Run();
 }
 
 void Run() {
@@ -813,7 +820,7 @@ void CmdA() {
     PrintLf();
 }
 
-/* K - Вывод кода символа с клавиатуры на экран */
+/* K - Вывод символа с клавиатуры на экран */
 
 void CmdK() {
     for (;;) {
@@ -907,7 +914,7 @@ void CmdH(...) {
     hl = param2;
     hl += de;
     param1 = hl;
-    PrintParam1();
+    PrintParam1Space();
 
     hl = param2;
     swap(hl, de);
@@ -921,7 +928,7 @@ void CmdH(...) {
     de++;
     hl += de;
     param1 = hl;
-    PrintParam1();
+    PrintParam1Space();
     PrintLf();
 }
 
@@ -958,8 +965,8 @@ void CmdI() {
 }
 
 void CmdIEnd(...) {
-    PrintHexWord(hl = &tapeStartH);
-    PrintHexWord(hl = &tapeStopH);
+    PrintHexWordSpace(hl = &tapeStartH);
+    PrintHexWordSpace(hl = &tapeStopH);
     PrintLf();
 }
 
@@ -1020,7 +1027,7 @@ void ReadTapeByte(...) {
     do {
     loc_FD9D:
         a = c;
-        a &= KEYBOARD_ROW_MASK;
+        a &= 0x7F;
         CyclicRotateLeft(a, 1);
         c = a;
 
@@ -1140,12 +1147,12 @@ void PrintCharInt(...) {
     hl = cursor;
     de = -(SCREEN_WIDTH * SCREEN_HEIGHT) + 1;
     hl += de;
-    *hl = 0;
+    *hl = SCREEN_ATTRIB_DEFAULT;
 
     hl = cursor;
     a = c;
     if (a == 0x1F)
-        return CleanScreenHome();
+        return ClearScreenHome();
     if (a == 0x08)
         return MoveCursorLeft(hl);
     if (a == 0x18)
@@ -1176,11 +1183,11 @@ void MoveCursor(...) {
     cursor = hl;
     de = -(SCREEN_WIDTH * SCREEN_HEIGHT) + 1;
     hl += de;
-    *hl = SCREEN_ATTRIB_UNDERLINE;
+    *hl = SCREEN_ATTRIB_DEFAULT | SCREEN_ATTRIB_UNDERLINE;
     pop(hl, bc, de, a);
 }
 
-void CleanScreenHome() {
+void ClearScreenHome() {
     ClearScreen();
     MoveCursorHome();
 }
@@ -1257,9 +1264,9 @@ void MoveCursorNextLine1(...) {
 
     IsKeyPressed();
     if (a == 0)
-        return CleanScreenHome();
+        return ClearScreenHome();
     ReadKey();
-    CleanScreenHome();
+    ClearScreenHome();
 }
 
 void ReadKey() {
@@ -1404,4 +1411,4 @@ void IsKeyPressed() {
     a = 0xFF; /* Returns 0xFF if there are any keys pressed */
 }
 
-asm(" savebin \"bios.bin\", 0xF800, 0x10000");
+asm(" savebin \"standard_bios.bin\", 0xF800, 0x10000");
