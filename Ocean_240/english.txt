@@ -1,9 +1,10 @@
 Ocean 240
 
-Year	1986
-RAM	128 kB
+Year	1982
+RAM	128 - 320 kB
 ROM	16 kB
 CPU	i8080 2.4 MHz
+Ports	Printer, RS232, 24 GPIO, tape, monitor, floppy
 Graph	512x256x2, 256x256x4 palette 8 colors
 
 "Ocean 240" is a rare Soviet computer. I wouldn't be surprised if only two
@@ -26,9 +27,9 @@ display 32 or 64 characters across the screen width. And there is still a
 margin, the computer can display 80 characters across the screen width using
 6x8 pixel font. There are two video pages. In 256x256 mode, 4 colors are
 displayed from a palette of 8 colors. There are 8 fixed palettes. Hardware
-vertical scrolling allows to work fast in the console. 128 kilobytes of RAM
-allows to organize a RAM disk, since the CP/M operating system cannot use more
-than 64 kilobytes.
+vertical scrolling allows to work fast in the console. 128 - 320 kilobytes of
+RAM allows to organize a RAM disk, since the CP/M operating system cannot use
+more than 64 kilobytes.
 
 I took photos from the site http://azmaster.narod.ru/Ocean-240. I decided to
 duplicate the information about this computer so that it would not disappear.
