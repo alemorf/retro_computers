@@ -1,7 +1,7 @@
 EMU_DIR=../../ocean_emu/
 EMU_FILE=$(EMU_DIR)/mon.bin
 
-all: keyb.bin full.bin bios.bin cpm.bin bios_512.bin
+all: keyb.bin full.bin bios.bin cpm.bin bios_512.bin cpm_512.bin
 
 keyb.bin: keyb.asm Makefile
 	wine tasm.exe -85 -b -c keyb.asm keyb.bin || rm keyb.bin
@@ -33,8 +33,12 @@ bios.bin: full.bin Makefile
 bios_512.bin: bios.bin Makefile
 	cat bios.bin bios.bin bios.bin bios.bin bios.bin bios.bin bios.bin bios.bin >bios_512.bin
 
-cpm.bin: full.bin
+cpm.bin: full.bin Makefile
 	dd if=full.bin of=cpm.bin bs=1 skip=0 count=8192
 
+cpm_512.bin: cpm.bin Makefile
+	cat cpm.bin cpm.bin cpm.bin cpm.bin cpm.bin cpm.bin cpm.bin cpm.bin >cpm_512.bin
+
 clean:
-	rm keyb.bin full.bin bios.bin bios_512.bin cpm.bin keyb.lst
+	rm keyb.bin full.bin bios.bin bios_512.bin cpm.bin keyb.lst cpm_512.bin
+
