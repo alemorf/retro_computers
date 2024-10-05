@@ -9,7 +9,7 @@ KeyCheck:
         nop
 #endif
 
-        ani   KEYBOARD_INT_MASK
+        ani   KEY_INT_MASK
 
 #ifndef NO_DEAD_CODE
         mvi   a, 0

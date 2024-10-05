@@ -9,7 +9,7 @@ KeyRead:
         jz    KeyRead
 
         ; Получение кода
-        in    PORT_KEYBOARD_IN
+        in    PORT_KEY_IN
 
 #ifndef NO_DEAD_CODE
         nop
@@ -19,9 +19,9 @@ KeyRead:
         ; Подтверждение получения
         push   psw
         mvi    a, 80h
-        out    PORT_KEYBOARD_OUT
+        out    PORT_KEY_OUT
         xra    a
-        out    PORT_KEYBOARD_OUT
+        out    PORT_KEY_OUT
         pop    psw
 
         ret
