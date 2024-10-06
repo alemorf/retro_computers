@@ -27,4 +27,4 @@ loc_E688:   mov    m, a
         mvi    a, 0
         out    PORT_MAPPER
 
-        jmp    loc_E66C
+        jmp    CursorHome
