@@ -13,7 +13,7 @@ loc_D66A: mvi    m, 0E5h
         ; Копируем каталог, 7 секторов размером 128 байт из ПЗУ в начало ДОЗУ.
         ; 8 сектор заполняем байтом 0E5h.
         ; 1 сектор в ПЗУ это начальный загрузчик.
-        lxi    h, (RAM_DISK_SIZE_KB * 8) + (40 * 8) + 7
+        lxi    h, (RAM_DISK_SIZE_KB + 41) * 8 - 1
         lxi    d, 7
 InitRamLoop:
           push   h
@@ -35,7 +35,7 @@ InitRamLoop:
         ; Записываем байт 0E5h во все страницы RAM диска
         lxi    h, v_cpm_sector_buffer
         lxi    d, 0
-        mvi    b, RAM_DISK_SIZE_KB / RAM_DISK_PAGE_SIZE_KB
+        mvi    b, RAM_DISK_BLOCK_SIZE / 128
 loc_D679: push   b
           call   RamDiskWrite
           pop    b

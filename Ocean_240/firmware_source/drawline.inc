@@ -223,7 +223,7 @@ DrawLineVert:
         ; Вход: de - координаты. Выход: hl - адрес, b - смещение внутри байта.
         call   CalcPixelAddress
 
-        ; Вычиление маски
+        ; Вычисление маски
         mvi    a, 80h
 loc_EFD1: rlc
           dcr    b
@@ -328,7 +328,7 @@ loc_F01E:
         ; Вход: de - координаты. Выход: hl - адрес, b - смещение внутри байта.
         call   CalcPixelAddress
 
-        ; Вычиление маски
+        ; Вычисление маски
         mvi    a, 80h
 loc_F023: rlc
           dcr    b
