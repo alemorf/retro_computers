@@ -37,6 +37,6 @@ loc_E45A:
         mov    h, a
 
         mvi    a, 7
-        sta    byte_BFF5
+        sta    v_tmp_char_height
 
         ret
