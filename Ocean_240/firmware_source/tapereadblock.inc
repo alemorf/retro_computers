@@ -82,7 +82,7 @@ loc_FCBD: call   TapeReadByte
         mov    a, e
         ora    a
         jz     loc_FCD6
-          mvi    a, 1 ; Код ошибки
+          mvi    a, 1  ; Код ошибки
 loc_FCD6:
         pop    b
 
@@ -95,9 +95,9 @@ TapeReadBlock3_exit:
 
 loc_FCDA:
         pop    b
-        lxi    b, 0 ; Зачем?
+        lxi    b, 0  ; Зачем?
 loc_FCDE:
-        mvi    a, 2 ; Код ошибки
+        mvi    a, 2  ; Код ошибки
         jmp    TapeReadBlock3_exit
 
 ;----------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 ; Вход: hl - v_cursor_position
 ; Выход: hl - сохраняется
 
-PrintTab64:
+Print64Tab:
         inx    h
         mov    a, m  ; Координата X
         adi    8
@@ -11,4 +11,4 @@ PrintTab64:
         mov    m, a
         dcx    h
         rnz
-        jmp    PrintDown64
+        jmp    Print64Down

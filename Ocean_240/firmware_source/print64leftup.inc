@@ -3,26 +3,27 @@
 ; Вход: hl - v_cursor_position
 ; Выход: hl - сохраняется
 
-PrintLeft64:
+Print64Left:
         inx    h
-        mov    a, m  ; Координата X
+        mov    a, m    ; Координата X
         sui    1
         ani    3Fh
         mov    m, a
-        cpi    63
+        cpi    64 - 1  ; Ширина экрана
         dcx    h
         rnz
         ; продолжение в следующей функции
 
+;----------------------------------------------------------------------------
 ; Вывод кода 19h (вверх) в консоль в режиме 64x25
 ; Вход: hl - v_cursor_position
 ; Выход: hl - сохраняется
 
-PrintUp64:
+Print64Up:
         mov    a, m
         sui    TEXT_LINE_HEIGHT
-          jnc    loc_E537
-        mvi    a, TEXT_LINE_HEIGHT * (TEXT_LINES - 1)
+        jnc    loc_E537
+          mvi    a, TEXT_LINE_HEIGHT * (TEXT_LINES - 1)
 loc_E537:
         mov    m, a
         ret
