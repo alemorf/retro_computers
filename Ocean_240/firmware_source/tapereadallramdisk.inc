@@ -1,8 +1,8 @@
 ; ПЗУ Океан 240.2 REV 8 / Реверсинжиниринг aleksey.f.morozov@gmail.com / Лицензия GPL
-; Прочитать RAM-диск с ленты
+; Прочитать RAM-диск с магнитной ленты
 
 TapeReadAllRamDisk:
-        ; Ожидание тишины на входе с магнитофона
+        ; Ожидание тишины на входе
         mvi    a, 100 ; Время в течении которого должна быть тишина
         call   TapeWaitPause
         ora    a
@@ -17,7 +17,7 @@ loc_FA88:
 
           ; Прочитать блок с ленты
           lxi    h, v_buffer_128
-          call   ReadTapeBlock3
+          call   TapeReadBlock3
           cpi    4
           jz     TapeBreak
           ora    a
@@ -35,7 +35,7 @@ loc_FAA6:
           push    b
 
           ; Загрузка 128 байтого блока с ленты
-          call   ReadTapeBlock3
+          call   TapeReadBlock3
           ora    a
           jnz    TapeError
 
