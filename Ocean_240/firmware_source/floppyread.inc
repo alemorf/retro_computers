@@ -1,23 +1,28 @@
 ; ПЗУ Океан 240.2 REV 8 / Реверсинжиниринг aleksey.f.morozov@gmail.com / Лицензия GPL
 ; Прочитать сектор с дискеты
-; Вход: a - диск, c - Код команды для К1818ВГ93
+; Вход: a - номер дисковода, c - код команды для К1818ВГ93
 ; Выход: a - код ошибки, cf - если была ошибка
 
 FloppyRead:
-        push   psw
-
         ; Выбор дисковода и головки
+        push   psw
         call   FloppySetDriveHead
         pop    psw
 
-        ; Если необходимо, то перезагрузить К1818ВГ93. Установить дорожку и сектор.
-        call   FloppyReinitSetTrackSector
+        ; Запуск двигателя. Выбор дорожки и сектора.
+        call   FloppyStartMotorSetTrackSector
+#ifndef CONFIG_FLOPPY_SIZE_OPTIMIZATION
         jc     Return
-
+#else
+        rc
+#endif
         ; Отправка команды в К1818ВГ93, получение блока данных из К1818ВГ93
         call   FloppyReadInteral
+#ifndef CONFIG_FLOPPY_SIZE_OPTIMIZATION
         jc     Return
-
-        ; Возврат кода ошибки 0
+#else
+        rc
+#endif
+        ; Выход с кодом ошибки 0
         xra    a
         ret

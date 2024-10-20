@@ -4,18 +4,17 @@
 ; Выход: a - код ошибки, nz или cf - если была ошибка
 
 FloppyReadInteral:
-        ; Отправка команды в К1818ВГ93
+        ; Передача кода команды в К1818ВГ93
         mov    a, c
         out    PORT_VG93_COMMAND
 
         ; Цикл получения данных от К1818ВГ93
         jmp    loc_FF3F
-loc_FF3D: ; Сохранение данных в память
+loc_FF3D: ; Сохранение байта в память
           mov    m, a
           inx    h
 
-loc_FF3F: ; Остановка процессора до появления сигналов INTRQ или DRQ
-          ; на выводах К1818ВГ93 или таймаута
+loc_FF3F: ; Остановка процессора до появления сигналов INTRQ или DRQ от К1818ВГ93
           in     PORT_FLOPPY_WAIT
           rrc
 
@@ -25,6 +24,10 @@ loc_FF3F: ; Остановка процессора до появления си
           ; Цикл длится, пока нет INTRQ от контроллера
         jc     loc_FF3D
 
-        ; Возврат кода ошибки
+        ; Получение кода ошибки от К1818ВГ93 и выход
+#ifndef CONFIG_FLOPPY_SIZE_OPTIMIZATION
         call   FloppyCheckError
         ret
+#else
+        jmp    FloppyCheckError
+#endif

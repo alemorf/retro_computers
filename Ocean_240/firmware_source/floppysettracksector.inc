@@ -104,11 +104,15 @@ loc_FF06:
 
         ; Проверка результата выполнения команды
         in     PORT_VG93_COMMAND
-        ani    19h ; Ошибка поиска + Ошибка КС + Занят
+        ani    19h ; Ошибка поиска + Ошибка КС + Занят, флаг CY сбрасывается
+#ifndef CONFIG_FLOPPY_SIZE_OPTIMIZATION
         cpi    0
         jnz    loc_FF1D
           jmp    loc_FF20
 loc_FF1D:
+#else
+        jz     loc_FF20
+#endif
           ; Код ошибки
           stc
           mvi    a, 40h

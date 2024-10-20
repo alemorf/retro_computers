@@ -28,14 +28,13 @@ loc_FDE1:
         pop    psw
         dcr    a
         jz     loc_FDF6
-          lda    v_disk_c_tracks
+          lda    v_disk_1_tracks
         jmp    loc_FDF9
-loc_FDF6: lda    cfg_disk_b_tracks
+loc_FDF6: lda    cfg_disk_0_tracks
 loc_FDF9:
         push   b
 
-        ; Продолжаем, если номер дорожки больше или равен кол-ву
-        ; дорожек на одной стороне дискеты
+        ; Переход, если номер дорожки меньше кол-ва дорожек на одной стороне дискеты
         mov    b, a
         mov    a, d
         cmp    b
@@ -63,8 +62,12 @@ loc_FDF9:
         out    PORT_FLOPPY
 
         ; Небольшая задержка
+#ifndef CONFIG_FLOPPY_SIZE_OPTIMIZATION
         call   Delay16
         ret
+#else
+        jmp    Delay16
+#endif
 
 loc_FE15:
         pop    b
@@ -81,13 +84,16 @@ loc_FE15:
         out    PORT_FLOPPY
 
         ; Небольшая задержка
+#ifndef CONFIG_FLOPPY_SIZE_OPTIMIZATION
         call   Delay16
         ret
+#endif
 
 ;----------------------------------------------------------------------------
 
 Delay16:
         mvi    b, 16
+        ; Прододжение в DelayB
 
 ;----------------------------------------------------------------------------
 

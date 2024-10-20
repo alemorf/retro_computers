@@ -4,16 +4,16 @@
 ; Выход: a - код ошибки, cf - если была ошибка
 
 FloppyWriteInternal:
-        ; Отправка команды в К1818ВГ93
+        ; Передача кода команды в К1818ВГ93
         mov    a, c
         out    PORT_VG93_COMMAND
 
-loc_FF29: ; Остановка процессора до появления сигналов INTRQ или DRQ
-          ; на выводах К1818ВГ93 или таймаута
+        ; Цикл отправки данных в К1818ВГ93
+loc_FF29: ; Остановка процессора до появления сигналов INTRQ или DRQ от К1818ВГ93
           in     PORT_FLOPPY_WAIT
           rrc
 
-          ; Передача данных в К1818ВГ93
+          ; Передача байта в К1818ВГ93
           mov    a, m
           out    PORT_VG93_DATA
           inx    h
@@ -21,7 +21,10 @@ loc_FF29: ; Остановка процессора до появления си
           ; Цикл длится, пока нет INTRQ от контроллера
         jc     loc_FF29
 
-        ; Возврат кода ошибки
+        ; Получение кода ошибки от К1818ВГ93 и выход
+#ifndef CONFIG_FLOPPY_SIZE_OPTIMIZATION
         call   FloppyCheckError
         ret
-
+#else
+        jmp    FloppyCheckError
+#endif
