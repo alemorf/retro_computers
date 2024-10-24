@@ -37,6 +37,6 @@ loc_E45A:
         mov    h, a
 
         mvi    a, 7
-        sta    v_tmp_char_height
+        sta    v_a
 
         ret

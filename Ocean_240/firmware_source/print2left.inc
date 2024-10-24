@@ -3,7 +3,7 @@
 ; Вход: hl - v_cursor_position
 ; Выход: hl - сохраняется
 
-PrintLeft2:
+Print2Left:
         ; Не перемещаем курсор, если курсор в начале строки
         inx    h
         mov    a, m ; Координата X

@@ -47,7 +47,7 @@ loc_DB2E: ; Если команда не найдена, то выход с A = 
           rnc
 
           ; Сравнение командной строки с очередной строкой
-          lxi    d, CCP_COMMAND_LINE_BUFFER
+          lxi    d, v_ccp_command_line_buffer
           mvi    b, CCP_COMMAND_SIZE
 loc_DB37:   ldax   d
             cmp    m
