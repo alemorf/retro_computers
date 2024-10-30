@@ -18,3 +18,12 @@ KeyCheck:
         rz
         cma
         ret
+
+;----------------------------------------------------------------------------
+; Переход по нажатию клавиши
+
+; in     PORT_KEY_IN
+; ani    KEY_ESC_BITS
+; jz     LABEL
+
+#define JUMP_IF_KEYBOARD(LABEL) .db 0DBh, PORT_KEY_IN, 0E6h, KEY_ESC_BITS, 0CAh, (LABEL) & 0FFh, (LABEL) >> 8

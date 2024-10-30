@@ -11,12 +11,9 @@ TapeWaitChangeBreakable:
 
         ; Ожидание изменения состояния входа
 loc_FD30:
-#ifdef KEY_DRIVER_TERMINAL
           ; Выход, если нажата клавиша на клавиатуре
-          in     PORT_INT
-          ani    KEY_INT_MASK
-          jnz    loc_FD55
-#endif
+          JUMP_IF_KEYBOARD(loc_FD55)
+
           in     PORT_TAPE_IN
           ani    4
           cmp    b

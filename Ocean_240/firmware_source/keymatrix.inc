@@ -8,8 +8,10 @@ KeyRead:
         call KeyCheck
         ora  a
         jz   KeyRead
+
         xra  a
         sta  v_key_has_char
+
         lda  v_key_char
         ret
 
@@ -62,9 +64,9 @@ KeyCheck2:
         inr  a
         jnz  KeyCheckPressed
 
-        ; Запись в v_key_pressed_now числа 0
+        ; Запись в v_key_pressed_now числа 0, выбор линии ESC и выход
         sta  v_key_pressed_now
-        jmp  KeyCheckExit
+        jmp  KeyCheckExitIo
 
 ;----------------------------------------------------------------------------
 
@@ -84,9 +86,7 @@ KeyCheck4:
         ; Сброс прерывания
         lda  v_key_leds
         ani  KEY_FIX_LED | KEY_ALF_LED
-        ori  KEY_NO_COLUMN | KEY_RESET_IRQ
-        out  PORT_KEY_OUT
-        xri  KEY_RESET_IRQ
+        ori  KEY_COLUMN_ESC | KEY_RESET_IRQ
         out  PORT_KEY_OUT
 
         ; Если это нажатие клавиши, то устаналиваем переменную задержки и сразу обрабатываем
@@ -100,7 +100,7 @@ KeyCheck4:
         lda  v_key_delay_counter
         dcr  a
         sta  v_key_delay_counter
-        jnz  KeyCheck
+        jnz  KeyCheckExitIo
 
         ; Устаналиваем переменную задержки на значением повтора
         mvi  a, 3
@@ -131,7 +131,7 @@ KeyCheck6:
         jnz  KeyCheckNoUpr
         ldax d
         ani  1Fh
-        jmp  KeyChecksave
+        jmp  KeyCheckSave
 KeyCheckNoUpr:
 
         ; Активная кодовая страница
@@ -176,11 +176,18 @@ KeyCheckGetShift:
         xra  c
 KeyCheckNoShift:
 
-KeyChecksave:
+KeyCheckSave:
         ; Сохранение нажатой клавиши
         sta  v_key_char
         mvi  a, 0FFh
         sta  v_key_has_char
+
+KeyCheckExitIo:
+        ; Выбираем линию с ESC для быстрой проверки нажатия ESC
+        lda  v_key_leds
+        ani  KEY_FIX_LED | KEY_ALF_LED
+        ori  KEY_COLUMN_ESC
+        out  PORT_KEY_OUT
 
 KeyCheckExit:
         lda  v_key_has_char

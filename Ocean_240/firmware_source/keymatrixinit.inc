@@ -9,8 +9,8 @@ v_key_leds          = 0BFFDh ; Состояние светодиодов
 v_key_delay_counter = 0BFFEh ; Счетчик опеспечивающий задержку перед автоповторением
 
 ; Биты порта PORT_KEY_OUT
-KEY_NO_COLUMN = 0Fh                      ; Отключение подачи земли на столбцы клавиатуры 0 - 9
-KEY_COLUMN_10 = (1 << 4) | KEY_NO_COLUMN ; Подать землю на 10-ый столбец
+KEY_COLUMN_ESC = 1                       ; Колонка с клавишей ESC
+KEY_COLUMN_10 = (1 << 4) | 0Fh           ; Подать землю на 10-ый столбец
 KEY_RESET_IRQ = 1 << 5                   ; Выключить прерывание и сбросить таймер прерывания
 KEY_FIX_LED   = 1 << 6                   ; Светодиод "ФИКС"
 KEY_ALF_LED   = 1 << 7                   ; Светодиод "АЛФ"
@@ -18,6 +18,7 @@ KEY_ALF_LED   = 1 << 7                   ; Светодиод "АЛФ"
 ; Битовые маски для выделения клавиши в матрице
 KEY_SHIFT_BITS = 1 << 3
 KEY_CTRL_BITS  = 1 << 5
+KEY_ESC_BITS   = 1 << 7
 
 ; Номера клавиш в матрице
 KEY_FIX = 21
@@ -43,6 +44,15 @@ C_UST   = 0Ah
 C_GRAF  = 0Bh
 
 ;----------------------------------------------------------------------------
+; Выход по нажатию клавиши (ESC)
+
+; in     PORT_KEY_IN
+; ani    KEY_ESC_BITS
+; jz     LABEL
+
+#define JUMP_IF_KEYBOARD(LABEL) .db 0DBh, PORT_KEY_IN, 0E6h, KEY_ESC_BITS, 0CAh, (LABEL) & 0FFh, (LABEL) >> 8
+
+;----------------------------------------------------------------------------
 ; Код инициализации
 
         mvi  a, VV55_CONFIG | VV55_A_IN | VV55_B_IN | VV55_CL_OUT | VV55_CH_OUT
@@ -55,5 +65,5 @@ C_GRAF  = 0Bh
         mvi  a, KEY_ALF_LED
         sta  v_key_leds
 
-        ori  KEY_NO_COLUMN | KEY_RESET_IRQ
+        ori  KEY_COLUMN_ESC
         out  PORT_KEY_OUT

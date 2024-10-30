@@ -31,12 +31,9 @@ loc_FD62:
         out    PORT_TIMER_0
 
 loc_FD6D:
-#ifdef KEY_DRIVER_TERMINAL
           ; Выход, если нажата клавиша на клавиатуре
-          in     PORT_INT
-          ani    KEY_INT_MASK
-          jnz    loc_FD8D
-#endif
+          JUMP_IF_KEYBOARD(loc_FD8D)
+
           ; Если сработал таймер, то уменьшаем счетчик.
           ; Если счетчик достиг нуля, то выходим, иначе
           ; перезапускаем таймер и продолжаем
@@ -63,11 +60,9 @@ loc_FD86:
 
 ;----------------------------------------------------------------------------
 
-#ifdef KEY_DRIVER_TERMINAL
 loc_FD8D:
         call   KeyRead
         mov    c, a  ; Код нажатой клавиши
         mvi    a, 4  ; Код ошибки
         pop    d
         ret
-#endif

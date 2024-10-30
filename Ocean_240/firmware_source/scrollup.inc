@@ -5,7 +5,9 @@ ScrollUp:
         ; Прокрутка экрана
         lda    v_scroll_y
         adi    10
+#ifndef CONFIG_FIX_SCROL_UP_GLITCH
         out    PORT_SCROLL_Y
+#endif
 
         ; Вычисление адреса в видеопамяти нижних 16 текстовых строк
         sta    v_scroll_y
@@ -34,5 +36,11 @@ loc_E514:   mov    m, a
         ; Отключение видеопамяти
         mvi    a, 0
         out    PORT_MAPPER
+
+        ; Прокрутка экрана
+#ifdef CONFIG_FIX_SCROL_UP_GLITCH
+        lda    v_scroll_y
+        out    PORT_SCROLL_Y
+#endif
 
         ret
