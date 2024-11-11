@@ -1,16 +1,18 @@
-00: F F F F F F F F F F F F F F F F
-10: F F F F F F F F F F F F F F F F
-20: 5 F 6 F 2 F 2 F 6 F 6 F 2 F 2 F
-30: F F F F F F F F F F F F F F F F
-40: F F F F F F F F F F F F F F F F
-50: F F F F F F F F F F F F F F F F
-60: F F E F F F E F F F E F F F E F
-70: F F F F F F F F F F F F F F F F
-80: F F F F F F F F F F F F F F F F
-90: F F F F F F F F F F F F F F F F
-a0: E F E F A F A F E F E F A F A F
-b0: F F F F F F F F F F F F F F F F
-c0: F F F F F F F F F F F F F F F F
-d0: F F F F F F F F F F F F F F F F
-e0: F F E F F F E F F F E F F F E F
-f0: F F F F F F F F F F F F F F F F
+Проверено 11-11-2024
+
+00: f f f f f f f f f f f f f f f f
+10: 5 6 2 2 6 6 2 2 f f f f f f f f
+20: f f f f f f f f f f f f f f f f
+30: f f f f e e e e f f f f f f f f
+40: f f f f f f f f f f f f f f f f
+50: e e a a e e a a f f f f f f f f
+60: f f f f f f f f f f f f f f f f
+70: f f f f e e e e f f f f f f f f
+80: f f f f f f f f f f f f f f f f
+90: f f f f f f f f f f f f f f f f
+a0: f f f f f f f f f f f f f f f f
+b0: f f f f f f f f f f f f f f f f
+c0: f f f f f f f f f f f f f f f f
+d0: f f f f f f f f f f f f f f f f
+e0: f f f f f f f f f f f f f f f f
+f0: f f f f f f f f f f f f f f f f

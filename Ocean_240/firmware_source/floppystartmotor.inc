@@ -59,7 +59,7 @@ loc_FE95:
 FloppyToggleInit:
         ; Установка 0 на линии INIT
         in     PORT_FLOPPY
-        ani    4Eh
+        ani    4Eh ; (PFE_SIDE_SELECT | PFE_MOTOR_0 | PFE_MOTOR_1 | PFE_DRIVE_SELECT) << 1
         rar
         out    PORT_FLOPPY
 

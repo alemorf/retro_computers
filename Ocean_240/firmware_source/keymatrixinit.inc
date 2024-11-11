@@ -55,15 +55,21 @@ C_GRAF  = 0Bh
 ;----------------------------------------------------------------------------
 ; Код инициализации
 
+        ; Настройка порта ввода-вывода
         mvi  a, VV55_CONFIG | VV55_A_IN | VV55_B_IN | VV55_CL_OUT | VV55_CH_OUT
         out  PORT_KEY_CONFIG
 
+        ; Инициализация переменных
         xra  a
         sta  v_key_has_char
         sta  v_key_pressed_now
-
         mvi  a, KEY_ALF_LED
         sta  v_key_leds
 
-        ori  KEY_COLUMN_ESC
+        ; Предача KEY_RESET_IRQ необходима для работы контроллера прерываний
+        ori  KEY_COLUMN_ESC | KEY_RESET_IRQ
+        out  PORT_KEY_OUT
+
+        ; Установка KEY_COLUMN_ESC необходима для JUMP_IF_KEYBOARD
+        ani  ~KEY_RESET_IRQ
         out  PORT_KEY_OUT
