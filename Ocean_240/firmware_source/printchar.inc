@@ -22,7 +22,11 @@ PrintChar2:
         jm     PrintChar3
 
         ; Если v_esc_mode > 1, то переход в функцию Game (игровая графика)
+#ifndef CONFIG_NO_GAME
         jnz    Game
+#else
+        jnz    ExitEscMode
+#endif
 
         ; Если v_esc_command != 0, то переход в функцию PrintCharEscArgs (получение аргументов)
         inx    d
@@ -30,11 +34,19 @@ PrintChar2:
         ora    a
         jp     PrintCharEscArgs
 
+        ; VT52
+#ifdef CONFIG_VT52
+        mov    a, c
+        sui    'A'
+        jnc    Vt52
+#endif
+
         ; Иначе это получение первого байта ESC последовательности
         ; Сохранение символа, он же код команды
         ; v_esc_command = char & 0Fh
         mov    a, c
         ani    0Fh
+PrintChar4:
         stax   d
 
         ; Сброс счетчика полученных аргументов
@@ -73,7 +85,9 @@ PrintCharEscArgs:
         ; Получение в E кода команды (v_esc_command)
         lxi    h, v_esc_command
         mov    a, m
+#ifndef CONFIG_VT52
         ani    0Fh   ; Мертвый код (выше b не обрезается)
+#endif
         mov    e, a
 
         ; Если получен нулевой код команды, то переход в режим игровой графики
@@ -120,35 +134,180 @@ ExitEscMode:
 
 esc_args_count:
         .db 3  ; 0
-        .db 5  ; A
-        .db 4  ; B
-        .db 3  ; C
-        .db 1  ; D
-        .db 2  ; E
-        .db 1  ; F
-        .db 1  ; G
-        .db 1  ; H
-        .db 2  ; I
-        .db 1  ; J
-        .db 5  ; K
-        .db 5  ; L
-        .db 7  ; M
-        .db 6  ; N
-        .db 4  ; O
+        .db 5  ; 1
+        .db 4  ; 2
+        .db 3  ; 3
+        .db 1  ; 4
+        .db 2  ; 5
+        .db 1  ; 6
+        .db 1  ; 7
+        .db 1  ; 8
+        .db 2  ; 9
+        .db 1  ; :
+        .db 5  ; ;
+        .db 5  ; <
+        .db 7  ; =
+        .db 6  ; >
+        .db 4  ; ?
 
 esc_functions:
-        .dw DrawFillRect       ; A
-        .dw DrawLine           ; B
-        .dw DrawPixel          ; C
-        .dw ColorSet           ; D
-        .dw CursorPositionSet  ; E
-        .dw ScreenModeSet      ; F
-        .dw CodepageSet        ; G
-        .dw PaletteSet         ; H
-        .dw CursorPositionSet2 ; I
-        .dw PrinterScreen      ; J
-        .dw DrawCircle         ; K
-        .dw Paint              ; L
-        .dw GetPutImage        ; M
-        .dw Picture            ; N
-        .dw BeepSet            ; O
+        .dw DrawFillRect       ; 1
+        .dw DrawLine           ; 2
+        .dw DrawPixel          ; 3
+        .dw ColorSet           ; 4
+        .dw CursorPositionSet  ; 5
+        .dw ScreenModeSet      ; 6
+        .dw CodepageSet        ; 7
+        .dw PaletteSet         ; 8
+        .dw CursorPositionSet2 ; 9
+        .dw PrinterScreen      ; :
+        .dw DrawCircle         ; ;
+        .dw Paint              ; <
+        .dw GetPutImage        ; =
+        .dw Picture            ; >
+        .dw BeepSet            ; ?
+
+;----------------------------------------------------------------------------
+
+#ifdef CONFIG_VT52
+
+Vt52:   jz     Vt52Up
+        dcr    a ; B
+        jz     Vt52Down
+        dcr    a ; C
+        jz     Vt52Right
+        dcr    a ; D
+        jz     Vt52Left
+        sui    'H' - 'D'
+        jz     Vt52Home
+        sui    'J' - 'H'
+        jz     Vt52ClearToEndOfScreen
+        dcr    a ; K
+        jz     Vt52ClearToEndOfLine
+        sui    'Y' - 'K'
+        jz     Vt52SetPosition
+
+        xra    a
+        dcx    d
+        stax   d
+
+        jmp    PrintChar3
+;        ret
+
+;----------------------------------------------------------------------------
+
+Vt52Up:
+        dcx    d
+        stax   d
+        mvi    a, 19h
+        jmp    loc_E78A
+
+;----------------------------------------------------------------------------
+
+Vt52Down:
+        dcx    d
+        stax   d
+        mvi    a, 1Ah
+        jmp    loc_E78A
+
+;----------------------------------------------------------------------------
+
+Vt52Right:
+        dcx    d
+        stax   d
+        mvi    a, 18h
+        jmp    loc_E78A
+
+;----------------------------------------------------------------------------
+
+Vt52Left:
+        dcx    d
+        stax   d
+        mvi    a, 8
+        jmp    loc_E78A
+
+;----------------------------------------------------------------------------
+
+Vt52Home:
+        dcx    d
+        stax   d
+        mvi    a, 0Ch
+        jmp    loc_E78A
+
+;----------------------------------------------------------------------------
+
+Vt52None:
+        dcx    d
+        stax   d
+        ret
+
+;----------------------------------------------------------------------------
+
+Vt52SetPosition:
+        mvi    a, 5
+        jmp    PrintChar4
+
+;----------------------------------------------------------------------------
+
+Vt52ClearToEndOfScreen:
+        dcx    d
+        stax   d
+
+        call   DrawCursor
+
+        lda    v_screen_mode
+        push   psw
+        ori    14h
+        sta    v_screen_mode
+        lhld   v_cursor_position
+        push   h
+
+Vt52ClearToEndOfScreen1:
+          mvi    c, ' '
+          call   PrintChar3
+          lda    v_screen_mode
+          ani    10h
+        jnz   Vt52ClearToEndOfScreen1
+
+        pop    h
+        shld   v_cursor_position
+        pop    psw
+        sta    v_screen_mode
+        jmp    DrawCursor
+
+;----------------------------------------------------------------------------
+
+Vt52ClearToEndOfLine:
+        dcx    d
+        stax   d
+
+        call   DrawCursor
+
+        lda    v_screen_mode
+        push   psw
+        ori    14h
+        sta    v_screen_mode
+        lhld   v_cursor_position
+        push   h
+
+Vt52ClearToEndOfLine1:
+          mvi    c, ' '
+          call   PrintChar3
+          lda    v_cursor_position + 1
+          ora    a
+          jz     Vt52ClearToEndOfLine2
+          lda    v_screen_mode
+          ani    10h
+        jnz   Vt52ClearToEndOfLine1
+Vt52ClearToEndOfLine2:
+
+        pop    h
+        shld   v_cursor_position
+        pop    psw
+        sta    v_screen_mode
+        jmp    DrawCursor
+
+;----------------------------------------------------------------------------
+
+#endif
+

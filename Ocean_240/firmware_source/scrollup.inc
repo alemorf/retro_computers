@@ -2,6 +2,12 @@
 ; Прокрутить экран вверх на 1 текстовую строку
 
 ScrollUp:
+#ifdef CONFIG_VT52
+        lda    v_screen_mode
+        ani    10h
+        jnz    ResetNoScroll
+#endif
+
         ; Прокрутка экрана
         lda    v_scroll_y
         adi    10
@@ -44,3 +50,13 @@ loc_E514:   mov    m, a
 #endif
 
         ret
+
+;----------------------------------------------------------------------------
+
+#ifdef CONFIG_VT52
+ResetNoScroll:
+        lda    v_screen_mode
+        ani    ~10h
+        sta    v_screen_mode
+        ret
+#endif

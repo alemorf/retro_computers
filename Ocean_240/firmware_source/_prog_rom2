@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# ПЗУ Океан 240.2 REV 8 / Реверсинжиниринг aleksey.f.morozov@gmail.com / Лицензия GPL
+# Запись прошивки в ПЗУ
+
+minipro -p "W27C512 @DIP28" -w rom2.bin

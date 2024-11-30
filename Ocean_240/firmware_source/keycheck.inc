@@ -22,8 +22,8 @@ KeyCheck:
 ;----------------------------------------------------------------------------
 ; Переход по нажатию клавиши
 
-; in     PORT_KEY_IN
-; ani    KEY_ESC_BITS
-; jz     LABEL
+; in     PORT_INT
+; ani    KEY_INT_MASK
+; jnz    LABEL
 
-#define JUMP_IF_KEYBOARD(LABEL) .db 0DBh, PORT_KEY_IN, 0E6h, KEY_ESC_BITS, 0CAh, (LABEL) & 0FFh, (LABEL) >> 8
+#define JUMP_IF_KEYBOARD(LABEL) .db 0DBh, PORT_INT, 0E6h, KEY_INT_MASK, 0C2h, (LABEL) & 0FFh, (LABEL) >> 8

@@ -26,10 +26,17 @@ KEY_ALF = 13
 
 ; ASCII коды клавиш
 C_BKSPC = 08h
+#ifdef CONFIG_VT52
+C_LEFT  = 13h
+C_RIGHT = 10h
+C_UP    = 05h
+C_DOWN  = 18h
+#else
 C_LEFT  = 08h
 C_RIGHT = 18h
 C_UP    = 19h
 C_DOWN  = 1Ah
+#endif
 C_TAB   = 09h
 C_ENTER = 0Dh
 C_ISP   = 7Fh ; Еще один код удаления. Кнопка над BKSPC.
