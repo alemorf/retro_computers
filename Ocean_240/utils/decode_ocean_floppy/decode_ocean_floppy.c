@@ -22,6 +22,11 @@
 
 static const unsigned interleave[] = {1, 8, 6, 4, 2, 9, 7, 5, 3};
 
+/* For Windows O.o */
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 int main(int argc, char **argv) {
     if (argc != 3) {
         fprintf(stderr,
@@ -31,13 +36,13 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    int fd = open(argv[2], O_RDONLY);
+    int fd = open(argv[2], O_RDONLY | O_BINARY);
     if (fd == -1) {
         fprintf(stderr, "Can't open file %s, errno %i\n", argv[2], errno);
         return 1;
     }
 
-    int fd2 = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    int fd2 = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
     if (fd2 == -1) {
         fprintf(stderr, "Can't create file %s, errno %i\n", argv[1], errno);
         close(fd);
@@ -56,8 +61,9 @@ int main(int argc, char **argv) {
                 }
 
                 char buf[512];
-                if (read(fd, buf, 512) != 512) {
-                    fprintf(stderr, "Can't read file %s, errno %i\n", argv[2], errno);
+                int r = read(fd, buf, 512);
+                if (r != 512) {
+                    fprintf(stderr, "Can't read file %s, result %i, offset %u, errno %i\n", argv[2], (int)r, offset, errno);
                     close(fd);
                     close(fd2);
                     return 1;
