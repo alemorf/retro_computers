@@ -26,9 +26,9 @@ PFE_NEG_INIT     = 1 << 3
 PFE_NEG_DDEN     = 1 << 4
 PFE_SIDE_SELECT  = 1 << 5
 
-; Биты PORT_FLOPPY на чтение. Все сдвинуто вправо на 1 бит.
+; Биты PORT_FLOPPY на чтение. Все сдвинуто влево на 1 бит.
 
-PFE_READ_MASK    = PFE_SIDE_SELECT | PFE_MOTOR_0 | PFE_MOTOR_1 | PFE_DRIVE_SELECT
+PFE_READ_MASK = PFE_SIDE_SELECT | PFE_MOTOR_0 | PFE_MOTOR_1 | PFE_DRIVE_SELECT
 
 ; Порты ввода-вывода
 
@@ -41,102 +41,110 @@ PORT_FLOPPY       = 25h
 
 ; Адреса операционной системы и BIOS
 
-CommandLine        = 080h
-PrintHexByte       = 0E003h
-CheckKeyboard      = 0E006h
-ReadKeyboard       = 0E009h
-PrintChar          = 0E00Ch
-vFloppyInited      = 0BFEFh
+vCommandLine  = 080h
+vFloppyInited = 0BFEFh
+PrintHexByte  = 0E003h
+CheckKeyboard = 0E006h
+ReadKeyboard  = 0E009h
+PrintChar     = 0E00Ch
 
 ; Параметры дискеты
 
 SECTOR_COUNT      = 9
 SECTOR_SIZE_CODE  = 2
-SECTOR_SIZE_BYTES = 512
+SECTOR_SIZE_BYTES = 128 << SECTOR_SIZE_CODE
 TRACK_COUNT       = 80
+
+;-------------------------------------------------------------------------------
 
         .org 100h
 
-main:   ; Вывод текста при выходе из программы. В de должна быть строка.
-        lxi  d, PrintString
-        push d
+main:   ; Анализ командной строки
+        lxi  h, vCommandLine
+        mov  c, m
+        inr  c  ; Кол-во символов в командной строке + 1
+        inx  h  ; Адрес первого символа
 
-        ; В коммандной строк должно быть 2 символа
-        lda  CommandLine
-        cpi  2
+        ; Пропуск пробелов
         lxi  d, aUsage
-        rnz
+l00:     mov  a, m
+         cpi  ' '
+         jnz  l01
+         inx  h
+         dcr  c
+         jz   PrintString ; Вывод справки на экран и выход
+        jmp  l00
+l01:
 
-        ; Первый символ: пробел
-        lda  CommandLine + 1
-        cpi  ' '
-        rnz
-
-        ; Второй символ: B или C
-        lda  CommandLine + 2
+        ; Ожидается символ 'B' или 'C'
+        dcr  c
+        jz   PrintString
+        mov  a, m
         sta  aFormatYND ; Для вывода на экран
         cpi  'B'
-        mvi  c, PFE_MOTOR_0 | PFE_DRIVE_SELECT
-        jz   l5
+        mvi  b, PFE_MOTOR_0 | PFE_DRIVE_SELECT
+        jz   l02
         cpi  'C'
-        mvi  c, PFE_MOTOR_1
-        rnz
-l5:     mov  a, c
+        mvi  b, PFE_MOTOR_1
+        jnz  PrintString ; Вывод справки на экран и выход
+l02:     mov  a, b
         sta  vFloppyPort
 
+        ; Выход и вывод справки, если есть еще символы
+        dcr  c
+        jnz  PrintString
+
         ; Опустошение буфера клавиатуры
-l0:       call CheckKeyboard
+l03:      call CheckKeyboard
           ora  a
-          jz   l1
+          jz   l04
           call ReadKeyboard
-        jmp  l0
-l1:
+        jmp  l03
+l04:
         ; Подтверждение перед форматированием
         lxi  d, aFormatYN
         call PrintString
         call ReadKeyboard
-        lxi  d, aEol
         cpi  'y'
-        jz   l2
+        jz   l05
         cpi  'Y'
         rnz
-l2:     call PrintString
+l05:
+        ; Перевод строки и вывод размера диска
+        lxi  d, aSize
+        call PrintString
 
-        ; Сброс состояния BIOS
+        ; Сброс BIOS, т.к. головка дисковода и настройки контроллера будут изменены
         lxi  h, 0
         shld vFloppyInited
 
-        ; Выбор дисковода и запуск двигателя
+        ; Выбор дисковода и перезапуск таймера двигателя
         lda  vFloppyPort
         out  PORT_FLOPPY
         ori  PFE_NEG_INIT
         out  PORT_FLOPPY
 
         ; Ожидаение готовности дисковода или остановки двигателя по таймауту
-        lxi  d, aDriveError
-l4:       in   PORT_FLOPPY
+        lxi  d, aDriveNotReady
+l06:      in   PORT_FLOPPY
           rlc
-          rc  ; Тут de = aDriveError
+          jc   PrintString ; Вывод ошибки на экран и выход
           in   PORT_VG93_COMMAND
-          ani  80h ; Ready
-        jnz  l4
+          ani  80h ; Бит готовности дисковода
+        jnz  l06
 
         ; Перемещение головки на нулевую дорожку
-        xra    a
-        out    PORT_VG93_COMMAND
-
-        ; Задержка
+        xra   a
+        out   PORT_VG93_COMMAND
         nop
         nop
-
-        ; Ожидание пока КР1818ВГ93 занят или не выбрана нулевая дорожка или не наступил таймаут
-l3:       in     PORT_FLOPPY
+l07:      in    PORT_FLOPPY
           rlc
-          rc ; Тут de = aDriveError
-          in     PORT_VG93_COMMAND
-          ani    5
-          cpi    4
-        jnz    l3
+          jc   PrintString ; Вывод ошибки на экран и выход
+          in    PORT_VG93_COMMAND
+          ani   5 ; Биты готовности дисковода и нулевой дорожки
+          cpi   4 ; Бит нулевой дорожки
+        jnz   l07
 
         ; На всякий случай
         xra  a
@@ -145,30 +153,39 @@ l3:       in     PORT_FLOPPY
         ; Цикл дорожек
         xra  a
         sta  vTrack
+        jmp  trackLoopEntry
+
 trackLoop:
-        ; Выбор стороны и перезапуск таймера
+        ; Передача команды перехода на следующую дорожку
+        mvi  a, 58h
+        out  PORT_VG93_COMMAND
+        nop
+        nop
+        in   PORT_FLOPPY_WAIT
+        ; TODO: Проверить код ошибки
+
+trackLoopEntry:
+        ; Выбор стороны диска и перезапуск таймера двигателя
         lda  vFloppyPort
         out  PORT_FLOPPY
         ori  PFE_NEG_INIT
         out  PORT_FLOPPY
 
-        ; Запись дорожки
-        mvi  c, 0 ; Сторона
-        call MakeTrack
-        call FloppyWriteTrack
-        call FloppyReadTrack
+        ; Цикл сторон
+        xra  a
+        sta  vSide
+headLoop:
+        ; Вывод информации на экран
+        lda  vTrack
+        call ToNumber
+        shld aProgressTrack
 
-        ; Выбор стороны и перезапуск таймера
-        lda  vFloppyPort
-        out  PORT_FLOPPY
-        ori  PFE_SIDE_SELECT | PFE_NEG_INIT
-        out  PORT_FLOPPY
+        lda  vSide
+        adi  '0'
+        sta  aProgressHead
 
-        ; Запись дорожки на другой стороне
-        mvi  c, 1 ; Сторона
-        call MakeTrack
-        call FloppyWriteTrack
-        call FloppyReadTrack
+        lxi  d, aProgress
+        call PrintString
 
         ; Остановка с клавиатуры
         call CheckKeyboard
@@ -176,33 +193,102 @@ trackLoop:
         cnz  ReadKeyboard
         cpi  3 ; CTRL+C
         lxi  d, aBreak
-        rz
+        jz   PrintString
         cpi  1Bh ; ESC
-        rz
+        jz   PrintString
 
-        ; Выход, если это была последняя дорожка
+        ; Форматирование дорожки. Если произошла ошибка, то возвращается флаг NZ.
+        call FormatTrack
+
+        ; Вывод текста ошибки на экран
+        cnz  FloppyCheckError
+
+        ; Конец цикла сторон
+        lda  vSide
+        inr  a
+        sta  vSide
+        dcr  a
+        jz   headLoop
+
+        ; Конец цикла дорожек
         lda  vTrack
         inr  a
         sta  vTrack
-        cpi  TRACK_COUNT  ; TODO: В систему может быть установлен 40 дорочный дисковод
+        cpi  TRACK_COUNT  ; TODO: В систему может быть установлен 40 дорочный дисковод. Прочитать в настройках BIOS.
+        jc   trackLoop
+
+        ; Выход
         lxi  d, aDone
-        rnc
-
-        ; Передаем контроллеру команду перейти на следующую дорожку
-        mvi  a, 58h
-        out  PORT_VG93_COMMAND
-        ; Задержка
-        nop
-        nop
-        ; Остановка процессора до запроса прерывания от К1818ВГ93 или таймаута
-        in   PORT_FLOPPY_WAIT  ; TODO: Проверить 0-ой бит
-
-        jmp trackLoop
+        jmp  PrintString
 
 ;-------------------------------------------------------------------------------
-; Подготовка данных для записи на дорожку. Удвоенная плотность.
 
-MakeTrack:
+FloppyCheckError:
+        mov  b, a
+        ani  80h
+        lxi  d, aDriveNotReady
+        jnz  PrintStringEol
+
+        mov  a, b
+        ani  40h
+        lxi  d, aWriteProtected
+        jnz  PrintStringEol
+
+        mov  a, b
+        ani  8
+        lxi  d, aBadSector
+        jnz  PrintStringEol
+
+        lxi  d, aError
+        call PrintString
+
+        mov  a, b
+        call PrintHexByte
+
+        jmp  PrintEol
+
+;-------------------------------------------------------------------------------
+
+PrintStringEol:
+        call PrintString
+PrintEol:
+        lxi  d, aEol
+PrintString:
+        ldax d
+        ora  a
+        rz
+        mov  c, a
+        call PrintChar
+        inx  d
+        jmp  PrintString
+
+;-------------------------------------------------------------------------------
+
+ToNumber:
+        mvi  l, '0' - 1
+ToNumber_0:
+          sui  10
+          inr  l
+        jnc  ToNumber_0
+        adi  10 + '0'
+        mov  h, a
+        ret
+
+;-------------------------------------------------------------------------------
+; Форматирование дорожки
+
+FormatTrack:
+        ; Выбор стороны диска и перезапуск таймера двигателя
+        lda  vSide
+        ora  a
+        lda  vFloppyPort
+        jz   l08
+          ori  PFE_SIDE_SELECT
+l08:    out  PORT_FLOPPY
+        ori  PFE_NEG_INIT
+        out  PORT_FLOPPY
+
+        ; Подготовка данных для записи
         lxi  h, vBuffer
         lxi  d, 504Eh         ; Пробел после индексного импульса
         call MemsetHlED
@@ -226,7 +312,8 @@ MakeTrack_1:
           lda  vTrack
           mov  m, a           ; Номер дорожки
           inx  h
-          mov  m, c           ; Номер стороны
+          lda  vSide
+          mov  m, a           ; Номер стороны
           inx  h
           mov  m, b           ; Номер сектора
           inx  h
@@ -263,21 +350,47 @@ MakeTrack_1:
 
         ; TODO: Вывести реальную длину
 
-        mvi  c, 'F'
+        ; Запись дорожки
+        lxi  h, vBuffer
+        mvi  a, 0F4h
+        out  PORT_VG93_COMMAND
+        nop
+        nop
+loc_FF29: in    PORT_FLOPPY_WAIT
+          rrc
+          mov  a, m
+          out  PORT_VG93_DATA
+          inx  h
+        jc    loc_FF29
+        in   PORT_VG93_COMMAND
+        ani  ~30h ; "Массив не найден", "Тип записи" это нормально
+        rnz
 
-;-------------------------------------------------------------------------------
+        ; Чтение дорожки
+        lxi  h, (SECTOR_COUNT * SECTOR_SIZE_BYTES) + 1
+        mvi  a, 1
+        out  PORT_VG93_SECTOR
+        mvi  a, 094h ; TODO: Стороны
+        out  PORT_VG93_COMMAND
+        nop
+        nop
+loc_FF3D: in   PORT_FLOPPY_WAIT
+          rrc
+          in   PORT_VG93_DATA
+          dcx  h ; TODO: Остановиться
+        jc     loc_FF3D
+        in   PORT_VG93_COMMAND
+        ani  ~30h ; "Массив не найден", "Тип записи" это нормально
+        rnz
 
-        ; Вывод информации
-PrintInfo:
-        push b
-        lxi  d, aTrack
-        call PrintString
-        lda  vTrack
-        call PrintNumber
-        mvi  c, ' '
-        call PrintChar
-        pop  b
-        jmp  PrintChar
+        ; Если все сектора удалось прочитать, то выход с флагом Z
+        mov  a, h
+        ora  l
+        rz
+
+        ; Выход с флагом NZ и кодом 8
+        mvi  a, 8
+        ret
 
 ;-------------------------------------------------------------------------------
 
@@ -290,158 +403,32 @@ MemsetHlED:
 
 ;-------------------------------------------------------------------------------
 
-PrintString:
-        ldaX D
-        ORA  A
-	RZ
-        MOV  C,A
-        call PrintChar
-        inx  D
-        JMP  PrintString
+aUsage:          .db "USAGE: FORMAT B/C", 0
 
-;-------------------------------------------------------------------------------
+aFormatYN:       .db "WARNING, ALL DATA ON DISK\r\n"
+                 .db "DRIVE "
+aFormatYND:      .db "?: WILL BE LOST!\r\n\r\n"
+                 .db "PROCEED WITH FORMAT (Y/N)?", 0
 
-PrintNumber:
-        mov  d, a
-        MVI  C, 0
-        MVI  B, 8
-DV2:	  MOV  A, D
-          RLC
-          MOV  D, A
-          MOV  A, C
-          ADC  C
-          DAA
-          MOV  C, A
-          DCR  B
-        JNZ  DV2
-        JMP PrintHexByte
+aSize:           .db "\r\nFORMAT 720K\r\n", 0
 
-;-------------------------------------------------------------------------------
+aProgress:       .db "\rTRACK "
+aProgressTrack:  .db "?? HEAD "
+aProgressHead:   .db "? ", 0  ; Пробел в конце для вывода текста ошибки
 
-FloppyWriteTrack:
-        lxi  h, vBuffer
+aDone:           .db "\rFORMAT COMPLETE", 0
 
-        ; Передача кода команды "запись дорожки" в К1818ВГ93
-        mvi   a, 0F4h
-        out   PORT_VG93_COMMAND
+aBadSector:      .db "BAD SECTOR",0
+aWriteProtected: .db "WRITE PROTECTED", 0
+aDriveNotReady:  .db "DRIVE NOT READY", 0
+aError:          .db "ERROR ", 0
+aBreak:          .db "BREAK", 0
 
-        ; Задержка
-        nop
-        nop
+aEol:            .db "\r\n", 0
 
-        ; Цикл отправки данных в К1818ВГ93
-loc_FF29: ; Остановка процессора до появления сигналов INTRQ или DRQ от К1818ВГ93
-          in    PORT_FLOPPY_WAIT
-          rrc
-
-          ; Передача байта в К1818ВГ93
-          mov   a, m
-          out   PORT_VG93_DATA
-          inx   h
-
-          ; Цикл длится, пока нет INTRQ от контроллера
-        jc    loc_FF29
-
-        ; Проверка ошибки
-        in   PORT_VG93_COMMAND
-        jmp   FloppyCheckError
-
-;-------------------------------------------------------------------------------
-
-FloppyReadTrack:
-        ; Вывод информации
-        mvi  c, 'V'
-        call PrintInfo
-
-        ; Кол-во прочитанных байт
-        lxi  h, (SECTOR_COUNT * SECTOR_SIZE_BYTES) + 1
-
-        ; Передача кода команды в К1818ВГ93
-        mvi  a, 1
-        out  PORT_VG93_SECTOR
-        mvi  a, 094h ; TODO: Стороны
-        out  PORT_VG93_COMMAND
-
-        ; Задержка
-        nop
-        nop
-
-        ; Цикл получения данных от К1818ВГ93
-loc_FF3D: ; Остановка процессора до появления сигналов INTRQ или DRQ от К1818ВГ93
-          in    PORT_FLOPPY_WAIT
-          rrc
-
-          ; Получение байта прочитанного с дискеты
-          in    PORT_VG93_DATA
-          dcx   h
-
-          ; Цикл пока нет INTRQ от контроллера
-        jc     loc_FF3D
-
-        ; Код ошибки
-        in   PORT_VG93_COMMAND
-        ani  ~30h ; "Массив не найден", "Тип записи" это нормально
-        jnz  FloppyCheckError
-
-        ; Все ли сектора удалось прочитать?
-        mov  a, h
-        ora  l
-        rz
-
-        ; BAD CRC
-        mvi  a, 8
-
-;-------------------------------------------------------------------------------
-
-FloppyCheckError:
-        ora  a
-        rz
-
-        push psw
-        lxi  d, aEol
-        call PrintString
-        pop  psw
-
-        lxi  d, PrintString
-        push d
-
-        CPI  8
-        lxi  d, aBadCrc
-        rz
-
-        CPI  40h
-        lxi  d, aWriteProtect
-        rz
-
-        CPI  80h
-        lxi  d, aDriveError
-        rz
-
-        push psw
-        lxi  d, aError
-        call PrintString
-        pop  psw
-        call PrintHexByte
-        lxi  d, aEol
-        ret
-
-;-------------------------------------------------------------------------------
-
-aBadCrc:       .db "CRC ERROR\r\n", 0
-aWriteProtect: .db "WRITE PROTECTED\r\n", 0
-aDriveError:   .db "DRIVE NOT READY\r\n", 0
-aError:        .db "ERROR ", 0
-aUsage:        .db "USAGE: FORMAT B/C", 0
-aFormatYN:     .db "DRIVE "
-aFormatYND:    .db "?: WILL BE LOST!\r\n"
-               .db "PROCEED WITH FORMAT (Y/N)?", 0
-aEol:          .db "\r\n", 0
-aTrack:        .db "\rTRACK ", 0
-aDone:         .db "\rFORMAT COMPLETE\r", 0
-aBreak:        .db "\r\nBREAK", 0
-
-vTrack:        .db 0
-vFloppyPort:   .db 0
+vTrack:          .db 0
+vSide:           .db 0
+vFloppyPort:     .db 0
 vBuffer:
 
         .end

@@ -1,5 +1,4 @@
 ; ПЗУ Океан 240.2 REV 8 / Реверсинжиниринг aleksey.f.morozov@gmail.com / Лицензия GPL
-; НЕ ЗАКОНЧЕНО !!!!
 
 ccp_rom:
    .db 0c3h, 05ch, 0b5h, 0c3h, 058h, 0b5h, 07fh, 000h, 020h, 020h, 020h, 020h
