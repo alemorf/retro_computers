@@ -8,11 +8,10 @@ const int SCREEN_LINES = 25;
 const int SCREEN_ATTRIB_BEGIN = 0xE000;
 const int SCREEN_BEGIN = 0xE800;
 const int SCREEN_END = SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_HEIGHT;
-const int SCREEN_ATTRIB_UNDERLINE = 0x80;
+const int SCREEN_ATTRIB_UNDERLINE = 1 << 7;
 
-const int MODE_RUS = 1 << 0;
-const int MODE_KOI_8 = 1 << 1;
-const int MODE_CAP = 1 << 2;
+const int KEYB_MODE_CAP = 1 << 0;
+const int KEYB_MODE_RUS = 1 << 1;
 
 extern uint8_t rst38Opcode __address(0x38);
 extern uint16_t rst38Address __address(0x39);
@@ -33,7 +32,7 @@ extern uint8_t param2h __address(0xF754);
 extern uint16_t param3 __address(0xF755);
 extern uint8_t param3h __address(0xF756);
 extern uint8_t tapePolarity __address(0xF757);
-extern uint8_t mode __address(0xF758);
+extern uint8_t keyb_mode __address(0xF758);
 extern uint8_t color __address(0xF759);
 extern uint16_t cursor __address(0xF75A);
 extern uint8_t readDelay __address(0xF75C);
