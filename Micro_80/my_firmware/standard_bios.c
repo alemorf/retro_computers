@@ -63,7 +63,6 @@ void CmdXS(...);
 void FindRegister(...);
 void ReadKey(...);
 void PrintRegMinus(...);
-void PrintRegMinusEx(...);
 void InitRst38();
 void BreakPoint(...);
 void BreakPointAt2(...);
@@ -150,8 +149,10 @@ void Reboot() {
 void Monitor() {
     out(PORT_KEYBOARD_MODE, a = 0x8B);
     sp = STACK_TOP;
+    color = a = SCREEN_ATTRIB_INPUT;
     PrintString(hl = &aPrompt);
     ReadString();
+    color = a = SCREEN_ATTRIB_DEFAULT;
     push(hl = &Monitor);
     MonitorExecute();
 }
@@ -181,7 +182,6 @@ void Input() {
 void ReadString() {
     hl = &cmdBuffer;
     de = hl;
-    color = a = SCREEN_ATTRIB_INPUT;
     for (;;) {
         ReadKey();
         if (a == 8) {
@@ -195,7 +195,6 @@ void ReadString() {
         if (a == 0x0D) {
             if ((a = e) == l)
                 return Monitor();
-            color = a = SCREEN_ATTRIB_DEFAULT;
             return;
         }
         if (a < 32)
@@ -416,6 +415,7 @@ void PrintRegs(...) {
             hl = &regs;
             l = a;
             PrintHexByte(a = *hl);
+            PrintSpace();
         }
         de++;
     } while (flag_nz(b--));
@@ -424,16 +424,11 @@ void PrintRegs(...) {
     PrintRegMinus();
     param1 = hl = regs;
     PrintParam1Space();
-    PrintRegMinusEx(c = 'O');
+    PrintRegMinus(c = 'O');
     PrintHexWordSpace(hl = &lastBreakAddressHigh);
 }
 
 void PrintRegMinus(...) {
-    PrintSpace();
-    PrintRegMinusEx();
-}
-
-void PrintRegMinusEx(...) {
     PrintChar(c);
     PrintChar(c = '-');
 }
