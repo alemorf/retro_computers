@@ -40,7 +40,6 @@ void ReadTapeByte(...);
 void ReadTapeByteNext();
 void PrintChar(...);
 void WriteTapeByte(...);
-void PrintChar(...);
 void IsKeyPressed();
 void PrintHexByte(...);
 void PrintString(...);
@@ -48,7 +47,6 @@ void Monitor();
 void MonitorExecute();
 void PrintCharA(...);
 void ReadString();
-void ReadStringEx();
 void MonitorError();
 void CommonBs(...);
 void PrintSpace(...);
@@ -60,7 +58,6 @@ void ParseDword1(...);
 void PrintHex(...);
 void PrintParam1Space();
 void PrintHexWordSpace(...);
-void IncWord(...);
 void PrintRegs();
 void CmdXS(...);
 void FindRegister(...);
@@ -76,7 +73,6 @@ void ContinueBreakpoint(...);
 void CmdQResult(...);
 void CmdIEnd(...);
 void ReadTapeDelay(...);
-void PrintCharInt(...);
 void WriteTapeDelay(...);
 void TapeDelay(...);
 void ClearScreenHome();
@@ -177,30 +173,31 @@ void MonitorExecute() {
     return hl();
 }
 
-void ReadString() {
-    c = 0x0D;
-    ReadStringEx(c);
+void Input() {
+    PrintSpace();
+    ReadString();
 }
 
-void ReadStringEx(...) {
+void ReadString() {
     hl = &cmdBuffer;
     de = hl;
+    color = a = SCREEN_ATTRIB_INPUT;
     for (;;) {
         ReadKey();
         if (a == 8) {
             if ((a = e) == l)
                 continue;
-            PrintCharA(a = 8);
+            PrintChar(c = 8);
             hl--;
             continue;
         }
         *hl = a;
         if (a == 0x0D) {
-            Compare(a = e, l); /* Return ZF if cmdBuffer is empty */
+            if ((a = e) == l)
+                return Monitor();
+            color = a = SCREEN_ATTRIB_DEFAULT;
             return;
         }
-        if (a == c)
-            return Monitor();
         if (a < 32)
             a = '.';
         PrintCharA(a);
@@ -208,11 +205,6 @@ void ReadStringEx(...) {
         if ((a = l) == &cmdBufferEnd)
             return MonitorError();
     }
-}
-
-void Input(...) {
-    PrintSpace();
-    ReadStringEx(c = ' ');
 }
 
 void PopWordReturn(...) {
@@ -264,7 +256,7 @@ void ParseParams() {
 }
 
 void MonitorError() {
-    PrintCharA(a = '?');
+    PrintChar(c = '?');
     return Monitor();
 }
 
@@ -346,7 +338,7 @@ void PrintHexWordSpace(...) {
 }
 
 void PrintSpace(...) {
-    PrintCharA(a = ' ');
+    PrintChar(c = ' ');
 }
 
 void Loop(...) {
@@ -358,15 +350,9 @@ void Loop(...) {
     }
     if (flag_z)
         return PopWordReturn();
-    IncWord(hl = &param1);
-}
-
-void IncWord(...) {
-    (*hl)++;
-    if (flag_nz)
-        return;
+    hl = param1;
     hl++;
-    (*hl)++;
+    param1 = hl;
 }
 
 void CmpHlDe(...) {
@@ -391,8 +377,6 @@ void CmdX() {
         PrintLf();
         PrintHexByte(a = *hl);
         Input();
-        if (flag_z)
-            return Monitor();
         ParseDword();
         a = l;
     }
@@ -402,9 +386,7 @@ void CmdX() {
 void CmdXS() {
     PrintLf();
     PrintHexWordSpace(hl = &regSPH);
-    Input();
-    if (flag_z)
-        return Monitor();
+    ReadString();
     ParseDword();
     regSP = hl;
 }
@@ -453,7 +435,7 @@ void PrintRegMinus(...) {
 
 void PrintRegMinusEx(...) {
     PrintChar(c);
-    PrintCharA(a = '-');
+    PrintChar(c = '-');
 }
 
 uint8_t regList[] = {'A', &regA, 'B', &regB, 'C', &regC, 'D', &regD,  'E', &regE,
@@ -560,7 +542,7 @@ void CmdP(...) {
     ReadString();
     ParseParams();
 
-    PrintString(hl = &aDir_); /* TODO: */
+    PrintString(hl = &aDir_);
     ReadString();
     ParseParams();
 
@@ -695,14 +677,12 @@ void CmdM() {
         PrintLfParam1();
         PrintByteFromParam1();
         Input();
-        if (flag_nz) {
-            ParseDword();
-            a = l;
-            hl = param1;
-            *hl = a;
-        }
-        hl = &param1;
-        IncWord();
+        ParseDword();
+        a = l;
+        hl = param1;
+        *hl = a;
+        hl++;
+        param1 = hl;
     }
 }
 
@@ -1034,17 +1014,11 @@ void PrintLf(...) {
 }
 
 void PrintCharA(...) {
-    push(bc);
-    PrintCharInt(c = a);
+    PrintChar(c = a);
 }
 
 void PrintChar(...) {
-    push(bc);
-    PrintCharInt(c);
-}
-
-void PrintCharInt(...) {
-    push(hl, de, a);
+    push(bc, hl, de, a);
 
     hl = cursor;
     de = -(SCREEN_WIDTH * SCREEN_HEIGHT);
@@ -1056,27 +1030,29 @@ void PrintCharInt(...) {
     }
 
     a = c;
-    a -= 0x08;
-    if (flag_z)
-        return MoveCursorLeft(hl);
-    a -= 0x0A - 0x08;
-    if (flag_z)
-       return MoveCursorNextLine(hl);
-    a -= 0x0C - 0x0A;
-    if (flag_z)
-        return MoveCursorHome();
-    a -= 0x18 - 0x0C;
-    if (flag_z)
-        return MoveCursorRight(hl);
-    a--; /* 0x19 */
-    if (flag_z)
-        return MoveCursorUp(hl);
-    a--; /* 0x1A */
-    if (flag_z)
-        return MoveCursorDown(hl);
-    a -= 0x1F - 0x1A;
-    if (flag_z)
-        return ClearScreenHome();
+    if (a < 32) {
+        a -= 0x08;
+        if (flag_z)
+            return MoveCursorLeft(hl);
+        a -= 0x0A - 0x08;
+        if (flag_z)
+           return MoveCursorNextLine(hl);
+        a -= 0x0C - 0x0A;
+        if (flag_z)
+            return MoveCursorHome();
+        a -= 0x18 - 0x0C;
+        if (flag_z)
+            return MoveCursorRight(hl);
+        a--; /* 0x19 */
+        if (flag_z)
+            return MoveCursorUp(hl);
+        a--; /* 0x1A */
+        if (flag_z)
+            return MoveCursorDown(hl);
+        a -= 0x1F - 0x1A;
+        if (flag_z)
+            return ClearScreenHome();
+    }
 
     *hl = c;
     push_pop(hl) {
