@@ -1,6 +1,6 @@
 /* Прошивка компьютера Микро 80 из журнала Радио за 1983 год
  * Реверc-инженеринг 5-06-2024 Алексей Морозов aleksey.f.morozov@gmail.com
- * Доработано
+ * Доработка 12-04-2025 Алексей Морозов aleksey.f.morozov@gmail.com
  */
 
 #include "cmm.h"
@@ -30,9 +30,11 @@ const int TAPE_START = 0xE6;
 
 void Reboot();
 void ReadKey();
-void ReadKey0();
-void ReadKey1(...);
-void ReadKey2(...);
+void ScanKey();
+void ScanKey0();
+void ScanKey1(...);
+void ScanKey2(...);
+void ScanKeyExit(...);
 void ReadKeyDelay();
 void ReadTapeByte(...);
 void ReadTapeByteNext();
@@ -46,15 +48,11 @@ void Monitor();
 void MonitorExecute();
 void PrintCharA(...);
 void ReadString();
+void ReadStringEx();
 void MonitorError();
-void ReadStringLoop(...);
 void CommonBs(...);
 void PrintSpace(...);
-void InputBs(...);
-void InputEndSpace(...);
 void PopWordReturn(...);
-void InputLoop(...);
-void InputInit(...);
 void ParseDword(...);
 void CmpHlDe(...);
 void ReturnCf(...);
@@ -68,6 +66,7 @@ void CmdXS(...);
 void FindRegister(...);
 void ReadKey(...);
 void PrintRegMinus(...);
+void PrintRegMinusEx(...);
 void InitRst38();
 void BreakPoint(...);
 void BreakPointAt2(...);
@@ -87,20 +86,18 @@ void MoveCursorUp(...);
 void MoveCursorDown(...);
 void MoveCursorNextLine(...);
 void MoveCursorHome();
-void ClearScreen();
 void MoveCursor(...);
 void MoveCursorNextLine1(...);
-void ReadStringBs(...);
-void ReadStringCr(...);
+void PrintLf(...);
+void PrintKeyStatus();
 
-extern uint8_t textScreen __address(0xE800);    // TODO
-extern uint8_t attribScreen __address(0xE000);  // TODO
+extern uint8_t textScreen __address(0xE800);   /* TODO */
+extern uint8_t attribScreen __address(0xE000); /* TODO */
 
 extern uint8_t aHello[];
 extern uint8_t aPrompt[];
 extern uint8_t monitorCommands[];
 extern uint8_t regList[];
-extern uint8_t aLf[];
 extern uint8_t keyTable[];
 
 asm(" org 0F800h");
@@ -143,7 +140,10 @@ void EntryPrintString(...) {
 
 void Reboot() {
     DisableInterrupts();
-    mode = (a ^= a);
+    readDelay = hl = 0x324B;
+    keybMode = (a ^= a);
+    a--;
+    keySaved = a; /* = 0xFF */
     color = a = SCREEN_ATTRIB_DEFAULT;
     regSP = hl = USER_STACK_TOP;
     sp = STACK_TOP;
@@ -161,116 +161,63 @@ void Monitor() {
 }
 
 void MonitorExecute() {
-    hl = &cmdBuffer;
-    b = *hl;
+    b = a = *de;
     hl = &monitorCommands;
-
-    for (;;) {
+    do {
         a = *hl;
-        hl++;
-        if (flag_z(a &= a))
+        if (a == 0)
             return MonitorError();
-        if (a == b)
-            break;
         hl++;
+        e = *hl;
         hl++;
-    }
-
-    sp = hl;
-    pop(hl);
-    sp = STACK_TOP - 2;
+        d = *hl;
+        hl++;
+    } while (a != b);
+    swap(hl, de);
     return hl();
 }
 
 void ReadString() {
-    return ReadStringLoop(hl = &cmdBuffer);
+    c = 0x0D;
+    ReadStringEx(c);
 }
 
-void ReadStringLoop(...) {
-    do {
+void ReadStringEx(...) {
+    hl = &cmdBuffer;
+    de = hl;
+    for (;;) {
         ReadKey();
-        if (a == 8)
-            return ReadStringBs();
+        if (a == 8) {
+            if ((a = e) == l)
+                continue;
+            PrintCharA(a = 8);
+            hl--;
+            continue;
+        }
         *hl = a;
-        if (a == 0x0D)
-            return ReadStringCr(hl);
+        if (a == 0x0D) {
+            Compare(a = e, l); /* Return ZF if cmdBuffer is empty */
+            return;
+        }
+        if (a == c)
+            return Monitor();
+        if (a < 32)
+            a = '.';
         PrintCharA(a);
-        a = &cmdBufferEnd;
-        Compare(a, l);
         hl++;
-    } while (flag_nz);
-    MonitorError();
-}
-
-void MonitorError() {
-    PrintCharA(a = '?');
-    Monitor();
-}
-
-void ReadStringCr(...) {
-    *hl = 0x0D;
-}
-
-void ReadStringBs(...) {
-    CommonBs();
-    ReadStringLoop();
-}
-
-void CommonBs(...) {
-    if ((a = &cmdBuffer) == l)
-        return;
-    PrintCharA(a = 8);
-    hl--;
+        if ((a = l) == &cmdBufferEnd)
+            return MonitorError();
+    }
 }
 
 void Input(...) {
     PrintSpace();
-    InputInit(hl = &cmdBuffer);
-}
-
-void InputInit(...) {
-    InputLoop(b = 0);
-}
-
-void InputLoop(...) {
-    for (;;) {
-        ReadKey();
-        if (a == 8)
-            return InputBs();
-        *hl = a;
-        if (a == ' ')
-            return PopWordReturn();
-        if (a == 0x0D)
-            return InputEndSpace();
-        PrintCharA();
-        b = 0xFF;
-        if ((a = &cmdBufferEnd) == l)
-            return MonitorError();
-        hl++;
-    }
-}
-
-void InputEndSpace(...) {
-    a = b;
-    CarryRotateLeft(a, 1);
-    de = &cmdBuffer;
-    b = 0;
-}
-
-void InputBs(...) {
-    CommonBs();
-    if (flag_z)
-        return InputInit();
-    InputLoop();
+    ReadStringEx(c = ' ');
 }
 
 void PopWordReturn(...) {
     sp++;
     sp++;
-}
-
-void PrintLf(...) {
-    PrintString(hl = &aLf);
 }
 
 void PrintString(...) {
@@ -316,6 +263,11 @@ void ParseParams() {
     MonitorError();
 }
 
+void MonitorError() {
+    PrintCharA(a = '?');
+    return Monitor();
+}
+
 void ParseDword(...) {
     hl = 0;
     ParseDword1();
@@ -341,6 +293,7 @@ void ParseDword1(...) {
                 return MonitorError();
             a -= 7;
         }
+        b = 0;
         c = a;
         hl += hl;
         hl += hl;
@@ -363,7 +316,6 @@ void PrintByteFromParam1(...) {
 
 void PrintHexByte(...) {
     b = a;
-    a = b;
     CyclicRotateRight(a, 4);
     PrintHex(a);
     PrintHex(a = b);
@@ -434,13 +386,12 @@ void CmdX() {
         return CmdXS();
     FindRegister(de = &regList);
     hl = &regs;
-    de++;
     l = a = *de;
     push_pop(hl) {
         PrintLf();
         PrintHexByte(a = *hl);
         Input();
-        if (flag_nc)
+        if (flag_z)
             return Monitor();
         ParseDword();
         a = l;
@@ -452,7 +403,7 @@ void CmdXS() {
     PrintLf();
     PrintHexWordSpace(hl = &regSPH);
     Input();
-    if (flag_nc)
+    if (flag_z)
         return Monitor();
     ParseDword();
     regSP = hl;
@@ -463,9 +414,9 @@ void FindRegister(...) {
         a = *de;
         if (flag_z(a &= a))
             return MonitorError();
+        de++;
         if (a == *hl)
             return;
-        de++;
         de++;
     }
 }
@@ -491,13 +442,17 @@ void PrintRegs(...) {
     PrintRegMinus();
     param1 = hl = regs;
     PrintParam1Space();
-    PrintRegMinus(c = 'O');
+    PrintRegMinusEx(c = 'O');
     PrintHexWordSpace(hl = &lastBreakAddressHigh);
 }
 
 void PrintRegMinus(...) {
     PrintSpace();
-    PrintCharA(a = c);
+    PrintRegMinusEx();
+}
+
+void PrintRegMinusEx(...) {
+    PrintChar(c);
     PrintCharA(a = '-');
 }
 
@@ -602,12 +557,13 @@ void CmdP(...) {
     breakCounter = a = param3;
 
     PrintString(hl = &aStart);
-
-    hl = &cmdBuffer1;
-    ReadStringLoop();
-    ParseParams();
-    PrintString(hl = &aDir_);
     ReadString();
+    ParseParams();
+
+    PrintString(hl = &aDir_); /* TODO: */
+    ReadString();
+    ParseParams();
+
     Run();
 }
 
@@ -739,7 +695,7 @@ void CmdM() {
         PrintLfParam1();
         PrintByteFromParam1();
         Input();
-        if (flag_c) {
+        if (flag_nz) {
             ParseDword();
             a = l;
             hl = param1;
@@ -830,7 +786,7 @@ CmdLLine:
     }
 }
 
-// TODO:
+/* TODO: */
 
 void CmdH(...) {
     hl = &param1;
@@ -1072,7 +1028,10 @@ uint8_t monitorCommandsEnd = 0;
 
 uint8_t aHello[] = "\x1F*MikrO/80* MONITOR";
 uint8_t aPrompt[] = "\x0A>";
-uint8_t aLf[] = "\x0A";
+
+void PrintLf(...) {
+    PrintCharA(a = 0x0A);
+}
 
 void PrintCharA(...) {
     push(bc);
@@ -1102,17 +1061,17 @@ void PrintCharInt(...) {
         return MoveCursorLeft(hl);
     a -= 0x0A - 0x08;
     if (flag_z)
-        return MoveCursorNextLine(hl);
+       return MoveCursorNextLine(hl);
     a -= 0x0C - 0x0A;
     if (flag_z)
         return MoveCursorHome();
     a -= 0x18 - 0x0C;
     if (flag_z)
         return MoveCursorRight(hl);
-    a--; // 0x19
+    a--; /* 0x19 */
     if (flag_z)
         return MoveCursorUp(hl);
-    a--; // 0x1A
+    a--; /* 0x1A */
     if (flag_z)
         return MoveCursorDown(hl);
     a -= 0x1F - 0x1A;
@@ -1152,10 +1111,10 @@ void MoveCursor(...) {
                         c = *hl;
                         *hl = a;
                         hl += de;
-                    } while((a = h) != 0xE7);
+                    } while ((a = h) != 0xE7);
                 }
                 l--;
-            } while((a = l) != SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_LINES - 1 - SCREEN_WIDTH);
+            } while ((a = l) != SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_LINES - 1 - SCREEN_WIDTH);
         }
         hl += (de = -SCREEN_WIDTH);
     }
@@ -1170,7 +1129,17 @@ void MoveCursor(...) {
 }
 
 void ClearScreenHome() {
-    ClearScreen();
+    hl = &textScreen;
+    de = &attribScreen;
+    do {
+        *hl = 0;
+        hl++;
+        a = color;
+        *de = a;
+        de++;
+    } while ((a = h) != SCREEN_END >> 8);
+    PrintKeyStatus();
+
     MoveCursorHome();
 }
 
@@ -1178,28 +1147,9 @@ void MoveCursorHome() {
     MoveCursor(hl = &textScreen);
 }
 
-void ClearScreen() {
-    hl = &textScreen;
-    de = &attribScreen;
-    for (;;) {
-        *hl = ' ';
-        hl++;
-        a = color;
-        *de = a;
-        de++;
-        a = h;
-        if (a == SCREEN_END >> 8)
-            return;
-    }
-}
-
 void MoveCursorRight(...) {
     hl++;
-    if ((a = h) != SCREEN_END >> 8)
-        return MoveCursor(hl);
-    if (flag_z) /* Not needed */
-        return MoveCursorHome();
-    MoveCursorLeft(hl); /* Not needed */
+    return MoveCursor(hl);
 }
 
 void MoveCursorLeft(...) {
@@ -1230,40 +1180,68 @@ void MoveCursorNextLine(...) {
 }
 
 void ReadKey() {
-    push(bc, de, hl);
-    ReadKey0();
-}
+    do {
+        ScanKey();
+    } while(flag_z);
+    a--;
 
-void ReadKey0() {
-    for (;;) {
-        b = -1;
-        c = 1 ^ 0xFF;
-        d = KEYBOARD_COLUMN_COUNT;
-        do {
-            out(PORT_KEYBOARD_COLUMN, a = c);
-            CyclicRotateLeft(a, 1);
-            c = a;
-            a = in(PORT_KEYBOARD_ROW);
-            a &= KEYBOARD_ROW_MASK;
-            if (a != KEYBOARD_ROW_MASK)
-                return ReadKey1(a, b);
-            b = ((a = b) += KEYBOARD_ROW_COUNT);
-        } while (flag_nz(d--));
-
-        a = in(PORT_KEYBOARD_MODS);
-        if (flag_z(a &= KEYBOARD_RUS_MOD))
-            return ReadKey1(a, b);
-
-        keyLast = a = 0xFF;
-        keyDelay = a;
+    push_pop(a) {
+        keySaved = a = 0xFF;
     }
 }
 
-void ReadKey1(...) {
+void ScanKey() {
+    push(bc, de, hl);
+    ScanKey0();
+}
+
+void ScanKey0() {
+    b = -1;
+    c = 1 ^ 0xFF;
+    d = KEYBOARD_COLUMN_COUNT;
+    do {
+        out(PORT_KEYBOARD_COLUMN, a = c);
+        CyclicRotateLeft(a, 1);
+        c = a;
+        a = in(PORT_KEYBOARD_ROW);
+        a &= KEYBOARD_ROW_MASK;
+        if (a != KEYBOARD_ROW_MASK)
+            return ScanKey1(a, b);
+        b = ((a = b) += KEYBOARD_ROW_COUNT);
+    } while (flag_nz(d--));
+
+    a = in(PORT_KEYBOARD_MODS);
+    if (flag_z(a &= KEYBOARD_RUS_MOD))
+        return ScanKey1(a, b);
+
+    keyLast = a = 0xFF;
+
+    return ScanKeyExit();
+}
+
+uint8_t keyStatusChars[] = { 'L', 'L' | 0x80, 'R', 'R' | 0x80 };
+
+void PrintKeyStatus()
+{
+    a = keybMode;
+    a += &keyStatusChars;
+    l = a;
+    h = &keyStatusChars >> 8;
+    a = *hl;
+    *0xEFFF = a;
+}
+
+void ScanKey1(...) {
     do {
         b++;
         CyclicRotateRight(a);
-    } while(flag_c);
+    } while (flag_c);
+
+    /* Delay */
+    a ^= a;
+    do {
+        a--;
+    } while (flag_nz);
 
     /* b - key number */
 
@@ -1274,37 +1252,39 @@ void ReadKey1(...) {
      * 32   P П   Q Я   R Р   S С   T Т   U У   V Ж   W В
      * 40   X Ь   Y Ы   Z З   [ Ш   \ Э   ] Щ   ^ Ч    _
      * 48   Space Right Left  Up    Down  Vk    Str   Home */
-
-    a = keyLast;
+    hl = &keyLast;
+    a = *hl;
+    hl--; /* keyDelay */
     if (a == b) {
-        ReadKeyDelay();
-        hl = &keyDelay;
         (*hl)--;
         if (flag_nz)
-            return ReadKey0();
-        a = 0x40; // Repeat delay
+            return ScanKey0();
+        *hl = 0x30; /* Next repeat delay */
     } else {
-        a = 0xFF; // First repeat delay
+        *hl = 0xFF; /* First repeat delay */
     }
-    keyDelay = a;
-    keyLast = a = b;
+    hl++;
+    *hl = b; /* Key last */
 
-    if (a == 56) { // RUS/LAT
-        hl = mode;
-        a = *hl;
-        a ^= 1;
-        *hl = a;
-        return ReadKey0();
-    }
-
+    a = b;
     if (a >= 48) {
-        hl = &keyTable;
-        a -= 48;
-        c = a;
-        b = 0;
-        hl += bc;
+        if (a == 56) { /* RUS/LAT */
+            a = in(PORT_KEYBOARD_MODS);
+            CarryRotateRight(a, 3); /* Shift */
+            a = KEYB_MODE_CAP;
+            AddCarry(a, 0); /* to KEYB_MODE_RUS */
+            hl = &keybMode;
+            a ^= *hl;
+            *hl = a;
+
+            PrintKeyStatus();
+            return ScanKey0();
+        }
+        a += &keyTable - 48;
+        l = a;
+        h = (&keyTable - 48) >> 8;
         a = *hl;
-        return ReadKey2(a);
+        return ScanKey2(a);
     }
 
     a += '0';
@@ -1313,8 +1293,8 @@ void ReadKey1(...) {
             a &= 0x2F; /* <=>? to .-./ */
     c = a;
 
-    a = mode;
-    CyclicRotateRight(a, 1); /* MODE_RUS */
+    a = keybMode;
+    CyclicRotateRight(a, 2); /* KEYB_MODE_RUS */
     if (flag_c) {
         a = c;
         a |= 0x20;
@@ -1326,45 +1306,55 @@ void ReadKey1(...) {
     if (flag_nc) {
         a = c;
         a &= 0x1F;
-        return ReadKey2(a);
+        return ScanKey2(a);
     }
 
     CarryRotateRight(a, 1); /* Shift */
+    a = c;
     if (flag_nc) {
-        a = c;
         if (a >= 'A') {
-           a |= 0x80;
-           return ReadKey2(a);
+            a |= 0x80;
+            return ScanKey2(a);
         }
         if (a >= 0x40) /* @ A-Z [ \ ] ^ _ */
-            return ReadKey2(a);
+            return ScanKey2(a);
         if (a < 0x30) { /* .-./ to <=>? */
             a |= 0x10;
-            return ReadKey2(a);
+            return ScanKey2(a);
         }
         a &= 0x2F; /* 0123456789:; to !@#$%&'()*+ */
-        return ReadKey2(a);
     }
 
-    ReadKey2(a = c);
+    ScanKey2(a);
 }
 
-void ReadKey2(...) {
+void ScanKey2(...) {
+    keySaved = a;
     c = a;
 
-    ReadKeyDelay();
+    a = keybMode;
+    CyclicRotateRight(a, 1); /* KEYB_MODE_CAP */
+    if (flag_nc)
+        return ScanKeyExit();
 
     a = c;
-    pop(bc, de, hl);
+    a &= 0x7F;
+    if (a < 0x60) { /* Cyr chars */
+        if (a < 'A')
+            return ScanKeyExit();
+        if (a >= 'Z' + 1)
+            return ScanKeyExit();
+    }
+    a = c;
+    a ^= 0x80;
+    keySaved = a;
+    ScanKeyExit();
 }
 
-void ReadKeyDelay() {
-    de = 0x80;
-    for (;;) {
-        de--;
-        if (flag_z((a = d) |= e))
-            return;
-    }
+void ScanKeyExit(...) {
+    pop(bc, de, hl);
+    a = keySaved;
+    a++;
 }
 
 uint8_t keyTable[] = {
@@ -1379,10 +1369,7 @@ uint8_t keyTable[] = {
 };
 
 void IsKeyPressed() {
-    out(PORT_KEYBOARD_COLUMN, a ^= a);
-    a = in(PORT_KEYBOARD_ROW);
-    Invert(a);
-    a += a;
+    ScanKey();
     if (flag_z)
         return; /* Returns 0 if no key is pressed */
     a = 0xFF; /* Returns 0xFF if there are any keys pressed */
