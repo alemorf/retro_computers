@@ -6,28 +6,6 @@
 #include "cmm.h"
 #include "micro80.h"
 
-const int PORT_TAPE = 1;
-const int PORT_KEYBOARD_MODE = 4;
-const int PORT_KEYBOARD_COLUMN = 7;
-const int PORT_KEYBOARD_ROW = 6;
-const int PORT_KEYBOARD_MODS = 5;
-
-const int KEYBOARD_ROW_MASK = 0x7F;
-const int KEYBOARD_MODS_MASK = 0x07;
-const int KEYBOARD_RUS_MOD = 1 << 0;
-const int KEYBOARD_COLUMN_COUNT = 8;
-const int KEYBOARD_ROW_COUNT = 7;
-
-const int STACK_TOP = 0xF7FF;
-const int USER_STACK_TOP = 0xF7C0;
-
-const int OPCODE_RST_38 = 0xFF;
-const int OPCODE_JMP = 0xC3;
-
-const int READ_TAPE_FIRST_BYTE = 0xFF;
-const int READ_TAPE_NEXT_BYTE = 8;
-const int TAPE_START = 0xE6;
-
 void Reboot();
 void ReadKey();
 void ScanKey();
@@ -74,7 +52,7 @@ void CmdIEnd(...);
 void ReadTapeDelay(...);
 void WriteTapeDelay(...);
 void TapeDelay(...);
-void ClearScreenHome();
+void ClearScreen();
 void MoveCursorLeft(...);
 void MoveCursorRight(...);
 void MoveCursorUp(...);
@@ -85,9 +63,6 @@ void MoveCursor(...);
 void MoveCursorNextLine1(...);
 void PrintLf(...);
 void PrintKeyStatus();
-
-extern uint8_t textScreen __address(0xE800);   /* TODO */
-extern uint8_t attribScreen __address(0xE000); /* TODO */
 
 extern uint8_t aHello[];
 extern uint8_t aPrompt[];
@@ -174,11 +149,6 @@ void MonitorExecute() {
     return hl();
 }
 
-void Input() {
-    PrintSpace();
-    ReadString();
-}
-
 void ReadString() {
     hl = &cmdBuffer;
     de = hl;
@@ -192,11 +162,8 @@ void ReadString() {
             continue;
         }
         *hl = a;
-        if (a == 0x0D) {
-            if ((a = e) == l)
-                return Monitor();
+        if (a == 0x0D)
             return;
-        }
         if (a < 32)
             a = '.';
         PrintCharA(a);
@@ -267,9 +234,9 @@ void ParseDword(...) {
 void ParseDword1(...) {
     for (;;) {
         a = *de;
-        de++;
         if (a == 0x0D)
             return ReturnCf();
+        de++;
         if (a == ',')
             return;
         if (a == ' ')
@@ -363,43 +330,31 @@ void CmpHlDe(...) {
 /* X - Изменение содержимого внутреннего регистра микропроцессора */
 
 void CmdX() {
-    hl = &cmdBuffer1;
-    a = *hl;
+    de = &cmdBuffer1;
+    a = *de;
     if (a == 0x0D)
         return PrintRegs();
-    if (a == 'S')
-        return CmdXS();
-    FindRegister(de = &regList);
-    hl = &regs;
-    l = a = *de;
-    push_pop(hl) {
-        PrintLf();
-        PrintHexByte(a = *hl);
-        Input();
+    de++;
+    push_pop(a) {
         ParseDword();
-        a = l;
     }
-    *hl = a;
-}
-
-void CmdXS() {
-    PrintLf();
-    PrintHexWordSpace(hl = &regSPH);
-    ReadString();
-    ParseDword();
-    regSP = hl;
-}
-
-void FindRegister(...) {
-    for (;;) {
+    if (a == 'S') {
+        regSP = hl;
+        return;
+    }
+    b = a;
+    de = &regList - 1;
+    do {
+        de++;
         a = *de;
-        if (flag_z(a &= a))
+        if (a == 0)
             return MonitorError();
         de++;
-        if (a == *hl)
-            return;
-        de++;
-    }
+    } while (a != b);
+    swap(hl, de);
+    l = *hl;
+    h = &regs >> 8;
+    *hl = e;
 }
 
 void PrintRegs(...) {
@@ -590,7 +545,6 @@ void BreakpointAt3(...) {
 
 void CmdD() {
     ParseParams();
-CmdDLine:
     PrintLfParam1();
     for (;;) {
         PrintByteFromParam1();
@@ -599,7 +553,7 @@ CmdDLine:
         a = param1;
         a &= 0x0F;
         if (flag_z)
-            goto CmdDLine;
+            PrintLfParam1();
     }
 }
 
@@ -671,11 +625,17 @@ void CmdM() {
     for (;;) {
         PrintLfParam1();
         PrintByteFromParam1();
-        Input();
-        ParseDword();
-        a = l;
+        PrintSpace();
+        ReadString();
         hl = param1;
-        *hl = a;
+        a = *de;
+        if (a != 0x0D) {
+            push_pop(hl) {
+                ParseDword();
+                a = l;
+            }
+            *hl = a;
+        }
         hl++;
         param1 = hl;
     }
@@ -744,10 +704,7 @@ void CmdQResult(...) {
 
 void CmdL() {
     ParseParams();
-
-CmdLLine:
     PrintLfParam1();
-
     for (;;) {
         hl = param1;
         a = *hl;
@@ -755,41 +712,31 @@ CmdLLine:
             a = '.';
         PrintCharA();
         Loop();
-        if (flag_z((a = param1) &= 0x0F))
-            goto CmdLLine;
         PrintSpace();
+        if (flag_z((a = param1) &= 0x0F))
+            PrintLfParam1();
     }
 }
 
-/* TODO: */
+/* H<число 1>,<число 2> - Сложение и вычитание чисел */
 
 void CmdH(...) {
-    hl = &param1;
-    b = 6;
-    a ^= a;
-    do {
-        *hl = a;
-    } while (flag_nz(b--));
-
     de = &cmdBuffer1;
-
     ParseDword();
     param1 = hl;
-
     ParseDword();
     param2 = hl;
 
-    PrintLf();
-    param3 = hl = param1;
+    /* param1 + param2 */
     swap(hl, de);
-    hl = param2;
+    hl = param1;
+    push(hl);
     hl += de;
     param1 = hl;
-    PrintParam1Space();
+    PrintLfParam1();
 
-    hl = param2;
-    swap(hl, de);
-    hl = param3;
+    /* param1 - param2 */
+    pop(hl);
     a = e;
     Invert(a);
     e = a;
@@ -1016,7 +963,7 @@ void PrintChar(...) {
     push(bc, hl, de, a);
 
     hl = cursor;
-    de = -(SCREEN_WIDTH * SCREEN_HEIGHT);
+    de = -SCREEN_SIZE;
     push_pop(hl) {
         hl += de;
         a = *hl;
@@ -1046,7 +993,7 @@ void PrintChar(...) {
             return MoveCursorDown(hl);
         a -= 0x1F - 0x1A;
         if (flag_z)
-            return ClearScreenHome();
+            return ClearScreen();
     }
 
     *hl = c;
@@ -1070,7 +1017,7 @@ void MoveCursor(...) {
             c = SCREEN_WIDTH;
             do {
                 push_pop(hl) {
-                    de = 0x800 - SCREEN_WIDTH;
+                    de = SCREEN_SIZE - SCREEN_WIDTH;
                     b = 0;
                     c = a = color;
                     do {
@@ -1091,7 +1038,7 @@ void MoveCursor(...) {
     }
 
     cursor = hl;
-    de = -(SCREEN_WIDTH * SCREEN_HEIGHT);
+    de = -SCREEN_SIZE;
     hl += de;
     a = *hl;
     a |= SCREEN_ATTRIB_UNDERLINE;
@@ -1099,23 +1046,32 @@ void MoveCursor(...) {
     pop(bc, hl, de, a);
 }
 
-void ClearScreenHome() {
-    hl = &textScreen;
-    de = &attribScreen;
+void ClearScreenInt() {
     do {
-        *hl = 0;
-        hl++;
-        a = color;
-        *de = a;
-        de++;
-    } while ((a = h) != SCREEN_END >> 8);
-    PrintKeyStatus();
+        do {
+            *hl = 0;
+            hl++;
+            *de = a;
+            de++;
+        } while (flag_nz(c--));
+    } while (flag_nz(b--));
+}
 
+void ClearScreen() {
+    hl = SCREEN_BEGIN;
+    de = SCREEN_ATTRIB_BEGIN;
+    bc = 0x740;
+    a = color;
+    ClearScreenInt();
+    a = SCREEN_ATTRIB_BLANK;
+    bc = 0x2C0;
+    ClearScreenInt();
+    PrintKeyStatus();
     MoveCursorHome();
 }
 
 void MoveCursorHome() {
-    MoveCursor(hl = &textScreen);
+    MoveCursor(hl = SCREEN_BEGIN);
 }
 
 void MoveCursorRight(...) {
@@ -1190,16 +1146,33 @@ void ScanKey0() {
     return ScanKeyExit();
 }
 
-uint8_t keyStatusChars[] = { 'L', 'L' | 0x80, 'R', 'R' | 0x80 };
+uint8_t aZag[] = { 'z', 'a', 'g', ' ', ' ', ' ' };
+uint8_t aLat[] = { 'l', 'a', 't', 'r', 'u', 's' };
+
+void PrintKeyStatus1()
+{
+    de = 3; /* Chars count */
+    CyclicRotateRight(a);
+    if (flag_c)
+        hl += de;
+    d = a;
+    do {
+        *bc = a = *hl;
+        bc++;
+        hl++;
+    } while(flag_nz(e--));
+    a = d;
+}
 
 void PrintKeyStatus()
 {
+    bc = 0xEFF9;
     a = keybMode;
-    a += &keyStatusChars;
-    l = a;
-    h = &keyStatusChars >> 8;
-    a = *hl;
-    *0xEFFF = a;
+    hl = &aZag;
+    PrintKeyStatus1();
+    bc++;
+    hl = &aLat;
+    PrintKeyStatus1();
 }
 
 void ScanKey1(...) {

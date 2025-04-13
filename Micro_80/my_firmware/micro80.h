@@ -1,23 +1,49 @@
 #include "cmm.h"
 
-const int SCREEN_ATTRIB_DEFAULT = 0x07;
-
-const int SCREEN_WIDTH = 64;
-const int SCREEN_HEIGHT = 32;
-const int SCREEN_LINES = 25;
+/* Экран */
 const int SCREEN_ATTRIB_BEGIN = 0xE000;
+const int SCREEN_SIZE = 0x800;
 const int SCREEN_BEGIN = 0xE800;
-const int SCREEN_END = SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_HEIGHT;
+const int SCREEN_END = 0xF000;
+const int SCREEN_WIDTH = 64;
+const int SCREEN_LINES = 25;
+const int SCREEN_ATTRIB_DEFAULT = 0x27;
+const int SCREEN_ATTRIB_BLANK = 0x07;
+const int SCREEN_ATTRIB_INPUT = 0x23;
 const int SCREEN_ATTRIB_UNDERLINE = 1 << 7;
 
+/* Биты для keybMode */
 const int KEYB_MODE_CAP = 1 << 0;
 const int KEYB_MODE_RUS = 1 << 1;
 
+/* Порты ввода/вывода */
+const int PORT_TAPE = 1;
+const int PORT_KEYBOARD_MODE = 4;
+const int PORT_KEYBOARD_COLUMN = 7;
+const int PORT_KEYBOARD_ROW = 6;
+const int PORT_KEYBOARD_MODS = 5;
+
+/* Клавиатура */
+const int KEYBOARD_ROW_MASK = 0x7F;
+const int KEYBOARD_MODS_MASK = 0x07;
+const int KEYBOARD_RUS_MOD = 1 << 0;
+const int KEYBOARD_COLUMN_COUNT = 8;
+const int KEYBOARD_ROW_COUNT = 7;
+
+/* Магнитофон */
+const int READ_TAPE_FIRST_BYTE = 0xFF;
+const int READ_TAPE_NEXT_BYTE = 8;
+const int TAPE_START = 0xE6;
+
+/* Опкоды процессора i8080 */
+const int OPCODE_RST_38 = 0xFF;
+const int OPCODE_JMP = 0xC3;
+
+/* Вектор прерывания */
 extern uint8_t rst38Opcode __address(0x38);
 extern uint16_t rst38Address __address(0x39);
 
-extern uint8_t visible_cursor_prev_byte __address(0xF74D);
-extern uint16_t visible_cursor_address __address(0xF74E);
+/* Переменные */
 extern uint8_t jumpOpcode __address(0xF750);
 extern uint16_t param1 __address(0xF751);
 extern uint8_t param1h __address(0xF752);
@@ -62,3 +88,6 @@ extern uint8_t breakPrevByte3 __address(0xF77A);
 extern uint8_t cmdBuffer __address(0xF77B);
 extern uint8_t cmdBuffer1 __address(0xF77B + 1);
 extern uint8_t cmdBufferEnd __address(0xF77B + 32);
+
+const int USER_STACK_TOP = 0xF7C0;
+const int STACK_TOP = 0xF7FF;
