@@ -1149,20 +1149,7 @@ void ScanKey0() {
 uint8_t aZag[] = { 'z', 'a', 'g', ' ', ' ', ' ' };
 uint8_t aLat[] = { 'l', 'a', 't', 'r', 'u', 's' };
 
-void PrintKeyStatus1()
-{
-    de = 3; /* Chars count */
-    CyclicRotateRight(a);
-    if (flag_c)
-        hl += de;
-    d = a;
-    do {
-        *bc = a = *hl;
-        bc++;
-        hl++;
-    } while(flag_nz(e--));
-    a = d;
-}
+void PrintKeyStatus1();
 
 void PrintKeyStatus()
 {
@@ -1173,6 +1160,21 @@ void PrintKeyStatus()
     bc++;
     hl = &aLat;
     PrintKeyStatus1();
+}
+
+void PrintKeyStatus1()
+{
+    de = 3; /* String size */
+    CyclicRotateRight(a);
+    if (flag_c)
+        hl += de;
+    d = a;
+    do {
+        *bc = a = *hl;
+        bc++;
+        hl++;
+    } while(flag_nz(e--));
+    a = d;
 }
 
 void ScanKey1(...) {
