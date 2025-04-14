@@ -56,6 +56,7 @@ void WriteTapeDelay(...);
 void PrintLf(...);
 void PrintCharA(...);
 void PrintChar(...);
+void PrintCharInt(...);
 void MoveCursor(...);
 void ClearScreen();
 void MoveCursorHome();
@@ -678,8 +679,8 @@ void CmdK() {
     PrintLf();
     for (;;) {
         ReadKey();
-        if (a == 1) /* УС + А */
-            return PrintLf();
+        if (a == 0) /* УС + @ */
+            return;
         PrintCharA(a);
     }
 }
@@ -972,11 +973,17 @@ void PrintLf(...) {
 }
 
 void PrintCharA(...) {
-    PrintChar(c = a);
+    push(bc);
+    PrintCharInt(c = a);
 }
 
 void PrintChar(...) {
-    push(bc, hl, de, a);
+    push(bc);
+    PrintCharInt(c);
+}
+
+void PrintCharInt(...) {
+    push(hl, de, a);
 
     /* Hide cursor */
     hl = cursor;
