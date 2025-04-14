@@ -184,11 +184,6 @@ void ReadString() {
     }
 }
 
-void PopWordReturn(...) {
-    sp++;
-    sp++;
-}
-
 void PrintString(...) {
     for (;;) {
         a = *hl;
@@ -315,15 +310,17 @@ void PrintSpace(...) {
     PrintChar(c = ' ');
 }
 
-void Loop(...) {
+void Loop() {
     push_pop(de) {
         hl = param1;
         swap(hl, de);
         hl = param2;
         CmpHlDe(hl, de);
     }
+    pop(hl);
     if (flag_z)
-        return PopWordReturn();
+        return;
+    push(hl);
     hl = param1;
     hl++;
     param1 = hl;
