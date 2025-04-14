@@ -16,6 +16,7 @@
  *   - Отключение прерываний
  *   - Установка скорости чтения/записи с магнитофона
  *   - Если IsKeyPressed вернул нажатую клавишу, то последующий вызов ReadKey не зависает
+ *   - Контроль переполнения при парсинге чисел
  */
 
 #include "cmm.h"
@@ -28,7 +29,8 @@ void ReadString();
 void PrintString(...);
 void MonitorError();
 void ParseDword(...);
-void ReturnCf(...);
+void PopReturnCf(...);
+void PopReturn();
 void PrintHexByte(...);
 void PrintHex(...);
 void PrintParam1Space();
@@ -233,41 +235,53 @@ void MonitorError() {
 }
 
 void ParseDword(...) {
+    push(hl = &MonitorError);
     hl = 0;
     for (;;) {
         a = *de;
         if (a == 0x0D)
-            return ReturnCf();
+            return PopReturnCf();
         de++;
         if (a == ',')
-            return;
+            return PopReturn();
         if (a == ' ')
             continue;
         a &= 0x7F; /* Lowercase support */
         a -= '0';
         if (flag_m)
-            return MonitorError();
+            return;
         if (flag_p(Compare(a, 10))) {
             if (flag_m(Compare(a, 0x11)))
-                return MonitorError();
+                return;
             if (flag_p(Compare(a, 0x17)))
-                return MonitorError();
+                return;
             a -= 7;
         }
         b = 0;
         c = a;
         hl += hl;
-        hl += hl;
-        hl += hl;
+        if (flag_c)
+            return;
         hl += hl;
         if (flag_c)
-            return MonitorError();
+            return;
+        hl += hl;
+        if (flag_c)
+            return;
+        hl += hl;
+        if (flag_c)
+            return;
         hl += bc;
     }
 }
 
-void ReturnCf(...) {
+void PopReturnCf() {
     SetFlagC();
+    PopReturn();
+}
+
+void PopReturn() {
+    pop(bc);
 }
 
 void PrintByteFromParam1(...) {
