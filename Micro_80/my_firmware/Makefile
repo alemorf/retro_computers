@@ -1,16 +1,10 @@
-J=/home/alemorf/a/work/micro80_my_emulator.html/
+all: micro80.bin
 
-all: bios.bin
-
-bios.bin: Makefile standard_bios.c micro80.h save.c
-	./asm80 --cmm --lst=micro80.lst standard_bios.c save.c
+micro80.bin: Makefile micro80.c micro80.h save.c Makefile
+	./asm80 --cmm --lst=micro80.lst micro80.c save.c
 
 format:
-	clang-format -i micro80.c
+	clang-format -i micro80.c micro80.h
 
 clean:
 	rm micro80.bin
-
-$J: bios.bin Makefile
-	cp bios.bin $J
-	cd $J && make

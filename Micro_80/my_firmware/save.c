@@ -1,1 +1,1 @@
-asm(" savebin \"bios.bin\", 0xF800, 0x10000");
+asm(" savebin \"micro80.bin\", 0xF800, 0x10000");
