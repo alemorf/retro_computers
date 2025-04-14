@@ -1031,9 +1031,9 @@ void MoveCursor(...) {
     hl = -(SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_HEIGHT);
     hl += de;
     swap(hl, de);
-
     if (flag_c) {
         push_pop(hl) {
+            /* Scroll up */
             hl = SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_HEIGHT - 1;
             c = SCREEN_WIDTH;
             do {
@@ -1061,8 +1061,7 @@ void MoveCursor(...) {
     cursor = hl;
 
     /* Show cursor */
-    de = -SCREEN_SIZE;
-    hl += de;
+    hl += (de = -SCREEN_SIZE);
     a = *hl;
     a |= SCREEN_ATTRIB_UNDERLINE;
     *hl = a;
