@@ -326,18 +326,16 @@ void PrintSpace(...) {
 
 void Loop() {
     push_pop(de) {
-        hl = param1;
-        swap(hl, de);
         hl = param2;
+        swap(hl, de);
+        hl = param1;
         CmpHlDe(hl, de);
+        hl++;
+        param1 = hl;
     }
-    pop(hl);
-    if (flag_z)
+    if (flag_nz)
         return;
-    push(hl);
-    hl = param1;
-    hl++;
-    param1 = hl;
+    pop(hl);
 }
 
 void CmpHlDe(...) {
@@ -980,6 +978,7 @@ void PrintCharA(...) {
 void PrintChar(...) {
     push(bc, hl, de, a);
 
+    /* Hide cursor */
     hl = cursor;
     de = -SCREEN_SIZE;
     push_pop(hl) {
@@ -1060,11 +1059,14 @@ void MoveCursor(...) {
     }
 
     cursor = hl;
+
+    /* Show cursor */
     de = -SCREEN_SIZE;
     hl += de;
     a = *hl;
     a |= SCREEN_ATTRIB_UNDERLINE;
     *hl = a;
+
     pop(bc, hl, de, a);
 }
 
@@ -1231,7 +1233,7 @@ void ScanKey1(...) {
             a = in(PORT_KEYBOARD_MODS);
             CarryRotateRight(a, 3); /* Shift */
             a = KEYB_MODE_CAP;
-            AddCarry(a, 0); /* to KEYB_MODE_RUS */
+            AddCarry(a, 0); /* KEYB_MODE_CAP -> KEYB_MODE_RUS */
             hl = &keybMode;
             a ^= *hl;
             *hl = a;
