@@ -38,6 +38,7 @@ extern uint8_t rst38Opcode __address(0x38);
 extern uint16_t rst38Address __address(0x39);
 
 /* BIOS variables */
+void jumpParam1() __address(0xF750);
 extern uint8_t jumpOpcode __address(0xF750);
 extern uint16_t param1 __address(0xF751);
 extern uint8_t param1h __address(0xF752);

@@ -5,79 +5,76 @@
 #include "cmm.h"
 #include "micro80.h"
 
-void Reboot();
-void ReadKey();
-void ReadKey0();
-void ReadKey1(...);
-void ReadKey2(...);
-void ReadKeyDelay();
-void ReadTapeByte(...);
-void PrintChar(...);
-void WriteTapeByte(...);
-void PrintChar(...);
-void IsKeyPressed();
-void PrintHexByte(...);
-void PrintString(...);
-void Monitor();
-void MonitorExecute();
-void PrintCharA(...);
-void ReadString();
-void MonitorError();
+void Reboot(...);
+void Monitor(...);
+void MonitorExecute(...);
+void ReadString(...);
 void ReadStringLoop(...);
+void MonitorError(...);
+void ReadStringCr(...);
+void ReadStringBs(...);
 void CommonBs(...);
-void PrintSpace(...);
-void InputBs(...);
-void InputEndSpace(...);
-void PopWordReturn(...);
-void InputLoop(...);
 void InputInit(...);
+void InputLoop(...);
+void InputEndSpace(...);
+void InputBs(...);
+void PopWordReturn(...);
+void PrintString(...);
 void ParseDword(...);
-void CmpHlDe(...);
-void ReturnCf(...);
 void ParseDword1(...);
+void ReturnCf(...);
+void PrintHexByte(...);
 void PrintHex(...);
-void PrintParam1Space();
+void PrintParam1Space(...);
 void PrintHexWordSpace(...);
+void PrintSpace(...);
 void IncWord(...);
-void PrintRegs();
+void CmpHlDe(...);
 void CmdXS(...);
 void FindRegister(...);
-void ReadKey(...);
+void PrintRegs(...);
 void PrintRegMinus(...);
-void InitRst38();
+void InitRst38(...);
 void BreakPoint(...);
+void Run(...);
 void BreakPointAt2(...);
-void BreakpointAt3(...);
-void Run();
 void ContinueBreakpoint(...);
+void BreakpointAt3(...);
 void CmdQResult(...);
 void CmdIEnd(...);
+void ReadTapeByte(...);
 void ReadTapeDelay(...);
-void PrintCharInt(...);
-void WriteTapeDelay(...);
 void TapeDelay(...);
-void ClearScreen();
-void MoveCursorLeft(...);
-void MoveCursorRight(...);
-void MoveCursorUp(...);
-void MoveCursorDown(...);
-void MoveCursorNextLine(...);
-void MoveCursorHome();
-void ClearScreenInt();
+void WriteTapeByte(...);
+void WriteTapeDelay(...);
+void PrintCharA(...);
+void PrintChar(...);
+void PrintCharInt(...);
 void MoveCursor(...);
+void ClearScreen(...);
+void MoveCursorHome(...);
+void ClearScreenInt(...);
+void MoveCursorRight(...);
+void MoveCursorLeft(...);
+void MoveCursorDown(...);
+void MoveCursorUp(...);
+void MoveCursorNextLine(...);
 void MoveCursorNextLine1(...);
-void ReadStringBs(...);
-void ReadStringCr(...);
+void ReadKey(...);
+void ReadKey1(...);
+void ReadKey2(...);
+void ReadKeyDelay(...);
+void IsKeyPressed(...);
 
-extern uint8_t aPrompt[];
-extern uint8_t monitorCommands[];
-extern uint8_t regList[];
-extern uint8_t aLf[];
-extern uint8_t keyTable[];
+extern uint8_t aPrompt[22];
+extern uint8_t monitorCommands;
+extern uint8_t regList[19];
+extern uint8_t aLf[2];
+extern uint8_t keyTable[8];
 
 asm(" org 0F800h");
 
-void EntryReboot() {
+void EntryReboot(...) {
     Reboot();
 }
 
@@ -101,7 +98,7 @@ void EntryPrintChar2(...) {
     PrintChar();
 }
 
-void EntryIsKeyPressed() {
+void EntryIsKeyPressed(...) {
     IsKeyPressed();
 }
 
@@ -113,14 +110,14 @@ void EntryPrintString(...) {
     PrintString();
 }
 
-void Reboot() {
+void Reboot(...) {
     regSP = hl = USER_STACK_TOP;
     sp = STACK_TOP;
     PrintCharA(a = 0x1F); /* Clear screen */
     Monitor();
 }
 
-void Monitor() {
+void Monitor(...) {
     out(PORT_KEYBOARD_MODE, a = 0x8B);
     sp = STACK_TOP;
     PrintString(hl = &aPrompt);
@@ -129,7 +126,7 @@ void Monitor() {
     MonitorExecute();
 }
 
-void MonitorExecute() {
+void MonitorExecute(...) {
     hl = &cmdBuffer;
     b = *hl;
     hl = &monitorCommands;
@@ -152,7 +149,7 @@ void MonitorExecute() {
     return hl();
 }
 
-void ReadString() {
+void ReadString(...) {
     return ReadStringLoop(hl = &cmdBuffer);
 }
 
@@ -167,13 +164,13 @@ void ReadStringLoop(...) {
         if (a == 0x0D)
             return ReadStringCr(hl);
         a = &cmdBufferEnd - 1;
-        Compare(a, l);
+        compare(a, l);
         hl++;
     } while (flag_nz);
     MonitorError();
 }
 
-void MonitorError() {
+void MonitorError(...) {
     PrintCharA(a = '?');
     Monitor();
 }
@@ -225,7 +222,7 @@ void InputLoop(...) {
 void InputEndSpace(...) {
     *hl = 0x0D;
     a = b;
-    CarryRotateLeft(a, 1);
+    carry_rotate_left(a, 1);
     de = &cmdBuffer;
     b = 0;
 }
@@ -256,7 +253,7 @@ void PrintString(...) {
     }
 }
 
-void ParseParams() {
+void ParseParams(...) {
     hl = &param1;
     b = 6;
     a ^= a;
@@ -307,10 +304,10 @@ void ParseDword1(...) {
         a -= '0';
         if (flag_m)
             return MonitorError();
-        if (flag_p(Compare(a, 10))) {
-            if (flag_m(Compare(a, 0x11)))
+        if (flag_p(compare(a, 10))) {
+            if (flag_m(compare(a, 0x11)))
                 return MonitorError();
-            if (flag_p(Compare(a, 0x17)))
+            if (flag_p(compare(a, 0x17)))
                 return MonitorError();
             a -= 7;
         }
@@ -326,7 +323,7 @@ void ParseDword1(...) {
 }
 
 void ReturnCf(...) {
-    SetFlagC();
+    set_flag_c();
 }
 
 void PrintByteFromParam1(...) {
@@ -337,14 +334,14 @@ void PrintByteFromParam1(...) {
 void PrintHexByte(...) {
     b = a;
     a = b;
-    CyclicRotateRight(a, 4);
+    cyclic_rotate_right(a, 4);
     PrintHex(a);
     PrintHex(a = b);
 }
 
 void PrintHex(...) {
     a &= 0x0F;
-    if (flag_p(Compare(a, 10)))
+    if (flag_p(compare(a, 10)))
         a += 'A' - '0' - 10;
     a += '0';
     PrintCharA(a);
@@ -355,7 +352,7 @@ void PrintLfParam1(...) {
     PrintParam1Space();
 }
 
-void PrintParam1Space() {
+void PrintParam1Space(...) {
     PrintHexWordSpace(hl = &param1h);
 }
 
@@ -393,12 +390,12 @@ void IncWord(...) {
 void CmpHlDe(...) {
     if ((a = h) != d)
         return;
-    Compare(a = l, e);
+    compare(a = l, e);
 }
 
 /* X - Изменение содержимого внутреннего регистра микропроцессора */
 
-void CmdX() {
+void CmdX(...) {
     hl = &cmdBuffer1;
     a = *hl;
     if (a == 0x0D)
@@ -421,7 +418,7 @@ void CmdX() {
     *hl = a;
 }
 
-void CmdXS() {
+void CmdXS(...) {
     PrintSpace();
     PrintHexWordSpace(hl = &regSPH);
     Input();
@@ -475,15 +472,17 @@ void PrintRegMinus(...) {
     PrintCharA(a = '-');
 }
 
-uint8_t regList[] = {'A', &regA, 'B', &regB, 'C', &regC, 'D', &regD,  'E', &regE,
-                     'F', &regF, 'H', &regH, 'L', &regL, 'S', &regSP, 0};
+uint8_t regList[] = {'A', (uint8_t)(uintptr_t)&regA, 'B', (uint8_t)(uintptr_t)&regB, 'C', (uint8_t)(uintptr_t)&regC,
+                     'D', (uint8_t)(uintptr_t)&regD, 'E', (uint8_t)(uintptr_t)&regE, 'F', (uint8_t)(uintptr_t)&regF,
+                     'H', (uint8_t)(uintptr_t)&regH, 'L', (uint8_t)(uintptr_t)&regL, 'S', (uint8_t)(uintptr_t)&regSP,
+                     0};
 
 uint8_t aStart[] = "\x0ASTART-";
 uint8_t aDir_[] = "\x0ADIR. -";
 
 /* B - Задание адреса останова при отладке */
 
-void CmdB() {
+void CmdB(...) {
     ParseParams();
     InitRst38();
     hl = param1;
@@ -493,7 +492,7 @@ void CmdB() {
     breakPrevByte = a;
 }
 
-void InitRst38() {
+void InitRst38(...) {
     rst38Opcode = a = OPCODE_JMP;
     rst38Address = hl = &BreakPoint;
 }
@@ -543,20 +542,20 @@ void BreakPoint(...) {
 
 /* G<адрес> - Запуск программы в отладочном режиме */
 
-void CmdG() {
+void CmdG(...) {
     ParseParams();
     if ((a = cmdBuffer1) == 0x0D)
         param1 = hl = lastBreakAddress;
     Run();
 }
 
-void Run() {
+void Run(...) {
     jumpOpcode = a = OPCODE_JMP;
     sp = &regs;
     pop(de, bc, a, hl);
     sp = hl;
     hl = regHL;
-    jumpOpcode();
+    jumpParam1();
 }
 
 void CmdP(...) {
@@ -629,7 +628,7 @@ void BreakpointAt3(...) {
 
 /* D<адрес>,<адрес> - Просмотр содержимого области памяти в шестнадцатеричном виде */
 
-void CmdD() {
+void CmdD(...) {
     ParseParams();
     PrintLf();
 CmdDLine:
@@ -647,7 +646,7 @@ CmdDLine:
 
 /* C<адрес от>,<адрес до>,<адрес от 2> - Сравнение содержимого двух областей памяти */
 
-void CmdC() {
+void CmdC(...) {
     ParseParams();
     hl = param3;
     swap(hl, de);
@@ -669,7 +668,7 @@ void CmdC() {
 
 /* F<адрес>,<адрес>,<байт> - Запись байта во все ячейки области памяти */
 
-void CmdF() {
+void CmdF(...) {
     ParseParams();
     b = a = param3;
     for (;;) {
@@ -681,7 +680,7 @@ void CmdF() {
 
 /* S<адрес>,<адрес>,<байт> - Поиск байта в области памяти */
 
-void CmdS() {
+void CmdS(...) {
     ParseParams();
     c = l;
     for (;;) {
@@ -695,7 +694,7 @@ void CmdS() {
 
 /* T<начало>,<конец>,<куда> - Пересылка содержимого одной области в другую */
 
-void CmdT() {
+void CmdT(...) {
     ParseParams();
     hl = param3;
     swap(hl, de);
@@ -709,7 +708,7 @@ void CmdT() {
 
 /* M<адрес> - Просмотр или изменение содержимого ячейки (ячеек) памяти */
 
-void CmdM() {
+void CmdM(...) {
     ParseParams();
     for (;;) {
         PrintSpace();
@@ -729,7 +728,7 @@ void CmdM() {
 
 /* J<адрес> - Запуск программы с указанного адреса */
 
-void CmdJ() {
+void CmdJ(...) {
     ParseParams();
     hl = param1;
     return hl();
@@ -737,7 +736,7 @@ void CmdJ() {
 
 /* А<символ> - Вывод кода символа на экран */
 
-void CmdA() {
+void CmdA(...) {
     PrintLf();
     PrintHexByte(a = cmdBuffer1);
     PrintLf();
@@ -745,7 +744,7 @@ void CmdA() {
 
 /* K - Вывод символа с клавиатуры на экран */
 
-void CmdK() {
+void CmdK(...) {
     for (;;) {
         ReadKey();
         if (a == 1) /* УС + А */
@@ -756,7 +755,7 @@ void CmdK() {
 
 /* Q<начало>,<конец> - Тестирование области памяти */
 
-void CmdQ() {
+void CmdQ(...) {
     ParseParams();
     for (;;) {
         hl = param1;
@@ -790,7 +789,7 @@ void CmdQResult(...) {
 
 /* L<начало>,<конец> - Посмотр области памяти в символьном виде */
 
-void CmdL() {
+void CmdL(...) {
     ParseParams();
     PrintLf();
 
@@ -845,10 +844,10 @@ void CmdH(...) {
     swap(hl, de);
     hl = param3;
     a = e;
-    Invert(a);
+    invert(a);
     e = a;
     a = d;
-    Invert(a);
+    invert(a);
     d = a;
     de++;
     hl += de;
@@ -859,7 +858,7 @@ void CmdH(...) {
 
 /* I - Ввод информации с магнитной ленты */
 
-void CmdI() {
+void CmdI(...) {
     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
     param1h = a;
     tapeStartH = a;
@@ -897,7 +896,7 @@ void CmdIEnd(...) {
 
 /* O<начало>,<конец> - Вывод содержимого области памяти на магнитную ленту */
 
-void CmdO() {
+void CmdO(...) {
     ParseParams();
     a ^= a;
     b = 0;
@@ -919,7 +918,7 @@ void CmdO() {
 
 /* V - Сравнение информации на магнитной ленте с содержимым области памяти */
 
-void CmdV() {
+void CmdV(...) {
     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
     param1h = a;
     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
@@ -953,7 +952,7 @@ void ReadTapeByte(...) {
     loc_FD9D:
         a = c;
         a &= 0x7F;
-        CyclicRotateLeft(a, 1);
+        cyclic_rotate_left(a, 1);
         c = a;
 
         do {
@@ -968,7 +967,7 @@ void ReadTapeByte(...) {
             if ((a = c) == TAPE_START) {
                 tapePolarity = (a ^= a);
             } else {
-                if (a != 0xFF ^ TAPE_START)
+                if (a != (0xFF ^ TAPE_START))
                     goto loc_FD9D;
                 tapePolarity = a = 0xFF;
             }
@@ -998,7 +997,7 @@ void WriteTapeByte(...) {
         c = 8;
         do {
             a = d;
-            CyclicRotateLeft(a, 1);
+            cyclic_rotate_left(a, 1);
             d = a;
 
             out(PORT_TAPE, (a = 1) ^= d);
@@ -1016,43 +1015,43 @@ void WriteTapeDelay(...) {
 }
 
 uint8_t monitorCommands = 'M';
-uint16_t monitorCommandsMa = &CmdM;
+uint16_t monitorCommandsMa = (uintptr_t)&CmdM;
 uint8_t monitorCommandsC = 'C';
-uint16_t monitorCommandsCa = &CmdC;
+uint16_t monitorCommandsCa = (uintptr_t)&CmdC;
 uint8_t monitorCommandsD = 'D';
-uint16_t monitorCommandsDa = &CmdD;
+uint16_t monitorCommandsDa = (uintptr_t)&CmdD;
 uint8_t monitorCommandsB = 'B';
-uint16_t monitorCommandsBa = &CmdB;
+uint16_t monitorCommandsBa = (uintptr_t)&CmdB;
 uint8_t monitorCommandsG = 'G';
-uint16_t monitorCommandsGa = &CmdG;
+uint16_t monitorCommandsGa = (uintptr_t)&CmdG;
 uint8_t monitorCommandsP = 'P';
-uint16_t monitorCommandsPa = &CmdP;
+uint16_t monitorCommandsPa = (uintptr_t)&CmdP;
 uint8_t monitorCommandsX = 'X';
-uint16_t monitorCommandsXa = &CmdX;
+uint16_t monitorCommandsXa = (uintptr_t)&CmdX;
 uint8_t monitorCommandsF = 'F';
-uint16_t monitorCommandsFa = &CmdF;
+uint16_t monitorCommandsFa = (uintptr_t)&CmdF;
 uint8_t monitorCommandsS = 'S';
-uint16_t monitorCommandsSa = &CmdS;
+uint16_t monitorCommandsSa = (uintptr_t)&CmdS;
 uint8_t monitorCommandsT = 'T';
-uint16_t monitorCommandsTa = &CmdT;
+uint16_t monitorCommandsTa = (uintptr_t)&CmdT;
 uint8_t monitorCommandsI = 'I';
-uint16_t monitorCommandsIa = &CmdI;
+uint16_t monitorCommandsIa = (uintptr_t)&CmdI;
 uint8_t monitorCommandsO = 'O';
-uint16_t monitorCommandsOa = &CmdO;
+uint16_t monitorCommandsOa = (uintptr_t)&CmdO;
 uint8_t monitorCommandsV = 'V';
-uint16_t monitorCommandsVa = &CmdV;
+uint16_t monitorCommandsVa = (uintptr_t)&CmdV;
 uint8_t monitorCommandsJ = 'J';
-uint16_t monitorCommandsJa = &CmdJ;
+uint16_t monitorCommandsJa = (uintptr_t)&CmdJ;
 uint8_t monitorCommandsA = 'A';
-uint16_t monitorCommandsAa = &CmdA;
+uint16_t monitorCommandsAa = (uintptr_t)&CmdA;
 uint8_t monitorCommandsK = 'K';
-uint16_t monitorCommandsKa = &CmdK;
+uint16_t monitorCommandsKa = (uintptr_t)&CmdK;
 uint8_t monitorCommandsQ = 'Q';
-uint16_t monitorCommandsQa = &CmdQ;
+uint16_t monitorCommandsQa = (uintptr_t)&CmdQ;
 uint8_t monitorCommandsL = 'L';
-uint16_t monitorCommandsLa = &CmdL;
+uint16_t monitorCommandsLa = (uintptr_t)&CmdL;
 uint8_t monitorCommandsH = 'H';
-uint16_t monitorCommandsHa = &CmdH;
+uint16_t monitorCommandsHa = (uintptr_t)&CmdH;
 uint8_t monitorCommandsEnd = 0;
 
 uint8_t aPrompt[] = "\x0A*MikrO/80* MONITOR\x0A>";
@@ -1112,16 +1111,16 @@ void MoveCursor(...) {
     pop(hl, bc, de, a);
 }
 
-void ClearScreen() {
+void ClearScreen(...) {
     ClearScreenInt();
     MoveCursorHome();
 }
 
-void MoveCursorHome() {
+void MoveCursorHome(...) {
     MoveCursor(hl = SCREEN_BEGIN);
 }
 
-void ClearScreenInt() {
+void ClearScreenInt(...) {
     hl = SCREEN_BEGIN;
     de = SCREEN_ATTRIB_BEGIN;
     for (;;) {
@@ -1194,7 +1193,7 @@ void MoveCursorNextLine1(...) {
     ClearScreen();
 }
 
-void ReadKey() {
+void ReadKey(...) {
     push(bc, de, hl);
 
     for (;;) {
@@ -1203,7 +1202,7 @@ void ReadKey() {
         d = KEYBOARD_COLUMN_COUNT;
         do {
             out(PORT_KEYBOARD_COLUMN, a = c);
-            CyclicRotateLeft(a, 1);
+            cyclic_rotate_left(a, 1);
             c = a;
             a = in(PORT_KEYBOARD_ROW);
             a &= KEYBOARD_ROW_MASK;
@@ -1218,7 +1217,7 @@ void ReadKey1(...) {
     keyLast = a;
 
     for (;;) {
-        CarryRotateRight(a, 1);
+        carry_rotate_right(a, 1);
         if (flag_nc)
             break;
         b++;
@@ -1255,10 +1254,10 @@ void ReadKey1(...) {
     a &= KEYBOARD_MODS_MASK;
     if (a == KEYBOARD_MODS_MASK)
         goto ReadKeyNoMods;
-    CarryRotateRight(a, 2);
+    carry_rotate_right(a, 2);
     if (flag_nc)
         goto ReadKeyControl;
-    CarryRotateRight(a, 1);
+    carry_rotate_right(a, 1);
     if (flag_nc)
         goto ReadKeyShift;
 
@@ -1305,7 +1304,7 @@ void ReadKey2(...) {
     pop(bc, de, hl);
 }
 
-void ReadKeyDelay() {
+void ReadKeyDelay(...) {
     de = 0x1000;
     for (;;) {
         de--;
@@ -1325,7 +1324,7 @@ uint8_t keyTable[] = {
     0x0C, /* Home */
 };
 
-void IsKeyPressed() {
+void IsKeyPressed(...) {
     out(PORT_KEYBOARD_COLUMN, a = 0);
     a = in(PORT_KEYBOARD_ROW);
     a &= KEYBOARD_ROW_MASK;

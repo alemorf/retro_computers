@@ -1,1315 +1,2551 @@
-0000          SCREEN_ATTRIB_BEGIN equ 57344
-0000          SCREEN_SIZE equ 2048
-0000          SCREEN_BEGIN equ 59392
-0000          SCREEN_END equ 61440
-0000          SCREEN_WIDTH equ 64
-0000          SCREEN_HEIGHT equ 32
-0000          SCREEN_ATTRIB_DEFAULT equ 0
-0000          SCREEN_ATTRIB_UNDERLINE equ 1<<7
-0000          PORT_TAPE equ 1
-0000          PORT_KEYBOARD_MODE equ 4
-0000          PORT_KEYBOARD_COLUMN equ 7
-0000          PORT_KEYBOARD_ROW equ 6
-0000          PORT_KEYBOARD_MODS equ 5
-0000          KEYBOARD_ROW_MASK equ 127
-0000          KEYBOARD_MODS_MASK equ 7
-0000          KEYBOARD_RUS_MOD equ 1<<0
-0000          KEYBOARD_COLUMN_COUNT equ 8
-0000          KEYBOARD_ROW_COUNT equ 7
-0000          READ_TAPE_FIRST_BYTE equ 255
-0000          READ_TAPE_NEXT_BYTE equ 8
-0000          TAPE_START equ 230
-0000          OPCODE_RST_38 equ 255
-0000          OPCODE_JMP equ 195
-0000          rst38Opcode equ 56
-0000          rst38Address equ 57
-0000          jumpOpcode equ 63312
-0000          param1 equ 63313
-0000          param1h equ 63314
-0000          param2 equ 63315
-0000          param2h equ 63316
-0000          param3 equ 63317
-0000          param3h equ 63318
-0000          tapePolarity equ 63319
-0000          cursor equ 63322
-0000          readDelay equ 63324
-0000          writeDelay equ 63325
-0000          tapeStartL equ 63326
-0000          tapeStartH equ 63327
-0000          tapeStopL equ 63328
-0000          tapeStopH equ 63329
-0000          keyLast equ 63332
-0000          regs equ 63333
-0000          regSP equ 63333
-0000          regSPH equ 63334
-0000          regF equ 63335
-0000          regA equ 63336
-0000          regC equ 63337
-0000          regB equ 63338
-0000          regE equ 63339
-0000          regD equ 63340
-0000          regL equ 63341
-0000          regHL equ 63341
-0000          regH equ 63342
-0000          lastBreakAddress equ 63343
-0000          lastBreakAddressHigh equ 63344
-0000          breakCounter equ 63345
-0000          breakAddress equ 63346
-0000          breakPrevByte equ 63348
-0000          breakAddress2 equ 63349
-0000          breakPrevByte2 equ 63351
-0000          breakAddress3 equ 63352
-0000          breakPrevByte3 equ 63354
-0000          cmdBuffer equ 63355
-0000          cmdBuffer1 equ 63355+1
-0000          cmdBufferEnd equ 63355+32
-0000          USER_STACK_TOP equ 63424
-0000          STACK_TOP equ 63487
-0000 00 00 00  org 63488
-EntryReboot:
-F800 C3 1B F8  jp Reboot
-EntryReadChar:
-F803 C3 41 FF  jp ReadKey
-EntryReadTapeByte:
-F806 C3 95 FD  jp ReadTapeByte
-EntryPrintChar:
-F809 C3 68 FE  jp PrintChar
-EntryWriteTapeByte:
-F80C C3 E6 FD  jp WriteTapeByte
-EntryPrintChar2:
-F80F C3 68 FE  jp PrintChar
-EntryIsKeyPressed:
-F812 C3 EE FF  jp IsKeyPressed
-EntryPrintHexByte:
-F815 C3 50 F9  jp PrintHexByte
-EntryPrintString:
-F818 C3 D4 F8  jp PrintString
-Reboot:
-F81B 21 C0 F7  ld hl, USER_STACK_TOP
-F81E 22 65 F7  ld (regSP), hl
-F821 31 FF F7  ld sp, STACK_TOP
-F824 3E 1F     ld a, 31
-F826 CD 60 FE  call PrintCharA
-Monitor:
-F829 3E 8B     ld a, 139
-F82B D3 04     out (PORT_KEYBOARD_MODE), a
-F82D 31 FF F7  ld sp, STACK_TOP
-F830 21 48 FE  ld hl, aPrompt
-F833 CD D4 F8  call PrintString
-F836 CD 5A F8  call ReadString
-F839 21 29 F8  ld hl, Monitor
-F83C E5        push hl
-MonitorExecute:
-F83D 21 7B F7  ld hl, cmdBuffer
-F840 46        ld b, (hl)
-F841 21 0E FE  ld hl, monitorCommands
-_l13:
-F844 7E        ld a, (hl)
-F845 A7        and a
-F846 CA 75 F8  jp z, MonitorError
-F849 B8        cp b
-F84A CA 53 F8  jp z, _l12
-F84D 23        inc hl
-F84E 23        inc hl
-F84F 23        inc hl
-F850 C3 44 F8  jp _l13
-_l12:
-F853 23        inc hl
-F854 F9        ld sp, hl
-F855 E1        pop hl
-F856 31 FD F7  ld sp, STACK_TOP-2
-F859 E9        jp hl
-ReadString:
-F85A 21 7B F7  ld hl, cmdBuffer
-ReadStringLoop:
-_l16:
-F85D CD 41 FF  call ReadKey
-F860 FE 08     cp 8
-F862 CA 80 F8  jp z, ReadStringBs
-F865 C4 60 FE  call nz, PrintCharA
-F868 77        ld (hl), a
-F869 FE 0D     cp 13
-F86B CA 7D F8  jp z, ReadStringCr
-F86E 3E 9A     ld a, cmdBufferEnd-1
-F870 BD        cp l
-F871 23        inc hl
-_l18:
-F872 C2 5D F8  jp nz, _l16
-MonitorError:
-_l17:
-F875 3E 3F     ld a, 63
-F877 CD 60 FE  call PrintCharA
-F87A C3 29 F8  jp Monitor
-ReadStringCr:
-F87D 36 0D     ld (hl), 13
-F87F C9        ret
-ReadStringBs:
-F880 CD 86 F8  call CommonBs
-F883 C3 5D F8  jp ReadStringLoop
-CommonBs:
-F886 3E 7B     ld a, cmdBuffer
-F888 BD        cp l
-F889 C8        ret z
-F88A 3E 08     ld a, 8
-F88C CD 60 FE  call PrintCharA
-F88F 2B        dec hl
-F890 C9        ret
-Input:
-F891 CD 77 F9  call PrintSpace
-F894 21 7B F7  ld hl, cmdBuffer
-InputInit:
-F897 06 00     ld b, 0
-InputLoop:
-_l27:
-F899 CD 41 FF  call ReadKey
-F89C FE 08     cp 8
-F89E CA C5 F8  jp z, InputBs
-F8A1 C4 60 FE  call nz, PrintCharA
-F8A4 77        ld (hl), a
-F8A5 FE 20     cp 32
-F8A7 CA BB F8  jp z, InputEndSpace
-F8AA FE 0D     cp 13
-F8AC CA CE F8  jp z, PopWordReturn
-F8AF 06 FF     ld b, 255
-F8B1 3E 9A     ld a, cmdBufferEnd-1
-F8B3 BD        cp l
-F8B4 CA 75 F8  jp z, MonitorError
-F8B7 23        inc hl
-F8B8 C3 99 F8  jp _l27
-_l26:
-InputEndSpace:
-F8BB 36 0D     ld (hl), 13
-F8BD 78        ld a, b
-F8BE 17        rla
-F8BF 11 7B F7  ld de, cmdBuffer
-F8C2 06 00     ld b, 0
-F8C4 C9        ret
-InputBs:
-F8C5 CD 86 F8  call CommonBs
-F8C8 CA 97 F8  jp z, InputInit
-F8CB C3 99 F8  jp InputLoop
-PopWordReturn:
-F8CE 33        inc sp
-F8CF 33        inc sp
-F8D0 C9        ret
-PrintLf:
-F8D1 21 5E FE  ld hl, aLf
-PrintString:
-_l34:
-F8D4 7E        ld a, (hl)
-F8D5 A7        and a
-F8D6 C8        ret z
-F8D7 CD 60 FE  call PrintCharA
-F8DA 23        inc hl
-F8DB C3 D4 F8  jp _l34
-_l33:
-ParseParams:
-F8DE 21 51 F7  ld hl, param1
-F8E1 06 06     ld b, 6
-F8E3 AF        xor a
-_l36:
-F8E4 77        ld (hl), a
-_l38:
-F8E5 05        dec b
-F8E6 C2 E4 F8  jp nz, _l36
-_l37:
-F8E9 11 7C F7  ld de, cmdBuffer+1
-F8EC CD 16 F9  call ParseDword
-F8EF 22 51 F7  ld (param1), hl
-F8F2 22 53 F7  ld (param2), hl
-F8F5 D8        ret c
-F8F6 CD 16 F9  call ParseDword
-F8F9 22 53 F7  ld (param2), hl
-F8FC F5        push af
-F8FD D5        push de
-F8FE EB        ex hl, de
-F8FF 2A 51 F7  ld hl, (param1)
-F902 EB        ex hl, de
-F903 CD 93 F9  call CmpHlDe
-F906 DA 75 F8  jp c, MonitorError
-F909 D1        pop de
-F90A F1        pop af
-F90B D8        ret c
-F90C CD 16 F9  call ParseDword
-F90F 22 55 F7  ld (param3), hl
-F912 D8        ret c
-F913 C3 75 F8  jp MonitorError
-ParseDword:
-F916 21 00 00  ld hl, 0
-ParseDword1:
-_l42:
-F919 1A        ld a, (de)
-F91A 13        inc de
-F91B FE 0D     cp 13
-F91D CA 4A F9  jp z, ReturnCf
-F920 FE 2C     cp 44
-F922 C8        ret z
-F923 FE 20     cp 32
-F925 CA 19 F9  jp z, _l42
-F928 D6 30     sub 48
-F92A FA 75 F8  jp m, MonitorError
-F92D FE 0A     cp 10
-F92F FA 3E F9  jp m, _l43
-F932 FE 11     cp 17
-F934 FA 75 F8  jp m, MonitorError
-F937 FE 17     cp 23
-F939 F2 75 F8  jp p, MonitorError
-F93C D6 07     sub 7
-_l43:
-F93E 4F        ld c, a
-F93F 29        add hl, hl
-F940 29        add hl, hl
-F941 29        add hl, hl
-F942 29        add hl, hl
-F943 DA 75 F8  jp c, MonitorError
-F946 09        add hl, bc
-F947 C3 19 F9  jp _l42
-_l41:
-ReturnCf:
-F94A 37        scf
-F94B C9        ret
-PrintByteFromParam1:
-F94C 2A 51 F7  ld hl, (param1)
-F94F 7E        ld a, (hl)
-PrintHexByte:
-F950 47        ld b, a
-F951 78        ld a, b
-F952 0F 0F 0F  rrca
- rrca
- rrca
- rrca
-F956 CD 5A F9  call PrintHex
-F959 78        ld a, b
-PrintHex:
-F95A E6 0F     and 15
-F95C FE 0A     cp 10
-F95E FA 63 F9  jp m, _l48
-F961 C6 07     add (65-48)-10
-_l48:
-F963 C6 30     add 48
-F965 C3 60 FE  jp PrintCharA
-PrintLfParam1:
-F968 CD D1 F8  call PrintLf
-PrintParam1Space:
-F96B 21 52 F7  ld hl, param1h
-PrintHexWordSpace:
-F96E 7E        ld a, (hl)
-F96F CD 50 F9  call PrintHexByte
-F972 2B        dec hl
-F973 7E        ld a, (hl)
-F974 CD 50 F9  call PrintHexByte
-PrintSpace:
-F977 3E 20     ld a, 32
-F979 C3 60 FE  jp PrintCharA
-Loop:
-F97C D5        push de
-F97D 2A 51 F7  ld hl, (param1)
-F980 EB        ex hl, de
-F981 2A 53 F7  ld hl, (param2)
-F984 CD 93 F9  call CmpHlDe
-F987 D1        pop de
-F988 CA CE F8  jp z, PopWordReturn
-F98B 21 51 F7  ld hl, param1
-IncWord:
-F98E 34        inc (hl)
-F98F C0        ret nz
-F990 23        inc hl
-F991 34        inc (hl)
-F992 C9        ret
-CmpHlDe:
-F993 7C        ld a, h
-F994 BA        cp d
-F995 C0        ret nz
-F996 7D        ld a, l
-F997 BB        cp e
-F998 C9        ret
-CmdX:
-F999 21 7C F7  ld hl, cmdBuffer1
-F99C 7E        ld a, (hl)
-F99D FE 0D     cp 13
-F99F CA EA F9  jp z, PrintRegs
-F9A2 FE 53     cp 83
-F9A4 CA C8 F9  jp z, CmdXS
-F9A7 11 30 FA  ld de, regList
-F9AA CD DE F9  call FindRegister
-F9AD 21 65 F7  ld hl, regs
-F9B0 13        inc de
-F9B1 1A        ld a, (de)
-F9B2 6F        ld l, a
-F9B3 E5        push hl
-F9B4 CD 77 F9  call PrintSpace
-F9B7 7E        ld a, (hl)
-F9B8 CD 50 F9  call PrintHexByte
-F9BB CD 91 F8  call Input
-F9BE D2 29 F8  jp nc, Monitor
-F9C1 CD 16 F9  call ParseDword
-F9C4 7D        ld a, l
-F9C5 E1        pop hl
-F9C6 77        ld (hl), a
-F9C7 C9        ret
-CmdXS:
-F9C8 CD 77 F9  call PrintSpace
-F9CB 21 66 F7  ld hl, regSPH
-F9CE CD 6E F9  call PrintHexWordSpace
-F9D1 CD 91 F8  call Input
-F9D4 D2 29 F8  jp nc, Monitor
-F9D7 CD 16 F9  call ParseDword
-F9DA 22 65 F7  ld (regSP), hl
-F9DD C9        ret
-FindRegister:
-_l60:
-F9DE 1A        ld a, (de)
-F9DF A7        and a
-F9E0 CA 75 F8  jp z, MonitorError
-F9E3 BE        cp (hl)
-F9E4 C8        ret z
-F9E5 13        inc de
-F9E6 13        inc de
-F9E7 C3 DE F9  jp _l60
-_l59:
-PrintRegs:
-F9EA 11 30 FA  ld de, regList
-F9ED 06 08     ld b, 8
-F9EF CD D1 F8  call PrintLf
-_l62:
-F9F2 1A        ld a, (de)
-F9F3 4F        ld c, a
-F9F4 13        inc de
-F9F5 C5        push bc
-F9F6 CD 24 FA  call PrintRegMinus
-F9F9 1A        ld a, (de)
-F9FA 21 65 F7  ld hl, regs
-F9FD 6F        ld l, a
-F9FE 7E        ld a, (hl)
-F9FF CD 50 F9  call PrintHexByte
-FA02 C1        pop bc
-FA03 13        inc de
-_l64:
-FA04 05        dec b
-FA05 C2 F2 F9  jp nz, _l62
-_l63:
-FA08 1A        ld a, (de)
-FA09 4F        ld c, a
-FA0A CD 24 FA  call PrintRegMinus
-FA0D 2A 65 F7  ld hl, (regs)
-FA10 22 51 F7  ld (param1), hl
-FA13 CD 6B F9  call PrintParam1Space
-FA16 0E 4F     ld c, 79
-FA18 CD 24 FA  call PrintRegMinus
-FA1B 21 70 F7  ld hl, lastBreakAddressHigh
-FA1E CD 6E F9  call PrintHexWordSpace
-FA21 C3 D1 F8  jp PrintLf
-PrintRegMinus:
-FA24 CD 77 F9  call PrintSpace
-FA27 79        ld a, c
-FA28 CD 60 FE  call PrintCharA
-FA2B 3E 2D     ld a, 45
-FA2D C3 60 FE  jp PrintCharA
-regList:
-FA30 41        db 65
-FA31 68        db regA
-FA32 42        db 66
-FA33 6A        db regB
-FA34 43        db 67
-FA35 69        db regC
-FA36 44        db 68
-FA37 6C        db regD
-FA38 45        db 69
-FA39 6B        db regE
-FA3A 46        db 70
-FA3B 67        db regF
-FA3C 48        db 72
-FA3D 6E        db regH
-FA3E 4C        db 76
-FA3F 6D        db regL
-FA40 53        db 83
-FA41 65        db regSP
-FA42 00        db 0
-aStart:
-FA43 0A 53 54  db 10
- db 83
- db 84
- db 65
- db 82
- db 84
- db 45
- db 0
-aDir_:
-FA4B 0A 44 49  db 10
- db 68
- db 73
- db 82
- db 46
- db 32
- db 45
- db 0
-CmdB:
-FA53 CD DE F8  call ParseParams
-FA56 CD 66 FA  call InitRst38
-FA59 2A 51 F7  ld hl, (param1)
-FA5C 7E        ld a, (hl)
-FA5D 36 FF     ld (hl), OPCODE_RST_38
-FA5F 22 72 F7  ld (breakAddress), hl
-FA62 32 74 F7  ld (breakPrevByte), a
-FA65 C9        ret
-InitRst38:
-FA66 3E C3     ld a, OPCODE_JMP
-FA68 32 38 00  ld (rst38Opcode), a
-FA6B 21 72 FA  ld hl, BreakPoint
-FA6E 22 39 00  ld (rst38Address), hl
-FA71 C9        ret
-BreakPoint:
-FA72 22 6D F7  ld (regHL), hl
-FA75 F5        push af
-FA76 21 04 00  ld hl, 4
-FA79 39        add hl, sp
-FA7A 22 65 F7  ld (regs), hl
-FA7D F1        pop af
-FA7E E3        ex (sp), hl
-FA7F 2B        dec hl
-FA80 E3        ex (sp), hl
-FA81 31 6D F7  ld sp, regHL
-FA84 D5        push de
-FA85 C5        push bc
-FA86 F5        push af
-FA87 31 FF F7  ld sp, cmdBuffer+132
-FA8A 2A 65 F7  ld hl, (regSP)
-FA8D 2B        dec hl
-FA8E 56        ld d, (hl)
-FA8F 2B        dec hl
-FA90 5E        ld e, (hl)
-FA91 6B        ld l, e
-FA92 62        ld h, d
-FA93 22 6F F7  ld (lastBreakAddress), hl
-FA96 2A 72 F7  ld hl, (breakAddress)
-FA99 CD 93 F9  call CmpHlDe
-FA9C CA B4 FA  jp z, _l72
-FA9F 2A 75 F7  ld hl, (breakAddress2)
-FAA2 CD 93 F9  call CmpHlDe
-FAA5 CA 24 FB  jp z, BreakPointAt2
-FAA8 2A 78 F7  ld hl, (breakAddress3)
-FAAB CD 93 F9  call CmpHlDe
-FAAE CA 46 FB  jp z, BreakpointAt3
-FAB1 C3 75 F8  jp MonitorError
-_l72:
-FAB4 3A 74 F7  ld a, (breakPrevByte)
-FAB7 77        ld (hl), a
-FAB8 21 FF FF  ld hl, 65535
-FABB 22 72 F7  ld (breakAddress), hl
-FABE C3 29 F8  jp Monitor
-CmdG:
-FAC1 CD DE F8  call ParseParams
-FAC4 3A 7C F7  ld a, (cmdBuffer1)
-FAC7 FE 0D     cp 13
-FAC9 C2 D2 FA  jp nz, _l74
-FACC 2A 6F F7  ld hl, (lastBreakAddress)
-FACF 22 51 F7  ld (param1), hl
-_l74:
-Run:
-FAD2 3E C3     ld a, OPCODE_JMP
-FAD4 32 50 F7  ld (jumpOpcode), a
-FAD7 31 65 F7  ld sp, regs
-FADA E1        pop hl
-FADB F1        pop af
-FADC C1        pop bc
-FADD D1        pop de
-FADE F9        ld sp, hl
-FADF 2A 6D F7  ld hl, (regHL)
-FAE2 C3 50 F7  jp jumpOpcode
-CmdP:
-FAE5 CD DE F8  call ParseParams
-FAE8 CD 66 FA  call InitRst38
-FAEB 2A 51 F7  ld hl, (param1)
-FAEE 22 75 F7  ld (breakAddress2), hl
-FAF1 7E        ld a, (hl)
-FAF2 36 FF     ld (hl), OPCODE_RST_38
-FAF4 32 77 F7  ld (breakPrevByte2), a
-FAF7 2A 53 F7  ld hl, (param2)
-FAFA 22 78 F7  ld (breakAddress3), hl
-FAFD 7E        ld a, (hl)
-FAFE 36 FF     ld (hl), OPCODE_RST_38
-FB00 32 7A F7  ld (breakPrevByte3), a
-FB03 3A 55 F7  ld a, (param3)
-FB06 32 71 F7  ld (breakCounter), a
-FB09 21 43 FA  ld hl, aStart
-FB0C CD D4 F8  call PrintString
-FB0F 21 7C F7  ld hl, cmdBuffer1
-FB12 CD 5D F8  call ReadStringLoop
-FB15 CD DE F8  call ParseParams
-FB18 21 4B FA  ld hl, aDir_
-FB1B CD D4 F8  call PrintString
-FB1E CD 5A F8  call ReadString
-FB21 C3 D2 FA  jp Run
-BreakPointAt2:
-FB24 3A 77 F7  ld a, (breakPrevByte2)
-FB27 77        ld (hl), a
-FB28 2A 78 F7  ld hl, (breakAddress3)
-FB2B 3E FF     ld a, OPCODE_RST_38
-FB2D BE        cp (hl)
-FB2E CA 37 FB  jp z, _l78
-FB31 46        ld b, (hl)
-FB32 77        ld (hl), a
-FB33 78        ld a, b
-FB34 32 7A F7  ld (breakPrevByte3), a
-ContinueBreakpoint:
-_l78:
-FB37 CD EA F9  call PrintRegs
-FB3A CD 3D F8  call MonitorExecute
-FB3D 2A 6F F7  ld hl, (lastBreakAddress)
-FB40 22 51 F7  ld (param1), hl
-FB43 C3 D2 FA  jp Run
-BreakpointAt3:
-FB46 3A 7A F7  ld a, (breakPrevByte3)
-FB49 77        ld (hl), a
-FB4A 2A 75 F7  ld hl, (breakAddress2)
-FB4D 3E FF     ld a, OPCODE_RST_38
-FB4F BE        cp (hl)
-FB50 CA 37 FB  jp z, ContinueBreakpoint
-FB53 46        ld b, (hl)
-FB54 77        ld (hl), a
-FB55 78        ld a, b
-FB56 32 77 F7  ld (breakPrevByte2), a
-FB59 21 71 F7  ld hl, breakCounter
-FB5C 35        dec (hl)
-FB5D C2 37 FB  jp nz, ContinueBreakpoint
-FB60 3A 77 F7  ld a, (breakPrevByte2)
-FB63 2A 75 F7  ld hl, (breakAddress2)
-FB66 77        ld (hl), a
-FB67 C3 29 F8  jp Monitor
-CmdD:
-FB6A CD DE F8  call ParseParams
-FB6D CD D1 F8  call PrintLf
-CmdDLine:
-FB70 CD 68 F9  call PrintLfParam1
-_l84:
-FB73 CD 77 F9  call PrintSpace
-FB76 CD 4C F9  call PrintByteFromParam1
-FB79 CD 7C F9  call Loop
-FB7C 3A 51 F7  ld a, (param1)
-FB7F E6 0F     and 15
-FB81 CA 70 FB  jp z, CmdDLine
-FB84 C3 73 FB  jp _l84
-_l83:
-CmdC:
-FB87 CD DE F8  call ParseParams
-FB8A 2A 55 F7  ld hl, (param3)
-FB8D EB        ex hl, de
-_l87:
-FB8E 2A 51 F7  ld hl, (param1)
-FB91 1A        ld a, (de)
-FB92 BE        cp (hl)
-FB93 CA A6 FB  jp z, _l88
-FB96 CD 68 F9  call PrintLfParam1
-FB99 CD 77 F9  call PrintSpace
-FB9C CD 4C F9  call PrintByteFromParam1
-FB9F CD 77 F9  call PrintSpace
-FBA2 1A        ld a, (de)
-FBA3 CD 50 F9  call PrintHexByte
-_l88:
-FBA6 13        inc de
-FBA7 CD 7C F9  call Loop
-FBAA C3 8E FB  jp _l87
-_l86:
-CmdF:
-FBAD CD DE F8  call ParseParams
-FBB0 3A 55 F7  ld a, (param3)
-FBB3 47        ld b, a
-_l91:
-FBB4 2A 51 F7  ld hl, (param1)
-FBB7 70        ld (hl), b
-FBB8 CD 7C F9  call Loop
-FBBB C3 B4 FB  jp _l91
-_l90:
-CmdS:
-FBBE CD DE F8  call ParseParams
-FBC1 4D        ld c, l
-_l94:
-FBC2 2A 51 F7  ld hl, (param1)
-FBC5 79        ld a, c
-FBC6 BE        cp (hl)
-FBC7 CC 68 F9  call z, PrintLfParam1
-FBCA CD 7C F9  call Loop
-FBCD C3 C2 FB  jp _l94
-_l93:
-CmdT:
-FBD0 CD DE F8  call ParseParams
-FBD3 2A 55 F7  ld hl, (param3)
-FBD6 EB        ex hl, de
-_l97:
-FBD7 2A 51 F7  ld hl, (param1)
-FBDA 7E        ld a, (hl)
-FBDB 12        ld (de), a
-FBDC 13        inc de
-FBDD CD 7C F9  call Loop
-FBE0 C3 D7 FB  jp _l97
-_l96:
-CmdM:
-FBE3 CD DE F8  call ParseParams
-_l100:
-FBE6 CD 77 F9  call PrintSpace
-FBE9 CD 4C F9  call PrintByteFromParam1
-FBEC CD 91 F8  call Input
-FBEF D2 FA FB  jp nc, _l101
-FBF2 CD 16 F9  call ParseDword
-FBF5 7D        ld a, l
-FBF6 2A 51 F7  ld hl, (param1)
-FBF9 77        ld (hl), a
-_l101:
-FBFA 21 51 F7  ld hl, param1
-FBFD CD 8E F9  call IncWord
-FC00 CD 68 F9  call PrintLfParam1
-FC03 C3 E6 FB  jp _l100
-_l99:
-CmdJ:
-FC06 CD DE F8  call ParseParams
-FC09 2A 51 F7  ld hl, (param1)
-FC0C E9        jp hl
-CmdA:
-FC0D CD D1 F8  call PrintLf
-FC10 3A 7C F7  ld a, (cmdBuffer1)
-FC13 CD 50 F9  call PrintHexByte
-FC16 C3 D1 F8  jp PrintLf
-CmdK:
-_l106:
-FC19 CD 41 FF  call ReadKey
-FC1C FE 01     cp 1
-FC1E CA 29 F8  jp z, Monitor
-FC21 CD 60 FE  call PrintCharA
-FC24 C3 19 FC  jp _l106
-_l105:
-CmdQ:
-FC27 CD DE F8  call ParseParams
-_l109:
-FC2A 2A 51 F7  ld hl, (param1)
-FC2D 4E        ld c, (hl)
-FC2E 3E 55     ld a, 85
-FC30 77        ld (hl), a
-FC31 BE        cp (hl)
-FC32 C4 43 FC  call nz, CmdQResult
-FC35 3E AA     ld a, 170
-FC37 77        ld (hl), a
-FC38 BE        cp (hl)
-FC39 C4 43 FC  call nz, CmdQResult
-FC3C 71        ld (hl), c
-FC3D CD 7C F9  call Loop
-FC40 C3 2A FC  jp _l109
-_l108:
-CmdQResult:
-FC43 F5        push af
-FC44 CD 68 F9  call PrintLfParam1
-FC47 CD 77 F9  call PrintSpace
-FC4A CD 4C F9  call PrintByteFromParam1
-FC4D CD 77 F9  call PrintSpace
-FC50 F1        pop af
-FC51 CD 50 F9  call PrintHexByte
-FC54 C9        ret
-CmdL:
-FC55 CD DE F8  call ParseParams
-FC58 CD D1 F8  call PrintLf
-CmdLLine:
-FC5B CD 68 F9  call PrintLfParam1
-_l114:
-FC5E CD 77 F9  call PrintSpace
-FC61 2A 51 F7  ld hl, (param1)
-FC64 7E        ld a, (hl)
-FC65 FE 20     cp 32
-FC67 DA 72 FC  jp c, _l115
-FC6A FE 80     cp 128
-FC6C D2 72 FC  jp nc, _l116
-FC6F C3 74 FC  jp CmdLShow
-_l115:
-_l116:
-FC72 3E 2E     ld a, 46
-CmdLShow:
-FC74 CD 60 FE  call PrintCharA
-FC77 CD 7C F9  call Loop
-FC7A 3A 51 F7  ld a, (param1)
-FC7D E6 0F     and 15
-FC7F CA 5B FC  jp z, CmdLLine
-FC82 C3 5E FC  jp _l114
-_l113:
-CmdH:
-FC85 21 51 F7  ld hl, param1
-FC88 06 06     ld b, 6
-FC8A AF        xor a
-_l119:
-FC8B 77        ld (hl), a
-_l121:
-FC8C 05        dec b
-FC8D C2 8B FC  jp nz, _l119
-_l120:
-FC90 11 7C F7  ld de, cmdBuffer1
-FC93 CD 16 F9  call ParseDword
-FC96 22 51 F7  ld (param1), hl
-FC99 CD 16 F9  call ParseDword
-FC9C 22 53 F7  ld (param2), hl
-FC9F CD D1 F8  call PrintLf
-FCA2 2A 51 F7  ld hl, (param1)
-FCA5 22 55 F7  ld (param3), hl
-FCA8 EB        ex hl, de
-FCA9 2A 53 F7  ld hl, (param2)
-FCAC 19        add hl, de
-FCAD 22 51 F7  ld (param1), hl
-FCB0 CD 6B F9  call PrintParam1Space
-FCB3 2A 53 F7  ld hl, (param2)
-FCB6 EB        ex hl, de
-FCB7 2A 55 F7  ld hl, (param3)
-FCBA 7B        ld a, e
-FCBB 2F        cpl
-FCBC 5F        ld e, a
-FCBD 7A        ld a, d
-FCBE 2F        cpl
-FCBF 57        ld d, a
-FCC0 13        inc de
-FCC1 19        add hl, de
-FCC2 22 51 F7  ld (param1), hl
-FCC5 CD 6B F9  call PrintParam1Space
-FCC8 C3 D1 F8  jp PrintLf
-CmdI:
-FCCB 3E FF     ld a, READ_TAPE_FIRST_BYTE
-FCCD CD 95 FD  call ReadTapeByte
-FCD0 32 52 F7  ld (param1h), a
-FCD3 32 5F F7  ld (tapeStartH), a
-FCD6 3E 08     ld a, READ_TAPE_NEXT_BYTE
-FCD8 CD 95 FD  call ReadTapeByte
-FCDB 32 51 F7  ld (param1), a
-FCDE 32 5E F7  ld (tapeStartL), a
-FCE1 3E 08     ld a, READ_TAPE_NEXT_BYTE
-FCE3 CD 95 FD  call ReadTapeByte
-FCE6 32 54 F7  ld (param2h), a
-FCE9 32 61 F7  ld (tapeStopH), a
-FCEC 3E 08     ld a, READ_TAPE_NEXT_BYTE
-FCEE CD 95 FD  call ReadTapeByte
-FCF1 32 53 F7  ld (param2), a
-FCF4 32 60 F7  ld (tapeStopL), a
-FCF7 3E 08     ld a, READ_TAPE_NEXT_BYTE
-FCF9 21 0C FD  ld hl, CmdIEnd
-FCFC E5        push hl
-_l124:
-FCFD 2A 51 F7  ld hl, (param1)
-FD00 CD 95 FD  call ReadTapeByte
-FD03 77        ld (hl), a
-FD04 CD 7C F9  call Loop
-FD07 3E 08     ld a, READ_TAPE_NEXT_BYTE
-FD09 C3 FD FC  jp _l124
-_l123:
-CmdIEnd:
-FD0C 21 5F F7  ld hl, tapeStartH
-FD0F CD 6E F9  call PrintHexWordSpace
-FD12 21 61 F7  ld hl, tapeStopH
-FD15 CD 6E F9  call PrintHexWordSpace
-FD18 C3 D1 F8  jp PrintLf
-CmdO:
-FD1B CD DE F8  call ParseParams
-FD1E AF        xor a
-FD1F 06 00     ld b, 0
-_l127:
-FD21 CD E6 FD  call WriteTapeByte
-_l129:
-FD24 05        dec b
-FD25 C2 21 FD  jp nz, _l127
-_l128:
-FD28 3E E6     ld a, TAPE_START
-FD2A CD E6 FD  call WriteTapeByte
-FD2D 3A 52 F7  ld a, (param1h)
-FD30 CD E6 FD  call WriteTapeByte
-FD33 3A 51 F7  ld a, (param1)
-FD36 CD E6 FD  call WriteTapeByte
-FD39 3A 54 F7  ld a, (param2h)
-FD3C CD E6 FD  call WriteTapeByte
-FD3F 3A 53 F7  ld a, (param2)
-FD42 CD E6 FD  call WriteTapeByte
-_l131:
-FD45 2A 51 F7  ld hl, (param1)
-FD48 7E        ld a, (hl)
-FD49 CD E6 FD  call WriteTapeByte
-FD4C CD 7C F9  call Loop
-FD4F C3 45 FD  jp _l131
-_l130:
-CmdV:
-FD52 3E FF     ld a, READ_TAPE_FIRST_BYTE
-FD54 CD 95 FD  call ReadTapeByte
-FD57 32 52 F7  ld (param1h), a
-FD5A 3E 08     ld a, READ_TAPE_NEXT_BYTE
-FD5C CD 95 FD  call ReadTapeByte
-FD5F 32 51 F7  ld (param1), a
-FD62 3E 08     ld a, READ_TAPE_NEXT_BYTE
-FD64 CD 95 FD  call ReadTapeByte
-FD67 32 54 F7  ld (param2h), a
-FD6A 3E 08     ld a, READ_TAPE_NEXT_BYTE
-FD6C CD 95 FD  call ReadTapeByte
-FD6F 32 53 F7  ld (param2), a
-_l134:
-FD72 3E 08     ld a, READ_TAPE_NEXT_BYTE
-FD74 CD 95 FD  call ReadTapeByte
-FD77 2A 51 F7  ld hl, (param1)
-FD7A BE        cp (hl)
-FD7B CA 8F FD  jp z, _l135
-FD7E F5        push af
-FD7F CD 68 F9  call PrintLfParam1
-FD82 CD 77 F9  call PrintSpace
-FD85 CD 4C F9  call PrintByteFromParam1
-FD88 CD 77 F9  call PrintSpace
-FD8B F1        pop af
-FD8C CD 50 F9  call PrintHexByte
-_l135:
-FD8F CD 7C F9  call Loop
-FD92 C3 72 FD  jp _l134
-_l133:
-ReadTapeByte:
-FD95 C5        push bc
-FD96 D5        push de
-FD97 0E 00     ld c, 0
-FD99 57        ld d, a
-FD9A DB 01     in a, (PORT_TAPE)
-FD9C 5F        ld e, a
-loc_FD9D:
-_l137:
-FD9D 79        ld a, c
-FD9E E6 7F     and 127
-FDA0 07        rlca
-FDA1 4F        ld c, a
-_l141:
-FDA2 DB 01     in a, (PORT_TAPE)
-_l143:
-FDA4 BB        cp e
-FDA5 CA A2 FD  jp z, _l141
-_l142:
-FDA8 E6 01     and 1
-FDAA B1        or c
-FDAB 4F        ld c, a
-FDAC CD DB FD  call ReadTapeDelay
-FDAF DB 01     in a, (PORT_TAPE)
-FDB1 5F        ld e, a
-FDB2 7A        ld a, d
-FDB3 B7        or a
-FDB4 F2 D0 FD  jp p, _l144
-FDB7 79        ld a, c
-FDB8 FE E6     cp TAPE_START
-FDBA C2 C4 FD  jp nz, _l145
-FDBD AF        xor a
-FDBE 32 57 F7  ld (tapePolarity), a
-FDC1 C3 CE FD  jp _l146
-_l145:
-FDC4 FE 19     cp 255^TAPE_START
-FDC6 C2 9D FD  jp nz, loc_FD9D
-FDC9 3E FF     ld a, 255
-FDCB 32 57 F7  ld (tapePolarity), a
-_l146:
-FDCE 16 09     ld d, 8+1
-_l139:
-_l144:
-FDD0 15        dec d
-FDD1 C2 9D FD  jp nz, _l137
-_l138:
-FDD4 3A 57 F7  ld a, (tapePolarity)
-FDD7 A9        xor c
-FDD8 D1        pop de
-FDD9 C1        pop bc
-FDDA C9        ret
-ReadTapeDelay:
-FDDB F5        push af
-FDDC 3A 5C F7  ld a, (readDelay)
-TapeDelay:
-FDDF 47        ld b, a
-FDE0 F1        pop af
-_l149:
-_l151:
-FDE1 05        dec b
-FDE2 C2 E1 FD  jp nz, _l149
-_l150:
-FDE5 C9        ret
-WriteTapeByte:
-FDE6 C5        push bc
-FDE7 D5        push de
-FDE8 F5        push af
-FDE9 57        ld d, a
-FDEA 0E 08     ld c, 8
-_l153:
-FDEC 7A        ld a, d
-FDED 07        rlca
-FDEE 57        ld d, a
-FDEF 3E 01     ld a, 1
-FDF1 AA        xor d
-FDF2 D3 01     out (PORT_TAPE), a
-FDF4 CD 07 FE  call WriteTapeDelay
-FDF7 3E 00     ld a, 0
-FDF9 AA        xor d
-FDFA D3 01     out (PORT_TAPE), a
-FDFC CD 07 FE  call WriteTapeDelay
-_l155:
-FDFF 0D        dec c
-FE00 C2 EC FD  jp nz, _l153
-_l154:
-FE03 F1        pop af
-FE04 D1        pop de
-FE05 C1        pop bc
-FE06 C9        ret
-WriteTapeDelay:
-FE07 F5        push af
-FE08 3A 5D F7  ld a, (writeDelay)
-FE0B C3 DF FD  jp TapeDelay
-monitorCommands:
-FE0E 4D        db 77
-monitorCommandsMa:
-FE0F E3 FB     dw CmdM
-monitorCommandsC:
-FE11 43        db 67
-monitorCommandsCa:
-FE12 87 FB     dw CmdC
-monitorCommandsD:
-FE14 44        db 68
-monitorCommandsDa:
-FE15 6A FB     dw CmdD
-monitorCommandsB:
-FE17 42        db 66
-monitorCommandsBa:
-FE18 53 FA     dw CmdB
-monitorCommandsG:
-FE1A 47        db 71
-monitorCommandsGa:
-FE1B C1 FA     dw CmdG
-monitorCommandsP:
-FE1D 50        db 80
-monitorCommandsPa:
-FE1E E5 FA     dw CmdP
-monitorCommandsX:
-FE20 58        db 88
-monitorCommandsXa:
-FE21 99 F9     dw CmdX
-monitorCommandsF:
-FE23 46        db 70
-monitorCommandsFa:
-FE24 AD FB     dw CmdF
-monitorCommandsS:
-FE26 53        db 83
-monitorCommandsSa:
-FE27 BE FB     dw CmdS
-monitorCommandsT:
-FE29 54        db 84
-monitorCommandsTa:
-FE2A D0 FB     dw CmdT
-monitorCommandsI:
-FE2C 49        db 73
-monitorCommandsIa:
-FE2D CB FC     dw CmdI
-monitorCommandsO:
-FE2F 4F        db 79
-monitorCommandsOa:
-FE30 1B FD     dw CmdO
-monitorCommandsV:
-FE32 56        db 86
-monitorCommandsVa:
-FE33 52 FD     dw CmdV
-monitorCommandsJ:
-FE35 4A        db 74
-monitorCommandsJa:
-FE36 06 FC     dw CmdJ
-monitorCommandsA:
-FE38 41        db 65
-monitorCommandsAa:
-FE39 0D FC     dw CmdA
-monitorCommandsK:
-FE3B 4B        db 75
-monitorCommandsKa:
-FE3C 19 FC     dw CmdK
-monitorCommandsQ:
-FE3E 51        db 81
-monitorCommandsQa:
-FE3F 27 FC     dw CmdQ
-monitorCommandsL:
-FE41 4C        db 76
-monitorCommandsLa:
-FE42 55 FC     dw CmdL
-monitorCommandsH:
-FE44 48        db 72
-monitorCommandsHa:
-FE45 85 FC     dw CmdH
-monitorCommandsEnd:
-FE47 00        db 0
-aPrompt:
-FE48 0A 2A 4D  db 10
- db 42
- db 77
- db 105
- db 107
- db 114
- db 79
- db 47
- db 56
- db 48
- db 42
- db 32
- db 77
- db 79
- db 78
- db 73
- db 84
- db 79
- db 82
- db 10
- db 62
- db 0
-aLf:
-FE5E 0A 00     db 10
- db 0
-PrintCharA:
-FE60 E5        push hl
-FE61 C5        push bc
-FE62 D5        push de
-FE63 F5        push af
-FE64 4F        ld c, a
-FE65 C3 6C FE  jp PrintCharInt
-PrintChar:
-FE68 E5        push hl
-FE69 C5        push bc
-FE6A D5        push de
-FE6B F5        push af
-PrintCharInt:
-FE6C 2A 5A F7  ld hl, (cursor)
-FE6F 11 01 F8  ld de, -SCREEN_WIDTH*SCREEN_HEIGHT+1
-FE72 19        add hl, de
-FE73 36 00     ld (hl), SCREEN_ATTRIB_DEFAULT
-FE75 2A 5A F7  ld hl, (cursor)
-FE78 79        ld a, c
-FE79 FE 1F     cp 31
-FE7B CA C2 FE  jp z, ClearScreen
-FE7E FE 08     cp 8
-FE80 CA E9 FE  jp z, MoveCursorLeft
-FE83 FE 18     cp 24
-FE85 CA DF FE  jp z, MoveCursorRight
-FE88 FE 19     cp 25
-FE8A CA 05 FF  jp z, MoveCursorUp
-FE8D FE 1A     cp 26
-FE8F CA F6 FE  jp z, MoveCursorDown
-FE92 FE 0A     cp 10
-FE94 CA 16 FF  jp z, MoveCursorNextLine
-FE97 FE 0C     cp 12
-FE99 CA C5 FE  jp z, MoveCursorHome
-FE9C 7C        ld a, h
-FE9D FE F0     cp SCREEN_END>>8
-FE9F C2 B2 FE  jp nz, _l201
-FEA2 CD EE FF  call IsKeyPressed
-FEA5 B7        or a
-FEA6 CA AC FE  jp z, _l202
-FEA9 CD 41 FF  call ReadKey
-_l202:
-FEAC CD CB FE  call ClearScreenInt
-FEAF 21 00 E8  ld hl, SCREEN_BEGIN
-_l201:
-FEB2 71        ld (hl), c
-FEB3 23        inc hl
-MoveCursor:
-FEB4 22 5A F7  ld (cursor), hl
-FEB7 11 01 F8  ld de, -SCREEN_WIDTH*SCREEN_HEIGHT+1
-FEBA 19        add hl, de
-FEBB 36 80     ld (hl), SCREEN_ATTRIB_DEFAULT|SCREEN_ATTRIB_UNDERLINE
-FEBD F1        pop af
-FEBE D1        pop de
-FEBF C1        pop bc
-FEC0 E1        pop hl
-FEC1 C9        ret
-ClearScreen:
-FEC2 CD CB FE  call ClearScreenInt
-MoveCursorHome:
-FEC5 21 00 E8  ld hl, SCREEN_BEGIN
-FEC8 C3 B4 FE  jp MoveCursor
-ClearScreenInt:
-FECB 21 00 E8  ld hl, SCREEN_BEGIN
-FECE 11 00 E0  ld de, SCREEN_ATTRIB_BEGIN
-_l208:
-FED1 36 20     ld (hl), 32
-FED3 23        inc hl
-FED4 3E 00     ld a, 0
-FED6 12        ld (de), a
-FED7 13        inc de
-FED8 7C        ld a, h
-FED9 FE F0     cp SCREEN_END>>8
-FEDB C8        ret z
-FEDC C3 D1 FE  jp _l208
-_l207:
-MoveCursorRight:
-FEDF 23        inc hl
-FEE0 7C        ld a, h
-FEE1 FE F0     cp SCREEN_END>>8
-FEE3 C2 B4 FE  jp nz, MoveCursor
-FEE6 CA C5 FE  jp z, MoveCursorHome
-MoveCursorLeft:
-FEE9 2B        dec hl
-FEEA 7C        ld a, h
-FEEB FE E7     cp (SCREEN_BEGIN>>8)-1
-FEED C2 B4 FE  jp nz, MoveCursor
-FEF0 21 FF EF  ld hl, SCREEN_END-1
-FEF3 C3 B4 FE  jp MoveCursor
-MoveCursorDown:
-FEF6 11 40 00  ld de, SCREEN_WIDTH
-FEF9 19        add hl, de
-FEFA 7C        ld a, h
-FEFB FE F0     cp SCREEN_END>>8
-FEFD C2 B4 FE  jp nz, MoveCursor
-FF00 26 E8     ld h, SCREEN_BEGIN>>8
-FF02 C3 B4 FE  jp MoveCursor
-MoveCursorUp:
-FF05 11 C0 FF  ld de, -SCREEN_WIDTH
-FF08 19        add hl, de
-FF09 7C        ld a, h
-FF0A FE E7     cp (SCREEN_BEGIN>>8)-1
-FF0C C2 B4 FE  jp nz, MoveCursor
-FF0F 11 00 08  ld de, SCREEN_WIDTH*SCREEN_HEIGHT
-FF12 19        add hl, de
-FF13 C3 B4 FE  jp MoveCursor
-MoveCursorNextLine:
-_l215:
-FF16 23        inc hl
-FF17 7D        ld a, l
-FF18 B7        or a
-FF19 CA 2E FF  jp z, MoveCursorNextLine1
-FF1C FE 40     cp SCREEN_WIDTH*1
-FF1E CA 2E FF  jp z, MoveCursorNextLine1
-FF21 FE 80     cp SCREEN_WIDTH*2
-FF23 CA 2E FF  jp z, MoveCursorNextLine1
-FF26 FE C0     cp SCREEN_WIDTH*3
-FF28 CA 2E FF  jp z, MoveCursorNextLine1
-FF2B C3 16 FF  jp _l215
-_l214:
-MoveCursorNextLine1:
-FF2E 7C        ld a, h
-FF2F FE F0     cp SCREEN_END>>8
-FF31 C2 B4 FE  jp nz, MoveCursor
-FF34 CD EE FF  call IsKeyPressed
-FF37 B7        or a
-FF38 CA C2 FE  jp z, ClearScreen
-FF3B CD 41 FF  call ReadKey
-FF3E C3 C2 FE  jp ClearScreen
-ReadKey:
-FF41 C5        push bc
-FF42 D5        push de
-FF43 E5        push hl
-_l219:
-FF44 06 00     ld b, 0
-FF46 0E FE     ld c, 1^255
-FF48 16 08     ld d, KEYBOARD_COLUMN_COUNT
-_l220:
-FF4A 79        ld a, c
-FF4B D3 07     out (PORT_KEYBOARD_COLUMN), a
-FF4D 07        rlca
-FF4E 4F        ld c, a
-FF4F DB 06     in a, (PORT_KEYBOARD_ROW)
-FF51 E6 7F     and KEYBOARD_ROW_MASK
-FF53 FE 7F     cp KEYBOARD_ROW_MASK
-FF55 C2 63 FF  jp nz, ReadKey1
-FF58 78        ld a, b
-FF59 C6 07     add KEYBOARD_ROW_COUNT
-FF5B 47        ld b, a
-_l222:
-FF5C 15        dec d
-FF5D C2 4A FF  jp nz, _l220
-_l221:
-FF60 C3 44 FF  jp _l219
-_l218:
-ReadKey1:
-FF63 32 64 F7  ld (keyLast), a
-_l225:
-FF66 1F        rra
-FF67 D2 6E FF  jp nc, _l224
-FF6A 04        inc b
-FF6B C3 66 FF  jp _l225
-_l224:
-FF6E 78        ld a, b
-FF6F FE 30     cp 48
-FF71 D2 86 FF  jp nc, _l226
-FF74 C6 30     add 48
-FF76 FE 3C     cp 60
-FF78 DA 82 FF  jp c, _l227
-FF7B FE 40     cp 64
-FF7D D2 82 FF  jp nc, _l228
-FF80 E6 2F     and 47
-_l227:
-_l228:
-FF82 4F        ld c, a
-FF83 C3 93 FF  jp _l229
-_l226:
-FF86 21 E6 FF  ld hl, keyTable
-FF89 D6 30     sub 48
-FF8B 4F        ld c, a
-FF8C 06 00     ld b, 0
-FF8E 09        add hl, bc
-FF8F 7E        ld a, (hl)
-FF90 C3 C7 FF  jp ReadKey2
-_l229:
-FF93 DB 05     in a, (PORT_KEYBOARD_MODS)
-FF95 E6 07     and KEYBOARD_MODS_MASK
-FF97 FE 07     cp KEYBOARD_MODS_MASK
-FF99 CA C6 FF  jp z, ReadKeyNoMods
-FF9C 1F 1F     rra
- rra
-FF9E D2 AB FF  jp nc, ReadKeyControl
-FFA1 1F        rra
-FFA2 D2 B1 FF  jp nc, ReadKeyShift
-FFA5 79        ld a, c
-FFA6 F6 20     or 32
-FFA8 C3 C7 FF  jp ReadKey2
-ReadKeyControl:
-FFAB 79        ld a, c
-FFAC E6 1F     and 31
-FFAE C3 C7 FF  jp ReadKey2
-ReadKeyShift:
-FFB1 79        ld a, c
-FFB2 FE 40     cp 64
-FFB4 D2 C7 FF  jp nc, ReadKey2
-FFB7 FE 30     cp 48
-FFB9 D2 C1 FF  jp nc, _l233
-FFBC F6 10     or 16
-FFBE C3 C7 FF  jp ReadKey2
-_l233:
-FFC1 E6 2F     and 47
-FFC3 C3 C7 FF  jp ReadKey2
-ReadKeyNoMods:
-FFC6 79        ld a, c
-ReadKey2:
-FFC7 4F        ld c, a
-FFC8 CD DC FF  call ReadKeyDelay
-FFCB 21 64 F7  ld hl, keyLast
-_l235:
-FFCE DB 06     in a, (PORT_KEYBOARD_ROW)
-_l237:
-FFD0 BE        cp (hl)
-FFD1 CA CE FF  jp z, _l235
-_l236:
-FFD4 CD DC FF  call ReadKeyDelay
-FFD7 79        ld a, c
-FFD8 E1        pop hl
-FFD9 D1        pop de
-FFDA C1        pop bc
-FFDB C9        ret
-ReadKeyDelay:
-FFDC 11 00 10  ld de, 4096
-_l240:
-FFDF 1B        dec de
-FFE0 7A        ld a, d
-FFE1 B3        or e
-FFE2 C8        ret z
-FFE3 C3 DF FF  jp _l240
-_l239:
-keyTable:
-FFE6 20        db 32
-FFE7 18        db 24
-FFE8 08        db 8
-FFE9 19        db 25
-FFEA 1A        db 26
-FFEB 0D        db 13
-FFEC 1F        db 31
-FFED 0C        db 12
-IsKeyPressed:
-FFEE 3E 00     ld a, 0
-FFF0 D3 07     out (PORT_KEYBOARD_COLUMN), a
-FFF2 DB 06     in a, (PORT_KEYBOARD_ROW)
-FFF4 E6 7F     and KEYBOARD_ROW_MASK
-FFF6 FE 7F     cp KEYBOARD_ROW_MASK
-FFF8 C2 FD FF  jp nz, _l243
-FFFB AF        xor a
-FFFC C9        ret
-_l243:
-FFFD 3E FF     ld a, 255
-FFFF           ret
-0000 00 00 00  savebin "micro80.bin", 63488, 65536
+0001   0000                 device zxspectrum48 ; It has nothing to do with ZX Spectrum 48K, it is needed for the sjasmplus compiler.
+0002   0000             rst38opcode equ 56
+0003   0000             rst38address equ 57
+0004   0000             jumpparam1 equ 63312
+0005   0000             jumpopcode equ 63312
+0006   0000             param1 equ 63313
+0007   0000             param1h equ 63314
+0008   0000             param2 equ 63315
+0009   0000             param2h equ 63316
+0010   0000             param3 equ 63317
+0011   0000             param3h equ 63318
+0012   0000             tapepolarity equ 63319
+0013   0000             cursor equ 63322
+0014   0000             readdelay equ 63324
+0015   0000             writedelay equ 63325
+0016   0000             tapestartl equ 63326
+0017   0000             tapestarth equ 63327
+0018   0000             tapestopl equ 63328
+0019   0000             tapestoph equ 63329
+0020   0000             keylast equ 63332
+0021   0000             regs equ 63333
+0022   0000             regsp equ 63333
+0023   0000             regsph equ 63334
+0024   0000             regf equ 63335
+0025   0000             rega equ 63336
+0026   0000             regc equ 63337
+0027   0000             regb equ 63338
+0028   0000             rege equ 63339
+0029   0000             regd equ 63340
+0030   0000             regl equ 63341
+0031   0000             reghl equ 63341
+0032   0000             regh equ 63342
+0033   0000             lastbreakaddress equ 63343
+0034   0000             lastbreakaddresshigh equ 63344
+0035   0000             breakcounter equ 63345
+0036   0000             breakaddress equ 63346
+0037   0000             breakprevbyte equ 63348
+0038   0000             breakaddress2 equ 63349
+0039   0000             breakprevbyte2 equ 63351
+0040   0000             breakaddress3 equ 63352
+0041   0000             breakprevbyte3 equ 63354
+0042   0000             cmdbuffer equ 63355
+0043   0000             cmdbuffer1 equ 63356
+0044   0000             cmdbufferend equ 63387
+0045   0000             ; 37  uint8_t rst38Opcode __address(0x38);
+0046   0000             ; 38 extern uint16_t rst38Address __address(0x39);
+0047   0000             ; 39 
+0048   0000             ; 40 /* BIOS variables */
+0049   0000             ; 41 void jumpParam1() __address(0xF750);
+0050   0000             ; 42 extern uint8_t jumpOpcode __address(0xF750);
+0051   0000             ; 43 extern uint16_t param1 __address(0xF751);
+0052   0000             ; 44 extern uint8_t param1h __address(0xF752);
+0053   0000             ; 45 extern uint16_t param2 __address(0xF753);
+0054   0000             ; 46 extern uint8_t param2h __address(0xF754);
+0055   0000             ; 47 extern uint16_t param3 __address(0xF755);
+0056   0000             ; 48 extern uint8_t param3h __address(0xF756);
+0057   0000             ; 49 extern uint8_t tapePolarity __address(0xF757);
+0058   0000             ; 50 /* Unused 0xF758 */
+0059   0000             ; 51 /* Unused 0xF759 */
+0060   0000             ; 52 extern uint16_t cursor __address(0xF75A);
+0061   0000             ; 53 extern uint8_t readDelay __address(0xF75C);
+0062   0000             ; 54 extern uint8_t writeDelay __address(0xF75D);
+0063   0000             ; 55 extern uint8_t tapeStartL __address(0xF75E);
+0064   0000             ; 56 extern uint8_t tapeStartH __address(0xF75F);
+0065   0000             ; 57 extern uint8_t tapeStopL __address(0xF760);
+0066   0000             ; 58 extern uint8_t tapeStopH __address(0xF761);
+0067   0000             ; 59 /* Unused 0xF762 */
+0068   0000             ; 60 /* Unused 0xF763 */
+0069   0000             ; 61 extern uint8_t keyLast __address(0xF764);
+0070   0000             ; 62 extern uint16_t regs __address(0xF765);
+0071   0000             ; 63 extern uint16_t regSP __address(0xF765);
+0072   0000             ; 64 extern uint8_t regSPH __address(0xF766);
+0073   0000             ; 65 extern uint16_t regF __address(0xF767);
+0074   0000             ; 66 extern uint16_t regA __address(0xF768);
+0075   0000             ; 67 extern uint16_t regC __address(0xF769);
+0076   0000             ; 68 extern uint16_t regB __address(0xF76A);
+0077   0000             ; 69 extern uint16_t regE __address(0xF76B);
+0078   0000             ; 70 extern uint16_t regD __address(0xF76C);
+0079   0000             ; 71 extern uint16_t regL __address(0xF76D);
+0080   0000             ; 72 extern uint16_t regHL __address(0xF76D);
+0081   0000             ; 73 extern uint16_t regH __address(0xF76E);
+0082   0000             ; 74 extern uint16_t lastBreakAddress __address(0xF76F);
+0083   0000             ; 75 extern uint8_t lastBreakAddressHigh __address(0xF770);
+0084   0000             ; 76 extern uint8_t breakCounter __address(0xF771);
+0085   0000             ; 77 extern uint16_t breakAddress __address(0xF772);
+0086   0000             ; 78 extern uint8_t breakPrevByte __address(0xF774);
+0087   0000             ; 79 extern uint16_t breakAddress2 __address(0xF775);
+0088   0000             ; 80 extern uint8_t breakPrevByte2 __address(0xF777);
+0089   0000             ; 81 extern uint16_t breakAddress3 __address(0xF778);
+0090   0000             ; 82 extern uint8_t breakPrevByte3 __address(0xF77A);
+0091   0000             ; 83 extern uint8_t cmdBuffer __address(0xF77B);
+0092   0000             ; 84 extern uint8_t cmdBuffer1 __address(0xF77B + 1);
+0093   0000             ; 85 extern uint8_t cmdBufferEnd __address(0xF77B + 32);
+0094   0000              org 0F800h
+0095   F800             ; 77  EntryReboot(...) {
+0096   F800             entryreboot: 
+0097   F800             ; 78     Reboot();
+0098   F800 C3 1B F8    	jp reboot
+0099   F803             ; 79 }
+0100   F803             ; 80 
+0101   F803             ; 81 void EntryReadChar(...) {
+0102   F803             entryreadchar: 
+0103   F803             ; 82     ReadKey();
+0104   F803 C3 41 FF    	jp readkey
+0105   F806             ; 83 }
+0106   F806             ; 84 
+0107   F806             ; 85 void EntryReadTapeByte(...) {
+0108   F806             entryreadtapebyte: 
+0109   F806             ; 86     ReadTapeByte();
+0110   F806 C3 95 FD    	jp readtapebyte
+0111   F809             ; 87 }
+0112   F809             ; 88 
+0113   F809             ; 89 void EntryPrintChar(...) {
+0114   F809             entryprintchar: 
+0115   F809             ; 90     PrintChar();
+0116   F809 C3 68 FE    	jp printchar
+0117   F80C             ; 91 }
+0118   F80C             ; 92 
+0119   F80C             ; 93 void EntryWriteTapeByte(...) {
+0120   F80C             entrywritetapebyte: 
+0121   F80C             ; 94     WriteTapeByte();
+0122   F80C C3 E6 FD    	jp writetapebyte
+0123   F80F             ; 95 }
+0124   F80F             ; 96 
+0125   F80F             ; 97 void EntryPrintChar2(...) {
+0126   F80F             entryprintchar2: 
+0127   F80F             ; 98     PrintChar();
+0128   F80F C3 68 FE    	jp printchar
+0129   F812             ; 99 }
+0130   F812             ; 100 
+0131   F812             ; 101 void EntryIsKeyPressed(...) {
+0132   F812             entryiskeypressed: 
+0133   F812             ; 102     IsKeyPressed();
+0134   F812 C3 EE FF    	jp iskeypressed
+0135   F815             ; 103 }
+0136   F815             ; 104 
+0137   F815             ; 105 void EntryPrintHexByte(...) {
+0138   F815             entryprinthexbyte: 
+0139   F815             ; 106     PrintHexByte();
+0140   F815 C3 50 F9    	jp printhexbyte
+0141   F818             ; 107 }
+0142   F818             ; 108 
+0143   F818             ; 109 void EntryPrintString(...) {
+0144   F818             entryprintstring: 
+0145   F818             ; 110     PrintString();
+0146   F818 C3 D4 F8    	jp printstring
+0147   F81B             ; 111 }
+0148   F81B             ; 112 
+0149   F81B             ; 113 void Reboot(...) {
+0150   F81B             reboot: 
+0151   F81B             ; 114     regSP = hl = USER_STACK_TOP;
+0152   F81B 21 C0 F7    	ld hl, 63424
+0153   F81E 22 65 F7    	ld (regsp), hl
+0154   F821             ; 115     sp = STACK_TOP;
+0155   F821 31 FF F7    	ld sp, 63487
+0156   F824             ; 116     PrintCharA(a = 0x1F); /* Clear screen */
+0157   F824 3E 1F       	ld a, 31
+0158   F826 CD 60 FE    	call printchara
+0159   F829             ; 117     Monitor();
+0160   F829             ; 118 }
+0161   F829             ; 119 
+0162   F829             ; 120 void Monitor(...) {
+0163   F829             monitor: 
+0164   F829             ; 121     out(PORT_KEYBOARD_MODE, a = 0x8B);
+0165   F829 3E 8B       	ld a, 139
+0166   F82B D3 04       	out (4), a
+0167   F82D             ; 122     sp = STACK_TOP;
+0168   F82D 31 FF F7    	ld sp, 63487
+0169   F830             ; 123     PrintString(hl = &aPrompt);
+0170   F830 21 48 FE    	ld hl, aprompt
+0171   F833 CD D4 F8    	call printstring
+0172   F836             ; 124     ReadString();
+0173   F836 CD 5A F8    	call readstring
+0174   F839             ; 125     push(hl = &Monitor);
+0175   F839 21 29 F8    	ld hl, 0FFFFh & (monitor)
+0176   F83C E5          	push hl
+0177   F83D             ; 126     MonitorExecute();
+0178   F83D             ; 127 }
+0179   F83D             ; 128 
+0180   F83D             ; 129 void MonitorExecute(...) {
+0181   F83D             monitorexecute: 
+0182   F83D             ; 130     hl = &cmdBuffer;
+0183   F83D 21 7B F7    	ld hl, 0FFFFh & (cmdbuffer)
+0184   F840             ; 131     b = *hl;
+0185   F840 46          	ld b, (hl)
+0186   F841             ; 132     hl = &monitorCommands;
+0187   F841 21 0E FE    	ld hl, 0FFFFh & (monitorcommands)
+0188   F844             ; 133 
+0189   F844             ; 134     for (;;) {
+0190   F844             l_1: 
+0191   F844             ; 135         a = *hl;
+0192   F844 7E          	ld a, (hl)
+0193   F845             ; 136         if (flag_z(a &= a))
+0194   F845 A7          	and a
+0195   F846             ; 137             return MonitorError();
+0196   F846 CA 75 F8    	jp z, monitorerror
+0197   F849             ; 138         if (a == b)
+0198   F849 B8          	cp b
+0199   F84A             ; 139             break;
+0200   F84A CA 53 F8    	jp z, l_2
+0201   F84D             ; 140         hl++;
+0202   F84D 23          	inc hl
+0203   F84E             ; 141         hl++;
+0204   F84E 23          	inc hl
+0205   F84F             ; 142         hl++;
+0206   F84F 23          	inc hl
+0207   F850 C3 44 F8    	jp l_1
+0208   F853             l_2: 
+0209   F853             ; 143     }
+0210   F853             ; 144 
+0211   F853             ; 145     hl++;
+0212   F853 23          	inc hl
+0213   F854             ; 146     sp = hl;
+0214   F854 F9          	ld sp, hl
+0215   F855             ; 147     pop(hl);
+0216   F855 E1          	pop hl
+0217   F856             ; 148     sp = STACK_TOP - 2;
+0218   F856 31 FD F7    	ld sp, 63485
+0219   F859             ; 149     return hl();
+0220   F859 E9          	jp hl
+0221   F85A             ; 150 }
+0222   F85A             ; 151 
+0223   F85A             ; 152 void ReadString(...) {
+0224   F85A             readstring: 
+0225   F85A             ; 153     return ReadStringLoop(hl = &cmdBuffer);
+0226   F85A 21 7B F7    	ld hl, 0FFFFh & (cmdbuffer)
+0227   F85D             ; 154 }
+0228   F85D             ; 155 
+0229   F85D             ; 156 void ReadStringLoop(...) {
+0230   F85D             readstringloop: 
+0231   F85D             ; 157     do {
+0232   F85D             l_3: 
+0233   F85D             ; 158         ReadKey();
+0234   F85D CD 41 FF    	call readkey
+0235   F860             ; 159         if (a == 8)
+0236   F860 FE 08       	cp 8
+0237   F862             ; 160             return ReadStringBs();
+0238   F862 CA 80 F8    	jp z, readstringbs
+0239   F865             ; 161         if (flag_nz)
+0240   F865             ; 162             PrintCharA();
+0241   F865 C4 60 FE    	call nz, printchara
+0242   F868             ; 163         *hl = a;
+0243   F868 77          	ld (hl), a
+0244   F869             ; 164         if (a == 0x0D)
+0245   F869 FE 0D       	cp 13
+0246   F86B             ; 165             return ReadStringCr(hl);
+0247   F86B CA 7D F8    	jp z, readstringcr
+0248   F86E             ; 166         a = &cmdBufferEnd - 1;
+0249   F86E 3E 9A       	ld a, 0FFh & ((cmdbufferend) - (1))
+0250   F870             ; 167         compare(a, l);
+0251   F870 BD          	cp l
+0252   F871             ; 168         hl++;
+0253   F871 23          	inc hl
+0254   F872             l_4: 
+0255   F872 C2 5D F8    	jp nz, l_3
+0256   F875             ; 169     } while (flag_nz);
+0257   F875             ; 170     MonitorError();
+0258   F875             ; 171 }
+0259   F875             ; 172 
+0260   F875             ; 173 void MonitorError(...) {
+0261   F875             monitorerror: 
+0262   F875             ; 174     PrintCharA(a = '?');
+0263   F875 3E 3F       	ld a, 63
+0264   F877 CD 60 FE    	call printchara
+0265   F87A             ; 175     Monitor();
+0266   F87A C3 29 F8    	jp monitor
+0267   F87D             ; 176 }
+0268   F87D             ; 177 
+0269   F87D             ; 178 void ReadStringCr(...) {
+0270   F87D             readstringcr: 
+0271   F87D             ; 179     *hl = 0x0D;
+0272   F87D 36 0D       	ld (hl), 13
+0273   F87F C9          	ret
+0274   F880             ; 180 }
+0275   F880             ; 181 
+0276   F880             ; 182 void ReadStringBs(...) {
+0277   F880             readstringbs: 
+0278   F880             ; 183     CommonBs();
+0279   F880 CD 86 F8    	call commonbs
+0280   F883             ; 184     ReadStringLoop();
+0281   F883 C3 5D F8    	jp readstringloop
+0282   F886             ; 185 }
+0283   F886             ; 186 
+0284   F886             ; 187 void CommonBs(...) {
+0285   F886             commonbs: 
+0286   F886             ; 188     if ((a = &cmdBuffer) == l)
+0287   F886 3E 7B       	ld a, 0FFh & (cmdbuffer)
+0288   F888 BD          	cp l
+0289   F889             ; 189         return;
+0290   F889 C8          	ret z
+0291   F88A             ; 190     PrintCharA(a = 8);
+0292   F88A 3E 08       	ld a, 8
+0293   F88C CD 60 FE    	call printchara
+0294   F88F             ; 191     hl--;
+0295   F88F 2B          	dec hl
+0296   F890 C9          	ret
+0297   F891             ; 192 }
+0298   F891             ; 193 
+0299   F891             ; 194 void Input(...) {
+0300   F891             input: 
+0301   F891             ; 195     PrintSpace();
+0302   F891 CD 77 F9    	call printspace
+0303   F894             ; 196     InputInit(hl = &cmdBuffer);
+0304   F894 21 7B F7    	ld hl, 0FFFFh & (cmdbuffer)
+0305   F897             ; 197 }
+0306   F897             ; 198 
+0307   F897             ; 199 void InputInit(...) {
+0308   F897             inputinit: 
+0309   F897             ; 200     InputLoop(b = 0);
+0310   F897 06 00       	ld b, 0
+0311   F899             ; 201 }
+0312   F899             ; 202 
+0313   F899             ; 203 void InputLoop(...) {
+0314   F899             inputloop: 
+0315   F899             ; 204     for (;;) {
+0316   F899             l_7: 
+0317   F899             ; 205         ReadKey();
+0318   F899 CD 41 FF    	call readkey
+0319   F89C             ; 206         if (a == 8)
+0320   F89C FE 08       	cp 8
+0321   F89E             ; 207             return InputBs();
+0322   F89E CA C5 F8    	jp z, inputbs
+0323   F8A1             ; 208         if (flag_nz)
+0324   F8A1             ; 209             PrintCharA();
+0325   F8A1 C4 60 FE    	call nz, printchara
+0326   F8A4             ; 210         *hl = a;
+0327   F8A4 77          	ld (hl), a
+0328   F8A5             ; 211         if (a == ' ')
+0329   F8A5 FE 20       	cp 32
+0330   F8A7             ; 212             return InputEndSpace();
+0331   F8A7 CA BB F8    	jp z, inputendspace
+0332   F8AA             ; 213         if (a == 0x0D)
+0333   F8AA FE 0D       	cp 13
+0334   F8AC             ; 214             return PopWordReturn();
+0335   F8AC CA CE F8    	jp z, popwordreturn
+0336   F8AF             ; 215         b = 0xFF;
+0337   F8AF 06 FF       	ld b, 255
+0338   F8B1             ; 216         if ((a = &cmdBufferEnd - 1) == l)
+0339   F8B1 3E 9A       	ld a, 0FFh & ((cmdbufferend) - (1))
+0340   F8B3 BD          	cp l
+0341   F8B4             ; 217             return MonitorError();
+0342   F8B4 CA 75 F8    	jp z, monitorerror
+0343   F8B7             ; 218         hl++;
+0344   F8B7 23          	inc hl
+0345   F8B8 C3 99 F8    	jp l_7
+0346   F8BB             ; 219     }
+0347   F8BB             ; 220 }
+0348   F8BB             ; 221 
+0349   F8BB             ; 222 void InputEndSpace(...) {
+0350   F8BB             inputendspace: 
+0351   F8BB             ; 223     *hl = 0x0D;
+0352   F8BB 36 0D       	ld (hl), 13
+0353   F8BD             ; 224     a = b;
+0354   F8BD 78          	ld a, b
+0355   F8BE             ; 225     carry_rotate_left(a, 1);
+0356   F8BE 17          	rla
+0357   F8BF             ; 226     de = &cmdBuffer;
+0358   F8BF 11 7B F7    	ld de, 0FFFFh & (cmdbuffer)
+0359   F8C2             ; 227     b = 0;
+0360   F8C2 06 00       	ld b, 0
+0361   F8C4 C9          	ret
+0362   F8C5             ; 228 }
+0363   F8C5             ; 229 
+0364   F8C5             ; 230 void InputBs(...) {
+0365   F8C5             inputbs: 
+0366   F8C5             ; 231     CommonBs();
+0367   F8C5 CD 86 F8    	call commonbs
+0368   F8C8             ; 232     if (flag_z)
+0369   F8C8             ; 233         return InputInit();
+0370   F8C8 CA 97 F8    	jp z, inputinit
+0371   F8CB             ; 234     InputLoop();
+0372   F8CB C3 99 F8    	jp inputloop
+0373   F8CE             ; 235 }
+0374   F8CE             ; 236 
+0375   F8CE             ; 237 void PopWordReturn(...) {
+0376   F8CE             popwordreturn: 
+0377   F8CE             ; 238     sp++;
+0378   F8CE 33          	inc sp
+0379   F8CF             ; 239     sp++;
+0380   F8CF 33          	inc sp
+0381   F8D0 C9          	ret
+0382   F8D1             ; 240 }
+0383   F8D1             ; 241 
+0384   F8D1             ; 242 void PrintLf(...) {
+0385   F8D1             printlf: 
+0386   F8D1             ; 243     PrintString(hl = &aLf);
+0387   F8D1 21 5E FE    	ld hl, alf
+0388   F8D4             ; 244 }
+0389   F8D4             ; 245 
+0390   F8D4             ; 246 void PrintString(...) {
+0391   F8D4             printstring: 
+0392   F8D4             ; 247     for (;;) {
+0393   F8D4             l_10: 
+0394   F8D4             ; 248         a = *hl;
+0395   F8D4 7E          	ld a, (hl)
+0396   F8D5             ; 249         if (flag_z(a &= a))
+0397   F8D5 A7          	and a
+0398   F8D6             ; 250             return;
+0399   F8D6 C8          	ret z
+0400   F8D7             ; 251         PrintCharA(a);
+0401   F8D7 CD 60 FE    	call printchara
+0402   F8DA             ; 252         hl++;
+0403   F8DA 23          	inc hl
+0404   F8DB C3 D4 F8    	jp l_10
+0405   F8DE             ; 253     }
+0406   F8DE             ; 254 }
+0407   F8DE             ; 255 
+0408   F8DE             ; 256 void ParseParams(...) {
+0409   F8DE             parseparams: 
+0410   F8DE             ; 257     hl = &param1;
+0411   F8DE 21 51 F7    	ld hl, 0FFFFh & (param1)
+0412   F8E1             ; 258     b = 6;
+0413   F8E1 06 06       	ld b, 6
+0414   F8E3             ; 259     a ^= a;
+0415   F8E3 AF          	xor a
+0416   F8E4             ; 260     do {
+0417   F8E4             l_12: 
+0418   F8E4             ; 261         *hl = a;
+0419   F8E4 77          	ld (hl), a
+0420   F8E5             l_13: 
+0421   F8E5             ; 262     } while (flag_nz(b--));
+0422   F8E5 05          	dec b
+0423   F8E6 C2 E4 F8    	jp nz, l_12
+0424   F8E9             ; 263 
+0425   F8E9             ; 264     de = &cmdBuffer + 1;
+0426   F8E9 11 7C F7    	ld de, 0FFFFh & ((cmdbuffer) + (1))
+0427   F8EC             ; 265     ParseDword();
+0428   F8EC CD 16 F9    	call parsedword
+0429   F8EF             ; 266     param1 = hl;
+0430   F8EF 22 51 F7    	ld (param1), hl
+0431   F8F2             ; 267     param2 = hl;
+0432   F8F2 22 53 F7    	ld (param2), hl
+0433   F8F5             ; 268     if (flag_c)
+0434   F8F5             ; 269         return;
+0435   F8F5 D8          	ret c
+0436   F8F6             ; 270     ParseDword();
+0437   F8F6 CD 16 F9    	call parsedword
+0438   F8F9             ; 271     param2 = hl;
+0439   F8F9 22 53 F7    	ld (param2), hl
+0440   F8FC             ; 272     push_pop(a, de) {
+0441   F8FC F5          	push af
+0442   F8FD D5          	push de
+0443   F8FE             ; 273         swap(hl, de);
+0444   F8FE EB          	ex hl, de
+0445   F8FF             ; 274         hl = param1;
+0446   F8FF 2A 51 F7    	ld hl, (param1)
+0447   F902             ; 275         swap(hl, de);
+0448   F902 EB          	ex hl, de
+0449   F903             ; 276         CmpHlDe();
+0450   F903 CD 93 F9    	call cmphlde
+0451   F906             ; 277         if (flag_c)
+0452   F906             ; 278             return MonitorError();
+0453   F906 DA 75 F8    	jp c, monitorerror
+0454   F909 D1          	pop de
+0455   F90A F1          	pop af
+0456   F90B             ; 279     }
+0457   F90B             ; 280     if (flag_c)
+0458   F90B             ; 281         return;
+0459   F90B D8          	ret c
+0460   F90C             ; 282     ParseDword();
+0461   F90C CD 16 F9    	call parsedword
+0462   F90F             ; 283     param3 = hl;
+0463   F90F 22 55 F7    	ld (param3), hl
+0464   F912             ; 284     if (flag_c)
+0465   F912             ; 285         return;
+0466   F912 D8          	ret c
+0467   F913             ; 286     MonitorError();
+0468   F913 C3 75 F8    	jp monitorerror
+0469   F916             ; 287 }
+0470   F916             ; 288 
+0471   F916             ; 289 void ParseDword(...) {
+0472   F916             parsedword: 
+0473   F916             ; 290     hl = 0;
+0474   F916 21 00 00    	ld hl, 0
+0475   F919             ; 291     ParseDword1();
+0476   F919             ; 292 }
+0477   F919             ; 293 
+0478   F919             ; 294 void ParseDword1(...) {
+0479   F919             parsedword1: 
+0480   F919             ; 295     for (;;) {
+0481   F919             l_16: 
+0482   F919             ; 296         a = *de;
+0483   F919 1A          	ld a, (de)
+0484   F91A             ; 297         de++;
+0485   F91A 13          	inc de
+0486   F91B             ; 298         if (a == 0x0D)
+0487   F91B FE 0D       	cp 13
+0488   F91D             ; 299             return ReturnCf();
+0489   F91D CA 4A F9    	jp z, returncf
+0490   F920             ; 300         if (a == ',')
+0491   F920 FE 2C       	cp 44
+0492   F922             ; 301             return;
+0493   F922 C8          	ret z
+0494   F923             ; 302         if (a == ' ')
+0495   F923 FE 20       	cp 32
+0496   F925             ; 303             continue;
+0497   F925 CA 19 F9    	jp z, l_16
+0498   F928             ; 304         a -= '0';
+0499   F928 D6 30       	sub 48
+0500   F92A             ; 305         if (flag_m)
+0501   F92A             ; 306             return MonitorError();
+0502   F92A FA 75 F8    	jp m, monitorerror
+0503   F92D             ; 307         if (flag_p(compare(a, 10))) {
+0504   F92D FE 0A       	cp 10
+0505   F92F FA 3E F9    	jp m, l_18
+0506   F932             ; 308             if (flag_m(compare(a, 0x11)))
+0507   F932 FE 11       	cp 17
+0508   F934             ; 309                 return MonitorError();
+0509   F934 FA 75 F8    	jp m, monitorerror
+0510   F937             ; 310             if (flag_p(compare(a, 0x17)))
+0511   F937 FE 17       	cp 23
+0512   F939             ; 311                 return MonitorError();
+0513   F939 F2 75 F8    	jp p, monitorerror
+0514   F93C             ; 312             a -= 7;
+0515   F93C D6 07       	sub 7
+0516   F93E             l_18: 
+0517   F93E             ; 313         }
+0518   F93E             ; 314         c = a;
+0519   F93E 4F          	ld c, a
+0520   F93F             ; 315         hl += hl;
+0521   F93F 29          	add hl, hl
+0522   F940             ; 316         hl += hl;
+0523   F940 29          	add hl, hl
+0524   F941             ; 317         hl += hl;
+0525   F941 29          	add hl, hl
+0526   F942             ; 318         hl += hl;
+0527   F942 29          	add hl, hl
+0528   F943             ; 319         if (flag_c)
+0529   F943             ; 320             return MonitorError();
+0530   F943 DA 75 F8    	jp c, monitorerror
+0531   F946             ; 321         hl += bc;
+0532   F946 09          	add hl, bc
+0533   F947 C3 19 F9    	jp l_16
+0534   F94A             ; 322     }
+0535   F94A             ; 323 }
+0536   F94A             ; 324 
+0537   F94A             ; 325 void ReturnCf(...) {
+0538   F94A             returncf: 
+0539   F94A             ; 326     set_flag_c();
+0540   F94A 37          	scf
+0541   F94B C9          	ret
+0542   F94C             ; 327 }
+0543   F94C             ; 328 
+0544   F94C             ; 329 void PrintByteFromParam1(...) {
+0545   F94C             printbytefromparam1: 
+0546   F94C             ; 330     hl = param1;
+0547   F94C 2A 51 F7    	ld hl, (param1)
+0548   F94F             ; 331     PrintHexByte(a = *hl);
+0549   F94F 7E          	ld a, (hl)
+0550   F950             ; 332 }
+0551   F950             ; 333 
+0552   F950             ; 334 void PrintHexByte(...) {
+0553   F950             printhexbyte: 
+0554   F950             ; 335     b = a;
+0555   F950 47          	ld b, a
+0556   F951             ; 336     a = b;
+0557   F951 78          	ld a, b
+0558   F952             ; 337     cyclic_rotate_right(a, 4);
+0559   F952 0F          	rrca
+0560   F953 0F          	rrca
+0561   F954 0F          	rrca
+0562   F955 0F          	rrca
+0563   F956             ; 338     PrintHex(a);
+0564   F956 CD 5A F9    	call printhex
+0565   F959             ; 339     PrintHex(a = b);
+0566   F959 78          	ld a, b
+0567   F95A             ; 340 }
+0568   F95A             ; 341 
+0569   F95A             ; 342 void PrintHex(...) {
+0570   F95A             printhex: 
+0571   F95A             ; 343     a &= 0x0F;
+0572   F95A E6 0F       	and 15
+0573   F95C             ; 344     if (flag_p(compare(a, 10)))
+0574   F95C FE 0A       	cp 10
+0575   F95E             ; 345         a += 'A' - '0' - 10;
+0576   F95E FA 63 F9    	jp m, l_20
+0577   F961 C6 07       	add 7
+0578   F963             l_20: 
+0579   F963             ; 346     a += '0';
+0580   F963 C6 30       	add 48
+0581   F965             ; 347     PrintCharA(a);
+0582   F965 C3 60 FE    	jp printchara
+0583   F968             ; 348 }
+0584   F968             ; 349 
+0585   F968             ; 350 void PrintLfParam1(...) {
+0586   F968             printlfparam1: 
+0587   F968             ; 351     PrintLf();
+0588   F968 CD D1 F8    	call printlf
+0589   F96B             ; 352     PrintParam1Space();
+0590   F96B             ; 353 }
+0591   F96B             ; 354 
+0592   F96B             ; 355 void PrintParam1Space(...) {
+0593   F96B             printparam1space: 
+0594   F96B             ; 356     PrintHexWordSpace(hl = &param1h);
+0595   F96B 21 52 F7    	ld hl, 0FFFFh & (param1h)
+0596   F96E             ; 357 }
+0597   F96E             ; 358 
+0598   F96E             ; 359 void PrintHexWordSpace(...) {
+0599   F96E             printhexwordspace: 
+0600   F96E             ; 360     PrintHexByte(a = *hl);
+0601   F96E 7E          	ld a, (hl)
+0602   F96F CD 50 F9    	call printhexbyte
+0603   F972             ; 361     hl--;
+0604   F972 2B          	dec hl
+0605   F973             ; 362     PrintHexByte(a = *hl);
+0606   F973 7E          	ld a, (hl)
+0607   F974 CD 50 F9    	call printhexbyte
+0608   F977             ; 363     PrintSpace();
+0609   F977             ; 364 }
+0610   F977             ; 365 
+0611   F977             ; 366 void PrintSpace(...) {
+0612   F977             printspace: 
+0613   F977             ; 367     PrintCharA(a = ' ');
+0614   F977 3E 20       	ld a, 32
+0615   F979 C3 60 FE    	jp printchara
+0616   F97C             ; 368 }
+0617   F97C             ; 369 
+0618   F97C             ; 370 void Loop(...) {
+0619   F97C             loop: 
+0620   F97C             ; 371     push_pop(de) {
+0621   F97C D5          	push de
+0622   F97D             ; 372         hl = param1;
+0623   F97D 2A 51 F7    	ld hl, (param1)
+0624   F980             ; 373         swap(hl, de);
+0625   F980 EB          	ex hl, de
+0626   F981             ; 374         hl = param2;
+0627   F981 2A 53 F7    	ld hl, (param2)
+0628   F984             ; 375         CmpHlDe(hl, de);
+0629   F984 CD 93 F9    	call cmphlde
+0630   F987 D1          	pop de
+0631   F988             ; 376     }
+0632   F988             ; 377     if (flag_z)
+0633   F988             ; 378         return PopWordReturn();
+0634   F988 CA CE F8    	jp z, popwordreturn
+0635   F98B             ; 379     IncWord(hl = &param1);
+0636   F98B 21 51 F7    	ld hl, 0FFFFh & (param1)
+0637   F98E             ; 380 }
+0638   F98E             ; 381 
+0639   F98E             ; 382 void IncWord(...) {
+0640   F98E             incword: 
+0641   F98E             ; 383     (*hl)++;
+0642   F98E 34          	inc (hl)
+0643   F98F             ; 384     if (flag_nz)
+0644   F98F             ; 385         return;
+0645   F98F C0          	ret nz
+0646   F990             ; 386     hl++;
+0647   F990 23          	inc hl
+0648   F991             ; 387     (*hl)++;
+0649   F991 34          	inc (hl)
+0650   F992 C9          	ret
+0651   F993             ; 388 }
+0652   F993             ; 389 
+0653   F993             ; 390 void CmpHlDe(...) {
+0654   F993             cmphlde: 
+0655   F993             ; 391     if ((a = h) != d)
+0656   F993 7C          	ld a, h
+0657   F994 BA          	cp d
+0658   F995             ; 392         return;
+0659   F995 C0          	ret nz
+0660   F996             ; 393     compare(a = l, e);
+0661   F996 7D          	ld a, l
+0662   F997 BB          	cp e
+0663   F998 C9          	ret
+0664   F999             ; 394 }
+0665   F999             ; 395 
+0666   F999             ; 396 /* X - Изменение содержимого внутреннего регистра микропроцессора */
+0667   F999             ; 397 
+0668   F999             ; 398 void CmdX(...) {
+0669   F999             cmdx: 
+0670   F999             ; 399     hl = &cmdBuffer1;
+0671   F999 21 7C F7    	ld hl, 0FFFFh & (cmdbuffer1)
+0672   F99C             ; 400     a = *hl;
+0673   F99C 7E          	ld a, (hl)
+0674   F99D             ; 401     if (a == 0x0D)
+0675   F99D FE 0D       	cp 13
+0676   F99F             ; 402         return PrintRegs();
+0677   F99F CA EA F9    	jp z, printregs
+0678   F9A2             ; 403     if (a == 'S')
+0679   F9A2 FE 53       	cp 83
+0680   F9A4             ; 404         return CmdXS();
+0681   F9A4 CA C8 F9    	jp z, cmdxs
+0682   F9A7             ; 405     FindRegister(de = &regList);
+0683   F9A7 11 30 FA    	ld de, reglist
+0684   F9AA CD DE F9    	call findregister
+0685   F9AD             ; 406     hl = &regs;
+0686   F9AD 21 65 F7    	ld hl, 0FFFFh & (regs)
+0687   F9B0             ; 407     de++;
+0688   F9B0 13          	inc de
+0689   F9B1             ; 408     l = a = *de;
+0690   F9B1 1A          	ld a, (de)
+0691   F9B2 6F          	ld l, a
+0692   F9B3             ; 409     push_pop(hl) {
+0693   F9B3 E5          	push hl
+0694   F9B4             ; 410         PrintSpace();
+0695   F9B4 CD 77 F9    	call printspace
+0696   F9B7             ; 411         PrintHexByte(a = *hl);
+0697   F9B7 7E          	ld a, (hl)
+0698   F9B8 CD 50 F9    	call printhexbyte
+0699   F9BB             ; 412         Input();
+0700   F9BB CD 91 F8    	call input
+0701   F9BE             ; 413         if (flag_nc)
+0702   F9BE             ; 414             return Monitor();
+0703   F9BE D2 29 F8    	jp nc, monitor
+0704   F9C1             ; 415         ParseDword();
+0705   F9C1 CD 16 F9    	call parsedword
+0706   F9C4             ; 416         a = l;
+0707   F9C4 7D          	ld a, l
+0708   F9C5 E1          	pop hl
+0709   F9C6             ; 417     }
+0710   F9C6             ; 418     *hl = a;
+0711   F9C6 77          	ld (hl), a
+0712   F9C7 C9          	ret
+0713   F9C8             ; 419 }
+0714   F9C8             ; 420 
+0715   F9C8             ; 421 void CmdXS(...) {
+0716   F9C8             cmdxs: 
+0717   F9C8             ; 422     PrintSpace();
+0718   F9C8 CD 77 F9    	call printspace
+0719   F9CB             ; 423     PrintHexWordSpace(hl = &regSPH);
+0720   F9CB 21 66 F7    	ld hl, 0FFFFh & (regsph)
+0721   F9CE CD 6E F9    	call printhexwordspace
+0722   F9D1             ; 424     Input();
+0723   F9D1 CD 91 F8    	call input
+0724   F9D4             ; 425     if (flag_nc)
+0725   F9D4             ; 426         return Monitor();
+0726   F9D4 D2 29 F8    	jp nc, monitor
+0727   F9D7             ; 427     ParseDword();
+0728   F9D7 CD 16 F9    	call parsedword
+0729   F9DA             ; 428     regSP = hl;
+0730   F9DA 22 65 F7    	ld (regsp), hl
+0731   F9DD C9          	ret
+0732   F9DE             ; 429 }
+0733   F9DE             ; 430 
+0734   F9DE             ; 431 void FindRegister(...) {
+0735   F9DE             findregister: 
+0736   F9DE             ; 432     for (;;) {
+0737   F9DE             l_23: 
+0738   F9DE             ; 433         a = *de;
+0739   F9DE 1A          	ld a, (de)
+0740   F9DF             ; 434         if (flag_z(a &= a))
+0741   F9DF A7          	and a
+0742   F9E0             ; 435             return MonitorError();
+0743   F9E0 CA 75 F8    	jp z, monitorerror
+0744   F9E3             ; 436         if (a == *hl)
+0745   F9E3 BE          	cp (hl)
+0746   F9E4             ; 437             return;
+0747   F9E4 C8          	ret z
+0748   F9E5             ; 438         de++;
+0749   F9E5 13          	inc de
+0750   F9E6             ; 439         de++;
+0751   F9E6 13          	inc de
+0752   F9E7 C3 DE F9    	jp l_23
+0753   F9EA             ; 440     }
+0754   F9EA             ; 441 }
+0755   F9EA             ; 442 
+0756   F9EA             ; 443 void PrintRegs(...) {
+0757   F9EA             printregs: 
+0758   F9EA             ; 444     de = &regList;
+0759   F9EA 11 30 FA    	ld de, reglist
+0760   F9ED             ; 445     b = 8;
+0761   F9ED 06 08       	ld b, 8
+0762   F9EF             ; 446     PrintLf();
+0763   F9EF CD D1 F8    	call printlf
+0764   F9F2             ; 447     do {
+0765   F9F2             l_25: 
+0766   F9F2             ; 448         c = a = *de;
+0767   F9F2 1A          	ld a, (de)
+0768   F9F3 4F          	ld c, a
+0769   F9F4             ; 449         de++;
+0770   F9F4 13          	inc de
+0771   F9F5             ; 450         push_pop(bc) {
+0772   F9F5 C5          	push bc
+0773   F9F6             ; 451             PrintRegMinus(c);
+0774   F9F6 CD 24 FA    	call printregminus
+0775   F9F9             ; 452             a = *de;
+0776   F9F9 1A          	ld a, (de)
+0777   F9FA             ; 453             hl = &regs;
+0778   F9FA 21 65 F7    	ld hl, 0FFFFh & (regs)
+0779   F9FD             ; 454             l = a;
+0780   F9FD 6F          	ld l, a
+0781   F9FE             ; 455             PrintHexByte(a = *hl);
+0782   F9FE 7E          	ld a, (hl)
+0783   F9FF CD 50 F9    	call printhexbyte
+0784   FA02 C1          	pop bc
+0785   FA03             ; 456         }
+0786   FA03             ; 457         de++;
+0787   FA03 13          	inc de
+0788   FA04             l_26: 
+0789   FA04             ; 458     } while (flag_nz(b--));
+0790   FA04 05          	dec b
+0791   FA05 C2 F2 F9    	jp nz, l_25
+0792   FA08             ; 459 
+0793   FA08             ; 460     c = a = *de;
+0794   FA08 1A          	ld a, (de)
+0795   FA09 4F          	ld c, a
+0796   FA0A             ; 461     PrintRegMinus();
+0797   FA0A CD 24 FA    	call printregminus
+0798   FA0D             ; 462     param1 = hl = regs;
+0799   FA0D 2A 65 F7    	ld hl, (regs)
+0800   FA10 22 51 F7    	ld (param1), hl
+0801   FA13             ; 463     PrintParam1Space();
+0802   FA13 CD 6B F9    	call printparam1space
+0803   FA16             ; 464     PrintRegMinus(c = 'O');
+0804   FA16 0E 4F       	ld c, 79
+0805   FA18 CD 24 FA    	call printregminus
+0806   FA1B             ; 465     PrintHexWordSpace(hl = &lastBreakAddressHigh);
+0807   FA1B 21 70 F7    	ld hl, 0FFFFh & (lastbreakaddresshigh)
+0808   FA1E CD 6E F9    	call printhexwordspace
+0809   FA21             ; 466     PrintLf();
+0810   FA21 C3 D1 F8    	jp printlf
+0811   FA24             ; 467 }
+0812   FA24             ; 468 
+0813   FA24             ; 469 void PrintRegMinus(...) {
+0814   FA24             printregminus: 
+0815   FA24             ; 470     PrintSpace();
+0816   FA24 CD 77 F9    	call printspace
+0817   FA27             ; 471     PrintCharA(a = c);
+0818   FA27 79          	ld a, c
+0819   FA28 CD 60 FE    	call printchara
+0820   FA2B             ; 472     PrintCharA(a = '-');
+0821   FA2B 3E 2D       	ld a, 45
+0822   FA2D C3 60 FE    	jp printchara
+0823   FA30             ; 473 }
+0824   FA30             ; 474 
+0825   FA30             ; 475 uint8_t regList[] = {'A', (uint8_t)(uintptr_t)&regA, 'B', (uint8_t)(uintptr_t)&regB, 'C', (uint8_t)(uintptr_t)&regC, 'D', (uint8_t)(uintptr_t)&regD,  'E', (uint8_t)(uintptr_t)&regE,
+0826   FA30             reglist: 
+0827   FA30 41          	db 65
+0828   FA31 68          	db 0FFh & (0FFFFh & (rega))
+0829   FA32 42          	db 66
+0830   FA33 6A          	db 0FFh & (0FFFFh & (regb))
+0831   FA34 43          	db 67
+0832   FA35 69          	db 0FFh & (0FFFFh & (regc))
+0833   FA36 44          	db 68
+0834   FA37 6C          	db 0FFh & (0FFFFh & (regd))
+0835   FA38 45          	db 69
+0836   FA39 6B          	db 0FFh & (0FFFFh & (rege))
+0837   FA3A 46          	db 70
+0838   FA3B 67          	db 0FFh & (0FFFFh & (regf))
+0839   FA3C 48          	db 72
+0840   FA3D 6E          	db 0FFh & (0FFFFh & (regh))
+0841   FA3E 4C          	db 76
+0842   FA3F 6D          	db 0FFh & (0FFFFh & (regl))
+0843   FA40 53          	db 83
+0844   FA41 65          	db 0FFh & (0FFFFh & (regsp))
+0845   FA42 00          	db 0
+0846   FA43             ; 478  aStart[] = "\x0ASTART-";
+0847   FA43             astart: 
+0848   FA43 0A          	db 10
+0849   FA44 53          	db 83
+0850   FA45 54          	db 84
+0851   FA46 41          	db 65
+0852   FA47 52          	db 82
+0853   FA48 54          	db 84
+0854   FA49 2D          	db 45
+0855   FA4A 00          	ds 1
+0856   FA4B             ; 479  aDir_[] = "\x0ADIR. -";
+0857   FA4B             adir_: 
+0858   FA4B 0A          	db 10
+0859   FA4C 44          	db 68
+0860   FA4D 49          	db 73
+0861   FA4E 52          	db 82
+0862   FA4F 2E          	db 46
+0863   FA50 20          	db 32
+0864   FA51 2D          	db 45
+0865   FA52 00          	ds 1
+0866   FA53             ; 483  CmdB(...) {
+0867   FA53             cmdb: 
+0868   FA53             ; 484     ParseParams();
+0869   FA53 CD DE F8    	call parseparams
+0870   FA56             ; 485     InitRst38();
+0871   FA56 CD 66 FA    	call initrst38
+0872   FA59             ; 486     hl = param1;
+0873   FA59 2A 51 F7    	ld hl, (param1)
+0874   FA5C             ; 487     a = *hl;
+0875   FA5C 7E          	ld a, (hl)
+0876   FA5D             ; 488     *hl = OPCODE_RST_38;
+0877   FA5D 36 FF       	ld (hl), 255
+0878   FA5F             ; 489     breakAddress = hl;
+0879   FA5F 22 72 F7    	ld (breakaddress), hl
+0880   FA62             ; 490     breakPrevByte = a;
+0881   FA62 32 74 F7    	ld (breakprevbyte), a
+0882   FA65 C9          	ret
+0883   FA66             ; 491 }
+0884   FA66             ; 492 
+0885   FA66             ; 493 void InitRst38(...) {
+0886   FA66             initrst38: 
+0887   FA66             ; 494     rst38Opcode = a = OPCODE_JMP;
+0888   FA66 3E C3       	ld a, 195
+0889   FA68 32 38 00    	ld (rst38opcode), a
+0890   FA6B             ; 495     rst38Address = hl = &BreakPoint;
+0891   FA6B 21 72 FA    	ld hl, 0FFFFh & (breakpoint)
+0892   FA6E 22 39 00    	ld (rst38address), hl
+0893   FA71 C9          	ret
+0894   FA72             ; 496 }
+0895   FA72             ; 497 
+0896   FA72             ; 498 void BreakPoint(...) {
+0897   FA72             breakpoint: 
+0898   FA72             ; 499     regHL = hl;
+0899   FA72 22 6D F7    	ld (reghl), hl
+0900   FA75             ; 500     push(a);
+0901   FA75 F5          	push af
+0902   FA76             ; 501     hl = 4;
+0903   FA76 21 04 00    	ld hl, 4
+0904   FA79             ; 502     hl += sp;
+0905   FA79 39          	add hl, sp
+0906   FA7A             ; 503     regs = hl;
+0907   FA7A 22 65 F7    	ld (regs), hl
+0908   FA7D             ; 504     pop(a);
+0909   FA7D F1          	pop af
+0910   FA7E             ; 505     swap(*sp, hl);
+0911   FA7E E3          	ex (sp), hl
+0912   FA7F             ; 506     hl--;
+0913   FA7F 2B          	dec hl
+0914   FA80             ; 507     swap(*sp, hl);
+0915   FA80 E3          	ex (sp), hl
+0916   FA81             ; 508     sp = &regHL;
+0917   FA81 31 6D F7    	ld sp, 0FFFFh & (reghl)
+0918   FA84             ; 509     push(de, bc, a);
+0919   FA84 D5          	push de
+0920   FA85 C5          	push bc
+0921   FA86 F5          	push af
+0922   FA87             ; 510     sp = &cmdBuffer + 0x84;
+0923   FA87 31 FF F7    	ld sp, 0FFFFh & ((cmdbuffer) + (132))
+0924   FA8A             ; 511 
+0925   FA8A             ; 512     hl = regSP;
+0926   FA8A 2A 65 F7    	ld hl, (regsp)
+0927   FA8D             ; 513     hl--;
+0928   FA8D 2B          	dec hl
+0929   FA8E             ; 514     d = *hl;
+0930   FA8E 56          	ld d, (hl)
+0931   FA8F             ; 515     hl--;
+0932   FA8F 2B          	dec hl
+0933   FA90             ; 516     e = *hl;
+0934   FA90 5E          	ld e, (hl)
+0935   FA91             ; 517     l = e;
+0936   FA91 6B          	ld l, e
+0937   FA92             ; 518     h = d;
+0938   FA92 62          	ld h, d
+0939   FA93             ; 519     lastBreakAddress = hl;
+0940   FA93 22 6F F7    	ld (lastbreakaddress), hl
+0941   FA96             ; 520 
+0942   FA96             ; 521     hl = breakAddress;
+0943   FA96 2A 72 F7    	ld hl, (breakaddress)
+0944   FA99             ; 522     CmpHlDe();
+0945   FA99 CD 93 F9    	call cmphlde
+0946   FA9C             ; 523     if (flag_nz) {
+0947   FA9C CA B4 FA    	jp z, l_28
+0948   FA9F             ; 524         hl = breakAddress2;
+0949   FA9F 2A 75 F7    	ld hl, (breakaddress2)
+0950   FAA2             ; 525         CmpHlDe(hl, de);
+0951   FAA2 CD 93 F9    	call cmphlde
+0952   FAA5             ; 526         if (flag_z)
+0953   FAA5             ; 527             return BreakPointAt2();
+0954   FAA5 CA 24 FB    	jp z, breakpointat2
+0955   FAA8             ; 528 
+0956   FAA8             ; 529         hl = breakAddress3;
+0957   FAA8 2A 78 F7    	ld hl, (breakaddress3)
+0958   FAAB             ; 530         CmpHlDe(hl, de);
+0959   FAAB CD 93 F9    	call cmphlde
+0960   FAAE             ; 531         if (flag_z)
+0961   FAAE             ; 532             return BreakpointAt3();
+0962   FAAE CA 46 FB    	jp z, breakpointat3
+0963   FAB1             ; 533 
+0964   FAB1             ; 534         return MonitorError();
+0965   FAB1 C3 75 F8    	jp monitorerror
+0966   FAB4             l_28: 
+0967   FAB4             ; 535     }
+0968   FAB4             ; 536     *hl = a = breakPrevByte;
+0969   FAB4 3A 74 F7    	ld a, (breakprevbyte)
+0970   FAB7 77          	ld (hl), a
+0971   FAB8             ; 537     breakAddress = hl = 0xFFFF;
+0972   FAB8 21 FF FF    	ld hl, 65535
+0973   FABB 22 72 F7    	ld (breakaddress), hl
+0974   FABE             ; 538     return Monitor();
+0975   FABE C3 29 F8    	jp monitor
+0976   FAC1             ; 539 }
+0977   FAC1             ; 540 
+0978   FAC1             ; 541 /* G<адрес> - Запуск программы в отладочном режиме */
+0979   FAC1             ; 542 
+0980   FAC1             ; 543 void CmdG(...) {
+0981   FAC1             cmdg: 
+0982   FAC1             ; 544     ParseParams();
+0983   FAC1 CD DE F8    	call parseparams
+0984   FAC4             ; 545     if ((a = cmdBuffer1) == 0x0D)
+0985   FAC4 3A 7C F7    	ld a, (cmdbuffer1)
+0986   FAC7 FE 0D       	cp 13
+0987   FAC9             ; 546         param1 = hl = lastBreakAddress;
+0988   FAC9 C2 D2 FA    	jp nz, l_30
+0989   FACC 2A 6F F7    	ld hl, (lastbreakaddress)
+0990   FACF 22 51 F7    	ld (param1), hl
+0991   FAD2             l_30: 
+0992   FAD2             ; 547     Run();
+0993   FAD2             ; 548 }
+0994   FAD2             ; 549 
+0995   FAD2             ; 550 void Run(...) {
+0996   FAD2             run: 
+0997   FAD2             ; 551     jumpOpcode = a = OPCODE_JMP;
+0998   FAD2 3E C3       	ld a, 195
+0999   FAD4 32 50 F7    	ld (jumpopcode), a
+1000   FAD7             ; 552     sp = &regs;
+1001   FAD7 31 65 F7    	ld sp, 0FFFFh & (regs)
+1002   FADA             ; 553     pop(de, bc, a, hl);
+1003   FADA E1          	pop hl
+1004   FADB F1          	pop af
+1005   FADC C1          	pop bc
+1006   FADD D1          	pop de
+1007   FADE             ; 554     sp = hl;
+1008   FADE F9          	ld sp, hl
+1009   FADF             ; 555     hl = regHL;
+1010   FADF 2A 6D F7    	ld hl, (reghl)
+1011   FAE2             ; 556     jumpParam1();
+1012   FAE2 C3 50 F7    	jp jumpparam1
+1013   FAE5             ; 557 }
+1014   FAE5             ; 558 
+1015   FAE5             ; 559 void CmdP(...) {
+1016   FAE5             cmdp: 
+1017   FAE5             ; 560     ParseParams();
+1018   FAE5 CD DE F8    	call parseparams
+1019   FAE8             ; 561     InitRst38();
+1020   FAE8 CD 66 FA    	call initrst38
+1021   FAEB             ; 562 
+1022   FAEB             ; 563     breakAddress2 = hl = param1;
+1023   FAEB 2A 51 F7    	ld hl, (param1)
+1024   FAEE 22 75 F7    	ld (breakaddress2), hl
+1025   FAF1             ; 564     a = *hl;
+1026   FAF1 7E          	ld a, (hl)
+1027   FAF2             ; 565     *hl = OPCODE_RST_38;
+1028   FAF2 36 FF       	ld (hl), 255
+1029   FAF4             ; 566     breakPrevByte2 = a;
+1030   FAF4 32 77 F7    	ld (breakprevbyte2), a
+1031   FAF7             ; 567 
+1032   FAF7             ; 568     breakAddress3 = hl = param2;
+1033   FAF7 2A 53 F7    	ld hl, (param2)
+1034   FAFA 22 78 F7    	ld (breakaddress3), hl
+1035   FAFD             ; 569     a = *hl;
+1036   FAFD 7E          	ld a, (hl)
+1037   FAFE             ; 570     *hl = OPCODE_RST_38;
+1038   FAFE 36 FF       	ld (hl), 255
+1039   FB00             ; 571     breakPrevByte3 = a;
+1040   FB00 32 7A F7    	ld (breakprevbyte3), a
+1041   FB03             ; 572 
+1042   FB03             ; 573     breakCounter = a = param3;
+1043   FB03 3A 55 F7    	ld a, (param3)
+1044   FB06 32 71 F7    	ld (breakcounter), a
+1045   FB09             ; 574 
+1046   FB09             ; 575     PrintString(hl = &aStart);
+1047   FB09 21 43 FA    	ld hl, astart
+1048   FB0C CD D4 F8    	call printstring
+1049   FB0F             ; 576 
+1050   FB0F             ; 577     hl = &cmdBuffer1;
+1051   FB0F 21 7C F7    	ld hl, 0FFFFh & (cmdbuffer1)
+1052   FB12             ; 578     ReadStringLoop();
+1053   FB12 CD 5D F8    	call readstringloop
+1054   FB15             ; 579     ParseParams();
+1055   FB15 CD DE F8    	call parseparams
+1056   FB18             ; 580     PrintString(hl = &aDir_);
+1057   FB18 21 4B FA    	ld hl, adir_
+1058   FB1B CD D4 F8    	call printstring
+1059   FB1E             ; 581     ReadString();
+1060   FB1E CD 5A F8    	call readstring
+1061   FB21             ; 582     Run();
+1062   FB21 C3 D2 FA    	jp run
+1063   FB24             ; 583 }
+1064   FB24             ; 584 
+1065   FB24             ; 585 void BreakPointAt2(...) {
+1066   FB24             breakpointat2: 
+1067   FB24             ; 586     *hl = a = breakPrevByte2;
+1068   FB24 3A 77 F7    	ld a, (breakprevbyte2)
+1069   FB27 77          	ld (hl), a
+1070   FB28             ; 587 
+1071   FB28             ; 588     hl = breakAddress3;
+1072   FB28 2A 78 F7    	ld hl, (breakaddress3)
+1073   FB2B             ; 589     a = OPCODE_RST_38;
+1074   FB2B 3E FF       	ld a, 255
+1075   FB2D             ; 590     if (a != *hl) {
+1076   FB2D BE          	cp (hl)
+1077   FB2E CA 37 FB    	jp z, l_32
+1078   FB31             ; 591         b = *hl;
+1079   FB31 46          	ld b, (hl)
+1080   FB32             ; 592         *hl = a;
+1081   FB32 77          	ld (hl), a
+1082   FB33             ; 593         breakPrevByte3 = a = b;
+1083   FB33 78          	ld a, b
+1084   FB34 32 7A F7    	ld (breakprevbyte3), a
+1085   FB37             l_32: 
+1086   FB37             ; 594     }
+1087   FB37             ; 595     ContinueBreakpoint();
+1088   FB37             ; 596 }
+1089   FB37             ; 597 
+1090   FB37             ; 598 void ContinueBreakpoint(...) {
+1091   FB37             continuebreakpoint: 
+1092   FB37             ; 599     PrintRegs();
+1093   FB37 CD EA F9    	call printregs
+1094   FB3A             ; 600     MonitorExecute();
+1095   FB3A CD 3D F8    	call monitorexecute
+1096   FB3D             ; 601     param1 = hl = lastBreakAddress;
+1097   FB3D 2A 6F F7    	ld hl, (lastbreakaddress)
+1098   FB40 22 51 F7    	ld (param1), hl
+1099   FB43             ; 602     Run();
+1100   FB43 C3 D2 FA    	jp run
+1101   FB46             ; 603 }
+1102   FB46             ; 604 
+1103   FB46             ; 605 void BreakpointAt3(...) {
+1104   FB46             breakpointat3: 
+1105   FB46             ; 606     *hl = a = breakPrevByte3;
+1106   FB46 3A 7A F7    	ld a, (breakprevbyte3)
+1107   FB49 77          	ld (hl), a
+1108   FB4A             ; 607 
+1109   FB4A             ; 608     hl = breakAddress2;
+1110   FB4A 2A 75 F7    	ld hl, (breakaddress2)
+1111   FB4D             ; 609     a = OPCODE_RST_38;
+1112   FB4D 3E FF       	ld a, 255
+1113   FB4F             ; 610     if (a == *hl)
+1114   FB4F BE          	cp (hl)
+1115   FB50             ; 611         return ContinueBreakpoint();
+1116   FB50 CA 37 FB    	jp z, continuebreakpoint
+1117   FB53             ; 612     b = *hl;
+1118   FB53 46          	ld b, (hl)
+1119   FB54             ; 613     *hl = a;
+1120   FB54 77          	ld (hl), a
+1121   FB55             ; 614     breakPrevByte2 = a = b;
+1122   FB55 78          	ld a, b
+1123   FB56 32 77 F7    	ld (breakprevbyte2), a
+1124   FB59             ; 615 
+1125   FB59             ; 616     hl = &breakCounter;
+1126   FB59 21 71 F7    	ld hl, 0FFFFh & (breakcounter)
+1127   FB5C             ; 617     (*hl)--;
+1128   FB5C 35          	dec (hl)
+1129   FB5D             ; 618     if (flag_nz)
+1130   FB5D             ; 619         return ContinueBreakpoint();
+1131   FB5D C2 37 FB    	jp nz, continuebreakpoint
+1132   FB60             ; 620 
+1133   FB60             ; 621     a = breakPrevByte2;
+1134   FB60 3A 77 F7    	ld a, (breakprevbyte2)
+1135   FB63             ; 622     hl = breakAddress2;
+1136   FB63 2A 75 F7    	ld hl, (breakaddress2)
+1137   FB66             ; 623     *hl = a;
+1138   FB66 77          	ld (hl), a
+1139   FB67             ; 624     Monitor();
+1140   FB67 C3 29 F8    	jp monitor
+1141   FB6A             ; 625 }
+1142   FB6A             ; 626 
+1143   FB6A             ; 627 /* D<адрес>,<адрес> - Просмотр содержимого области памяти в шестнадцатеричном виде */
+1144   FB6A             ; 628 
+1145   FB6A             ; 629 void CmdD(...) {
+1146   FB6A             cmdd: 
+1147   FB6A             ; 630     ParseParams();
+1148   FB6A CD DE F8    	call parseparams
+1149   FB6D             ; 631     PrintLf();
+1150   FB6D CD D1 F8    	call printlf
+1151   FB70             ; 632 CmdDLine:
+1152   FB70             cmddline: 
+1153   FB70             ; 633     PrintLfParam1();
+1154   FB70 CD 68 F9    	call printlfparam1
+1155   FB73             ; 634     for (;;) {
+1156   FB73             l_35: 
+1157   FB73             ; 635         PrintSpace();
+1158   FB73 CD 77 F9    	call printspace
+1159   FB76             ; 636         PrintByteFromParam1();
+1160   FB76 CD 4C F9    	call printbytefromparam1
+1161   FB79             ; 637         Loop();
+1162   FB79 CD 7C F9    	call loop
+1163   FB7C             ; 638         a = param1;
+1164   FB7C 3A 51 F7    	ld a, (param1)
+1165   FB7F             ; 639         a &= 0x0F;
+1166   FB7F E6 0F       	and 15
+1167   FB81             ; 640         if (flag_z)
+1168   FB81             ; 641             goto CmdDLine;
+1169   FB81 CA 70 FB    	jp z, cmddline
+1170   FB84 C3 73 FB    	jp l_35
+1171   FB87             ; 642     }
+1172   FB87             ; 643 }
+1173   FB87             ; 644 
+1174   FB87             ; 645 /* C<адрес от>,<адрес до>,<адрес от 2> - Сравнение содержимого двух областей памяти */
+1175   FB87             ; 646 
+1176   FB87             ; 647 void CmdC(...) {
+1177   FB87             cmdc: 
+1178   FB87             ; 648     ParseParams();
+1179   FB87 CD DE F8    	call parseparams
+1180   FB8A             ; 649     hl = param3;
+1181   FB8A 2A 55 F7    	ld hl, (param3)
+1182   FB8D             ; 650     swap(hl, de);
+1183   FB8D EB          	ex hl, de
+1184   FB8E             ; 651     for (;;) {
+1185   FB8E             l_38: 
+1186   FB8E             ; 652         hl = param1;
+1187   FB8E 2A 51 F7    	ld hl, (param1)
+1188   FB91             ; 653         a = *de;
+1189   FB91 1A          	ld a, (de)
+1190   FB92             ; 654         if (a != *hl) {
+1191   FB92 BE          	cp (hl)
+1192   FB93 CA A6 FB    	jp z, l_40
+1193   FB96             ; 655             PrintLfParam1();
+1194   FB96 CD 68 F9    	call printlfparam1
+1195   FB99             ; 656             PrintSpace();
+1196   FB99 CD 77 F9    	call printspace
+1197   FB9C             ; 657             PrintByteFromParam1();
+1198   FB9C CD 4C F9    	call printbytefromparam1
+1199   FB9F             ; 658             PrintSpace();
+1200   FB9F CD 77 F9    	call printspace
+1201   FBA2             ; 659             a = *de;
+1202   FBA2 1A          	ld a, (de)
+1203   FBA3             ; 660             PrintHexByte();
+1204   FBA3 CD 50 F9    	call printhexbyte
+1205   FBA6             l_40: 
+1206   FBA6             ; 661         }
+1207   FBA6             ; 662         de++;
+1208   FBA6 13          	inc de
+1209   FBA7             ; 663         Loop();
+1210   FBA7 CD 7C F9    	call loop
+1211   FBAA C3 8E FB    	jp l_38
+1212   FBAD             ; 664     }
+1213   FBAD             ; 665 }
+1214   FBAD             ; 666 
+1215   FBAD             ; 667 /* F<адрес>,<адрес>,<байт> - Запись байта во все ячейки области памяти */
+1216   FBAD             ; 668 
+1217   FBAD             ; 669 void CmdF(...) {
+1218   FBAD             cmdf: 
+1219   FBAD             ; 670     ParseParams();
+1220   FBAD CD DE F8    	call parseparams
+1221   FBB0             ; 671     b = a = param3;
+1222   FBB0 3A 55 F7    	ld a, (param3)
+1223   FBB3 47          	ld b, a
+1224   FBB4             ; 672     for (;;) {
+1225   FBB4             l_43: 
+1226   FBB4             ; 673         hl = param1;
+1227   FBB4 2A 51 F7    	ld hl, (param1)
+1228   FBB7             ; 674         *hl = b;
+1229   FBB7 70          	ld (hl), b
+1230   FBB8             ; 675         Loop();
+1231   FBB8 CD 7C F9    	call loop
+1232   FBBB C3 B4 FB    	jp l_43
+1233   FBBE             ; 676     }
+1234   FBBE             ; 677 }
+1235   FBBE             ; 678 
+1236   FBBE             ; 679 /* S<адрес>,<адрес>,<байт> - Поиск байта в области памяти */
+1237   FBBE             ; 680 
+1238   FBBE             ; 681 void CmdS(...) {
+1239   FBBE             cmds: 
+1240   FBBE             ; 682     ParseParams();
+1241   FBBE CD DE F8    	call parseparams
+1242   FBC1             ; 683     c = l;
+1243   FBC1 4D          	ld c, l
+1244   FBC2             ; 684     for (;;) {
+1245   FBC2             l_46: 
+1246   FBC2             ; 685         hl = param1;
+1247   FBC2 2A 51 F7    	ld hl, (param1)
+1248   FBC5             ; 686         a = c;
+1249   FBC5 79          	ld a, c
+1250   FBC6             ; 687         if (a == *hl)
+1251   FBC6 BE          	cp (hl)
+1252   FBC7             ; 688             PrintLfParam1();
+1253   FBC7 CC 68 F9    	call z, printlfparam1
+1254   FBCA             ; 689         Loop();
+1255   FBCA CD 7C F9    	call loop
+1256   FBCD C3 C2 FB    	jp l_46
+1257   FBD0             ; 690     }
+1258   FBD0             ; 691 }
+1259   FBD0             ; 692 
+1260   FBD0             ; 693 /* T<начало>,<конец>,<куда> - Пересылка содержимого одной области в другую */
+1261   FBD0             ; 694 
+1262   FBD0             ; 695 void CmdT(...) {
+1263   FBD0             cmdt: 
+1264   FBD0             ; 696     ParseParams();
+1265   FBD0 CD DE F8    	call parseparams
+1266   FBD3             ; 697     hl = param3;
+1267   FBD3 2A 55 F7    	ld hl, (param3)
+1268   FBD6             ; 698     swap(hl, de);
+1269   FBD6 EB          	ex hl, de
+1270   FBD7             ; 699     for (;;) {
+1271   FBD7             l_49: 
+1272   FBD7             ; 700         hl = param1;
+1273   FBD7 2A 51 F7    	ld hl, (param1)
+1274   FBDA             ; 701         *de = a = *hl;
+1275   FBDA 7E          	ld a, (hl)
+1276   FBDB 12          	ld (de), a
+1277   FBDC             ; 702         de++;
+1278   FBDC 13          	inc de
+1279   FBDD             ; 703         Loop();
+1280   FBDD CD 7C F9    	call loop
+1281   FBE0 C3 D7 FB    	jp l_49
+1282   FBE3             ; 704     }
+1283   FBE3             ; 705 }
+1284   FBE3             ; 706 
+1285   FBE3             ; 707 /* M<адрес> - Просмотр или изменение содержимого ячейки (ячеек) памяти */
+1286   FBE3             ; 708 
+1287   FBE3             ; 709 void CmdM(...) {
+1288   FBE3             cmdm: 
+1289   FBE3             ; 710     ParseParams();
+1290   FBE3 CD DE F8    	call parseparams
+1291   FBE6             ; 711     for (;;) {
+1292   FBE6             l_52: 
+1293   FBE6             ; 712         PrintSpace();
+1294   FBE6 CD 77 F9    	call printspace
+1295   FBE9             ; 713         PrintByteFromParam1();
+1296   FBE9 CD 4C F9    	call printbytefromparam1
+1297   FBEC             ; 714         Input();
+1298   FBEC CD 91 F8    	call input
+1299   FBEF             ; 715         if (flag_c) {
+1300   FBEF D2 FA FB    	jp nc, l_54
+1301   FBF2             ; 716             ParseDword();
+1302   FBF2 CD 16 F9    	call parsedword
+1303   FBF5             ; 717             a = l;
+1304   FBF5 7D          	ld a, l
+1305   FBF6             ; 718             hl = param1;
+1306   FBF6 2A 51 F7    	ld hl, (param1)
+1307   FBF9             ; 719             *hl = a;
+1308   FBF9 77          	ld (hl), a
+1309   FBFA             l_54: 
+1310   FBFA             ; 720         }
+1311   FBFA             ; 721         hl = &param1;
+1312   FBFA 21 51 F7    	ld hl, 0FFFFh & (param1)
+1313   FBFD             ; 722         IncWord();
+1314   FBFD CD 8E F9    	call incword
+1315   FC00             ; 723         PrintLfParam1();
+1316   FC00 CD 68 F9    	call printlfparam1
+1317   FC03 C3 E6 FB    	jp l_52
+1318   FC06             ; 724     }
+1319   FC06             ; 725 }
+1320   FC06             ; 726 
+1321   FC06             ; 727 /* J<адрес> - Запуск программы с указанного адреса */
+1322   FC06             ; 728 
+1323   FC06             ; 729 void CmdJ(...) {
+1324   FC06             cmdj: 
+1325   FC06             ; 730     ParseParams();
+1326   FC06 CD DE F8    	call parseparams
+1327   FC09             ; 731     hl = param1;
+1328   FC09 2A 51 F7    	ld hl, (param1)
+1329   FC0C             ; 732     return hl();
+1330   FC0C E9          	jp hl
+1331   FC0D             ; 733 }
+1332   FC0D             ; 734 
+1333   FC0D             ; 735 /* А<символ> - Вывод кода символа на экран */
+1334   FC0D             ; 736 
+1335   FC0D             ; 737 void CmdA(...) {
+1336   FC0D             cmda: 
+1337   FC0D             ; 738     PrintLf();
+1338   FC0D CD D1 F8    	call printlf
+1339   FC10             ; 739     PrintHexByte(a = cmdBuffer1);
+1340   FC10 3A 7C F7    	ld a, (cmdbuffer1)
+1341   FC13 CD 50 F9    	call printhexbyte
+1342   FC16             ; 740     PrintLf();
+1343   FC16 C3 D1 F8    	jp printlf
+1344   FC19             ; 741 }
+1345   FC19             ; 742 
+1346   FC19             ; 743 /* K - Вывод символа с клавиатуры на экран */
+1347   FC19             ; 744 
+1348   FC19             ; 745 void CmdK(...) {
+1349   FC19             cmdk: 
+1350   FC19             ; 746     for (;;) {
+1351   FC19             l_57: 
+1352   FC19             ; 747         ReadKey();
+1353   FC19 CD 41 FF    	call readkey
+1354   FC1C             ; 748         if (a == 1) /* УС + А */
+1355   FC1C FE 01       	cp 1
+1356   FC1E             ; 749             return Monitor();
+1357   FC1E CA 29 F8    	jp z, monitor
+1358   FC21             ; 750         PrintCharA(a);
+1359   FC21 CD 60 FE    	call printchara
+1360   FC24 C3 19 FC    	jp l_57
+1361   FC27             ; 751     }
+1362   FC27             ; 752 }
+1363   FC27             ; 753 
+1364   FC27             ; 754 /* Q<начало>,<конец> - Тестирование области памяти */
+1365   FC27             ; 755 
+1366   FC27             ; 756 void CmdQ(...) {
+1367   FC27             cmdq: 
+1368   FC27             ; 757     ParseParams();
+1369   FC27 CD DE F8    	call parseparams
+1370   FC2A             ; 758     for (;;) {
+1371   FC2A             l_60: 
+1372   FC2A             ; 759         hl = param1;
+1373   FC2A 2A 51 F7    	ld hl, (param1)
+1374   FC2D             ; 760         c = *hl;
+1375   FC2D 4E          	ld c, (hl)
+1376   FC2E             ; 761 
+1377   FC2E             ; 762         a = 0x55;
+1378   FC2E 3E 55       	ld a, 85
+1379   FC30             ; 763         *hl = a;
+1380   FC30 77          	ld (hl), a
+1381   FC31             ; 764         if (a != *hl)
+1382   FC31 BE          	cp (hl)
+1383   FC32             ; 765             CmdQResult();
+1384   FC32 C4 43 FC    	call nz, cmdqresult
+1385   FC35             ; 766 
+1386   FC35             ; 767         a = 0xAA;
+1387   FC35 3E AA       	ld a, 170
+1388   FC37             ; 768         *hl = a;
+1389   FC37 77          	ld (hl), a
+1390   FC38             ; 769         if (a != *hl)
+1391   FC38 BE          	cp (hl)
+1392   FC39             ; 770             CmdQResult();
+1393   FC39 C4 43 FC    	call nz, cmdqresult
+1394   FC3C             ; 771 
+1395   FC3C             ; 772         *hl = c;
+1396   FC3C 71          	ld (hl), c
+1397   FC3D             ; 773         Loop();
+1398   FC3D CD 7C F9    	call loop
+1399   FC40 C3 2A FC    	jp l_60
+1400   FC43             ; 774     }
+1401   FC43             ; 775 }
+1402   FC43             ; 776 
+1403   FC43             ; 777 void CmdQResult(...) {
+1404   FC43             cmdqresult: 
+1405   FC43             ; 778     push_pop(a) {
+1406   FC43 F5          	push af
+1407   FC44             ; 779         PrintLfParam1();
+1408   FC44 CD 68 F9    	call printlfparam1
+1409   FC47             ; 780         PrintSpace();
+1410   FC47 CD 77 F9    	call printspace
+1411   FC4A             ; 781         PrintByteFromParam1();
+1412   FC4A CD 4C F9    	call printbytefromparam1
+1413   FC4D             ; 782         PrintSpace();
+1414   FC4D CD 77 F9    	call printspace
+1415   FC50 F1          	pop af
+1416   FC51             ; 783     }
+1417   FC51             ; 784     PrintHexByte(a);
+1418   FC51 CD 50 F9    	call printhexbyte
+1419   FC54             ; 785     return;
+1420   FC54 C9          	ret
+1421   FC55             ; 786 }
+1422   FC55             ; 787 
+1423   FC55             ; 788 /* L<начало>,<конец> - Посмотр области памяти в символьном виде */
+1424   FC55             ; 789 
+1425   FC55             ; 790 void CmdL(...) {
+1426   FC55             cmdl: 
+1427   FC55             ; 791     ParseParams();
+1428   FC55 CD DE F8    	call parseparams
+1429   FC58             ; 792     PrintLf();
+1430   FC58 CD D1 F8    	call printlf
+1431   FC5B             ; 793 
+1432   FC5B             ; 794 CmdLLine:
+1433   FC5B             cmdlline: 
+1434   FC5B             ; 795     PrintLfParam1();
+1435   FC5B CD 68 F9    	call printlfparam1
+1436   FC5E             ; 796 
+1437   FC5E             ; 797     for (;;) {
+1438   FC5E             l_63: 
+1439   FC5E             ; 798         PrintSpace();
+1440   FC5E CD 77 F9    	call printspace
+1441   FC61             ; 799         hl = param1;
+1442   FC61 2A 51 F7    	ld hl, (param1)
+1443   FC64             ; 800         a = *hl;
+1444   FC64 7E          	ld a, (hl)
+1445   FC65             ; 801         if (a >= 0x20) {
+1446   FC65 FE 20       	cp 32
+1447   FC67 DA 72 FC    	jp c, l_65
+1448   FC6A             ; 802             if (a < 0x80) {
+1449   FC6A FE 80       	cp 128
+1450   FC6C D2 72 FC    	jp nc, l_67
+1451   FC6F             ; 803                 goto CmdLShow;
+1452   FC6F C3 74 FC    	jp cmdlshow
+1453   FC72             l_67: 
+1454   FC72             l_65: 
+1455   FC72             ; 804             }
+1456   FC72             ; 805         }
+1457   FC72             ; 806         a = '.';
+1458   FC72 3E 2E       	ld a, 46
+1459   FC74             ; 807 CmdLShow:
+1460   FC74             cmdlshow: 
+1461   FC74             ; 808         PrintCharA();
+1462   FC74 CD 60 FE    	call printchara
+1463   FC77             ; 809         Loop();
+1464   FC77 CD 7C F9    	call loop
+1465   FC7A             ; 810         if (flag_z((a = param1) &= 0x0F))
+1466   FC7A 3A 51 F7    	ld a, (param1)
+1467   FC7D E6 0F       	and 15
+1468   FC7F             ; 811             goto CmdLLine;
+1469   FC7F CA 5B FC    	jp z, cmdlline
+1470   FC82 C3 5E FC    	jp l_63
+1471   FC85             ; 812     }
+1472   FC85             ; 813 }
+1473   FC85             ; 814 
+1474   FC85             ; 815 /* H<число 1>,<число 2> - Сложение и вычитание чисел */
+1475   FC85             ; 816 
+1476   FC85             ; 817 void CmdH(...) {
+1477   FC85             cmdh: 
+1478   FC85             ; 818     hl = &param1;
+1479   FC85 21 51 F7    	ld hl, 0FFFFh & (param1)
+1480   FC88             ; 819     b = 6;
+1481   FC88 06 06       	ld b, 6
+1482   FC8A             ; 820     a ^= a;
+1483   FC8A AF          	xor a
+1484   FC8B             ; 821     do {
+1485   FC8B             l_69: 
+1486   FC8B             ; 822         *hl = a;
+1487   FC8B 77          	ld (hl), a
+1488   FC8C             l_70: 
+1489   FC8C             ; 823     } while (flag_nz(b--));
+1490   FC8C 05          	dec b
+1491   FC8D C2 8B FC    	jp nz, l_69
+1492   FC90             ; 824 
+1493   FC90             ; 825     de = &cmdBuffer1;
+1494   FC90 11 7C F7    	ld de, 0FFFFh & (cmdbuffer1)
+1495   FC93             ; 826 
+1496   FC93             ; 827     ParseDword();
+1497   FC93 CD 16 F9    	call parsedword
+1498   FC96             ; 828     param1 = hl;
+1499   FC96 22 51 F7    	ld (param1), hl
+1500   FC99             ; 829 
+1501   FC99             ; 830     ParseDword();
+1502   FC99 CD 16 F9    	call parsedword
+1503   FC9C             ; 831     param2 = hl;
+1504   FC9C 22 53 F7    	ld (param2), hl
+1505   FC9F             ; 832 
+1506   FC9F             ; 833     PrintLf();
+1507   FC9F CD D1 F8    	call printlf
+1508   FCA2             ; 834     param3 = hl = param1;
+1509   FCA2 2A 51 F7    	ld hl, (param1)
+1510   FCA5 22 55 F7    	ld (param3), hl
+1511   FCA8             ; 835     swap(hl, de);
+1512   FCA8 EB          	ex hl, de
+1513   FCA9             ; 836     hl = param2;
+1514   FCA9 2A 53 F7    	ld hl, (param2)
+1515   FCAC             ; 837     hl += de;
+1516   FCAC 19          	add hl, de
+1517   FCAD             ; 838     param1 = hl;
+1518   FCAD 22 51 F7    	ld (param1), hl
+1519   FCB0             ; 839     PrintParam1Space();
+1520   FCB0 CD 6B F9    	call printparam1space
+1521   FCB3             ; 840 
+1522   FCB3             ; 841     hl = param2;
+1523   FCB3 2A 53 F7    	ld hl, (param2)
+1524   FCB6             ; 842     swap(hl, de);
+1525   FCB6 EB          	ex hl, de
+1526   FCB7             ; 843     hl = param3;
+1527   FCB7 2A 55 F7    	ld hl, (param3)
+1528   FCBA             ; 844     a = e;
+1529   FCBA 7B          	ld a, e
+1530   FCBB             ; 845     invert(a);
+1531   FCBB 2F          	cpl
+1532   FCBC             ; 846     e = a;
+1533   FCBC 5F          	ld e, a
+1534   FCBD             ; 847     a = d;
+1535   FCBD 7A          	ld a, d
+1536   FCBE             ; 848     invert(a);
+1537   FCBE 2F          	cpl
+1538   FCBF             ; 849     d = a;
+1539   FCBF 57          	ld d, a
+1540   FCC0             ; 850     de++;
+1541   FCC0 13          	inc de
+1542   FCC1             ; 851     hl += de;
+1543   FCC1 19          	add hl, de
+1544   FCC2             ; 852     param1 = hl;
+1545   FCC2 22 51 F7    	ld (param1), hl
+1546   FCC5             ; 853     PrintParam1Space();
+1547   FCC5 CD 6B F9    	call printparam1space
+1548   FCC8             ; 854     PrintLf();
+1549   FCC8 C3 D1 F8    	jp printlf
+1550   FCCB             ; 855 }
+1551   FCCB             ; 856 
+1552   FCCB             ; 857 /* I - Ввод информации с магнитной ленты */
+1553   FCCB             ; 858 
+1554   FCCB             ; 859 void CmdI(...) {
+1555   FCCB             cmdi: 
+1556   FCCB             ; 860     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
+1557   FCCB 3E FF       	ld a, 255
+1558   FCCD CD 95 FD    	call readtapebyte
+1559   FCD0             ; 861     param1h = a;
+1560   FCD0 32 52 F7    	ld (param1h), a
+1561   FCD3             ; 862     tapeStartH = a;
+1562   FCD3 32 5F F7    	ld (tapestarth), a
+1563   FCD6             ; 863 
+1564   FCD6             ; 864     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+1565   FCD6 3E 08       	ld a, 8
+1566   FCD8 CD 95 FD    	call readtapebyte
+1567   FCDB             ; 865     param1 = a;
+1568   FCDB 32 51 F7    	ld (param1), a
+1569   FCDE             ; 866     tapeStartL = a;
+1570   FCDE 32 5E F7    	ld (tapestartl), a
+1571   FCE1             ; 867 
+1572   FCE1             ; 868     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+1573   FCE1 3E 08       	ld a, 8
+1574   FCE3 CD 95 FD    	call readtapebyte
+1575   FCE6             ; 869     param2h = a;
+1576   FCE6 32 54 F7    	ld (param2h), a
+1577   FCE9             ; 870     tapeStopH = a;
+1578   FCE9 32 61 F7    	ld (tapestoph), a
+1579   FCEC             ; 871 
+1580   FCEC             ; 872     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+1581   FCEC 3E 08       	ld a, 8
+1582   FCEE CD 95 FD    	call readtapebyte
+1583   FCF1             ; 873     param2 = a;
+1584   FCF1 32 53 F7    	ld (param2), a
+1585   FCF4             ; 874     tapeStopL = a;
+1586   FCF4 32 60 F7    	ld (tapestopl), a
+1587   FCF7             ; 875 
+1588   FCF7             ; 876     a = READ_TAPE_NEXT_BYTE;
+1589   FCF7 3E 08       	ld a, 8
+1590   FCF9             ; 877     hl = &CmdIEnd;
+1591   FCF9 21 0C FD    	ld hl, 0FFFFh & (cmdiend)
+1592   FCFC             ; 878     push(hl);
+1593   FCFC E5          	push hl
+1594   FCFD             ; 879 
+1595   FCFD             ; 880     for (;;) {
+1596   FCFD             l_73: 
+1597   FCFD             ; 881         hl = param1;
+1598   FCFD 2A 51 F7    	ld hl, (param1)
+1599   FD00             ; 882         ReadTapeByte(a);
+1600   FD00 CD 95 FD    	call readtapebyte
+1601   FD03             ; 883         *hl = a;
+1602   FD03 77          	ld (hl), a
+1603   FD04             ; 884         Loop();
+1604   FD04 CD 7C F9    	call loop
+1605   FD07             ; 885         a = READ_TAPE_NEXT_BYTE;
+1606   FD07 3E 08       	ld a, 8
+1607   FD09 C3 FD FC    	jp l_73
+1608   FD0C             ; 886     }
+1609   FD0C             ; 887 }
+1610   FD0C             ; 888 
+1611   FD0C             ; 889 void CmdIEnd(...) {
+1612   FD0C             cmdiend: 
+1613   FD0C             ; 890     PrintHexWordSpace(hl = &tapeStartH);
+1614   FD0C 21 5F F7    	ld hl, 0FFFFh & (tapestarth)
+1615   FD0F CD 6E F9    	call printhexwordspace
+1616   FD12             ; 891     PrintHexWordSpace(hl = &tapeStopH);
+1617   FD12 21 61 F7    	ld hl, 0FFFFh & (tapestoph)
+1618   FD15 CD 6E F9    	call printhexwordspace
+1619   FD18             ; 892     PrintLf();
+1620   FD18 C3 D1 F8    	jp printlf
+1621   FD1B             ; 893 }
+1622   FD1B             ; 894 
+1623   FD1B             ; 895 /* O<начало>,<конец> - Вывод содержимого области памяти на магнитную ленту */
+1624   FD1B             ; 896 
+1625   FD1B             ; 897 void CmdO(...) {
+1626   FD1B             cmdo: 
+1627   FD1B             ; 898     ParseParams();
+1628   FD1B CD DE F8    	call parseparams
+1629   FD1E             ; 899     a ^= a;
+1630   FD1E AF          	xor a
+1631   FD1F             ; 900     b = 0;
+1632   FD1F 06 00       	ld b, 0
+1633   FD21             ; 901     do {
+1634   FD21             l_75: 
+1635   FD21             ; 902         WriteTapeByte(a);
+1636   FD21 CD E6 FD    	call writetapebyte
+1637   FD24             l_76: 
+1638   FD24             ; 903     } while (flag_nz(b--));
+1639   FD24 05          	dec b
+1640   FD25 C2 21 FD    	jp nz, l_75
+1641   FD28             ; 904     WriteTapeByte(a = TAPE_START);
+1642   FD28 3E E6       	ld a, 230
+1643   FD2A CD E6 FD    	call writetapebyte
+1644   FD2D             ; 905     WriteTapeByte(a = param1h);
+1645   FD2D 3A 52 F7    	ld a, (param1h)
+1646   FD30 CD E6 FD    	call writetapebyte
+1647   FD33             ; 906     WriteTapeByte(a = param1);
+1648   FD33 3A 51 F7    	ld a, (param1)
+1649   FD36 CD E6 FD    	call writetapebyte
+1650   FD39             ; 907     WriteTapeByte(a = param2h);
+1651   FD39 3A 54 F7    	ld a, (param2h)
+1652   FD3C CD E6 FD    	call writetapebyte
+1653   FD3F             ; 908     WriteTapeByte(a = param2);
+1654   FD3F 3A 53 F7    	ld a, (param2)
+1655   FD42 CD E6 FD    	call writetapebyte
+1656   FD45             ; 909     for (;;) {
+1657   FD45             l_79: 
+1658   FD45             ; 910         hl = param1;
+1659   FD45 2A 51 F7    	ld hl, (param1)
+1660   FD48             ; 911         a = *hl;
+1661   FD48 7E          	ld a, (hl)
+1662   FD49             ; 912         WriteTapeByte(a);
+1663   FD49 CD E6 FD    	call writetapebyte
+1664   FD4C             ; 913         Loop();
+1665   FD4C CD 7C F9    	call loop
+1666   FD4F C3 45 FD    	jp l_79
+1667   FD52             ; 914     }
+1668   FD52             ; 915 }
+1669   FD52             ; 916 
+1670   FD52             ; 917 /* V - Сравнение информации на магнитной ленте с содержимым области памяти */
+1671   FD52             ; 918 
+1672   FD52             ; 919 void CmdV(...) {
+1673   FD52             cmdv: 
+1674   FD52             ; 920     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
+1675   FD52 3E FF       	ld a, 255
+1676   FD54 CD 95 FD    	call readtapebyte
+1677   FD57             ; 921     param1h = a;
+1678   FD57 32 52 F7    	ld (param1h), a
+1679   FD5A             ; 922     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+1680   FD5A 3E 08       	ld a, 8
+1681   FD5C CD 95 FD    	call readtapebyte
+1682   FD5F             ; 923     param1 = a;
+1683   FD5F 32 51 F7    	ld (param1), a
+1684   FD62             ; 924     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+1685   FD62 3E 08       	ld a, 8
+1686   FD64 CD 95 FD    	call readtapebyte
+1687   FD67             ; 925     param2h = a;
+1688   FD67 32 54 F7    	ld (param2h), a
+1689   FD6A             ; 926     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+1690   FD6A 3E 08       	ld a, 8
+1691   FD6C CD 95 FD    	call readtapebyte
+1692   FD6F             ; 927     param2 = a;
+1693   FD6F 32 53 F7    	ld (param2), a
+1694   FD72             ; 928     for (;;) {
+1695   FD72             l_82: 
+1696   FD72             ; 929         ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+1697   FD72 3E 08       	ld a, 8
+1698   FD74 CD 95 FD    	call readtapebyte
+1699   FD77             ; 930         hl = param1;
+1700   FD77 2A 51 F7    	ld hl, (param1)
+1701   FD7A             ; 931         if (a != *hl) {
+1702   FD7A BE          	cp (hl)
+1703   FD7B CA 8F FD    	jp z, l_84
+1704   FD7E             ; 932             push_pop(a) {
+1705   FD7E F5          	push af
+1706   FD7F             ; 933                 PrintLfParam1();
+1707   FD7F CD 68 F9    	call printlfparam1
+1708   FD82             ; 934                 PrintSpace();
+1709   FD82 CD 77 F9    	call printspace
+1710   FD85             ; 935                 PrintByteFromParam1();
+1711   FD85 CD 4C F9    	call printbytefromparam1
+1712   FD88             ; 936                 PrintSpace();
+1713   FD88 CD 77 F9    	call printspace
+1714   FD8B F1          	pop af
+1715   FD8C             ; 937             }
+1716   FD8C             ; 938             PrintHexByte();
+1717   FD8C CD 50 F9    	call printhexbyte
+1718   FD8F             l_84: 
+1719   FD8F             ; 939         }
+1720   FD8F             ; 940         Loop();
+1721   FD8F CD 7C F9    	call loop
+1722   FD92 C3 72 FD    	jp l_82
+1723   FD95             ; 941     }
+1724   FD95             ; 942 }
+1725   FD95             ; 943 
+1726   FD95             ; 944 void ReadTapeByte(...) {
+1727   FD95             readtapebyte: 
+1728   FD95             ; 945     push(bc, de);
+1729   FD95 C5          	push bc
+1730   FD96 D5          	push de
+1731   FD97             ; 946     c = 0;
+1732   FD97 0E 00       	ld c, 0
+1733   FD99             ; 947     d = a;
+1734   FD99 57          	ld d, a
+1735   FD9A             ; 948     e = a = in(PORT_TAPE);
+1736   FD9A DB 01       	in a, (1)
+1737   FD9C 5F          	ld e, a
+1738   FD9D             ; 949     do {
+1739   FD9D             l_86: 
+1740   FD9D             ; 950     loc_FD9D:
+1741   FD9D             loc_fd9d: 
+1742   FD9D             ; 951         a = c;
+1743   FD9D 79          	ld a, c
+1744   FD9E             ; 952         a &= 0x7F;
+1745   FD9E E6 7F       	and 127
+1746   FDA0             ; 953         cyclic_rotate_left(a, 1);
+1747   FDA0 07          	rlca
+1748   FDA1             ; 954         c = a;
+1749   FDA1 4F          	ld c, a
+1750   FDA2             ; 955 
+1751   FDA2             ; 956         do {
+1752   FDA2             l_89: 
+1753   FDA2             ; 957             a = in(PORT_TAPE);
+1754   FDA2 DB 01       	in a, (1)
+1755   FDA4             l_90: 
+1756   FDA4             ; 958         } while (a == e);
+1757   FDA4 BB          	cp e
+1758   FDA5 CA A2 FD    	jp z, l_89
+1759   FDA8             ; 959         a &= 1;
+1760   FDA8 E6 01       	and 1
+1761   FDAA             ; 960         a |= c;
+1762   FDAA B1          	or c
+1763   FDAB             ; 961         c = a;
+1764   FDAB 4F          	ld c, a
+1765   FDAC             ; 962         ReadTapeDelay();
+1766   FDAC CD DB FD    	call readtapedelay
+1767   FDAF             ; 963         e = a = in(PORT_TAPE);
+1768   FDAF DB 01       	in a, (1)
+1769   FDB1 5F          	ld e, a
+1770   FDB2             ; 964         if (flag_m((a = d) |= a)) {
+1771   FDB2 7A          	ld a, d
+1772   FDB3 B7          	or a
+1773   FDB4 F2 D0 FD    	jp p, l_92
+1774   FDB7             ; 965             if ((a = c) == TAPE_START) {
+1775   FDB7 79          	ld a, c
+1776   FDB8 FE E6       	cp 230
+1777   FDBA C2 C4 FD    	jp nz, l_94
+1778   FDBD             ; 966                 tapePolarity = (a ^= a);
+1779   FDBD AF          	xor a
+1780   FDBE 32 57 F7    	ld (tapepolarity), a
+1781   FDC1 C3 CE FD    	jp l_95
+1782   FDC4             l_94: 
+1783   FDC4             ; 967             } else {
+1784   FDC4             ; 968                 if (a != (0xFF ^ TAPE_START))
+1785   FDC4 FE 19       	cp 25
+1786   FDC6             ; 969                     goto loc_FD9D;
+1787   FDC6 C2 9D FD    	jp nz, loc_fd9d
+1788   FDC9             ; 970                 tapePolarity = a = 0xFF;
+1789   FDC9 3E FF       	ld a, 255
+1790   FDCB 32 57 F7    	ld (tapepolarity), a
+1791   FDCE             l_95: 
+1792   FDCE             ; 971             }
+1793   FDCE             ; 972             d = 8 + 1;
+1794   FDCE 16 09       	ld d, 9
+1795   FDD0             l_92: 
+1796   FDD0             l_87: 
+1797   FDD0             ; 973         }
+1798   FDD0             ; 974     } while (flag_nz(d--));
+1799   FDD0 15          	dec d
+1800   FDD1 C2 9D FD    	jp nz, l_86
+1801   FDD4             ; 975     a = tapePolarity;
+1802   FDD4 3A 57 F7    	ld a, (tapepolarity)
+1803   FDD7             ; 976     a ^= c;
+1804   FDD7 A9          	xor c
+1805   FDD8             ; 977     pop(bc, de);
+1806   FDD8 D1          	pop de
+1807   FDD9 C1          	pop bc
+1808   FDDA C9          	ret
+1809   FDDB             ; 978 }
+1810   FDDB             ; 979 
+1811   FDDB             ; 980 void ReadTapeDelay(...) {
+1812   FDDB             readtapedelay: 
+1813   FDDB             ; 981     push(a);
+1814   FDDB F5          	push af
+1815   FDDC             ; 982     TapeDelay(a = readDelay);
+1816   FDDC 3A 5C F7    	ld a, (readdelay)
+1817   FDDF             ; 983 }
+1818   FDDF             ; 984 
+1819   FDDF             ; 985 void TapeDelay(...) {
+1820   FDDF             tapedelay: 
+1821   FDDF             ; 986     b = a;
+1822   FDDF 47          	ld b, a
+1823   FDE0             ; 987     pop(a);
+1824   FDE0 F1          	pop af
+1825   FDE1             ; 988     do {
+1826   FDE1             l_96: 
+1827   FDE1             l_97: 
+1828   FDE1             ; 989     } while (flag_nz(b--));
+1829   FDE1 05          	dec b
+1830   FDE2 C2 E1 FD    	jp nz, l_96
+1831   FDE5 C9          	ret
+1832   FDE6             ; 990 }
+1833   FDE6             ; 991 
+1834   FDE6             ; 992 void WriteTapeByte(...) {
+1835   FDE6             writetapebyte: 
+1836   FDE6             ; 993     push_pop(bc, de, a) {
+1837   FDE6 C5          	push bc
+1838   FDE7 D5          	push de
+1839   FDE8 F5          	push af
+1840   FDE9             ; 994         d = a;
+1841   FDE9 57          	ld d, a
+1842   FDEA             ; 995         c = 8;
+1843   FDEA 0E 08       	ld c, 8
+1844   FDEC             ; 996         do {
+1845   FDEC             l_99: 
+1846   FDEC             ; 997             a = d;
+1847   FDEC 7A          	ld a, d
+1848   FDED             ; 998             cyclic_rotate_left(a, 1);
+1849   FDED 07          	rlca
+1850   FDEE             ; 999             d = a;
+1851   FDEE 57          	ld d, a
+1852   FDEF             ; 1000 
+1853   FDEF             ; 1001             out(PORT_TAPE, (a = 1) ^= d);
+1854   FDEF 3E 01       	ld a, 1
+1855   FDF1 AA          	xor d
+1856   FDF2 D3 01       	out (1), a
+1857   FDF4             ; 1002             WriteTapeDelay();
+1858   FDF4 CD 07 FE    	call writetapedelay
+1859   FDF7             ; 1003 
+1860   FDF7             ; 1004             out(PORT_TAPE, (a = 0) ^= d);
+1861   FDF7 3E 00       	ld a, 0
+1862   FDF9 AA          	xor d
+1863   FDFA D3 01       	out (1), a
+1864   FDFC             ; 1005             WriteTapeDelay();
+1865   FDFC CD 07 FE    	call writetapedelay
+1866   FDFF             l_100: 
+1867   FDFF             ; 1006         } while (flag_nz(c--));
+1868   FDFF 0D          	dec c
+1869   FE00 C2 EC FD    	jp nz, l_99
+1870   FE03 F1          	pop af
+1871   FE04 D1          	pop de
+1872   FE05 C1          	pop bc
+1873   FE06 C9          	ret
+1874   FE07             ; 1007     }
+1875   FE07             ; 1008 }
+1876   FE07             ; 1009 
+1877   FE07             ; 1010 void WriteTapeDelay(...) {
+1878   FE07             writetapedelay: 
+1879   FE07             ; 1011     push(a);
+1880   FE07 F5          	push af
+1881   FE08             ; 1012     TapeDelay(a = writeDelay);
+1882   FE08 3A 5D F7    	ld a, (writedelay)
+1883   FE0B C3 DF FD    	jp tapedelay
+1884   FE0E             ; 1013 }
+1885   FE0E             ; 1014 
+1886   FE0E             ; 1015 uint8_t monitorCommands = 'M';
+1887   FE0E             monitorcommands: 
+1888   FE0E 4D          	db 77
+1889   FE0F             ; 1016  monitorCommandsMa = (uintptr_t)&CmdM;
+1890   FE0F             monitorcommandsma: 
+1891   FE0F E3 FB       	dw 0FFFFh & (cmdm)
+1892   FE11             ; 1017  monitorCommandsC = 'C';
+1893   FE11             monitorcommandsc: 
+1894   FE11 43          	db 67
+1895   FE12             ; 1018  monitorCommandsCa = (uintptr_t)&CmdC;
+1896   FE12             monitorcommandsca: 
+1897   FE12 87 FB       	dw 0FFFFh & (cmdc)
+1898   FE14             ; 1019  monitorCommandsD = 'D';
+1899   FE14             monitorcommandsd: 
+1900   FE14 44          	db 68
+1901   FE15             ; 1020  monitorCommandsDa = (uintptr_t)&CmdD;
+1902   FE15             monitorcommandsda: 
+1903   FE15 6A FB       	dw 0FFFFh & (cmdd)
+1904   FE17             ; 1021  monitorCommandsB = 'B';
+1905   FE17             monitorcommandsb: 
+1906   FE17 42          	db 66
+1907   FE18             ; 1022  monitorCommandsBa = (uintptr_t)&CmdB;
+1908   FE18             monitorcommandsba: 
+1909   FE18 53 FA       	dw 0FFFFh & (cmdb)
+1910   FE1A             ; 1023  monitorCommandsG = 'G';
+1911   FE1A             monitorcommandsg: 
+1912   FE1A 47          	db 71
+1913   FE1B             ; 1024  monitorCommandsGa = (uintptr_t)&CmdG;
+1914   FE1B             monitorcommandsga: 
+1915   FE1B C1 FA       	dw 0FFFFh & (cmdg)
+1916   FE1D             ; 1025  monitorCommandsP = 'P';
+1917   FE1D             monitorcommandsp: 
+1918   FE1D 50          	db 80
+1919   FE1E             ; 1026  monitorCommandsPa = (uintptr_t)&CmdP;
+1920   FE1E             monitorcommandspa: 
+1921   FE1E E5 FA       	dw 0FFFFh & (cmdp)
+1922   FE20             ; 1027  monitorCommandsX = 'X';
+1923   FE20             monitorcommandsx: 
+1924   FE20 58          	db 88
+1925   FE21             ; 1028  monitorCommandsXa = (uintptr_t)&CmdX;
+1926   FE21             monitorcommandsxa: 
+1927   FE21 99 F9       	dw 0FFFFh & (cmdx)
+1928   FE23             ; 1029  monitorCommandsF = 'F';
+1929   FE23             monitorcommandsf: 
+1930   FE23 46          	db 70
+1931   FE24             ; 1030  monitorCommandsFa = (uintptr_t)&CmdF;
+1932   FE24             monitorcommandsfa: 
+1933   FE24 AD FB       	dw 0FFFFh & (cmdf)
+1934   FE26             ; 1031  monitorCommandsS = 'S';
+1935   FE26             monitorcommandss: 
+1936   FE26 53          	db 83
+1937   FE27             ; 1032  monitorCommandsSa = (uintptr_t)&CmdS;
+1938   FE27             monitorcommandssa: 
+1939   FE27 BE FB       	dw 0FFFFh & (cmds)
+1940   FE29             ; 1033  monitorCommandsT = 'T';
+1941   FE29             monitorcommandst: 
+1942   FE29 54          	db 84
+1943   FE2A             ; 1034  monitorCommandsTa = (uintptr_t)&CmdT;
+1944   FE2A             monitorcommandsta: 
+1945   FE2A D0 FB       	dw 0FFFFh & (cmdt)
+1946   FE2C             ; 1035  monitorCommandsI = 'I';
+1947   FE2C             monitorcommandsi: 
+1948   FE2C 49          	db 73
+1949   FE2D             ; 1036  monitorCommandsIa = (uintptr_t)&CmdI;
+1950   FE2D             monitorcommandsia: 
+1951   FE2D CB FC       	dw 0FFFFh & (cmdi)
+1952   FE2F             ; 1037  monitorCommandsO = 'O';
+1953   FE2F             monitorcommandso: 
+1954   FE2F 4F          	db 79
+1955   FE30             ; 1038  monitorCommandsOa = (uintptr_t)&CmdO;
+1956   FE30             monitorcommandsoa: 
+1957   FE30 1B FD       	dw 0FFFFh & (cmdo)
+1958   FE32             ; 1039  monitorCommandsV = 'V';
+1959   FE32             monitorcommandsv: 
+1960   FE32 56          	db 86
+1961   FE33             ; 1040  monitorCommandsVa = (uintptr_t)&CmdV;
+1962   FE33             monitorcommandsva: 
+1963   FE33 52 FD       	dw 0FFFFh & (cmdv)
+1964   FE35             ; 1041  monitorCommandsJ = 'J';
+1965   FE35             monitorcommandsj: 
+1966   FE35 4A          	db 74
+1967   FE36             ; 1042  monitorCommandsJa = (uintptr_t)&CmdJ;
+1968   FE36             monitorcommandsja: 
+1969   FE36 06 FC       	dw 0FFFFh & (cmdj)
+1970   FE38             ; 1043  monitorCommandsA = 'A';
+1971   FE38             monitorcommandsa: 
+1972   FE38 41          	db 65
+1973   FE39             ; 1044  monitorCommandsAa = (uintptr_t)&CmdA;
+1974   FE39             monitorcommandsaa: 
+1975   FE39 0D FC       	dw 0FFFFh & (cmda)
+1976   FE3B             ; 1045  monitorCommandsK = 'K';
+1977   FE3B             monitorcommandsk: 
+1978   FE3B 4B          	db 75
+1979   FE3C             ; 1046  monitorCommandsKa = (uintptr_t)&CmdK;
+1980   FE3C             monitorcommandska: 
+1981   FE3C 19 FC       	dw 0FFFFh & (cmdk)
+1982   FE3E             ; 1047  monitorCommandsQ = 'Q';
+1983   FE3E             monitorcommandsq: 
+1984   FE3E 51          	db 81
+1985   FE3F             ; 1048  monitorCommandsQa = (uintptr_t)&CmdQ;
+1986   FE3F             monitorcommandsqa: 
+1987   FE3F 27 FC       	dw 0FFFFh & (cmdq)
+1988   FE41             ; 1049  monitorCommandsL = 'L';
+1989   FE41             monitorcommandsl: 
+1990   FE41 4C          	db 76
+1991   FE42             ; 1050  monitorCommandsLa = (uintptr_t)&CmdL;
+1992   FE42             monitorcommandsla: 
+1993   FE42 55 FC       	dw 0FFFFh & (cmdl)
+1994   FE44             ; 1051  monitorCommandsH = 'H';
+1995   FE44             monitorcommandsh: 
+1996   FE44 48          	db 72
+1997   FE45             ; 1052  monitorCommandsHa = (uintptr_t)&CmdH;
+1998   FE45             monitorcommandsha: 
+1999   FE45 85 FC       	dw 0FFFFh & (cmdh)
+2000   FE47             ; 1053  monitorCommandsEnd = 0;
+2001   FE47             monitorcommandsend: 
+2002   FE47 00          	db 0
+2003   FE48             ; 1055  aPrompt[] = "\x0A*MikrO/80* MONITOR\x0A>";
+2004   FE48             aprompt: 
+2005   FE48 0A          	db 10
+2006   FE49 2A          	db 42
+2007   FE4A 4D          	db 77
+2008   FE4B 69          	db 105
+2009   FE4C 6B          	db 107
+2010   FE4D 72          	db 114
+2011   FE4E 4F          	db 79
+2012   FE4F 2F          	db 47
+2013   FE50 38          	db 56
+2014   FE51 30          	db 48
+2015   FE52 2A          	db 42
+2016   FE53 20          	db 32
+2017   FE54 4D          	db 77
+2018   FE55 4F          	db 79
+2019   FE56 4E          	db 78
+2020   FE57 49          	db 73
+2021   FE58 54          	db 84
+2022   FE59 4F          	db 79
+2023   FE5A 52          	db 82
+2024   FE5B 0A          	db 10
+2025   FE5C 3E          	db 62
+2026   FE5D 00          	ds 1
+2027   FE5E             ; 1056  aLf[] = "\x0A";
+2028   FE5E             alf: 
+2029   FE5E 0A          	db 10
+2030   FE5F 00          	ds 1
+2031   FE60             ; 1058  PrintCharA(...) {
+2032   FE60             printchara: 
+2033   FE60             ; 1059     push(hl, bc, de, a);
+2034   FE60 E5          	push hl
+2035   FE61 C5          	push bc
+2036   FE62 D5          	push de
+2037   FE63 F5          	push af
+2038   FE64             ; 1060     PrintCharInt(c = a);
+2039   FE64 4F          	ld c, a
+2040   FE65 C3 6C FE    	jp printcharint
+2041   FE68             ; 1061 }
+2042   FE68             ; 1062 
+2043   FE68             ; 1063 void PrintChar(...) {
+2044   FE68             printchar: 
+2045   FE68             ; 1064     push(hl, bc, de, a);
+2046   FE68 E5          	push hl
+2047   FE69 C5          	push bc
+2048   FE6A D5          	push de
+2049   FE6B F5          	push af
+2050   FE6C             ; 1065     return PrintCharInt(c);
+2051   FE6C             ; 1066 }
+2052   FE6C             ; 1067 
+2053   FE6C             ; 1068 void PrintCharInt(...) {
+2054   FE6C             printcharint: 
+2055   FE6C             ; 1069     hl = cursor;
+2056   FE6C 2A 5A F7    	ld hl, (cursor)
+2057   FE6F             ; 1070     de = -(SCREEN_WIDTH * SCREEN_HEIGHT) + 1;
+2058   FE6F 11 01 F8    	ld de, 63489
+2059   FE72             ; 1071     hl += de;
+2060   FE72 19          	add hl, de
+2061   FE73             ; 1072     *hl = SCREEN_ATTRIB_DEFAULT;
+2062   FE73 36 00       	ld (hl), 0
+2063   FE75             ; 1073 
+2064   FE75             ; 1074     hl = cursor;
+2065   FE75 2A 5A F7    	ld hl, (cursor)
+2066   FE78             ; 1075     a = c;
+2067   FE78 79          	ld a, c
+2068   FE79             ; 1076     if (a == 0x1F)
+2069   FE79 FE 1F       	cp 31
+2070   FE7B             ; 1077         return ClearScreen();
+2071   FE7B CA C2 FE    	jp z, clearscreen
+2072   FE7E             ; 1078     if (a == 0x08)
+2073   FE7E FE 08       	cp 8
+2074   FE80             ; 1079         return MoveCursorLeft(hl);
+2075   FE80 CA E9 FE    	jp z, movecursorleft
+2076   FE83             ; 1080     if (a == 0x18)
+2077   FE83 FE 18       	cp 24
+2078   FE85             ; 1081         return MoveCursorRight(hl);
+2079   FE85 CA DF FE    	jp z, movecursorright
+2080   FE88             ; 1082     if (a == 0x19)
+2081   FE88 FE 19       	cp 25
+2082   FE8A             ; 1083         return MoveCursorUp(hl);
+2083   FE8A CA 05 FF    	jp z, movecursorup
+2084   FE8D             ; 1084     if (a == 0x1A)
+2085   FE8D FE 1A       	cp 26
+2086   FE8F             ; 1085         return MoveCursorDown(hl);
+2087   FE8F CA F6 FE    	jp z, movecursordown
+2088   FE92             ; 1086     if (a == 0x0A)
+2089   FE92 FE 0A       	cp 10
+2090   FE94             ; 1087         return MoveCursorNextLine(hl);
+2091   FE94 CA 16 FF    	jp z, movecursornextline
+2092   FE97             ; 1088     if (a == 0x0C)
+2093   FE97 FE 0C       	cp 12
+2094   FE99             ; 1089         return MoveCursorHome();
+2095   FE99 CA C5 FE    	jp z, movecursorhome
+2096   FE9C             ; 1090 
+2097   FE9C             ; 1091     if ((a = h) == SCREEN_END >> 8) {
+2098   FE9C 7C          	ld a, h
+2099   FE9D FE F0       	cp 65520
+2100   FE9F C2 B2 FE    	jp nz, l_102
+2101   FEA2             ; 1092         IsKeyPressed();
+2102   FEA2 CD EE FF    	call iskeypressed
+2103   FEA5             ; 1093         if (a != 0) {
+2104   FEA5 B7          	or a
+2105   FEA6 CA AC FE    	jp z, l_104
+2106   FEA9             ; 1094             ReadKey();
+2107   FEA9 CD 41 FF    	call readkey
+2108   FEAC             l_104: 
+2109   FEAC             ; 1095         }
+2110   FEAC             ; 1096         ClearScreenInt();
+2111   FEAC CD CB FE    	call clearscreenint
+2112   FEAF             ; 1097         hl = SCREEN_BEGIN;
+2113   FEAF 21 00 E8    	ld hl, 59392
+2114   FEB2             l_102: 
+2115   FEB2             ; 1098     }
+2116   FEB2             ; 1099     *hl = c;
+2117   FEB2 71          	ld (hl), c
+2118   FEB3             ; 1100     hl++;
+2119   FEB3 23          	inc hl
+2120   FEB4             ; 1101     return MoveCursor();
+2121   FEB4             ; 1102 }
+2122   FEB4             ; 1103 
+2123   FEB4             ; 1104 void MoveCursor(...) {
+2124   FEB4             movecursor: 
+2125   FEB4             ; 1105     cursor = hl;
+2126   FEB4 22 5A F7    	ld (cursor), hl
+2127   FEB7             ; 1106     de = -(SCREEN_WIDTH * SCREEN_HEIGHT) + 1;
+2128   FEB7 11 01 F8    	ld de, 63489
+2129   FEBA             ; 1107     hl += de;
+2130   FEBA 19          	add hl, de
+2131   FEBB             ; 1108     *hl = SCREEN_ATTRIB_DEFAULT | SCREEN_ATTRIB_UNDERLINE;
+2132   FEBB 36 80       	ld (hl), 128
+2133   FEBD             ; 1109     pop(hl, bc, de, a);
+2134   FEBD F1          	pop af
+2135   FEBE D1          	pop de
+2136   FEBF C1          	pop bc
+2137   FEC0 E1          	pop hl
+2138   FEC1 C9          	ret
+2139   FEC2             ; 1110 }
+2140   FEC2             ; 1111 
+2141   FEC2             ; 1112 void ClearScreen(...) {
+2142   FEC2             clearscreen: 
+2143   FEC2             ; 1113     ClearScreenInt();
+2144   FEC2 CD CB FE    	call clearscreenint
+2145   FEC5             ; 1114     MoveCursorHome();
+2146   FEC5             ; 1115 }
+2147   FEC5             ; 1116 
+2148   FEC5             ; 1117 void MoveCursorHome(...) {
+2149   FEC5             movecursorhome: 
+2150   FEC5             ; 1118     MoveCursor(hl = SCREEN_BEGIN);
+2151   FEC5 21 00 E8    	ld hl, 59392
+2152   FEC8 C3 B4 FE    	jp movecursor
+2153   FECB             ; 1119 }
+2154   FECB             ; 1120 
+2155   FECB             ; 1121 void ClearScreenInt(...) {
+2156   FECB             clearscreenint: 
+2157   FECB             ; 1122     hl = SCREEN_BEGIN;
+2158   FECB 21 00 E8    	ld hl, 59392
+2159   FECE             ; 1123     de = SCREEN_ATTRIB_BEGIN;
+2160   FECE 11 00 E0    	ld de, 57344
+2161   FED1             ; 1124     for (;;) {
+2162   FED1             l_107: 
+2163   FED1             ; 1125         *hl = ' ';
+2164   FED1 36 20       	ld (hl), 32
+2165   FED3             ; 1126         hl++;
+2166   FED3 23          	inc hl
+2167   FED4             ; 1127         a = 0;
+2168   FED4 3E 00       	ld a, 0
+2169   FED6             ; 1128         *de = a;
+2170   FED6 12          	ld (de), a
+2171   FED7             ; 1129         de++;
+2172   FED7 13          	inc de
+2173   FED8             ; 1130         a = h;
+2174   FED8 7C          	ld a, h
+2175   FED9             ; 1131         if (a == SCREEN_END >> 8)
+2176   FED9 FE F0       	cp 65520
+2177   FEDB             ; 1132             return;
+2178   FEDB C8          	ret z
+2179   FEDC C3 D1 FE    	jp l_107
+2180   FEDF             ; 1133     }
+2181   FEDF             ; 1134 }
+2182   FEDF             ; 1135 
+2183   FEDF             ; 1136 void MoveCursorRight(...) {
+2184   FEDF             movecursorright: 
+2185   FEDF             ; 1137     hl++;
+2186   FEDF 23          	inc hl
+2187   FEE0             ; 1138     if ((a = h) != SCREEN_END >> 8)
+2188   FEE0 7C          	ld a, h
+2189   FEE1 FE F0       	cp 65520
+2190   FEE3             ; 1139         return MoveCursor(hl);
+2191   FEE3 C2 B4 FE    	jp nz, movecursor
+2192   FEE6             ; 1140     if (flag_z) /* Not needed */
+2193   FEE6             ; 1141         return MoveCursorHome();
+2194   FEE6 CA C5 FE    	jp z, movecursorhome
+2195   FEE9             ; 1142     MoveCursorLeft(hl); /* Not needed */
+2196   FEE9             ; 1143 }
+2197   FEE9             ; 1144 
+2198   FEE9             ; 1145 void MoveCursorLeft(...) {
+2199   FEE9             movecursorleft: 
+2200   FEE9             ; 1146     hl--;
+2201   FEE9 2B          	dec hl
+2202   FEEA             ; 1147     if ((a = h) != (SCREEN_BEGIN >> 8) - 1)
+2203   FEEA 7C          	ld a, h
+2204   FEEB FE E7       	cp 65511
+2205   FEED             ; 1148         return MoveCursor(hl);
+2206   FEED C2 B4 FE    	jp nz, movecursor
+2207   FEF0             ; 1149     MoveCursor(hl = SCREEN_END - 1);
+2208   FEF0 21 FF EF    	ld hl, 61439
+2209   FEF3 C3 B4 FE    	jp movecursor
+2210   FEF6             ; 1150 }
+2211   FEF6             ; 1151 
+2212   FEF6             ; 1152 void MoveCursorDown(...) {
+2213   FEF6             movecursordown: 
+2214   FEF6             ; 1153     hl += (de = SCREEN_WIDTH);
+2215   FEF6 11 40 00    	ld de, 64
+2216   FEF9 19          	add hl, de
+2217   FEFA             ; 1154     if ((a = h) != SCREEN_END >> 8)
+2218   FEFA 7C          	ld a, h
+2219   FEFB FE F0       	cp 65520
+2220   FEFD             ; 1155         return MoveCursor(hl);
+2221   FEFD C2 B4 FE    	jp nz, movecursor
+2222   FF00             ; 1156     h = SCREEN_BEGIN >> 8;
+2223   FF00 26 E8       	ld h, 232
+2224   FF02             ; 1157     MoveCursor(hl);
+2225   FF02 C3 B4 FE    	jp movecursor
+2226   FF05             ; 1158 }
+2227   FF05             ; 1159 
+2228   FF05             ; 1160 void MoveCursorUp(...) {
+2229   FF05             movecursorup: 
+2230   FF05             ; 1161     hl += (de = -SCREEN_WIDTH);
+2231   FF05 11 C0 FF    	ld de, 65472
+2232   FF08 19          	add hl, de
+2233   FF09             ; 1162     if ((a = h) != (SCREEN_BEGIN >> 8) - 1)
+2234   FF09 7C          	ld a, h
+2235   FF0A FE E7       	cp 65511
+2236   FF0C             ; 1163         return MoveCursor(hl);
+2237   FF0C C2 B4 FE    	jp nz, movecursor
+2238   FF0F             ; 1164     hl += (de = SCREEN_WIDTH * SCREEN_HEIGHT);
+2239   FF0F 11 00 08    	ld de, 2048
+2240   FF12 19          	add hl, de
+2241   FF13             ; 1165     MoveCursor(hl);
+2242   FF13 C3 B4 FE    	jp movecursor
+2243   FF16             ; 1166 }
+2244   FF16             ; 1167 
+2245   FF16             ; 1168 void MoveCursorNextLine(...) {
+2246   FF16             movecursornextline: 
+2247   FF16             ; 1169     for (;;) {
+2248   FF16             l_110: 
+2249   FF16             ; 1170         hl++;
+2250   FF16 23          	inc hl
+2251   FF17             ; 1171         a = l;
+2252   FF17 7D          	ld a, l
+2253   FF18             ; 1172         if (a == SCREEN_WIDTH * 0)
+2254   FF18 B7          	or a
+2255   FF19             ; 1173             return MoveCursorNextLine1(hl);
+2256   FF19 CA 2E FF    	jp z, movecursornextline1
+2257   FF1C             ; 1174         if (a == SCREEN_WIDTH * 1)
+2258   FF1C FE 40       	cp 64
+2259   FF1E             ; 1175             return MoveCursorNextLine1(hl);
+2260   FF1E CA 2E FF    	jp z, movecursornextline1
+2261   FF21             ; 1176         if (a == SCREEN_WIDTH * 2)
+2262   FF21 FE 80       	cp 128
+2263   FF23             ; 1177             return MoveCursorNextLine1(hl);
+2264   FF23 CA 2E FF    	jp z, movecursornextline1
+2265   FF26             ; 1178         if (a == SCREEN_WIDTH * 3)
+2266   FF26 FE C0       	cp 192
+2267   FF28             ; 1179             return MoveCursorNextLine1(hl);
+2268   FF28 CA 2E FF    	jp z, movecursornextline1
+2269   FF2B C3 16 FF    	jp l_110
+2270   FF2E             ; 1180     }
+2271   FF2E             ; 1181 }
+2272   FF2E             ; 1182 
+2273   FF2E             ; 1183 void MoveCursorNextLine1(...) {
+2274   FF2E             movecursornextline1: 
+2275   FF2E             ; 1184     if ((a = h) != SCREEN_END >> 8)
+2276   FF2E 7C          	ld a, h
+2277   FF2F FE F0       	cp 65520
+2278   FF31             ; 1185         return MoveCursor(hl);
+2279   FF31 C2 B4 FE    	jp nz, movecursor
+2280   FF34             ; 1186 
+2281   FF34             ; 1187     IsKeyPressed();
+2282   FF34 CD EE FF    	call iskeypressed
+2283   FF37             ; 1188     if (a == 0)
+2284   FF37 B7          	or a
+2285   FF38             ; 1189         return ClearScreen();
+2286   FF38 CA C2 FE    	jp z, clearscreen
+2287   FF3B             ; 1190     ReadKey();
+2288   FF3B CD 41 FF    	call readkey
+2289   FF3E             ; 1191     ClearScreen();
+2290   FF3E C3 C2 FE    	jp clearscreen
+2291   FF41             ; 1192 }
+2292   FF41             ; 1193 
+2293   FF41             ; 1194 void ReadKey(...) {
+2294   FF41             readkey: 
+2295   FF41             ; 1195     push(bc, de, hl);
+2296   FF41 C5          	push bc
+2297   FF42 D5          	push de
+2298   FF43 E5          	push hl
+2299   FF44             ; 1196 
+2300   FF44             ; 1197     for (;;) {
+2301   FF44             l_113: 
+2302   FF44             ; 1198         b = 0;
+2303   FF44 06 00       	ld b, 0
+2304   FF46             ; 1199         c = 1 ^ 0xFF;
+2305   FF46 0E FE       	ld c, 254
+2306   FF48             ; 1200         d = KEYBOARD_COLUMN_COUNT;
+2307   FF48 16 08       	ld d, 8
+2308   FF4A             ; 1201         do {
+2309   FF4A             l_115: 
+2310   FF4A             ; 1202             out(PORT_KEYBOARD_COLUMN, a = c);
+2311   FF4A 79          	ld a, c
+2312   FF4B D3 07       	out (7), a
+2313   FF4D             ; 1203             cyclic_rotate_left(a, 1);
+2314   FF4D 07          	rlca
+2315   FF4E             ; 1204             c = a;
+2316   FF4E 4F          	ld c, a
+2317   FF4F             ; 1205             a = in(PORT_KEYBOARD_ROW);
+2318   FF4F DB 06       	in a, (6)
+2319   FF51             ; 1206             a &= KEYBOARD_ROW_MASK;
+2320   FF51 E6 7F       	and 127
+2321   FF53             ; 1207             if (a != KEYBOARD_ROW_MASK)
+2322   FF53 FE 7F       	cp 127
+2323   FF55             ; 1208                 return ReadKey1(a, b);
+2324   FF55 C2 63 FF    	jp nz, readkey1
+2325   FF58             ; 1209             b = ((a = b) += KEYBOARD_ROW_COUNT);
+2326   FF58 78          	ld a, b
+2327   FF59 C6 07       	add 7
+2328   FF5B 47          	ld b, a
+2329   FF5C             l_116: 
+2330   FF5C             ; 1210         } while (flag_nz(d--));
+2331   FF5C 15          	dec d
+2332   FF5D C2 4A FF    	jp nz, l_115
+2333   FF60 C3 44 FF    	jp l_113
+2334   FF63             ; 1211     }
+2335   FF63             ; 1212 }
+2336   FF63             ; 1213 
+2337   FF63             ; 1214 void ReadKey1(...) {
+2338   FF63             readkey1: 
+2339   FF63             ; 1215     keyLast = a;
+2340   FF63 32 64 F7    	ld (keylast), a
+2341   FF66             ; 1216 
+2342   FF66             ; 1217     for (;;) {
+2343   FF66             l_119: 
+2344   FF66             ; 1218         carry_rotate_right(a, 1);
+2345   FF66 1F          	rra
+2346   FF67             ; 1219         if (flag_nc)
+2347   FF67             ; 1220             break;
+2348   FF67 D2 6E FF    	jp nc, l_120
+2349   FF6A             ; 1221         b++;
+2350   FF6A 04          	inc b
+2351   FF6B C3 66 FF    	jp l_119
+2352   FF6E             l_120: 
+2353   FF6E             ; 1222     }
+2354   FF6E             ; 1223 
+2355   FF6E             ; 1224     /* b - key number */
+2356   FF6E             ; 1225 
+2357   FF6E             ; 1226     /*  0    0    1 !   2 "   3 #   4 $   5 %   6 &   7 ,
+2358   FF6E             ; 1227      *  8   8 (   9 )   : *   ; +   , <   - =   . >   / ?
+2359   FF6E             ; 1228      * 16   @ Ю   A А   B Б   C Ц   D Д   E Е   F Ф   G Г
+2360   FF6E             ; 1229      * 24   H Х   I И   J Й   K К   L Л   M М   N Н   O О
+2361   FF6E             ; 1230      * 32   P П   Q Я   R Р   S С   T Т   U У   V Ж   W В
+2362   FF6E             ; 1231      * 40   X Ь   Y Ы   Z З   [ Ш   \ Э   ] Щ   ^ Ч    _
+2363   FF6E             ; 1232      * 48   Space Right Left  Up    Down  Vk    Str   Home */
+2364   FF6E             ; 1233 
+2365   FF6E             ; 1234     a = b;
+2366   FF6E 78          	ld a, b
+2367   FF6F             ; 1235     if (a < 48) {
+2368   FF6F FE 30       	cp 48
+2369   FF71 D2 86 FF    	jp nc, l_121
+2370   FF74             ; 1236         a += '0';
+2371   FF74 C6 30       	add 48
+2372   FF76             ; 1237         if (a >= 0x3C)
+2373   FF76 FE 3C       	cp 60
+2374   FF78             ; 1238             if (a < 0x40)
+2375   FF78 DA 82 FF    	jp c, l_123
+2376   FF7B FE 40       	cp 64
+2377   FF7D             ; 1239                 a &= 0x2F; /* <=>? to .-./ */
+2378   FF7D D2 82 FF    	jp nc, l_125
+2379   FF80 E6 2F       	and 47
+2380   FF82             l_125: 
+2381   FF82             l_123: 
+2382   FF82             ; 1240         c = a;
+2383   FF82 4F          	ld c, a
+2384   FF83 C3 93 FF    	jp l_122
+2385   FF86             l_121: 
+2386   FF86             ; 1241     } else {
+2387   FF86             ; 1242         hl = &keyTable;
+2388   FF86 21 E6 FF    	ld hl, keytable
+2389   FF89             ; 1243         a -= 48;
+2390   FF89 D6 30       	sub 48
+2391   FF8B             ; 1244         c = a;
+2392   FF8B 4F          	ld c, a
+2393   FF8C             ; 1245         b = 0;
+2394   FF8C 06 00       	ld b, 0
+2395   FF8E             ; 1246         hl += bc;
+2396   FF8E 09          	add hl, bc
+2397   FF8F             ; 1247         a = *hl;
+2398   FF8F 7E          	ld a, (hl)
+2399   FF90             ; 1248         return ReadKey2(a);
+2400   FF90 C3 C7 FF    	jp readkey2
+2401   FF93             l_122: 
+2402   FF93             ; 1249     }
+2403   FF93             ; 1250 
+2404   FF93             ; 1251     a = in(PORT_KEYBOARD_MODS);
+2405   FF93 DB 05       	in a, (5)
+2406   FF95             ; 1252     a &= KEYBOARD_MODS_MASK;
+2407   FF95 E6 07       	and 7
+2408   FF97             ; 1253     if (a == KEYBOARD_MODS_MASK)
+2409   FF97 FE 07       	cp 7
+2410   FF99             ; 1254         goto ReadKeyNoMods;
+2411   FF99 CA C6 FF    	jp z, readkeynomods
+2412   FF9C             ; 1255     carry_rotate_right(a, 2);
+2413   FF9C 1F          	rra
+2414   FF9D 1F          	rra
+2415   FF9E             ; 1256     if (flag_nc)
+2416   FF9E             ; 1257         goto ReadKeyControl;
+2417   FF9E D2 AB FF    	jp nc, readkeycontrol
+2418   FFA1             ; 1258     carry_rotate_right(a, 1);
+2419   FFA1 1F          	rra
+2420   FFA2             ; 1259     if (flag_nc)
+2421   FFA2             ; 1260         goto ReadKeyShift;
+2422   FFA2 D2 B1 FF    	jp nc, readkeyshift
+2423   FFA5             ; 1261 
+2424   FFA5             ; 1262     /* RUS key pressed */
+2425   FFA5             ; 1263     a = c;
+2426   FFA5 79          	ld a, c
+2427   FFA6             ; 1264     a |= 0x20;
+2428   FFA6 F6 20       	or 32
+2429   FFA8             ; 1265     return ReadKey2(a);
+2430   FFA8 C3 C7 FF    	jp readkey2
+2431   FFAB             ; 1266 
+2432   FFAB             ; 1267     /* US (Control) key pressed */
+2433   FFAB             ; 1268 ReadKeyControl:
+2434   FFAB             readkeycontrol: 
+2435   FFAB             ; 1269     a = c;
+2436   FFAB 79          	ld a, c
+2437   FFAC             ; 1270     a &= 0x1F;
+2438   FFAC E6 1F       	and 31
+2439   FFAE             ; 1271     return ReadKey2(a);
+2440   FFAE C3 C7 FF    	jp readkey2
+2441   FFB1             ; 1272 
+2442   FFB1             ; 1273     /* SS (Shift) key pressed */
+2443   FFB1             ; 1274 ReadKeyShift:
+2444   FFB1             readkeyshift: 
+2445   FFB1             ; 1275     a = c;
+2446   FFB1 79          	ld a, c
+2447   FFB2             ; 1276     if (a >= 0x40) /* @ A-Z [ \ ] ^ _ */
+2448   FFB2 FE 40       	cp 64
+2449   FFB4             ; 1277         return ReadKey2(a);
+2450   FFB4 D2 C7 FF    	jp nc, readkey2
+2451   FFB7             ; 1278     if (a < 0x30) { /* .-./ to <=>? */
+2452   FFB7 FE 30       	cp 48
+2453   FFB9 D2 C1 FF    	jp nc, l_127
+2454   FFBC             ; 1279         a |= 0x10;
+2455   FFBC F6 10       	or 16
+2456   FFBE             ; 1280         return ReadKey2(a);
+2457   FFBE C3 C7 FF    	jp readkey2
+2458   FFC1             l_127: 
+2459   FFC1             ; 1281     }
+2460   FFC1             ; 1282     a &= 0x2F; /* 0123456789:; to !@#$%&'()*+ */
+2461   FFC1 E6 2F       	and 47
+2462   FFC3             ; 1283     return ReadKey2(a);
+2463   FFC3 C3 C7 FF    	jp readkey2
+2464   FFC6             ; 1284 
+2465   FFC6             ; 1285 ReadKeyNoMods:
+2466   FFC6             readkeynomods: 
+2467   FFC6             ; 1286     ReadKey2(a = c);
+2468   FFC6 79          	ld a, c
+2469   FFC7             ; 1287 }
+2470   FFC7             ; 1288 
+2471   FFC7             ; 1289 void ReadKey2(...) {
+2472   FFC7             readkey2: 
+2473   FFC7             ; 1290     c = a;
+2474   FFC7 4F          	ld c, a
+2475   FFC8             ; 1291 
+2476   FFC8             ; 1292     ReadKeyDelay();
+2477   FFC8 CD DC FF    	call readkeydelay
+2478   FFCB             ; 1293 
+2479   FFCB             ; 1294     hl = &keyLast;
+2480   FFCB 21 64 F7    	ld hl, 0FFFFh & (keylast)
+2481   FFCE             ; 1295     do {
+2482   FFCE             l_129: 
+2483   FFCE             ; 1296         a = in(PORT_KEYBOARD_ROW);
+2484   FFCE DB 06       	in a, (6)
+2485   FFD0             l_130: 
+2486   FFD0             ; 1297     } while (a == *hl);
+2487   FFD0 BE          	cp (hl)
+2488   FFD1 CA CE FF    	jp z, l_129
+2489   FFD4             ; 1298 
+2490   FFD4             ; 1299     ReadKeyDelay();
+2491   FFD4 CD DC FF    	call readkeydelay
+2492   FFD7             ; 1300 
+2493   FFD7             ; 1301     a = c;
+2494   FFD7 79          	ld a, c
+2495   FFD8             ; 1302     pop(bc, de, hl);
+2496   FFD8 E1          	pop hl
+2497   FFD9 D1          	pop de
+2498   FFDA C1          	pop bc
+2499   FFDB C9          	ret
+2500   FFDC             ; 1303 }
+2501   FFDC             ; 1304 
+2502   FFDC             ; 1305 void ReadKeyDelay(...) {
+2503   FFDC             readkeydelay: 
+2504   FFDC             ; 1306     de = 0x1000;
+2505   FFDC 11 00 10    	ld de, 4096
+2506   FFDF             ; 1307     for (;;) {
+2507   FFDF             l_133: 
+2508   FFDF             ; 1308         de--;
+2509   FFDF 1B          	dec de
+2510   FFE0             ; 1309         if (flag_z((a = d) |= e))
+2511   FFE0 7A          	ld a, d
+2512   FFE1 B3          	or e
+2513   FFE2             ; 1310             return;
+2514   FFE2 C8          	ret z
+2515   FFE3 C3 DF FF    	jp l_133
+2516   FFE6             ; 1311     }
+2517   FFE6             ; 1312 }
+2518   FFE6             ; 1313 
+2519   FFE6             ; 1314 uint8_t keyTable[] = {
+2520   FFE6             keytable: 
+2521   FFE6 20          	db 32
+2522   FFE7 18          	db 24
+2523   FFE8 08          	db 8
+2524   FFE9 19          	db 25
+2525   FFEA 1A          	db 26
+2526   FFEB 0D          	db 13
+2527   FFEC 1F          	db 31
+2528   FFED 0C          	db 12
+2529   FFEE             ; 1325  IsKeyPressed(...) {
+2530   FFEE             iskeypressed: 
+2531   FFEE             ; 1326     out(PORT_KEYBOARD_COLUMN, a = 0);
+2532   FFEE 3E 00       	ld a, 0
+2533   FFF0 D3 07       	out (7), a
+2534   FFF2             ; 1327     a = in(PORT_KEYBOARD_ROW);
+2535   FFF2 DB 06       	in a, (6)
+2536   FFF4             ; 1328     a &= KEYBOARD_ROW_MASK;
+2537   FFF4 E6 7F       	and 127
+2538   FFF6             ; 1329     if (a == KEYBOARD_ROW_MASK) {
+2539   FFF6 FE 7F       	cp 127
+2540   FFF8 C2 FD FF    	jp nz, l_135
+2541   FFFB             ; 1330         a ^= a; /* Returns 0 if no key is pressed */
+2542   FFFB AF          	xor a
+2543   FFFC             ; 1331         return;
+2544   FFFC C9          	ret
+2545   FFFD             l_135: 
+2546   FFFD             ; 1332     }
+2547   FFFD             ; 1333     a = 0xFF; /* Returns 0xFF if there are any keys pressed */
+2548   FFFD 3E FF       	ld a, 255
+2549   FFFF C9          	ret
+2550   0000              savebin "micro80.bin", 0xF800, 0x10000
+2551   0000             
