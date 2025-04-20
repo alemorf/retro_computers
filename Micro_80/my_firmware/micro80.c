@@ -1,22 +1,21 @@
 /* Прошивка компьютера Микро 80 из журнала Радио за 1983 год
  * Реверc-инженеринг 5-06-2024 Алексей Морозов aleksey.f.morozov@gmail.com
- *
  * Доработка 12-04-2025 Алексей Морозов aleksey.f.morozov@gmail.com
- *   - Оптимизация
- *   - Поддержка цвета
- *   - Поддержка знакогенератора 256 символов. Поддержка строчных букв.
- *   - Команды и цифры можно вводить строчными буквами.
- *   - Прокрутка экрана
- *   - Уменьшение размера экрана до 25 линий
- *   - Программная фиксация клавиш Рус и Заг
- *   - Отображение Рус/Лат и Заг/Стр на экране
- *   - Клавиатура реагирует при нажатии клавиши, а не при отпускании
- *   - Автоповтор нажатой клавиши
- *   - Название компьютера выводится только при старте
- *   - Отключение прерываний
- *   - Установка скорости чтения/записи с магнитофона
- *   - Если IsKeyPressed вернул нажатую клавишу, то последующий вызов ReadKey не зависает
- *   - Контроль переполнения при парсинге чисел
+ * + Ни одна функция и возможность оригинального монитора не потеряна
+ * + Поддержка цвета
+ * + Поддержка знакогенератора 256 символов. Поддержка строчных букв.
+ * + Команды и 16-ричные цифры можно вводить строчными буквами.
+ * + Прокрутка экрана
+ * + Уменьшение размера экрана до 25 линий
+ * + Программная фиксация клавиш Рус и Заг
+ * + Отображение Рус/Лат и Заг/Стр на экране
+ * + Клавиатура реагирует при нажатии клавиши, а не при отпускании
+ * + Автоповтор нажатой клавиши
+ * + Название компьютера выводится только при старте
+ * + Отключение прерываний
+ * + Установка скорости чтения/записи с магнитофона при старте
+ * +  Если IsKeyPressed вернул нажатую клавишу, то последующий вызов ReadKey не зависает
+ * + Контроль переполнения при парсинге чисел
  */
 
 #include "cmm.h"
@@ -47,7 +46,7 @@ void ContinueBreakpoint(...);
 void BreakpointAt3(...);
 void CmdQResult(...);
 void CmdIEnd(...);
-void ReadTapeByteNext();
+void ReadTapeByteNext(...);
 void ReadTapeByte(...);
 void ReadTapeDelay(...);
 void TapeDelay(...);
@@ -75,11 +74,11 @@ void ScanKey2(...);
 void ScanKeyExit(...);
 void IsKeyPressed();
 
-extern uint8_t aHello[];
-extern uint8_t aPrompt[];
-extern uint8_t monitorCommands[];
-extern uint8_t regList[];
-extern uint8_t keyTable[];
+extern uint8_t aHello[20];
+extern uint8_t aPrompt[3];
+extern uint8_t monitorCommands;
+extern uint8_t regList[19];
+extern uint8_t keyTable[8];
 
 asm(" org 0F800h");
 
@@ -120,7 +119,7 @@ void EntryPrintString(...) {
 }
 
 void Reboot() {
-    DisableInterrupts();
+    disable_interrupts();
     readDelay = hl = 0x324B;
     keybMode = (a ^= a);
     a--;
@@ -165,7 +164,8 @@ void MonitorExecute() {
 
 void ReadString() {
     hl = &cmdBuffer;
-    de = hl;
+    d = h;
+    e = l;
     for (;;) {
         ReadKey();
         if (a == 8) {
@@ -182,7 +182,7 @@ void ReadString() {
             a = '.';
         PrintCharA(a);
         hl++;
-        if ((a = l) == &cmdBufferEnd)
+        if ((a = l) == (uintptr_t)&cmdBufferEnd)
             return MonitorError();
     }
 }
@@ -251,10 +251,10 @@ void ParseDword(...) {
         a -= '0';
         if (flag_m)
             return;
-        if (flag_p(Compare(a, 10))) {
-            if (flag_m(Compare(a, 0x11)))
+        if (flag_p(compare(a, 10))) {
+            if (flag_m(compare(a, 0x11)))
                 return;
-            if (flag_p(Compare(a, 0x17)))
+            if (flag_p(compare(a, 0x17)))
                 return;
             a -= 7;
         }
@@ -277,7 +277,7 @@ void ParseDword(...) {
 }
 
 void PopReturnCf() {
-    SetFlagC();
+    set_flag_c();
     PopReturn();
 }
 
@@ -292,14 +292,14 @@ void PrintByteFromParam1(...) {
 
 void PrintHexByte(...) {
     b = a;
-    CyclicRotateRight(a, 4);
+    cyclic_rotate_right(a, 4);
     PrintHex(a);
     PrintHex(a = b);
 }
 
 void PrintHex(...) {
     a &= 0x0F;
-    if (flag_p(Compare(a, 10)))
+    if (flag_p(compare(a, 10)))
         a += 'A' - '0' - 10;
     a += '0';
     PrintCharA(a);
@@ -342,7 +342,7 @@ void Loop() {
 void CmpHlDe(...) {
     if ((a = h) != d)
         return;
-    Compare(a = l, e);
+    compare(a = l, e);
 }
 
 /* X - Изменение содержимого внутреннего регистра микропроцессора */
@@ -362,7 +362,7 @@ void CmdX() {
     }
     c = l;
     b = a;
-    hl = &regList - 1;
+    hl = regList - 1;
     do {
         hl++;
         a = *hl;
@@ -371,7 +371,7 @@ void CmdX() {
         hl++;
     } while (a != b);
     l = *hl;
-    h = &regs >> 8;
+    h = (uintptr_t)&regs >> 8;
     *hl = c;
 }
 
@@ -406,8 +406,10 @@ void PrintRegMinus(...) {
     PrintChar(c = '-');
 }
 
-uint8_t regList[] = {'A', &regA, 'B', &regB, 'C', &regC, 'D', &regD,  'E', &regE,
-                     'F', &regF, 'H', &regH, 'L', &regL, 'S', &regSP, 0};
+uint8_t regList[] = {'A', (uint8_t)(uintptr_t)&regA, 'B', (uint8_t)(uintptr_t)&regB, 'C', (uint8_t)(uintptr_t)&regC,
+                     'D', (uint8_t)(uintptr_t)&regD, 'E', (uint8_t)(uintptr_t)&regE, 'F', (uint8_t)(uintptr_t)&regF,
+                     'H', (uint8_t)(uintptr_t)&regH, 'L', (uint8_t)(uintptr_t)&regL, 'S', (uint8_t)(uintptr_t)&regSP,
+                     0};
 
 uint8_t aStart[] = "\x0ASTART-";
 uint8_t aDir_[] = "\x0ADIR  -";
@@ -487,7 +489,7 @@ void Run() {
     pop(de, bc, a, hl);
     sp = hl;
     hl = regHL;
-    jumpOpcode();
+    jumpParam1();
 }
 
 void CmdP(...) {
@@ -755,10 +757,10 @@ void CmdH(...) {
     /* param1 - param2 */
     pop(hl);
     a = e;
-    Invert(a);
+    invert(a);
     e = a;
     a = d;
-    Invert(a);
+    invert(a);
     d = a;
     de++;
     hl += de;
@@ -850,7 +852,7 @@ void CmdV() {
     }
 }
 
-void ReadTapeByteNext() {
+void ReadTapeByteNext(...) {
     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
 }
 
@@ -863,7 +865,7 @@ void ReadTapeByte(...) {
     loc_FD9D:
         a = c;
         a &= 0x7F;
-        CyclicRotateLeft(a, 1);
+        cyclic_rotate_left(a, 1);
         c = a;
 
         do {
@@ -878,7 +880,7 @@ void ReadTapeByte(...) {
             if ((a = c) == TAPE_START) {
                 tapePolarity = (a ^= a);
             } else {
-                if (a != 0xFF ^ TAPE_START)
+                if (a != (0xFF ^ TAPE_START))
                     goto loc_FD9D;
                 tapePolarity = a = 0xFF;
             }
@@ -908,7 +910,7 @@ void WriteTapeByte(...) {
         c = 8;
         do {
             a = d;
-            CyclicRotateLeft(a, 1);
+            cyclic_rotate_left(a, 1);
             d = a;
 
             out(PORT_TAPE, (a = 1) ^= d);
@@ -926,43 +928,43 @@ void WriteTapeDelay(...) {
 }
 
 uint8_t monitorCommands = 'M';
-uint16_t monitorCommandsMa = &CmdM;
+uint16_t monitorCommandsMa = (uintptr_t)&CmdM;
 uint8_t monitorCommandsC = 'C';
-uint16_t monitorCommandsCa = &CmdC;
+uint16_t monitorCommandsCa = (uintptr_t)&CmdC;
 uint8_t monitorCommandsD = 'D';
-uint16_t monitorCommandsDa = &CmdD;
+uint16_t monitorCommandsDa = (uintptr_t)&CmdD;
 uint8_t monitorCommandsB = 'B';
-uint16_t monitorCommandsBa = &CmdB;
+uint16_t monitorCommandsBa = (uintptr_t)&CmdB;
 uint8_t monitorCommandsG = 'G';
-uint16_t monitorCommandsGa = &CmdG;
+uint16_t monitorCommandsGa = (uintptr_t)&CmdG;
 uint8_t monitorCommandsP = 'P';
-uint16_t monitorCommandsPa = &CmdP;
+uint16_t monitorCommandsPa = (uintptr_t)&CmdP;
 uint8_t monitorCommandsX = 'X';
-uint16_t monitorCommandsXa = &CmdX;
+uint16_t monitorCommandsXa = (uintptr_t)&CmdX;
 uint8_t monitorCommandsF = 'F';
-uint16_t monitorCommandsFa = &CmdF;
+uint16_t monitorCommandsFa = (uintptr_t)&CmdF;
 uint8_t monitorCommandsS = 'S';
-uint16_t monitorCommandsSa = &CmdS;
+uint16_t monitorCommandsSa = (uintptr_t)&CmdS;
 uint8_t monitorCommandsT = 'T';
-uint16_t monitorCommandsTa = &CmdT;
+uint16_t monitorCommandsTa = (uintptr_t)&CmdT;
 uint8_t monitorCommandsI = 'I';
-uint16_t monitorCommandsIa = &CmdI;
+uint16_t monitorCommandsIa = (uintptr_t)&CmdI;
 uint8_t monitorCommandsO = 'O';
-uint16_t monitorCommandsOa = &CmdO;
+uint16_t monitorCommandsOa = (uintptr_t)&CmdO;
 uint8_t monitorCommandsV = 'V';
-uint16_t monitorCommandsVa = &CmdV;
+uint16_t monitorCommandsVa = (uintptr_t)&CmdV;
 uint8_t monitorCommandsJ = 'J';
-uint16_t monitorCommandsJa = &CmdJ;
+uint16_t monitorCommandsJa = (uintptr_t)&CmdJ;
 uint8_t monitorCommandsA = 'A';
-uint16_t monitorCommandsAa = &CmdA;
+uint16_t monitorCommandsAa = (uintptr_t)&CmdA;
 uint8_t monitorCommandsK = 'K';
-uint16_t monitorCommandsKa = &CmdK;
+uint16_t monitorCommandsKa = (uintptr_t)&CmdK;
 uint8_t monitorCommandsQ = 'Q';
-uint16_t monitorCommandsQa = &CmdQ;
+uint16_t monitorCommandsQa = (uintptr_t)&CmdQ;
 uint8_t monitorCommandsL = 'L';
-uint16_t monitorCommandsLa = &CmdL;
+uint16_t monitorCommandsLa = (uintptr_t)&CmdL;
 uint8_t monitorCommandsH = 'H';
-uint16_t monitorCommandsHa = &CmdH;
+uint16_t monitorCommandsHa = (uintptr_t)&CmdH;
 uint8_t monitorCommandsEnd = 0;
 
 uint8_t aHello[] = "\x1F*MikrO/80* MONITOR";
@@ -1157,7 +1159,7 @@ void PrintKeyStatus() {
 
 void PrintKeyStatus1() {
     de = 3; /* String size */
-    CyclicRotateRight(a);
+    cyclic_rotate_right(a, 1);
     if (flag_c)
         hl += de;
     d = a;
@@ -1180,7 +1182,7 @@ void ScanKey0() {
     d = KEYBOARD_COLUMN_COUNT;
     do {
         out(PORT_KEYBOARD_COLUMN, a = c);
-        CyclicRotateLeft(a, 1);
+        cyclic_rotate_left(a, 1);
         c = a;
         a = in(PORT_KEYBOARD_ROW);
         a &= KEYBOARD_ROW_MASK;
@@ -1201,7 +1203,7 @@ void ScanKey0() {
 void ScanKey1(...) {
     do {
         b++;
-        CyclicRotateRight(a);
+        cyclic_rotate_right(a, 1);
     } while (flag_c);
 
     /* Delay */
@@ -1237,9 +1239,9 @@ void ScanKey1(...) {
     if (a >= 48) {
         if (a == 56) { /* RUS/LAT */
             a = in(PORT_KEYBOARD_MODS);
-            CarryRotateRight(a, 3); /* Shift */
+            carry_rotate_right(a, 3); /* Shift */
             a = KEYB_MODE_CAP;
-            AddCarry(a, 0); /* KEYB_MODE_CAP -> KEYB_MODE_RUS */
+            carry_add(a, 0); /* KEYB_MODE_CAP -> KEYB_MODE_RUS */
             hl = &keybMode;
             a ^= *hl;
             *hl = a;
@@ -1247,9 +1249,9 @@ void ScanKey1(...) {
             PrintKeyStatus();
             return ScanKey0();
         }
-        a += &keyTable - 48;
+        a += ((uintptr_t)keyTable - 48);
         l = a;
-        h = (&keyTable - 48) >> 8;
+        h = ((uintptr_t)keyTable - 48) >> 8;
         a = *hl;
         return ScanKey2(a);
     }
@@ -1261,7 +1263,7 @@ void ScanKey1(...) {
     c = a;
 
     a = keybMode;
-    CyclicRotateRight(a, 2); /* KEYB_MODE_RUS */
+    cyclic_rotate_right(a, 2); /* KEYB_MODE_RUS */
     if (flag_c) {
         a = c;
         a |= 0x20;
@@ -1269,14 +1271,14 @@ void ScanKey1(...) {
     }
 
     a = in(PORT_KEYBOARD_MODS);
-    CarryRotateRight(a, 2); /* Ctrl */
+    cyclic_rotate_right(a, 2); /* Ctrl */
     if (flag_nc) {
         a = c;
         a &= 0x1F;
         return ScanKey2(a);
     }
 
-    CarryRotateRight(a, 1); /* Shift */
+    carry_rotate_right(a, 1); /* Shift */
     a = c;
     if (flag_nc) {
         if (a >= 0x40) {
@@ -1294,7 +1296,7 @@ void ScanKey2(...) {
     c = a;
 
     a = keybMode;
-    CyclicRotateRight(a, 1); /* KEYB_MODE_CAP */
+    cyclic_rotate_right(a, 1); /* KEYB_MODE_CAP */
     if (flag_nc)
         return ScanKeyExit();
 

@@ -5,66 +5,69 @@
 #include "cmm.h"
 #include "micro80.h"
 
-void Reboot(...);
-void Monitor(...);
-void MonitorExecute(...);
-void ReadString(...);
-void ReadStringLoop(...);
-void MonitorError(...);
-void ReadStringCr(...);
-void ReadStringBs(...);
-void CommonBs(...);
-void InputInit(...);
-void InputLoop(...);
-void InputEndSpace(...);
-void InputBs(...);
-void PopWordReturn(...);
-void PrintString(...);
-void ParseDword(...);
-void ParseDword1(...);
-void ReturnCf(...);
-void PrintHexByte(...);
-void PrintHex(...);
-void PrintParam1Space(...);
-void PrintHexWordSpace(...);
-void PrintSpace(...);
-void IncWord(...);
-void CmpHlDe(...);
-void CmdXS(...);
-void FindRegister(...);
-void PrintRegs(...);
-void PrintRegMinus(...);
-void InitRst38(...);
-void BreakPoint(...);
-void Run(...);
-void BreakPointAt2(...);
-void ContinueBreakpoint(...);
-void BreakpointAt3(...);
-void CmdQResult(...);
-void CmdIEnd(...);
-void ReadTapeByte(...);
-void ReadTapeDelay(...);
-void TapeDelay(...);
-void WriteTapeByte(...);
-void WriteTapeDelay(...);
-void PrintCharA(...);
-void PrintChar(...);
-void PrintCharInt(...);
-void MoveCursor(...);
-void ClearScreen(...);
-void MoveCursorHome(...);
-void ClearScreenInt(...);
-void MoveCursorRight(...);
-void MoveCursorLeft(...);
-void MoveCursorDown(...);
-void MoveCursorUp(...);
-void MoveCursorNextLine(...);
-void MoveCursorNextLine1(...);
-void ReadKey(...);
+void Reboot();
+void ReadKey();
+void ReadKey0();
 void ReadKey1(...);
 void ReadKey2(...);
-void ReadKeyDelay(...);
-void IsKeyPressed(...);
+void ReadKeyDelay();
+void ReadTapeByte(...);
+void PrintChar(...);
+void WriteTapeByte(...);
+void PrintChar(...);
+void IsKeyPressed();
+void PrintHexByte(...);
+void PrintString(...);
+void Monitor();
+void MonitorExecute();
+void PrintCharA(...);
+void ReadString();
+void MonitorError();
+void ReadStringLoop(...);
+void CommonBs(...);
+void PrintSpace(...);
+void InputBs(...);
+void InputEndSpace(...);
+void PopWordReturn(...);
+void InputLoop(...);
+void InputInit(...);
+void ParseDword(...);
+void CmpHlDe(...);
+void ReturnCf(...);
+void ParseDword1(...);
+void PrintHex(...);
+void PrintParam1Space();
+void PrintHexWordSpace(...);
+void IncWord(...);
+void PrintRegs();
+void CmdXS(...);
+void FindRegister(...);
+void ReadKey(...);
+void PrintRegMinus(...);
+void InitRst38();
+void BreakPoint(...);
+void BreakPointAt2(...);
+void BreakpointAt3(...);
+void Run();
+void ContinueBreakpoint(...);
+void CmdQResult(...);
+void CmdIEnd(...);
+void ReadTapeDelay(...);
+void PrintCharInt(...);
+void WriteTapeDelay(...);
+void TapeDelay(...);
+void ClearScreen();
+void MoveCursorLeft(...);
+void MoveCursorRight(...);
+void MoveCursorUp(...);
+void MoveCursorDown(...);
+void MoveCursorNextLine(...);
+void MoveCursorHome();
+void ClearScreenInt();
+void MoveCursor(...);
+void MoveCursorNextLine1(...);
+void ReadStringBs(...);
+void ReadStringCr(...);
 
 extern uint8_t aPrompt[22];
 extern uint8_t monitorCommands;
@@ -74,7 +77,7 @@ extern uint8_t keyTable[8];
 
 asm(" org 0F800h");
 
-void EntryReboot(...) {
+void EntryReboot() {
     Reboot();
 }
 
@@ -98,7 +101,7 @@ void EntryPrintChar2(...) {
     PrintChar();
 }
 
-void EntryIsKeyPressed(...) {
+void EntryIsKeyPressed() {
     IsKeyPressed();
 }
 
@@ -110,14 +113,14 @@ void EntryPrintString(...) {
     PrintString();
 }
 
-void Reboot(...) {
+void Reboot() {
     regSP = hl = USER_STACK_TOP;
     sp = STACK_TOP;
     PrintCharA(a = 0x1F); /* Clear screen */
     Monitor();
 }
 
-void Monitor(...) {
+void Monitor() {
     out(PORT_KEYBOARD_MODE, a = 0x8B);
     sp = STACK_TOP;
     PrintString(hl = &aPrompt);
@@ -126,7 +129,7 @@ void Monitor(...) {
     MonitorExecute();
 }
 
-void MonitorExecute(...) {
+void MonitorExecute() {
     hl = &cmdBuffer;
     b = *hl;
     hl = &monitorCommands;
@@ -149,7 +152,7 @@ void MonitorExecute(...) {
     return hl();
 }
 
-void ReadString(...) {
+void ReadString() {
     return ReadStringLoop(hl = &cmdBuffer);
 }
 
@@ -170,7 +173,7 @@ void ReadStringLoop(...) {
     MonitorError();
 }
 
-void MonitorError(...) {
+void MonitorError() {
     PrintCharA(a = '?');
     Monitor();
 }
@@ -253,7 +256,7 @@ void PrintString(...) {
     }
 }
 
-void ParseParams(...) {
+void ParseParams() {
     hl = &param1;
     b = 6;
     a ^= a;
@@ -352,7 +355,7 @@ void PrintLfParam1(...) {
     PrintParam1Space();
 }
 
-void PrintParam1Space(...) {
+void PrintParam1Space() {
     PrintHexWordSpace(hl = &param1h);
 }
 
@@ -395,7 +398,7 @@ void CmpHlDe(...) {
 
 /* X - Изменение содержимого внутреннего регистра микропроцессора */
 
-void CmdX(...) {
+void CmdX() {
     hl = &cmdBuffer1;
     a = *hl;
     if (a == 0x0D)
@@ -418,7 +421,7 @@ void CmdX(...) {
     *hl = a;
 }
 
-void CmdXS(...) {
+void CmdXS() {
     PrintSpace();
     PrintHexWordSpace(hl = &regSPH);
     Input();
@@ -482,7 +485,7 @@ uint8_t aDir_[] = "\x0ADIR. -";
 
 /* B - Задание адреса останова при отладке */
 
-void CmdB(...) {
+void CmdB() {
     ParseParams();
     InitRst38();
     hl = param1;
@@ -492,7 +495,7 @@ void CmdB(...) {
     breakPrevByte = a;
 }
 
-void InitRst38(...) {
+void InitRst38() {
     rst38Opcode = a = OPCODE_JMP;
     rst38Address = hl = &BreakPoint;
 }
@@ -509,7 +512,7 @@ void BreakPoint(...) {
     swap(*sp, hl);
     sp = &regHL;
     push(de, bc, a);
-    sp = &cmdBuffer + 0x84;
+    sp = STACK_TOP;
 
     hl = regSP;
     hl--;
@@ -542,14 +545,14 @@ void BreakPoint(...) {
 
 /* G<адрес> - Запуск программы в отладочном режиме */
 
-void CmdG(...) {
+void CmdG() {
     ParseParams();
     if ((a = cmdBuffer1) == 0x0D)
         param1 = hl = lastBreakAddress;
     Run();
 }
 
-void Run(...) {
+void Run() {
     jumpOpcode = a = OPCODE_JMP;
     sp = &regs;
     pop(de, bc, a, hl);
@@ -628,7 +631,7 @@ void BreakpointAt3(...) {
 
 /* D<адрес>,<адрес> - Просмотр содержимого области памяти в шестнадцатеричном виде */
 
-void CmdD(...) {
+void CmdD() {
     ParseParams();
     PrintLf();
 CmdDLine:
@@ -646,7 +649,7 @@ CmdDLine:
 
 /* C<адрес от>,<адрес до>,<адрес от 2> - Сравнение содержимого двух областей памяти */
 
-void CmdC(...) {
+void CmdC() {
     ParseParams();
     hl = param3;
     swap(hl, de);
@@ -668,7 +671,7 @@ void CmdC(...) {
 
 /* F<адрес>,<адрес>,<байт> - Запись байта во все ячейки области памяти */
 
-void CmdF(...) {
+void CmdF() {
     ParseParams();
     b = a = param3;
     for (;;) {
@@ -680,7 +683,7 @@ void CmdF(...) {
 
 /* S<адрес>,<адрес>,<байт> - Поиск байта в области памяти */
 
-void CmdS(...) {
+void CmdS() {
     ParseParams();
     c = l;
     for (;;) {
@@ -694,7 +697,7 @@ void CmdS(...) {
 
 /* T<начало>,<конец>,<куда> - Пересылка содержимого одной области в другую */
 
-void CmdT(...) {
+void CmdT() {
     ParseParams();
     hl = param3;
     swap(hl, de);
@@ -708,7 +711,7 @@ void CmdT(...) {
 
 /* M<адрес> - Просмотр или изменение содержимого ячейки (ячеек) памяти */
 
-void CmdM(...) {
+void CmdM() {
     ParseParams();
     for (;;) {
         PrintSpace();
@@ -728,7 +731,7 @@ void CmdM(...) {
 
 /* J<адрес> - Запуск программы с указанного адреса */
 
-void CmdJ(...) {
+void CmdJ() {
     ParseParams();
     hl = param1;
     return hl();
@@ -736,7 +739,7 @@ void CmdJ(...) {
 
 /* А<символ> - Вывод кода символа на экран */
 
-void CmdA(...) {
+void CmdA() {
     PrintLf();
     PrintHexByte(a = cmdBuffer1);
     PrintLf();
@@ -744,7 +747,7 @@ void CmdA(...) {
 
 /* K - Вывод символа с клавиатуры на экран */
 
-void CmdK(...) {
+void CmdK() {
     for (;;) {
         ReadKey();
         if (a == 1) /* УС + А */
@@ -755,7 +758,7 @@ void CmdK(...) {
 
 /* Q<начало>,<конец> - Тестирование области памяти */
 
-void CmdQ(...) {
+void CmdQ() {
     ParseParams();
     for (;;) {
         hl = param1;
@@ -789,7 +792,7 @@ void CmdQResult(...) {
 
 /* L<начало>,<конец> - Посмотр области памяти в символьном виде */
 
-void CmdL(...) {
+void CmdL() {
     ParseParams();
     PrintLf();
 
@@ -858,7 +861,7 @@ void CmdH(...) {
 
 /* I - Ввод информации с магнитной ленты */
 
-void CmdI(...) {
+void CmdI() {
     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
     param1h = a;
     tapeStartH = a;
@@ -896,7 +899,7 @@ void CmdIEnd(...) {
 
 /* O<начало>,<конец> - Вывод содержимого области памяти на магнитную ленту */
 
-void CmdO(...) {
+void CmdO() {
     ParseParams();
     a ^= a;
     b = 0;
@@ -918,7 +921,7 @@ void CmdO(...) {
 
 /* V - Сравнение информации на магнитной ленте с содержимым области памяти */
 
-void CmdV(...) {
+void CmdV() {
     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
     param1h = a;
     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
@@ -1111,16 +1114,16 @@ void MoveCursor(...) {
     pop(hl, bc, de, a);
 }
 
-void ClearScreen(...) {
+void ClearScreen() {
     ClearScreenInt();
     MoveCursorHome();
 }
 
-void MoveCursorHome(...) {
+void MoveCursorHome() {
     MoveCursor(hl = SCREEN_BEGIN);
 }
 
-void ClearScreenInt(...) {
+void ClearScreenInt() {
     hl = SCREEN_BEGIN;
     de = SCREEN_ATTRIB_BEGIN;
     for (;;) {
@@ -1193,7 +1196,7 @@ void MoveCursorNextLine1(...) {
     ClearScreen();
 }
 
-void ReadKey(...) {
+void ReadKey() {
     push(bc, de, hl);
 
     for (;;) {
@@ -1304,7 +1307,7 @@ void ReadKey2(...) {
     pop(bc, de, hl);
 }
 
-void ReadKeyDelay(...) {
+void ReadKeyDelay() {
     de = 0x1000;
     for (;;) {
         de--;
@@ -1324,7 +1327,7 @@ uint8_t keyTable[] = {
     0x0C, /* Home */
 };
 
-void IsKeyPressed(...) {
+void IsKeyPressed() {
     out(PORT_KEYBOARD_COLUMN, a = 0);
     a = in(PORT_KEYBOARD_ROW);
     a &= KEYBOARD_ROW_MASK;

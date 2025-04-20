@@ -46,7 +46,7 @@ cmdbufferend equ 63387
 ; 38 extern uint16_t rst38Address __address(0x39);
 ; 39 
 ; 40 /* BIOS variables */
-; 41 void jumpParam1() __address(0xF750);
+; 41 void jumpParam1(void) __address(0xF750);
 ; 42 extern uint8_t jumpOpcode __address(0xF750);
 ; 43 extern uint16_t param1 __address(0xF751);
 ; 44 extern uint8_t param1h __address(0xF752);
@@ -92,737 +92,737 @@ cmdbufferend equ 63387
 ; 84 extern uint8_t cmdBuffer1 __address(0xF77B + 1);
 ; 85 extern uint8_t cmdBufferEnd __address(0xF77B + 32);
  org 0F800h
-; 77  EntryReboot(...) {
+; 80  EntryReboot() {
 entryreboot:
-; 78     Reboot();
+; 81     Reboot();
 	jp reboot
-; 79 }
-; 80 
-; 81 void EntryReadChar(...) {
+; 82 }
+; 83 
+; 84 void EntryReadChar(...) {
 entryreadchar:
-; 82     ReadKey();
+; 85     ReadKey();
 	jp readkey
-; 83 }
-; 84 
-; 85 void EntryReadTapeByte(...) {
+; 86 }
+; 87 
+; 88 void EntryReadTapeByte(...) {
 entryreadtapebyte:
-; 86     ReadTapeByte();
+; 89     ReadTapeByte();
 	jp readtapebyte
-; 87 }
-; 88 
-; 89 void EntryPrintChar(...) {
+; 90 }
+; 91 
+; 92 void EntryPrintChar(...) {
 entryprintchar:
-; 90     PrintChar();
+; 93     PrintChar();
 	jp printchar
-; 91 }
-; 92 
-; 93 void EntryWriteTapeByte(...) {
+; 94 }
+; 95 
+; 96 void EntryWriteTapeByte(...) {
 entrywritetapebyte:
-; 94     WriteTapeByte();
+; 97     WriteTapeByte();
 	jp writetapebyte
-; 95 }
-; 96 
-; 97 void EntryPrintChar2(...) {
+; 98 }
+; 99 
+; 100 void EntryPrintChar2(...) {
 entryprintchar2:
-; 98     PrintChar();
+; 101     PrintChar();
 	jp printchar
-; 99 }
-; 100 
-; 101 void EntryIsKeyPressed(...) {
+; 102 }
+; 103 
+; 104 void EntryIsKeyPressed() {
 entryiskeypressed:
-; 102     IsKeyPressed();
+; 105     IsKeyPressed();
 	jp iskeypressed
-; 103 }
-; 104 
-; 105 void EntryPrintHexByte(...) {
+; 106 }
+; 107 
+; 108 void EntryPrintHexByte(...) {
 entryprinthexbyte:
-; 106     PrintHexByte();
+; 109     PrintHexByte();
 	jp printhexbyte
-; 107 }
-; 108 
-; 109 void EntryPrintString(...) {
+; 110 }
+; 111 
+; 112 void EntryPrintString(...) {
 entryprintstring:
-; 110     PrintString();
+; 113     PrintString();
 	jp printstring
-; 111 }
-; 112 
-; 113 void Reboot(...) {
+; 114 }
+; 115 
+; 116 void Reboot() {
 reboot:
-; 114     regSP = hl = USER_STACK_TOP;
+; 117     regSP = hl = USER_STACK_TOP;
 	ld hl, 63424
 	ld (regsp), hl
-; 115     sp = STACK_TOP;
+; 118     sp = STACK_TOP;
 	ld sp, 63487
-; 116     PrintCharA(a = 0x1F); /* Clear screen */
+; 119     PrintCharA(a = 0x1F); /* Clear screen */
 	ld a, 31
 	call printchara
-; 117     Monitor();
-; 118 }
-; 119 
-; 120 void Monitor(...) {
+; 120     Monitor();
+; 121 }
+; 122 
+; 123 void Monitor() {
 monitor:
-; 121     out(PORT_KEYBOARD_MODE, a = 0x8B);
+; 124     out(PORT_KEYBOARD_MODE, a = 0x8B);
 	ld a, 139
 	out (4), a
-; 122     sp = STACK_TOP;
+; 125     sp = STACK_TOP;
 	ld sp, 63487
-; 123     PrintString(hl = &aPrompt);
+; 126     PrintString(hl = &aPrompt);
 	ld hl, aprompt
 	call printstring
-; 124     ReadString();
+; 127     ReadString();
 	call readstring
-; 125     push(hl = &Monitor);
+; 128     push(hl = &Monitor);
 	ld hl, 0FFFFh & (monitor)
 	push hl
-; 126     MonitorExecute();
-; 127 }
-; 128 
-; 129 void MonitorExecute(...) {
+; 129     MonitorExecute();
+; 130 }
+; 131 
+; 132 void MonitorExecute() {
 monitorexecute:
-; 130     hl = &cmdBuffer;
+; 133     hl = &cmdBuffer;
 	ld hl, 0FFFFh & (cmdbuffer)
-; 131     b = *hl;
+; 134     b = *hl;
 	ld b, (hl)
-; 132     hl = &monitorCommands;
+; 135     hl = &monitorCommands;
 	ld hl, 0FFFFh & (monitorcommands)
-; 133 
-; 134     for (;;) {
+; 136 
+; 137     for (;;) {
 l_1:
-; 135         a = *hl;
+; 138         a = *hl;
 	ld a, (hl)
-; 136         if (flag_z(a &= a))
+; 139         if (flag_z(a &= a))
 	and a
-; 137             return MonitorError();
+; 140             return MonitorError();
 	jp z, monitorerror
-; 138         if (a == b)
+; 141         if (a == b)
 	cp b
-; 139             break;
+; 142             break;
 	jp z, l_2
-; 140         hl++;
+; 143         hl++;
 	inc hl
-; 141         hl++;
+; 144         hl++;
 	inc hl
-; 142         hl++;
+; 145         hl++;
 	inc hl
 	jp l_1
 l_2:
-; 143     }
-; 144 
-; 145     hl++;
+; 146     }
+; 147 
+; 148     hl++;
 	inc hl
-; 146     sp = hl;
+; 149     sp = hl;
 	ld sp, hl
-; 147     pop(hl);
+; 150     pop(hl);
 	pop hl
-; 148     sp = STACK_TOP - 2;
+; 151     sp = STACK_TOP - 2;
 	ld sp, 63485
-; 149     return hl();
+; 152     return hl();
 	jp hl
-; 150 }
-; 151 
-; 152 void ReadString(...) {
+; 153 }
+; 154 
+; 155 void ReadString() {
 readstring:
-; 153     return ReadStringLoop(hl = &cmdBuffer);
+; 156     return ReadStringLoop(hl = &cmdBuffer);
 	ld hl, 0FFFFh & (cmdbuffer)
-; 154 }
-; 155 
-; 156 void ReadStringLoop(...) {
+; 157 }
+; 158 
+; 159 void ReadStringLoop(...) {
 readstringloop:
-; 157     do {
+; 160     do {
 l_3:
-; 158         ReadKey();
+; 161         ReadKey();
 	call readkey
-; 159         if (a == 8)
+; 162         if (a == 8)
 	cp 8
-; 160             return ReadStringBs();
+; 163             return ReadStringBs();
 	jp z, readstringbs
-; 161         if (flag_nz)
-; 162             PrintCharA();
+; 164         if (flag_nz)
+; 165             PrintCharA();
 	call nz, printchara
-; 163         *hl = a;
+; 166         *hl = a;
 	ld (hl), a
-; 164         if (a == 0x0D)
+; 167         if (a == 0x0D)
 	cp 13
-; 165             return ReadStringCr(hl);
+; 168             return ReadStringCr(hl);
 	jp z, readstringcr
-; 166         a = &cmdBufferEnd - 1;
+; 169         a = &cmdBufferEnd - 1;
 	ld a, 0FFh & ((cmdbufferend) - (1))
-; 167         compare(a, l);
+; 170         compare(a, l);
 	cp l
-; 168         hl++;
+; 171         hl++;
 	inc hl
 l_4:
 	jp nz, l_3
-; 169     } while (flag_nz);
-; 170     MonitorError();
-; 171 }
-; 172 
-; 173 void MonitorError(...) {
+; 172     } while (flag_nz);
+; 173     MonitorError();
+; 174 }
+; 175 
+; 176 void MonitorError() {
 monitorerror:
-; 174     PrintCharA(a = '?');
+; 177     PrintCharA(a = '?');
 	ld a, 63
 	call printchara
-; 175     Monitor();
+; 178     Monitor();
 	jp monitor
-; 176 }
-; 177 
-; 178 void ReadStringCr(...) {
+; 179 }
+; 180 
+; 181 void ReadStringCr(...) {
 readstringcr:
-; 179     *hl = 0x0D;
+; 182     *hl = 0x0D;
 	ld (hl), 13
 	ret
-; 180 }
-; 181 
-; 182 void ReadStringBs(...) {
+; 183 }
+; 184 
+; 185 void ReadStringBs(...) {
 readstringbs:
-; 183     CommonBs();
+; 186     CommonBs();
 	call commonbs
-; 184     ReadStringLoop();
+; 187     ReadStringLoop();
 	jp readstringloop
-; 185 }
-; 186 
-; 187 void CommonBs(...) {
+; 188 }
+; 189 
+; 190 void CommonBs(...) {
 commonbs:
-; 188     if ((a = &cmdBuffer) == l)
+; 191     if ((a = &cmdBuffer) == l)
 	ld a, 0FFh & (cmdbuffer)
 	cp l
-; 189         return;
+; 192         return;
 	ret z
-; 190     PrintCharA(a = 8);
+; 193     PrintCharA(a = 8);
 	ld a, 8
 	call printchara
-; 191     hl--;
+; 194     hl--;
 	dec hl
 	ret
-; 192 }
-; 193 
-; 194 void Input(...) {
+; 195 }
+; 196 
+; 197 void Input(...) {
 input:
-; 195     PrintSpace();
+; 198     PrintSpace();
 	call printspace
-; 196     InputInit(hl = &cmdBuffer);
+; 199     InputInit(hl = &cmdBuffer);
 	ld hl, 0FFFFh & (cmdbuffer)
-; 197 }
-; 198 
-; 199 void InputInit(...) {
+; 200 }
+; 201 
+; 202 void InputInit(...) {
 inputinit:
-; 200     InputLoop(b = 0);
+; 203     InputLoop(b = 0);
 	ld b, 0
-; 201 }
-; 202 
-; 203 void InputLoop(...) {
+; 204 }
+; 205 
+; 206 void InputLoop(...) {
 inputloop:
-; 204     for (;;) {
+; 207     for (;;) {
 l_7:
-; 205         ReadKey();
+; 208         ReadKey();
 	call readkey
-; 206         if (a == 8)
+; 209         if (a == 8)
 	cp 8
-; 207             return InputBs();
+; 210             return InputBs();
 	jp z, inputbs
-; 208         if (flag_nz)
-; 209             PrintCharA();
+; 211         if (flag_nz)
+; 212             PrintCharA();
 	call nz, printchara
-; 210         *hl = a;
+; 213         *hl = a;
 	ld (hl), a
-; 211         if (a == ' ')
+; 214         if (a == ' ')
 	cp 32
-; 212             return InputEndSpace();
+; 215             return InputEndSpace();
 	jp z, inputendspace
-; 213         if (a == 0x0D)
+; 216         if (a == 0x0D)
 	cp 13
-; 214             return PopWordReturn();
+; 217             return PopWordReturn();
 	jp z, popwordreturn
-; 215         b = 0xFF;
+; 218         b = 0xFF;
 	ld b, 255
-; 216         if ((a = &cmdBufferEnd - 1) == l)
+; 219         if ((a = &cmdBufferEnd - 1) == l)
 	ld a, 0FFh & ((cmdbufferend) - (1))
 	cp l
-; 217             return MonitorError();
+; 220             return MonitorError();
 	jp z, monitorerror
-; 218         hl++;
+; 221         hl++;
 	inc hl
 	jp l_7
-; 219     }
-; 220 }
-; 221 
-; 222 void InputEndSpace(...) {
+; 222     }
+; 223 }
+; 224 
+; 225 void InputEndSpace(...) {
 inputendspace:
-; 223     *hl = 0x0D;
+; 226     *hl = 0x0D;
 	ld (hl), 13
-; 224     a = b;
+; 227     a = b;
 	ld a, b
-; 225     carry_rotate_left(a, 1);
+; 228     carry_rotate_left(a, 1);
 	rla
-; 226     de = &cmdBuffer;
+; 229     de = &cmdBuffer;
 	ld de, 0FFFFh & (cmdbuffer)
-; 227     b = 0;
+; 230     b = 0;
 	ld b, 0
 	ret
-; 228 }
-; 229 
-; 230 void InputBs(...) {
+; 231 }
+; 232 
+; 233 void InputBs(...) {
 inputbs:
-; 231     CommonBs();
+; 234     CommonBs();
 	call commonbs
-; 232     if (flag_z)
-; 233         return InputInit();
+; 235     if (flag_z)
+; 236         return InputInit();
 	jp z, inputinit
-; 234     InputLoop();
+; 237     InputLoop();
 	jp inputloop
-; 235 }
-; 236 
-; 237 void PopWordReturn(...) {
+; 238 }
+; 239 
+; 240 void PopWordReturn(...) {
 popwordreturn:
-; 238     sp++;
+; 241     sp++;
 	inc sp
-; 239     sp++;
+; 242     sp++;
 	inc sp
 	ret
-; 240 }
-; 241 
-; 242 void PrintLf(...) {
+; 243 }
+; 244 
+; 245 void PrintLf(...) {
 printlf:
-; 243     PrintString(hl = &aLf);
+; 246     PrintString(hl = &aLf);
 	ld hl, alf
-; 244 }
-; 245 
-; 246 void PrintString(...) {
+; 247 }
+; 248 
+; 249 void PrintString(...) {
 printstring:
-; 247     for (;;) {
+; 250     for (;;) {
 l_10:
-; 248         a = *hl;
+; 251         a = *hl;
 	ld a, (hl)
-; 249         if (flag_z(a &= a))
+; 252         if (flag_z(a &= a))
 	and a
-; 250             return;
+; 253             return;
 	ret z
-; 251         PrintCharA(a);
+; 254         PrintCharA(a);
 	call printchara
-; 252         hl++;
+; 255         hl++;
 	inc hl
 	jp l_10
-; 253     }
-; 254 }
-; 255 
-; 256 void ParseParams(...) {
+; 256     }
+; 257 }
+; 258 
+; 259 void ParseParams() {
 parseparams:
-; 257     hl = &param1;
+; 260     hl = &param1;
 	ld hl, 0FFFFh & (param1)
-; 258     b = 6;
+; 261     b = 6;
 	ld b, 6
-; 259     a ^= a;
+; 262     a ^= a;
 	xor a
-; 260     do {
+; 263     do {
 l_12:
-; 261         *hl = a;
+; 264         *hl = a;
 	ld (hl), a
 l_13:
-; 262     } while (flag_nz(b--));
+; 265     } while (flag_nz(b--));
 	dec b
 	jp nz, l_12
-; 263 
-; 264     de = &cmdBuffer + 1;
+; 266 
+; 267     de = &cmdBuffer + 1;
 	ld de, 0FFFFh & ((cmdbuffer) + (1))
-; 265     ParseDword();
+; 268     ParseDword();
 	call parsedword
-; 266     param1 = hl;
+; 269     param1 = hl;
 	ld (param1), hl
-; 267     param2 = hl;
+; 270     param2 = hl;
 	ld (param2), hl
-; 268     if (flag_c)
-; 269         return;
+; 271     if (flag_c)
+; 272         return;
 	ret c
-; 270     ParseDword();
+; 273     ParseDword();
 	call parsedword
-; 271     param2 = hl;
+; 274     param2 = hl;
 	ld (param2), hl
-; 272     push_pop(a, de) {
+; 275     push_pop(a, de) {
 	push af
 	push de
-; 273         swap(hl, de);
+; 276         swap(hl, de);
 	ex hl, de
-; 274         hl = param1;
+; 277         hl = param1;
 	ld hl, (param1)
-; 275         swap(hl, de);
+; 278         swap(hl, de);
 	ex hl, de
-; 276         CmpHlDe();
+; 279         CmpHlDe();
 	call cmphlde
-; 277         if (flag_c)
-; 278             return MonitorError();
+; 280         if (flag_c)
+; 281             return MonitorError();
 	jp c, monitorerror
 	pop de
 	pop af
-; 279     }
-; 280     if (flag_c)
-; 281         return;
+; 282     }
+; 283     if (flag_c)
+; 284         return;
 	ret c
-; 282     ParseDword();
+; 285     ParseDword();
 	call parsedword
-; 283     param3 = hl;
+; 286     param3 = hl;
 	ld (param3), hl
-; 284     if (flag_c)
-; 285         return;
+; 287     if (flag_c)
+; 288         return;
 	ret c
-; 286     MonitorError();
+; 289     MonitorError();
 	jp monitorerror
-; 287 }
-; 288 
-; 289 void ParseDword(...) {
+; 290 }
+; 291 
+; 292 void ParseDword(...) {
 parsedword:
-; 290     hl = 0;
+; 293     hl = 0;
 	ld hl, 0
-; 291     ParseDword1();
-; 292 }
-; 293 
-; 294 void ParseDword1(...) {
+; 294     ParseDword1();
+; 295 }
+; 296 
+; 297 void ParseDword1(...) {
 parsedword1:
-; 295     for (;;) {
+; 298     for (;;) {
 l_16:
-; 296         a = *de;
+; 299         a = *de;
 	ld a, (de)
-; 297         de++;
+; 300         de++;
 	inc de
-; 298         if (a == 0x0D)
+; 301         if (a == 0x0D)
 	cp 13
-; 299             return ReturnCf();
+; 302             return ReturnCf();
 	jp z, returncf
-; 300         if (a == ',')
+; 303         if (a == ',')
 	cp 44
-; 301             return;
+; 304             return;
 	ret z
-; 302         if (a == ' ')
+; 305         if (a == ' ')
 	cp 32
-; 303             continue;
+; 306             continue;
 	jp z, l_16
-; 304         a -= '0';
+; 307         a -= '0';
 	sub 48
-; 305         if (flag_m)
-; 306             return MonitorError();
+; 308         if (flag_m)
+; 309             return MonitorError();
 	jp m, monitorerror
-; 307         if (flag_p(compare(a, 10))) {
+; 310         if (flag_p(compare(a, 10))) {
 	cp 10
 	jp m, l_18
-; 308             if (flag_m(compare(a, 0x11)))
+; 311             if (flag_m(compare(a, 0x11)))
 	cp 17
-; 309                 return MonitorError();
+; 312                 return MonitorError();
 	jp m, monitorerror
-; 310             if (flag_p(compare(a, 0x17)))
+; 313             if (flag_p(compare(a, 0x17)))
 	cp 23
-; 311                 return MonitorError();
+; 314                 return MonitorError();
 	jp p, monitorerror
-; 312             a -= 7;
+; 315             a -= 7;
 	sub 7
 l_18:
-; 313         }
-; 314         c = a;
+; 316         }
+; 317         c = a;
 	ld c, a
-; 315         hl += hl;
-	add hl, hl
-; 316         hl += hl;
-	add hl, hl
-; 317         hl += hl;
-	add hl, hl
 ; 318         hl += hl;
 	add hl, hl
-; 319         if (flag_c)
-; 320             return MonitorError();
+; 319         hl += hl;
+	add hl, hl
+; 320         hl += hl;
+	add hl, hl
+; 321         hl += hl;
+	add hl, hl
+; 322         if (flag_c)
+; 323             return MonitorError();
 	jp c, monitorerror
-; 321         hl += bc;
+; 324         hl += bc;
 	add hl, bc
 	jp l_16
-; 322     }
-; 323 }
-; 324 
-; 325 void ReturnCf(...) {
+; 325     }
+; 326 }
+; 327 
+; 328 void ReturnCf(...) {
 returncf:
-; 326     set_flag_c();
+; 329     set_flag_c();
 	scf
 	ret
-; 327 }
-; 328 
-; 329 void PrintByteFromParam1(...) {
+; 330 }
+; 331 
+; 332 void PrintByteFromParam1(...) {
 printbytefromparam1:
-; 330     hl = param1;
+; 333     hl = param1;
 	ld hl, (param1)
-; 331     PrintHexByte(a = *hl);
+; 334     PrintHexByte(a = *hl);
 	ld a, (hl)
-; 332 }
-; 333 
-; 334 void PrintHexByte(...) {
+; 335 }
+; 336 
+; 337 void PrintHexByte(...) {
 printhexbyte:
-; 335     b = a;
+; 338     b = a;
 	ld b, a
-; 336     a = b;
+; 339     a = b;
 	ld a, b
-; 337     cyclic_rotate_right(a, 4);
+; 340     cyclic_rotate_right(a, 4);
 	rrca
 	rrca
 	rrca
 	rrca
-; 338     PrintHex(a);
+; 341     PrintHex(a);
 	call printhex
-; 339     PrintHex(a = b);
+; 342     PrintHex(a = b);
 	ld a, b
-; 340 }
-; 341 
-; 342 void PrintHex(...) {
+; 343 }
+; 344 
+; 345 void PrintHex(...) {
 printhex:
-; 343     a &= 0x0F;
+; 346     a &= 0x0F;
 	and 15
-; 344     if (flag_p(compare(a, 10)))
+; 347     if (flag_p(compare(a, 10)))
 	cp 10
-; 345         a += 'A' - '0' - 10;
+; 348         a += 'A' - '0' - 10;
 	jp m, l_20
 	add 7
 l_20:
-; 346     a += '0';
+; 349     a += '0';
 	add 48
-; 347     PrintCharA(a);
+; 350     PrintCharA(a);
 	jp printchara
-; 348 }
-; 349 
-; 350 void PrintLfParam1(...) {
+; 351 }
+; 352 
+; 353 void PrintLfParam1(...) {
 printlfparam1:
-; 351     PrintLf();
+; 354     PrintLf();
 	call printlf
-; 352     PrintParam1Space();
-; 353 }
-; 354 
-; 355 void PrintParam1Space(...) {
+; 355     PrintParam1Space();
+; 356 }
+; 357 
+; 358 void PrintParam1Space() {
 printparam1space:
-; 356     PrintHexWordSpace(hl = &param1h);
+; 359     PrintHexWordSpace(hl = &param1h);
 	ld hl, 0FFFFh & (param1h)
-; 357 }
-; 358 
-; 359 void PrintHexWordSpace(...) {
+; 360 }
+; 361 
+; 362 void PrintHexWordSpace(...) {
 printhexwordspace:
-; 360     PrintHexByte(a = *hl);
+; 363     PrintHexByte(a = *hl);
 	ld a, (hl)
 	call printhexbyte
-; 361     hl--;
+; 364     hl--;
 	dec hl
-; 362     PrintHexByte(a = *hl);
+; 365     PrintHexByte(a = *hl);
 	ld a, (hl)
 	call printhexbyte
-; 363     PrintSpace();
-; 364 }
-; 365 
-; 366 void PrintSpace(...) {
+; 366     PrintSpace();
+; 367 }
+; 368 
+; 369 void PrintSpace(...) {
 printspace:
-; 367     PrintCharA(a = ' ');
+; 370     PrintCharA(a = ' ');
 	ld a, 32
 	jp printchara
-; 368 }
-; 369 
-; 370 void Loop(...) {
+; 371 }
+; 372 
+; 373 void Loop(...) {
 loop:
-; 371     push_pop(de) {
+; 374     push_pop(de) {
 	push de
-; 372         hl = param1;
+; 375         hl = param1;
 	ld hl, (param1)
-; 373         swap(hl, de);
+; 376         swap(hl, de);
 	ex hl, de
-; 374         hl = param2;
+; 377         hl = param2;
 	ld hl, (param2)
-; 375         CmpHlDe(hl, de);
+; 378         CmpHlDe(hl, de);
 	call cmphlde
 	pop de
-; 376     }
-; 377     if (flag_z)
-; 378         return PopWordReturn();
+; 379     }
+; 380     if (flag_z)
+; 381         return PopWordReturn();
 	jp z, popwordreturn
-; 379     IncWord(hl = &param1);
+; 382     IncWord(hl = &param1);
 	ld hl, 0FFFFh & (param1)
-; 380 }
-; 381 
-; 382 void IncWord(...) {
+; 383 }
+; 384 
+; 385 void IncWord(...) {
 incword:
-; 383     (*hl)++;
+; 386     (*hl)++;
 	inc (hl)
-; 384     if (flag_nz)
-; 385         return;
+; 387     if (flag_nz)
+; 388         return;
 	ret nz
-; 386     hl++;
+; 389     hl++;
 	inc hl
-; 387     (*hl)++;
+; 390     (*hl)++;
 	inc (hl)
 	ret
-; 388 }
-; 389 
-; 390 void CmpHlDe(...) {
+; 391 }
+; 392 
+; 393 void CmpHlDe(...) {
 cmphlde:
-; 391     if ((a = h) != d)
+; 394     if ((a = h) != d)
 	ld a, h
 	cp d
-; 392         return;
+; 395         return;
 	ret nz
-; 393     compare(a = l, e);
+; 396     compare(a = l, e);
 	ld a, l
 	cp e
 	ret
-; 394 }
-; 395 
-; 396 /* X - Изменение содержимого внутреннего регистра микропроцессора */
-; 397 
-; 398 void CmdX(...) {
+; 397 }
+; 398 
+; 399 /* X - Изменение содержимого внутреннего регистра микропроцессора */
+; 400 
+; 401 void CmdX() {
 cmdx:
-; 399     hl = &cmdBuffer1;
+; 402     hl = &cmdBuffer1;
 	ld hl, 0FFFFh & (cmdbuffer1)
-; 400     a = *hl;
+; 403     a = *hl;
 	ld a, (hl)
-; 401     if (a == 0x0D)
+; 404     if (a == 0x0D)
 	cp 13
-; 402         return PrintRegs();
+; 405         return PrintRegs();
 	jp z, printregs
-; 403     if (a == 'S')
+; 406     if (a == 'S')
 	cp 83
-; 404         return CmdXS();
+; 407         return CmdXS();
 	jp z, cmdxs
-; 405     FindRegister(de = &regList);
+; 408     FindRegister(de = &regList);
 	ld de, reglist
 	call findregister
-; 406     hl = &regs;
+; 409     hl = &regs;
 	ld hl, 0FFFFh & (regs)
-; 407     de++;
+; 410     de++;
 	inc de
-; 408     l = a = *de;
+; 411     l = a = *de;
 	ld a, (de)
 	ld l, a
-; 409     push_pop(hl) {
+; 412     push_pop(hl) {
 	push hl
-; 410         PrintSpace();
+; 413         PrintSpace();
 	call printspace
-; 411         PrintHexByte(a = *hl);
+; 414         PrintHexByte(a = *hl);
 	ld a, (hl)
 	call printhexbyte
-; 412         Input();
+; 415         Input();
 	call input
-; 413         if (flag_nc)
-; 414             return Monitor();
+; 416         if (flag_nc)
+; 417             return Monitor();
 	jp nc, monitor
-; 415         ParseDword();
+; 418         ParseDword();
 	call parsedword
-; 416         a = l;
+; 419         a = l;
 	ld a, l
 	pop hl
-; 417     }
-; 418     *hl = a;
+; 420     }
+; 421     *hl = a;
 	ld (hl), a
 	ret
-; 419 }
-; 420 
-; 421 void CmdXS(...) {
+; 422 }
+; 423 
+; 424 void CmdXS() {
 cmdxs:
-; 422     PrintSpace();
+; 425     PrintSpace();
 	call printspace
-; 423     PrintHexWordSpace(hl = &regSPH);
+; 426     PrintHexWordSpace(hl = &regSPH);
 	ld hl, 0FFFFh & (regsph)
 	call printhexwordspace
-; 424     Input();
+; 427     Input();
 	call input
-; 425     if (flag_nc)
-; 426         return Monitor();
+; 428     if (flag_nc)
+; 429         return Monitor();
 	jp nc, monitor
-; 427     ParseDword();
+; 430     ParseDword();
 	call parsedword
-; 428     regSP = hl;
+; 431     regSP = hl;
 	ld (regsp), hl
 	ret
-; 429 }
-; 430 
-; 431 void FindRegister(...) {
+; 432 }
+; 433 
+; 434 void FindRegister(...) {
 findregister:
-; 432     for (;;) {
+; 435     for (;;) {
 l_23:
-; 433         a = *de;
+; 436         a = *de;
 	ld a, (de)
-; 434         if (flag_z(a &= a))
+; 437         if (flag_z(a &= a))
 	and a
-; 435             return MonitorError();
+; 438             return MonitorError();
 	jp z, monitorerror
-; 436         if (a == *hl)
+; 439         if (a == *hl)
 	cp (hl)
-; 437             return;
+; 440             return;
 	ret z
-; 438         de++;
+; 441         de++;
 	inc de
-; 439         de++;
+; 442         de++;
 	inc de
 	jp l_23
-; 440     }
-; 441 }
-; 442 
-; 443 void PrintRegs(...) {
+; 443     }
+; 444 }
+; 445 
+; 446 void PrintRegs(...) {
 printregs:
-; 444     de = &regList;
+; 447     de = &regList;
 	ld de, reglist
-; 445     b = 8;
+; 448     b = 8;
 	ld b, 8
-; 446     PrintLf();
+; 449     PrintLf();
 	call printlf
-; 447     do {
+; 450     do {
 l_25:
-; 448         c = a = *de;
+; 451         c = a = *de;
 	ld a, (de)
 	ld c, a
-; 449         de++;
+; 452         de++;
 	inc de
-; 450         push_pop(bc) {
+; 453         push_pop(bc) {
 	push bc
-; 451             PrintRegMinus(c);
+; 454             PrintRegMinus(c);
 	call printregminus
-; 452             a = *de;
+; 455             a = *de;
 	ld a, (de)
-; 453             hl = &regs;
+; 456             hl = &regs;
 	ld hl, 0FFFFh & (regs)
-; 454             l = a;
+; 457             l = a;
 	ld l, a
-; 455             PrintHexByte(a = *hl);
+; 458             PrintHexByte(a = *hl);
 	ld a, (hl)
 	call printhexbyte
 	pop bc
-; 456         }
-; 457         de++;
+; 459         }
+; 460         de++;
 	inc de
 l_26:
-; 458     } while (flag_nz(b--));
+; 461     } while (flag_nz(b--));
 	dec b
 	jp nz, l_25
-; 459 
-; 460     c = a = *de;
+; 462 
+; 463     c = a = *de;
 	ld a, (de)
 	ld c, a
-; 461     PrintRegMinus();
+; 464     PrintRegMinus();
 	call printregminus
-; 462     param1 = hl = regs;
+; 465     param1 = hl = regs;
 	ld hl, (regs)
 	ld (param1), hl
-; 463     PrintParam1Space();
+; 466     PrintParam1Space();
 	call printparam1space
-; 464     PrintRegMinus(c = 'O');
+; 467     PrintRegMinus(c = 'O');
 	ld c, 79
 	call printregminus
-; 465     PrintHexWordSpace(hl = &lastBreakAddressHigh);
+; 468     PrintHexWordSpace(hl = &lastBreakAddressHigh);
 	ld hl, 0FFFFh & (lastbreakaddresshigh)
 	call printhexwordspace
-; 466     PrintLf();
+; 469     PrintLf();
 	jp printlf
-; 467 }
-; 468 
-; 469 void PrintRegMinus(...) {
+; 470 }
+; 471 
+; 472 void PrintRegMinus(...) {
 printregminus:
-; 470     PrintSpace();
+; 473     PrintSpace();
 	call printspace
-; 471     PrintCharA(a = c);
+; 474     PrintCharA(a = c);
 	ld a, c
 	call printchara
-; 472     PrintCharA(a = '-');
+; 475     PrintCharA(a = '-');
 	ld a, 45
 	jp printchara
-; 473 }
-; 474 
-; 475 uint8_t regList[] = {'A', (uint8_t)(uintptr_t)&regA, 'B', (uint8_t)(uintptr_t)&regB, 'C', (uint8_t)(uintptr_t)&regC, 'D', (uint8_t)(uintptr_t)&regD,  'E', (uint8_t)(uintptr_t)&regE,
+; 476 }
+; 477 
+; 478 uint8_t regList[] = {'A', (uint8_t)(uintptr_t)&regA, 'B', (uint8_t)(uintptr_t)&regB, 'C', (uint8_t)(uintptr_t)&regC, 'D', (uint8_t)(uintptr_t)&regD,  'E', (uint8_t)(uintptr_t)&regE,
 reglist:
 	db 65
 	db 0FFh & (0FFFFh & (rega))
@@ -843,7 +843,7 @@ reglist:
 	db 83
 	db 0FFh & (0FFFFh & (regsp))
 	db 0
-; 478  aStart[] = "\x0ASTART-";
+; 481  aStart[] = "\x0ASTART-";
 astart:
 	db 10
 	db 83
@@ -853,7 +853,7 @@ astart:
 	db 84
 	db 45
 	ds 1
-; 479  aDir_[] = "\x0ADIR. -";
+; 482  aDir_[] = "\x0ADIR. -";
 adir_:
 	db 10
 	db 68
@@ -863,1144 +863,1144 @@ adir_:
 	db 32
 	db 45
 	ds 1
-; 483  CmdB(...) {
+; 486  CmdB() {
 cmdb:
-; 484     ParseParams();
+; 487     ParseParams();
 	call parseparams
-; 485     InitRst38();
+; 488     InitRst38();
 	call initrst38
-; 486     hl = param1;
+; 489     hl = param1;
 	ld hl, (param1)
-; 487     a = *hl;
+; 490     a = *hl;
 	ld a, (hl)
-; 488     *hl = OPCODE_RST_38;
+; 491     *hl = OPCODE_RST_38;
 	ld (hl), 255
-; 489     breakAddress = hl;
+; 492     breakAddress = hl;
 	ld (breakaddress), hl
-; 490     breakPrevByte = a;
+; 493     breakPrevByte = a;
 	ld (breakprevbyte), a
 	ret
-; 491 }
-; 492 
-; 493 void InitRst38(...) {
+; 494 }
+; 495 
+; 496 void InitRst38() {
 initrst38:
-; 494     rst38Opcode = a = OPCODE_JMP;
+; 497     rst38Opcode = a = OPCODE_JMP;
 	ld a, 195
 	ld (rst38opcode), a
-; 495     rst38Address = hl = &BreakPoint;
+; 498     rst38Address = hl = &BreakPoint;
 	ld hl, 0FFFFh & (breakpoint)
 	ld (rst38address), hl
 	ret
-; 496 }
-; 497 
-; 498 void BreakPoint(...) {
+; 499 }
+; 500 
+; 501 void BreakPoint(...) {
 breakpoint:
-; 499     regHL = hl;
+; 502     regHL = hl;
 	ld (reghl), hl
-; 500     push(a);
+; 503     push(a);
 	push af
-; 501     hl = 4;
+; 504     hl = 4;
 	ld hl, 4
-; 502     hl += sp;
+; 505     hl += sp;
 	add hl, sp
-; 503     regs = hl;
+; 506     regs = hl;
 	ld (regs), hl
-; 504     pop(a);
+; 507     pop(a);
 	pop af
-; 505     swap(*sp, hl);
+; 508     swap(*sp, hl);
 	ex (sp), hl
-; 506     hl--;
+; 509     hl--;
 	dec hl
-; 507     swap(*sp, hl);
+; 510     swap(*sp, hl);
 	ex (sp), hl
-; 508     sp = &regHL;
+; 511     sp = &regHL;
 	ld sp, 0FFFFh & (reghl)
-; 509     push(de, bc, a);
+; 512     push(de, bc, a);
 	push de
 	push bc
 	push af
-; 510     sp = &cmdBuffer + 0x84;
-	ld sp, 0FFFFh & ((cmdbuffer) + (132))
-; 511 
-; 512     hl = regSP;
+; 513     sp = STACK_TOP;
+	ld sp, 63487
+; 514 
+; 515     hl = regSP;
 	ld hl, (regsp)
-; 513     hl--;
+; 516     hl--;
 	dec hl
-; 514     d = *hl;
+; 517     d = *hl;
 	ld d, (hl)
-; 515     hl--;
+; 518     hl--;
 	dec hl
-; 516     e = *hl;
+; 519     e = *hl;
 	ld e, (hl)
-; 517     l = e;
+; 520     l = e;
 	ld l, e
-; 518     h = d;
+; 521     h = d;
 	ld h, d
-; 519     lastBreakAddress = hl;
+; 522     lastBreakAddress = hl;
 	ld (lastbreakaddress), hl
-; 520 
-; 521     hl = breakAddress;
+; 523 
+; 524     hl = breakAddress;
 	ld hl, (breakaddress)
-; 522     CmpHlDe();
+; 525     CmpHlDe();
 	call cmphlde
-; 523     if (flag_nz) {
+; 526     if (flag_nz) {
 	jp z, l_28
-; 524         hl = breakAddress2;
+; 527         hl = breakAddress2;
 	ld hl, (breakaddress2)
-; 525         CmpHlDe(hl, de);
+; 528         CmpHlDe(hl, de);
 	call cmphlde
-; 526         if (flag_z)
-; 527             return BreakPointAt2();
+; 529         if (flag_z)
+; 530             return BreakPointAt2();
 	jp z, breakpointat2
-; 528 
-; 529         hl = breakAddress3;
+; 531 
+; 532         hl = breakAddress3;
 	ld hl, (breakaddress3)
-; 530         CmpHlDe(hl, de);
+; 533         CmpHlDe(hl, de);
 	call cmphlde
-; 531         if (flag_z)
-; 532             return BreakpointAt3();
+; 534         if (flag_z)
+; 535             return BreakpointAt3();
 	jp z, breakpointat3
-; 533 
-; 534         return MonitorError();
+; 536 
+; 537         return MonitorError();
 	jp monitorerror
 l_28:
-; 535     }
-; 536     *hl = a = breakPrevByte;
+; 538     }
+; 539     *hl = a = breakPrevByte;
 	ld a, (breakprevbyte)
 	ld (hl), a
-; 537     breakAddress = hl = 0xFFFF;
+; 540     breakAddress = hl = 0xFFFF;
 	ld hl, 65535
 	ld (breakaddress), hl
-; 538     return Monitor();
+; 541     return Monitor();
 	jp monitor
-; 539 }
-; 540 
-; 541 /* G<адрес> - Запуск программы в отладочном режиме */
-; 542 
-; 543 void CmdG(...) {
+; 542 }
+; 543 
+; 544 /* G<адрес> - Запуск программы в отладочном режиме */
+; 545 
+; 546 void CmdG() {
 cmdg:
-; 544     ParseParams();
+; 547     ParseParams();
 	call parseparams
-; 545     if ((a = cmdBuffer1) == 0x0D)
+; 548     if ((a = cmdBuffer1) == 0x0D)
 	ld a, (cmdbuffer1)
 	cp 13
-; 546         param1 = hl = lastBreakAddress;
+; 549         param1 = hl = lastBreakAddress;
 	jp nz, l_30
 	ld hl, (lastbreakaddress)
 	ld (param1), hl
 l_30:
-; 547     Run();
-; 548 }
-; 549 
-; 550 void Run(...) {
+; 550     Run();
+; 551 }
+; 552 
+; 553 void Run() {
 run:
-; 551     jumpOpcode = a = OPCODE_JMP;
+; 554     jumpOpcode = a = OPCODE_JMP;
 	ld a, 195
 	ld (jumpopcode), a
-; 552     sp = &regs;
+; 555     sp = &regs;
 	ld sp, 0FFFFh & (regs)
-; 553     pop(de, bc, a, hl);
+; 556     pop(de, bc, a, hl);
 	pop hl
 	pop af
 	pop bc
 	pop de
-; 554     sp = hl;
+; 557     sp = hl;
 	ld sp, hl
-; 555     hl = regHL;
+; 558     hl = regHL;
 	ld hl, (reghl)
-; 556     jumpParam1();
+; 559     jumpParam1();
 	jp jumpparam1
-; 557 }
-; 558 
-; 559 void CmdP(...) {
+; 560 }
+; 561 
+; 562 void CmdP(...) {
 cmdp:
-; 560     ParseParams();
+; 563     ParseParams();
 	call parseparams
-; 561     InitRst38();
+; 564     InitRst38();
 	call initrst38
-; 562 
-; 563     breakAddress2 = hl = param1;
+; 565 
+; 566     breakAddress2 = hl = param1;
 	ld hl, (param1)
 	ld (breakaddress2), hl
-; 564     a = *hl;
+; 567     a = *hl;
 	ld a, (hl)
-; 565     *hl = OPCODE_RST_38;
+; 568     *hl = OPCODE_RST_38;
 	ld (hl), 255
-; 566     breakPrevByte2 = a;
+; 569     breakPrevByte2 = a;
 	ld (breakprevbyte2), a
-; 567 
-; 568     breakAddress3 = hl = param2;
+; 570 
+; 571     breakAddress3 = hl = param2;
 	ld hl, (param2)
 	ld (breakaddress3), hl
-; 569     a = *hl;
+; 572     a = *hl;
 	ld a, (hl)
-; 570     *hl = OPCODE_RST_38;
+; 573     *hl = OPCODE_RST_38;
 	ld (hl), 255
-; 571     breakPrevByte3 = a;
+; 574     breakPrevByte3 = a;
 	ld (breakprevbyte3), a
-; 572 
-; 573     breakCounter = a = param3;
+; 575 
+; 576     breakCounter = a = param3;
 	ld a, (param3)
 	ld (breakcounter), a
-; 574 
-; 575     PrintString(hl = &aStart);
+; 577 
+; 578     PrintString(hl = &aStart);
 	ld hl, astart
 	call printstring
-; 576 
-; 577     hl = &cmdBuffer1;
+; 579 
+; 580     hl = &cmdBuffer1;
 	ld hl, 0FFFFh & (cmdbuffer1)
-; 578     ReadStringLoop();
+; 581     ReadStringLoop();
 	call readstringloop
-; 579     ParseParams();
+; 582     ParseParams();
 	call parseparams
-; 580     PrintString(hl = &aDir_);
+; 583     PrintString(hl = &aDir_);
 	ld hl, adir_
 	call printstring
-; 581     ReadString();
+; 584     ReadString();
 	call readstring
-; 582     Run();
+; 585     Run();
 	jp run
-; 583 }
-; 584 
-; 585 void BreakPointAt2(...) {
+; 586 }
+; 587 
+; 588 void BreakPointAt2(...) {
 breakpointat2:
-; 586     *hl = a = breakPrevByte2;
+; 589     *hl = a = breakPrevByte2;
 	ld a, (breakprevbyte2)
 	ld (hl), a
-; 587 
-; 588     hl = breakAddress3;
+; 590 
+; 591     hl = breakAddress3;
 	ld hl, (breakaddress3)
-; 589     a = OPCODE_RST_38;
+; 592     a = OPCODE_RST_38;
 	ld a, 255
-; 590     if (a != *hl) {
+; 593     if (a != *hl) {
 	cp (hl)
 	jp z, l_32
-; 591         b = *hl;
+; 594         b = *hl;
 	ld b, (hl)
-; 592         *hl = a;
+; 595         *hl = a;
 	ld (hl), a
-; 593         breakPrevByte3 = a = b;
+; 596         breakPrevByte3 = a = b;
 	ld a, b
 	ld (breakprevbyte3), a
 l_32:
-; 594     }
-; 595     ContinueBreakpoint();
-; 596 }
-; 597 
-; 598 void ContinueBreakpoint(...) {
+; 597     }
+; 598     ContinueBreakpoint();
+; 599 }
+; 600 
+; 601 void ContinueBreakpoint(...) {
 continuebreakpoint:
-; 599     PrintRegs();
+; 602     PrintRegs();
 	call printregs
-; 600     MonitorExecute();
+; 603     MonitorExecute();
 	call monitorexecute
-; 601     param1 = hl = lastBreakAddress;
+; 604     param1 = hl = lastBreakAddress;
 	ld hl, (lastbreakaddress)
 	ld (param1), hl
-; 602     Run();
+; 605     Run();
 	jp run
-; 603 }
-; 604 
-; 605 void BreakpointAt3(...) {
+; 606 }
+; 607 
+; 608 void BreakpointAt3(...) {
 breakpointat3:
-; 606     *hl = a = breakPrevByte3;
+; 609     *hl = a = breakPrevByte3;
 	ld a, (breakprevbyte3)
 	ld (hl), a
-; 607 
-; 608     hl = breakAddress2;
+; 610 
+; 611     hl = breakAddress2;
 	ld hl, (breakaddress2)
-; 609     a = OPCODE_RST_38;
+; 612     a = OPCODE_RST_38;
 	ld a, 255
-; 610     if (a == *hl)
+; 613     if (a == *hl)
 	cp (hl)
-; 611         return ContinueBreakpoint();
+; 614         return ContinueBreakpoint();
 	jp z, continuebreakpoint
-; 612     b = *hl;
+; 615     b = *hl;
 	ld b, (hl)
-; 613     *hl = a;
+; 616     *hl = a;
 	ld (hl), a
-; 614     breakPrevByte2 = a = b;
+; 617     breakPrevByte2 = a = b;
 	ld a, b
 	ld (breakprevbyte2), a
-; 615 
-; 616     hl = &breakCounter;
+; 618 
+; 619     hl = &breakCounter;
 	ld hl, 0FFFFh & (breakcounter)
-; 617     (*hl)--;
+; 620     (*hl)--;
 	dec (hl)
-; 618     if (flag_nz)
-; 619         return ContinueBreakpoint();
+; 621     if (flag_nz)
+; 622         return ContinueBreakpoint();
 	jp nz, continuebreakpoint
-; 620 
-; 621     a = breakPrevByte2;
+; 623 
+; 624     a = breakPrevByte2;
 	ld a, (breakprevbyte2)
-; 622     hl = breakAddress2;
+; 625     hl = breakAddress2;
 	ld hl, (breakaddress2)
-; 623     *hl = a;
+; 626     *hl = a;
 	ld (hl), a
-; 624     Monitor();
+; 627     Monitor();
 	jp monitor
-; 625 }
-; 626 
-; 627 /* D<адрес>,<адрес> - Просмотр содержимого области памяти в шестнадцатеричном виде */
-; 628 
-; 629 void CmdD(...) {
+; 628 }
+; 629 
+; 630 /* D<адрес>,<адрес> - Просмотр содержимого области памяти в шестнадцатеричном виде */
+; 631 
+; 632 void CmdD() {
 cmdd:
-; 630     ParseParams();
+; 633     ParseParams();
 	call parseparams
-; 631     PrintLf();
+; 634     PrintLf();
 	call printlf
-; 632 CmdDLine:
+; 635 CmdDLine:
 cmddline:
-; 633     PrintLfParam1();
+; 636     PrintLfParam1();
 	call printlfparam1
-; 634     for (;;) {
+; 637     for (;;) {
 l_35:
-; 635         PrintSpace();
+; 638         PrintSpace();
 	call printspace
-; 636         PrintByteFromParam1();
+; 639         PrintByteFromParam1();
 	call printbytefromparam1
-; 637         Loop();
+; 640         Loop();
 	call loop
-; 638         a = param1;
+; 641         a = param1;
 	ld a, (param1)
-; 639         a &= 0x0F;
+; 642         a &= 0x0F;
 	and 15
-; 640         if (flag_z)
-; 641             goto CmdDLine;
+; 643         if (flag_z)
+; 644             goto CmdDLine;
 	jp z, cmddline
 	jp l_35
-; 642     }
-; 643 }
-; 644 
-; 645 /* C<адрес от>,<адрес до>,<адрес от 2> - Сравнение содержимого двух областей памяти */
-; 646 
-; 647 void CmdC(...) {
+; 645     }
+; 646 }
+; 647 
+; 648 /* C<адрес от>,<адрес до>,<адрес от 2> - Сравнение содержимого двух областей памяти */
+; 649 
+; 650 void CmdC() {
 cmdc:
-; 648     ParseParams();
+; 651     ParseParams();
 	call parseparams
-; 649     hl = param3;
+; 652     hl = param3;
 	ld hl, (param3)
-; 650     swap(hl, de);
+; 653     swap(hl, de);
 	ex hl, de
-; 651     for (;;) {
+; 654     for (;;) {
 l_38:
-; 652         hl = param1;
+; 655         hl = param1;
 	ld hl, (param1)
-; 653         a = *de;
+; 656         a = *de;
 	ld a, (de)
-; 654         if (a != *hl) {
+; 657         if (a != *hl) {
 	cp (hl)
 	jp z, l_40
-; 655             PrintLfParam1();
+; 658             PrintLfParam1();
 	call printlfparam1
-; 656             PrintSpace();
+; 659             PrintSpace();
 	call printspace
-; 657             PrintByteFromParam1();
+; 660             PrintByteFromParam1();
 	call printbytefromparam1
-; 658             PrintSpace();
+; 661             PrintSpace();
 	call printspace
-; 659             a = *de;
+; 662             a = *de;
 	ld a, (de)
-; 660             PrintHexByte();
+; 663             PrintHexByte();
 	call printhexbyte
 l_40:
-; 661         }
-; 662         de++;
+; 664         }
+; 665         de++;
 	inc de
-; 663         Loop();
+; 666         Loop();
 	call loop
 	jp l_38
-; 664     }
-; 665 }
-; 666 
-; 667 /* F<адрес>,<адрес>,<байт> - Запись байта во все ячейки области памяти */
-; 668 
-; 669 void CmdF(...) {
+; 667     }
+; 668 }
+; 669 
+; 670 /* F<адрес>,<адрес>,<байт> - Запись байта во все ячейки области памяти */
+; 671 
+; 672 void CmdF() {
 cmdf:
-; 670     ParseParams();
+; 673     ParseParams();
 	call parseparams
-; 671     b = a = param3;
+; 674     b = a = param3;
 	ld a, (param3)
 	ld b, a
-; 672     for (;;) {
+; 675     for (;;) {
 l_43:
-; 673         hl = param1;
+; 676         hl = param1;
 	ld hl, (param1)
-; 674         *hl = b;
+; 677         *hl = b;
 	ld (hl), b
-; 675         Loop();
+; 678         Loop();
 	call loop
 	jp l_43
-; 676     }
-; 677 }
-; 678 
-; 679 /* S<адрес>,<адрес>,<байт> - Поиск байта в области памяти */
-; 680 
-; 681 void CmdS(...) {
+; 679     }
+; 680 }
+; 681 
+; 682 /* S<адрес>,<адрес>,<байт> - Поиск байта в области памяти */
+; 683 
+; 684 void CmdS() {
 cmds:
-; 682     ParseParams();
+; 685     ParseParams();
 	call parseparams
-; 683     c = l;
+; 686     c = l;
 	ld c, l
-; 684     for (;;) {
+; 687     for (;;) {
 l_46:
-; 685         hl = param1;
+; 688         hl = param1;
 	ld hl, (param1)
-; 686         a = c;
+; 689         a = c;
 	ld a, c
-; 687         if (a == *hl)
+; 690         if (a == *hl)
 	cp (hl)
-; 688             PrintLfParam1();
+; 691             PrintLfParam1();
 	call z, printlfparam1
-; 689         Loop();
+; 692         Loop();
 	call loop
 	jp l_46
-; 690     }
-; 691 }
-; 692 
-; 693 /* T<начало>,<конец>,<куда> - Пересылка содержимого одной области в другую */
-; 694 
-; 695 void CmdT(...) {
+; 693     }
+; 694 }
+; 695 
+; 696 /* T<начало>,<конец>,<куда> - Пересылка содержимого одной области в другую */
+; 697 
+; 698 void CmdT() {
 cmdt:
-; 696     ParseParams();
+; 699     ParseParams();
 	call parseparams
-; 697     hl = param3;
+; 700     hl = param3;
 	ld hl, (param3)
-; 698     swap(hl, de);
+; 701     swap(hl, de);
 	ex hl, de
-; 699     for (;;) {
+; 702     for (;;) {
 l_49:
-; 700         hl = param1;
+; 703         hl = param1;
 	ld hl, (param1)
-; 701         *de = a = *hl;
+; 704         *de = a = *hl;
 	ld a, (hl)
 	ld (de), a
-; 702         de++;
+; 705         de++;
 	inc de
-; 703         Loop();
+; 706         Loop();
 	call loop
 	jp l_49
-; 704     }
-; 705 }
-; 706 
-; 707 /* M<адрес> - Просмотр или изменение содержимого ячейки (ячеек) памяти */
-; 708 
-; 709 void CmdM(...) {
+; 707     }
+; 708 }
+; 709 
+; 710 /* M<адрес> - Просмотр или изменение содержимого ячейки (ячеек) памяти */
+; 711 
+; 712 void CmdM() {
 cmdm:
-; 710     ParseParams();
+; 713     ParseParams();
 	call parseparams
-; 711     for (;;) {
+; 714     for (;;) {
 l_52:
-; 712         PrintSpace();
+; 715         PrintSpace();
 	call printspace
-; 713         PrintByteFromParam1();
+; 716         PrintByteFromParam1();
 	call printbytefromparam1
-; 714         Input();
+; 717         Input();
 	call input
-; 715         if (flag_c) {
+; 718         if (flag_c) {
 	jp nc, l_54
-; 716             ParseDword();
+; 719             ParseDword();
 	call parsedword
-; 717             a = l;
+; 720             a = l;
 	ld a, l
-; 718             hl = param1;
+; 721             hl = param1;
 	ld hl, (param1)
-; 719             *hl = a;
+; 722             *hl = a;
 	ld (hl), a
 l_54:
-; 720         }
-; 721         hl = &param1;
+; 723         }
+; 724         hl = &param1;
 	ld hl, 0FFFFh & (param1)
-; 722         IncWord();
+; 725         IncWord();
 	call incword
-; 723         PrintLfParam1();
+; 726         PrintLfParam1();
 	call printlfparam1
 	jp l_52
-; 724     }
-; 725 }
-; 726 
-; 727 /* J<адрес> - Запуск программы с указанного адреса */
-; 728 
-; 729 void CmdJ(...) {
+; 727     }
+; 728 }
+; 729 
+; 730 /* J<адрес> - Запуск программы с указанного адреса */
+; 731 
+; 732 void CmdJ() {
 cmdj:
-; 730     ParseParams();
+; 733     ParseParams();
 	call parseparams
-; 731     hl = param1;
+; 734     hl = param1;
 	ld hl, (param1)
-; 732     return hl();
+; 735     return hl();
 	jp hl
-; 733 }
-; 734 
-; 735 /* А<символ> - Вывод кода символа на экран */
-; 736 
-; 737 void CmdA(...) {
+; 736 }
+; 737 
+; 738 /* А<символ> - Вывод кода символа на экран */
+; 739 
+; 740 void CmdA() {
 cmda:
-; 738     PrintLf();
+; 741     PrintLf();
 	call printlf
-; 739     PrintHexByte(a = cmdBuffer1);
+; 742     PrintHexByte(a = cmdBuffer1);
 	ld a, (cmdbuffer1)
 	call printhexbyte
-; 740     PrintLf();
+; 743     PrintLf();
 	jp printlf
-; 741 }
-; 742 
-; 743 /* K - Вывод символа с клавиатуры на экран */
-; 744 
-; 745 void CmdK(...) {
+; 744 }
+; 745 
+; 746 /* K - Вывод символа с клавиатуры на экран */
+; 747 
+; 748 void CmdK() {
 cmdk:
-; 746     for (;;) {
+; 749     for (;;) {
 l_57:
-; 747         ReadKey();
+; 750         ReadKey();
 	call readkey
-; 748         if (a == 1) /* УС + А */
+; 751         if (a == 1) /* УС + А */
 	cp 1
-; 749             return Monitor();
+; 752             return Monitor();
 	jp z, monitor
-; 750         PrintCharA(a);
+; 753         PrintCharA(a);
 	call printchara
 	jp l_57
-; 751     }
-; 752 }
-; 753 
-; 754 /* Q<начало>,<конец> - Тестирование области памяти */
-; 755 
-; 756 void CmdQ(...) {
+; 754     }
+; 755 }
+; 756 
+; 757 /* Q<начало>,<конец> - Тестирование области памяти */
+; 758 
+; 759 void CmdQ() {
 cmdq:
-; 757     ParseParams();
+; 760     ParseParams();
 	call parseparams
-; 758     for (;;) {
+; 761     for (;;) {
 l_60:
-; 759         hl = param1;
+; 762         hl = param1;
 	ld hl, (param1)
-; 760         c = *hl;
+; 763         c = *hl;
 	ld c, (hl)
-; 761 
-; 762         a = 0x55;
+; 764 
+; 765         a = 0x55;
 	ld a, 85
-; 763         *hl = a;
+; 766         *hl = a;
 	ld (hl), a
-; 764         if (a != *hl)
+; 767         if (a != *hl)
 	cp (hl)
-; 765             CmdQResult();
+; 768             CmdQResult();
 	call nz, cmdqresult
-; 766 
-; 767         a = 0xAA;
+; 769 
+; 770         a = 0xAA;
 	ld a, 170
-; 768         *hl = a;
+; 771         *hl = a;
 	ld (hl), a
-; 769         if (a != *hl)
+; 772         if (a != *hl)
 	cp (hl)
-; 770             CmdQResult();
+; 773             CmdQResult();
 	call nz, cmdqresult
-; 771 
-; 772         *hl = c;
+; 774 
+; 775         *hl = c;
 	ld (hl), c
-; 773         Loop();
+; 776         Loop();
 	call loop
 	jp l_60
-; 774     }
-; 775 }
-; 776 
-; 777 void CmdQResult(...) {
+; 777     }
+; 778 }
+; 779 
+; 780 void CmdQResult(...) {
 cmdqresult:
-; 778     push_pop(a) {
+; 781     push_pop(a) {
 	push af
-; 779         PrintLfParam1();
+; 782         PrintLfParam1();
 	call printlfparam1
-; 780         PrintSpace();
+; 783         PrintSpace();
 	call printspace
-; 781         PrintByteFromParam1();
+; 784         PrintByteFromParam1();
 	call printbytefromparam1
-; 782         PrintSpace();
+; 785         PrintSpace();
 	call printspace
 	pop af
-; 783     }
-; 784     PrintHexByte(a);
+; 786     }
+; 787     PrintHexByte(a);
 	call printhexbyte
-; 785     return;
+; 788     return;
 	ret
-; 786 }
-; 787 
-; 788 /* L<начало>,<конец> - Посмотр области памяти в символьном виде */
-; 789 
-; 790 void CmdL(...) {
+; 789 }
+; 790 
+; 791 /* L<начало>,<конец> - Посмотр области памяти в символьном виде */
+; 792 
+; 793 void CmdL() {
 cmdl:
-; 791     ParseParams();
+; 794     ParseParams();
 	call parseparams
-; 792     PrintLf();
+; 795     PrintLf();
 	call printlf
-; 793 
-; 794 CmdLLine:
-cmdlline:
-; 795     PrintLfParam1();
-	call printlfparam1
 ; 796 
-; 797     for (;;) {
+; 797 CmdLLine:
+cmdlline:
+; 798     PrintLfParam1();
+	call printlfparam1
+; 799 
+; 800     for (;;) {
 l_63:
-; 798         PrintSpace();
+; 801         PrintSpace();
 	call printspace
-; 799         hl = param1;
+; 802         hl = param1;
 	ld hl, (param1)
-; 800         a = *hl;
+; 803         a = *hl;
 	ld a, (hl)
-; 801         if (a >= 0x20) {
+; 804         if (a >= 0x20) {
 	cp 32
 	jp c, l_65
-; 802             if (a < 0x80) {
+; 805             if (a < 0x80) {
 	cp 128
 	jp nc, l_67
-; 803                 goto CmdLShow;
+; 806                 goto CmdLShow;
 	jp cmdlshow
 l_67:
 l_65:
-; 804             }
-; 805         }
-; 806         a = '.';
+; 807             }
+; 808         }
+; 809         a = '.';
 	ld a, 46
-; 807 CmdLShow:
+; 810     CmdLShow:
 cmdlshow:
-; 808         PrintCharA();
+; 811         PrintCharA();
 	call printchara
-; 809         Loop();
+; 812         Loop();
 	call loop
-; 810         if (flag_z((a = param1) &= 0x0F))
+; 813         if (flag_z((a = param1) &= 0x0F))
 	ld a, (param1)
 	and 15
-; 811             goto CmdLLine;
+; 814             goto CmdLLine;
 	jp z, cmdlline
 	jp l_63
-; 812     }
-; 813 }
-; 814 
-; 815 /* H<число 1>,<число 2> - Сложение и вычитание чисел */
-; 816 
-; 817 void CmdH(...) {
+; 815     }
+; 816 }
+; 817 
+; 818 /* H<число 1>,<число 2> - Сложение и вычитание чисел */
+; 819 
+; 820 void CmdH(...) {
 cmdh:
-; 818     hl = &param1;
+; 821     hl = &param1;
 	ld hl, 0FFFFh & (param1)
-; 819     b = 6;
+; 822     b = 6;
 	ld b, 6
-; 820     a ^= a;
+; 823     a ^= a;
 	xor a
-; 821     do {
+; 824     do {
 l_69:
-; 822         *hl = a;
+; 825         *hl = a;
 	ld (hl), a
 l_70:
-; 823     } while (flag_nz(b--));
+; 826     } while (flag_nz(b--));
 	dec b
 	jp nz, l_69
-; 824 
-; 825     de = &cmdBuffer1;
+; 827 
+; 828     de = &cmdBuffer1;
 	ld de, 0FFFFh & (cmdbuffer1)
-; 826 
-; 827     ParseDword();
-	call parsedword
-; 828     param1 = hl;
-	ld (param1), hl
 ; 829 
 ; 830     ParseDword();
 	call parsedword
-; 831     param2 = hl;
-	ld (param2), hl
+; 831     param1 = hl;
+	ld (param1), hl
 ; 832 
-; 833     PrintLf();
+; 833     ParseDword();
+	call parsedword
+; 834     param2 = hl;
+	ld (param2), hl
+; 835 
+; 836     PrintLf();
 	call printlf
-; 834     param3 = hl = param1;
+; 837     param3 = hl = param1;
 	ld hl, (param1)
 	ld (param3), hl
-; 835     swap(hl, de);
+; 838     swap(hl, de);
 	ex hl, de
-; 836     hl = param2;
+; 839     hl = param2;
 	ld hl, (param2)
-; 837     hl += de;
+; 840     hl += de;
 	add hl, de
-; 838     param1 = hl;
+; 841     param1 = hl;
 	ld (param1), hl
-; 839     PrintParam1Space();
+; 842     PrintParam1Space();
 	call printparam1space
-; 840 
-; 841     hl = param2;
+; 843 
+; 844     hl = param2;
 	ld hl, (param2)
-; 842     swap(hl, de);
+; 845     swap(hl, de);
 	ex hl, de
-; 843     hl = param3;
+; 846     hl = param3;
 	ld hl, (param3)
-; 844     a = e;
+; 847     a = e;
 	ld a, e
-; 845     invert(a);
-	cpl
-; 846     e = a;
-	ld e, a
-; 847     a = d;
-	ld a, d
 ; 848     invert(a);
 	cpl
-; 849     d = a;
+; 849     e = a;
+	ld e, a
+; 850     a = d;
+	ld a, d
+; 851     invert(a);
+	cpl
+; 852     d = a;
 	ld d, a
-; 850     de++;
+; 853     de++;
 	inc de
-; 851     hl += de;
+; 854     hl += de;
 	add hl, de
-; 852     param1 = hl;
+; 855     param1 = hl;
 	ld (param1), hl
-; 853     PrintParam1Space();
+; 856     PrintParam1Space();
 	call printparam1space
-; 854     PrintLf();
+; 857     PrintLf();
 	jp printlf
-; 855 }
-; 856 
-; 857 /* I - Ввод информации с магнитной ленты */
-; 858 
-; 859 void CmdI(...) {
+; 858 }
+; 859 
+; 860 /* I - Ввод информации с магнитной ленты */
+; 861 
+; 862 void CmdI() {
 cmdi:
-; 860     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
+; 863     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
 	ld a, 255
 	call readtapebyte
-; 861     param1h = a;
+; 864     param1h = a;
 	ld (param1h), a
-; 862     tapeStartH = a;
+; 865     tapeStartH = a;
 	ld (tapestarth), a
-; 863 
-; 864     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+; 866 
+; 867     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
 	ld a, 8
 	call readtapebyte
-; 865     param1 = a;
+; 868     param1 = a;
 	ld (param1), a
-; 866     tapeStartL = a;
+; 869     tapeStartL = a;
 	ld (tapestartl), a
-; 867 
-; 868     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+; 870 
+; 871     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
 	ld a, 8
 	call readtapebyte
-; 869     param2h = a;
+; 872     param2h = a;
 	ld (param2h), a
-; 870     tapeStopH = a;
+; 873     tapeStopH = a;
 	ld (tapestoph), a
-; 871 
-; 872     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+; 874 
+; 875     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
 	ld a, 8
 	call readtapebyte
-; 873     param2 = a;
+; 876     param2 = a;
 	ld (param2), a
-; 874     tapeStopL = a;
+; 877     tapeStopL = a;
 	ld (tapestopl), a
-; 875 
-; 876     a = READ_TAPE_NEXT_BYTE;
+; 878 
+; 879     a = READ_TAPE_NEXT_BYTE;
 	ld a, 8
-; 877     hl = &CmdIEnd;
+; 880     hl = &CmdIEnd;
 	ld hl, 0FFFFh & (cmdiend)
-; 878     push(hl);
+; 881     push(hl);
 	push hl
-; 879 
-; 880     for (;;) {
+; 882 
+; 883     for (;;) {
 l_73:
-; 881         hl = param1;
+; 884         hl = param1;
 	ld hl, (param1)
-; 882         ReadTapeByte(a);
+; 885         ReadTapeByte(a);
 	call readtapebyte
-; 883         *hl = a;
+; 886         *hl = a;
 	ld (hl), a
-; 884         Loop();
+; 887         Loop();
 	call loop
-; 885         a = READ_TAPE_NEXT_BYTE;
+; 888         a = READ_TAPE_NEXT_BYTE;
 	ld a, 8
 	jp l_73
-; 886     }
-; 887 }
-; 888 
-; 889 void CmdIEnd(...) {
+; 889     }
+; 890 }
+; 891 
+; 892 void CmdIEnd(...) {
 cmdiend:
-; 890     PrintHexWordSpace(hl = &tapeStartH);
+; 893     PrintHexWordSpace(hl = &tapeStartH);
 	ld hl, 0FFFFh & (tapestarth)
 	call printhexwordspace
-; 891     PrintHexWordSpace(hl = &tapeStopH);
+; 894     PrintHexWordSpace(hl = &tapeStopH);
 	ld hl, 0FFFFh & (tapestoph)
 	call printhexwordspace
-; 892     PrintLf();
+; 895     PrintLf();
 	jp printlf
-; 893 }
-; 894 
-; 895 /* O<начало>,<конец> - Вывод содержимого области памяти на магнитную ленту */
-; 896 
-; 897 void CmdO(...) {
+; 896 }
+; 897 
+; 898 /* O<начало>,<конец> - Вывод содержимого области памяти на магнитную ленту */
+; 899 
+; 900 void CmdO() {
 cmdo:
-; 898     ParseParams();
+; 901     ParseParams();
 	call parseparams
-; 899     a ^= a;
+; 902     a ^= a;
 	xor a
-; 900     b = 0;
+; 903     b = 0;
 	ld b, 0
-; 901     do {
+; 904     do {
 l_75:
-; 902         WriteTapeByte(a);
+; 905         WriteTapeByte(a);
 	call writetapebyte
 l_76:
-; 903     } while (flag_nz(b--));
+; 906     } while (flag_nz(b--));
 	dec b
 	jp nz, l_75
-; 904     WriteTapeByte(a = TAPE_START);
+; 907     WriteTapeByte(a = TAPE_START);
 	ld a, 230
 	call writetapebyte
-; 905     WriteTapeByte(a = param1h);
+; 908     WriteTapeByte(a = param1h);
 	ld a, (param1h)
 	call writetapebyte
-; 906     WriteTapeByte(a = param1);
+; 909     WriteTapeByte(a = param1);
 	ld a, (param1)
 	call writetapebyte
-; 907     WriteTapeByte(a = param2h);
+; 910     WriteTapeByte(a = param2h);
 	ld a, (param2h)
 	call writetapebyte
-; 908     WriteTapeByte(a = param2);
+; 911     WriteTapeByte(a = param2);
 	ld a, (param2)
 	call writetapebyte
-; 909     for (;;) {
+; 912     for (;;) {
 l_79:
-; 910         hl = param1;
+; 913         hl = param1;
 	ld hl, (param1)
-; 911         a = *hl;
+; 914         a = *hl;
 	ld a, (hl)
-; 912         WriteTapeByte(a);
+; 915         WriteTapeByte(a);
 	call writetapebyte
-; 913         Loop();
+; 916         Loop();
 	call loop
 	jp l_79
-; 914     }
-; 915 }
-; 916 
-; 917 /* V - Сравнение информации на магнитной ленте с содержимым области памяти */
-; 918 
-; 919 void CmdV(...) {
+; 917     }
+; 918 }
+; 919 
+; 920 /* V - Сравнение информации на магнитной ленте с содержимым области памяти */
+; 921 
+; 922 void CmdV() {
 cmdv:
-; 920     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
+; 923     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
 	ld a, 255
 	call readtapebyte
-; 921     param1h = a;
+; 924     param1h = a;
 	ld (param1h), a
-; 922     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+; 925     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
 	ld a, 8
 	call readtapebyte
-; 923     param1 = a;
+; 926     param1 = a;
 	ld (param1), a
-; 924     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+; 927     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
 	ld a, 8
 	call readtapebyte
-; 925     param2h = a;
+; 928     param2h = a;
 	ld (param2h), a
-; 926     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+; 929     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
 	ld a, 8
 	call readtapebyte
-; 927     param2 = a;
+; 930     param2 = a;
 	ld (param2), a
-; 928     for (;;) {
+; 931     for (;;) {
 l_82:
-; 929         ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+; 932         ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
 	ld a, 8
 	call readtapebyte
-; 930         hl = param1;
+; 933         hl = param1;
 	ld hl, (param1)
-; 931         if (a != *hl) {
+; 934         if (a != *hl) {
 	cp (hl)
 	jp z, l_84
-; 932             push_pop(a) {
+; 935             push_pop(a) {
 	push af
-; 933                 PrintLfParam1();
+; 936                 PrintLfParam1();
 	call printlfparam1
-; 934                 PrintSpace();
+; 937                 PrintSpace();
 	call printspace
-; 935                 PrintByteFromParam1();
+; 938                 PrintByteFromParam1();
 	call printbytefromparam1
-; 936                 PrintSpace();
+; 939                 PrintSpace();
 	call printspace
 	pop af
-; 937             }
-; 938             PrintHexByte();
+; 940             }
+; 941             PrintHexByte();
 	call printhexbyte
 l_84:
-; 939         }
-; 940         Loop();
+; 942         }
+; 943         Loop();
 	call loop
 	jp l_82
-; 941     }
-; 942 }
-; 943 
-; 944 void ReadTapeByte(...) {
+; 944     }
+; 945 }
+; 946 
+; 947 void ReadTapeByte(...) {
 readtapebyte:
-; 945     push(bc, de);
+; 948     push(bc, de);
 	push bc
 	push de
-; 946     c = 0;
+; 949     c = 0;
 	ld c, 0
-; 947     d = a;
+; 950     d = a;
 	ld d, a
-; 948     e = a = in(PORT_TAPE);
+; 951     e = a = in(PORT_TAPE);
 	in a, (1)
 	ld e, a
-; 949     do {
+; 952     do {
 l_86:
-; 950     loc_FD9D:
+; 953     loc_FD9D:
 loc_fd9d:
-; 951         a = c;
+; 954         a = c;
 	ld a, c
-; 952         a &= 0x7F;
+; 955         a &= 0x7F;
 	and 127
-; 953         cyclic_rotate_left(a, 1);
+; 956         cyclic_rotate_left(a, 1);
 	rlca
-; 954         c = a;
+; 957         c = a;
 	ld c, a
-; 955 
-; 956         do {
+; 958 
+; 959         do {
 l_89:
-; 957             a = in(PORT_TAPE);
+; 960             a = in(PORT_TAPE);
 	in a, (1)
 l_90:
-; 958         } while (a == e);
+; 961         } while (a == e);
 	cp e
 	jp z, l_89
-; 959         a &= 1;
+; 962         a &= 1;
 	and 1
-; 960         a |= c;
+; 963         a |= c;
 	or c
-; 961         c = a;
+; 964         c = a;
 	ld c, a
-; 962         ReadTapeDelay();
+; 965         ReadTapeDelay();
 	call readtapedelay
-; 963         e = a = in(PORT_TAPE);
+; 966         e = a = in(PORT_TAPE);
 	in a, (1)
 	ld e, a
-; 964         if (flag_m((a = d) |= a)) {
+; 967         if (flag_m((a = d) |= a)) {
 	ld a, d
 	or a
 	jp p, l_92
-; 965             if ((a = c) == TAPE_START) {
+; 968             if ((a = c) == TAPE_START) {
 	ld a, c
 	cp 230
 	jp nz, l_94
-; 966                 tapePolarity = (a ^= a);
+; 969                 tapePolarity = (a ^= a);
 	xor a
 	ld (tapepolarity), a
 	jp l_95
 l_94:
-; 967             } else {
-; 968                 if (a != (0xFF ^ TAPE_START))
+; 970             } else {
+; 971                 if (a != (0xFF ^ TAPE_START))
 	cp 25
-; 969                     goto loc_FD9D;
+; 972                     goto loc_FD9D;
 	jp nz, loc_fd9d
-; 970                 tapePolarity = a = 0xFF;
+; 973                 tapePolarity = a = 0xFF;
 	ld a, 255
 	ld (tapepolarity), a
 l_95:
-; 971             }
-; 972             d = 8 + 1;
+; 974             }
+; 975             d = 8 + 1;
 	ld d, 9
 l_92:
 l_87:
-; 973         }
-; 974     } while (flag_nz(d--));
+; 976         }
+; 977     } while (flag_nz(d--));
 	dec d
 	jp nz, l_86
-; 975     a = tapePolarity;
+; 978     a = tapePolarity;
 	ld a, (tapepolarity)
-; 976     a ^= c;
+; 979     a ^= c;
 	xor c
-; 977     pop(bc, de);
+; 980     pop(bc, de);
 	pop de
 	pop bc
 	ret
-; 978 }
-; 979 
-; 980 void ReadTapeDelay(...) {
+; 981 }
+; 982 
+; 983 void ReadTapeDelay(...) {
 readtapedelay:
-; 981     push(a);
+; 984     push(a);
 	push af
-; 982     TapeDelay(a = readDelay);
+; 985     TapeDelay(a = readDelay);
 	ld a, (readdelay)
-; 983 }
-; 984 
-; 985 void TapeDelay(...) {
+; 986 }
+; 987 
+; 988 void TapeDelay(...) {
 tapedelay:
-; 986     b = a;
+; 989     b = a;
 	ld b, a
-; 987     pop(a);
+; 990     pop(a);
 	pop af
-; 988     do {
+; 991     do {
 l_96:
 l_97:
-; 989     } while (flag_nz(b--));
+; 992     } while (flag_nz(b--));
 	dec b
 	jp nz, l_96
 	ret
-; 990 }
-; 991 
-; 992 void WriteTapeByte(...) {
+; 993 }
+; 994 
+; 995 void WriteTapeByte(...) {
 writetapebyte:
-; 993     push_pop(bc, de, a) {
+; 996     push_pop(bc, de, a) {
 	push bc
 	push de
 	push af
-; 994         d = a;
+; 997         d = a;
 	ld d, a
-; 995         c = 8;
+; 998         c = 8;
 	ld c, 8
-; 996         do {
+; 999         do {
 l_99:
-; 997             a = d;
+; 1000             a = d;
 	ld a, d
-; 998             cyclic_rotate_left(a, 1);
+; 1001             cyclic_rotate_left(a, 1);
 	rlca
-; 999             d = a;
+; 1002             d = a;
 	ld d, a
-; 1000 
-; 1001             out(PORT_TAPE, (a = 1) ^= d);
-	ld a, 1
-	xor d
-	out (1), a
-; 1002             WriteTapeDelay();
-	call writetapedelay
 ; 1003 
-; 1004             out(PORT_TAPE, (a = 0) ^= d);
-	ld a, 0
+; 1004             out(PORT_TAPE, (a = 1) ^= d);
+	ld a, 1
 	xor d
 	out (1), a
 ; 1005             WriteTapeDelay();
 	call writetapedelay
+; 1006 
+; 1007             out(PORT_TAPE, (a = 0) ^= d);
+	ld a, 0
+	xor d
+	out (1), a
+; 1008             WriteTapeDelay();
+	call writetapedelay
 l_100:
-; 1006         } while (flag_nz(c--));
+; 1009         } while (flag_nz(c--));
 	dec c
 	jp nz, l_99
 	pop af
 	pop de
 	pop bc
 	ret
-; 1007     }
-; 1008 }
-; 1009 
-; 1010 void WriteTapeDelay(...) {
+; 1010     }
+; 1011 }
+; 1012 
+; 1013 void WriteTapeDelay(...) {
 writetapedelay:
-; 1011     push(a);
+; 1014     push(a);
 	push af
-; 1012     TapeDelay(a = writeDelay);
+; 1015     TapeDelay(a = writeDelay);
 	ld a, (writedelay)
 	jp tapedelay
-; 1013 }
-; 1014 
-; 1015 uint8_t monitorCommands = 'M';
+; 1016 }
+; 1017 
+; 1018 uint8_t monitorCommands = 'M';
 monitorcommands:
 	db 77
-; 1016  monitorCommandsMa = (uintptr_t)&CmdM;
+; 1019  monitorCommandsMa = (uintptr_t)&CmdM;
 monitorcommandsma:
 	dw 0FFFFh & (cmdm)
-; 1017  monitorCommandsC = 'C';
+; 1020  monitorCommandsC = 'C';
 monitorcommandsc:
 	db 67
-; 1018  monitorCommandsCa = (uintptr_t)&CmdC;
+; 1021  monitorCommandsCa = (uintptr_t)&CmdC;
 monitorcommandsca:
 	dw 0FFFFh & (cmdc)
-; 1019  monitorCommandsD = 'D';
+; 1022  monitorCommandsD = 'D';
 monitorcommandsd:
 	db 68
-; 1020  monitorCommandsDa = (uintptr_t)&CmdD;
+; 1023  monitorCommandsDa = (uintptr_t)&CmdD;
 monitorcommandsda:
 	dw 0FFFFh & (cmdd)
-; 1021  monitorCommandsB = 'B';
+; 1024  monitorCommandsB = 'B';
 monitorcommandsb:
 	db 66
-; 1022  monitorCommandsBa = (uintptr_t)&CmdB;
+; 1025  monitorCommandsBa = (uintptr_t)&CmdB;
 monitorcommandsba:
 	dw 0FFFFh & (cmdb)
-; 1023  monitorCommandsG = 'G';
+; 1026  monitorCommandsG = 'G';
 monitorcommandsg:
 	db 71
-; 1024  monitorCommandsGa = (uintptr_t)&CmdG;
+; 1027  monitorCommandsGa = (uintptr_t)&CmdG;
 monitorcommandsga:
 	dw 0FFFFh & (cmdg)
-; 1025  monitorCommandsP = 'P';
+; 1028  monitorCommandsP = 'P';
 monitorcommandsp:
 	db 80
-; 1026  monitorCommandsPa = (uintptr_t)&CmdP;
+; 1029  monitorCommandsPa = (uintptr_t)&CmdP;
 monitorcommandspa:
 	dw 0FFFFh & (cmdp)
-; 1027  monitorCommandsX = 'X';
+; 1030  monitorCommandsX = 'X';
 monitorcommandsx:
 	db 88
-; 1028  monitorCommandsXa = (uintptr_t)&CmdX;
+; 1031  monitorCommandsXa = (uintptr_t)&CmdX;
 monitorcommandsxa:
 	dw 0FFFFh & (cmdx)
-; 1029  monitorCommandsF = 'F';
+; 1032  monitorCommandsF = 'F';
 monitorcommandsf:
 	db 70
-; 1030  monitorCommandsFa = (uintptr_t)&CmdF;
+; 1033  monitorCommandsFa = (uintptr_t)&CmdF;
 monitorcommandsfa:
 	dw 0FFFFh & (cmdf)
-; 1031  monitorCommandsS = 'S';
+; 1034  monitorCommandsS = 'S';
 monitorcommandss:
 	db 83
-; 1032  monitorCommandsSa = (uintptr_t)&CmdS;
+; 1035  monitorCommandsSa = (uintptr_t)&CmdS;
 monitorcommandssa:
 	dw 0FFFFh & (cmds)
-; 1033  monitorCommandsT = 'T';
+; 1036  monitorCommandsT = 'T';
 monitorcommandst:
 	db 84
-; 1034  monitorCommandsTa = (uintptr_t)&CmdT;
+; 1037  monitorCommandsTa = (uintptr_t)&CmdT;
 monitorcommandsta:
 	dw 0FFFFh & (cmdt)
-; 1035  monitorCommandsI = 'I';
+; 1038  monitorCommandsI = 'I';
 monitorcommandsi:
 	db 73
-; 1036  monitorCommandsIa = (uintptr_t)&CmdI;
+; 1039  monitorCommandsIa = (uintptr_t)&CmdI;
 monitorcommandsia:
 	dw 0FFFFh & (cmdi)
-; 1037  monitorCommandsO = 'O';
+; 1040  monitorCommandsO = 'O';
 monitorcommandso:
 	db 79
-; 1038  monitorCommandsOa = (uintptr_t)&CmdO;
+; 1041  monitorCommandsOa = (uintptr_t)&CmdO;
 monitorcommandsoa:
 	dw 0FFFFh & (cmdo)
-; 1039  monitorCommandsV = 'V';
+; 1042  monitorCommandsV = 'V';
 monitorcommandsv:
 	db 86
-; 1040  monitorCommandsVa = (uintptr_t)&CmdV;
+; 1043  monitorCommandsVa = (uintptr_t)&CmdV;
 monitorcommandsva:
 	dw 0FFFFh & (cmdv)
-; 1041  monitorCommandsJ = 'J';
+; 1044  monitorCommandsJ = 'J';
 monitorcommandsj:
 	db 74
-; 1042  monitorCommandsJa = (uintptr_t)&CmdJ;
+; 1045  monitorCommandsJa = (uintptr_t)&CmdJ;
 monitorcommandsja:
 	dw 0FFFFh & (cmdj)
-; 1043  monitorCommandsA = 'A';
+; 1046  monitorCommandsA = 'A';
 monitorcommandsa:
 	db 65
-; 1044  monitorCommandsAa = (uintptr_t)&CmdA;
+; 1047  monitorCommandsAa = (uintptr_t)&CmdA;
 monitorcommandsaa:
 	dw 0FFFFh & (cmda)
-; 1045  monitorCommandsK = 'K';
+; 1048  monitorCommandsK = 'K';
 monitorcommandsk:
 	db 75
-; 1046  monitorCommandsKa = (uintptr_t)&CmdK;
+; 1049  monitorCommandsKa = (uintptr_t)&CmdK;
 monitorcommandska:
 	dw 0FFFFh & (cmdk)
-; 1047  monitorCommandsQ = 'Q';
+; 1050  monitorCommandsQ = 'Q';
 monitorcommandsq:
 	db 81
-; 1048  monitorCommandsQa = (uintptr_t)&CmdQ;
+; 1051  monitorCommandsQa = (uintptr_t)&CmdQ;
 monitorcommandsqa:
 	dw 0FFFFh & (cmdq)
-; 1049  monitorCommandsL = 'L';
+; 1052  monitorCommandsL = 'L';
 monitorcommandsl:
 	db 76
-; 1050  monitorCommandsLa = (uintptr_t)&CmdL;
+; 1053  monitorCommandsLa = (uintptr_t)&CmdL;
 monitorcommandsla:
 	dw 0FFFFh & (cmdl)
-; 1051  monitorCommandsH = 'H';
+; 1054  monitorCommandsH = 'H';
 monitorcommandsh:
 	db 72
-; 1052  monitorCommandsHa = (uintptr_t)&CmdH;
+; 1055  monitorCommandsHa = (uintptr_t)&CmdH;
 monitorcommandsha:
 	dw 0FFFFh & (cmdh)
-; 1053  monitorCommandsEnd = 0;
+; 1056  monitorCommandsEnd = 0;
 monitorcommandsend:
 	db 0
-; 1055  aPrompt[] = "\x0A*MikrO/80* MONITOR\x0A>";
+; 1058  aPrompt[] = "\x0A*MikrO/80* MONITOR\x0A>";
 aprompt:
 	db 10
 	db 42
@@ -2024,499 +2024,499 @@ aprompt:
 	db 10
 	db 62
 	ds 1
-; 1056  aLf[] = "\x0A";
+; 1059  aLf[] = "\x0A";
 alf:
 	db 10
 	ds 1
-; 1058  PrintCharA(...) {
+; 1061  PrintCharA(...) {
 printchara:
-; 1059     push(hl, bc, de, a);
+; 1062     push(hl, bc, de, a);
 	push hl
 	push bc
 	push de
 	push af
-; 1060     PrintCharInt(c = a);
+; 1063     PrintCharInt(c = a);
 	ld c, a
 	jp printcharint
-; 1061 }
-; 1062 
-; 1063 void PrintChar(...) {
+; 1064 }
+; 1065 
+; 1066 void PrintChar(...) {
 printchar:
-; 1064     push(hl, bc, de, a);
+; 1067     push(hl, bc, de, a);
 	push hl
 	push bc
 	push de
 	push af
-; 1065     return PrintCharInt(c);
-; 1066 }
-; 1067 
-; 1068 void PrintCharInt(...) {
+; 1068     return PrintCharInt(c);
+; 1069 }
+; 1070 
+; 1071 void PrintCharInt(...) {
 printcharint:
-; 1069     hl = cursor;
+; 1072     hl = cursor;
 	ld hl, (cursor)
-; 1070     de = -(SCREEN_WIDTH * SCREEN_HEIGHT) + 1;
+; 1073     de = -(SCREEN_WIDTH * SCREEN_HEIGHT) + 1;
 	ld de, 63489
-; 1071     hl += de;
+; 1074     hl += de;
 	add hl, de
-; 1072     *hl = SCREEN_ATTRIB_DEFAULT;
+; 1075     *hl = SCREEN_ATTRIB_DEFAULT;
 	ld (hl), 0
-; 1073 
-; 1074     hl = cursor;
+; 1076 
+; 1077     hl = cursor;
 	ld hl, (cursor)
-; 1075     a = c;
+; 1078     a = c;
 	ld a, c
-; 1076     if (a == 0x1F)
+; 1079     if (a == 0x1F)
 	cp 31
-; 1077         return ClearScreen();
+; 1080         return ClearScreen();
 	jp z, clearscreen
-; 1078     if (a == 0x08)
+; 1081     if (a == 0x08)
 	cp 8
-; 1079         return MoveCursorLeft(hl);
+; 1082         return MoveCursorLeft(hl);
 	jp z, movecursorleft
-; 1080     if (a == 0x18)
+; 1083     if (a == 0x18)
 	cp 24
-; 1081         return MoveCursorRight(hl);
+; 1084         return MoveCursorRight(hl);
 	jp z, movecursorright
-; 1082     if (a == 0x19)
+; 1085     if (a == 0x19)
 	cp 25
-; 1083         return MoveCursorUp(hl);
+; 1086         return MoveCursorUp(hl);
 	jp z, movecursorup
-; 1084     if (a == 0x1A)
+; 1087     if (a == 0x1A)
 	cp 26
-; 1085         return MoveCursorDown(hl);
+; 1088         return MoveCursorDown(hl);
 	jp z, movecursordown
-; 1086     if (a == 0x0A)
+; 1089     if (a == 0x0A)
 	cp 10
-; 1087         return MoveCursorNextLine(hl);
+; 1090         return MoveCursorNextLine(hl);
 	jp z, movecursornextline
-; 1088     if (a == 0x0C)
+; 1091     if (a == 0x0C)
 	cp 12
-; 1089         return MoveCursorHome();
+; 1092         return MoveCursorHome();
 	jp z, movecursorhome
-; 1090 
-; 1091     if ((a = h) == SCREEN_END >> 8) {
+; 1093 
+; 1094     if ((a = h) == SCREEN_END >> 8) {
 	ld a, h
 	cp 65520
 	jp nz, l_102
-; 1092         IsKeyPressed();
+; 1095         IsKeyPressed();
 	call iskeypressed
-; 1093         if (a != 0) {
+; 1096         if (a != 0) {
 	or a
 	jp z, l_104
-; 1094             ReadKey();
+; 1097             ReadKey();
 	call readkey
 l_104:
-; 1095         }
-; 1096         ClearScreenInt();
+; 1098         }
+; 1099         ClearScreenInt();
 	call clearscreenint
-; 1097         hl = SCREEN_BEGIN;
+; 1100         hl = SCREEN_BEGIN;
 	ld hl, 59392
 l_102:
-; 1098     }
-; 1099     *hl = c;
+; 1101     }
+; 1102     *hl = c;
 	ld (hl), c
-; 1100     hl++;
+; 1103     hl++;
 	inc hl
-; 1101     return MoveCursor();
-; 1102 }
-; 1103 
-; 1104 void MoveCursor(...) {
+; 1104     return MoveCursor();
+; 1105 }
+; 1106 
+; 1107 void MoveCursor(...) {
 movecursor:
-; 1105     cursor = hl;
+; 1108     cursor = hl;
 	ld (cursor), hl
-; 1106     de = -(SCREEN_WIDTH * SCREEN_HEIGHT) + 1;
+; 1109     de = -(SCREEN_WIDTH * SCREEN_HEIGHT) + 1;
 	ld de, 63489
-; 1107     hl += de;
+; 1110     hl += de;
 	add hl, de
-; 1108     *hl = SCREEN_ATTRIB_DEFAULT | SCREEN_ATTRIB_UNDERLINE;
+; 1111     *hl = SCREEN_ATTRIB_DEFAULT | SCREEN_ATTRIB_UNDERLINE;
 	ld (hl), 128
-; 1109     pop(hl, bc, de, a);
+; 1112     pop(hl, bc, de, a);
 	pop af
 	pop de
 	pop bc
 	pop hl
 	ret
-; 1110 }
-; 1111 
-; 1112 void ClearScreen(...) {
+; 1113 }
+; 1114 
+; 1115 void ClearScreen() {
 clearscreen:
-; 1113     ClearScreenInt();
+; 1116     ClearScreenInt();
 	call clearscreenint
-; 1114     MoveCursorHome();
-; 1115 }
-; 1116 
-; 1117 void MoveCursorHome(...) {
+; 1117     MoveCursorHome();
+; 1118 }
+; 1119 
+; 1120 void MoveCursorHome() {
 movecursorhome:
-; 1118     MoveCursor(hl = SCREEN_BEGIN);
+; 1121     MoveCursor(hl = SCREEN_BEGIN);
 	ld hl, 59392
 	jp movecursor
-; 1119 }
-; 1120 
-; 1121 void ClearScreenInt(...) {
+; 1122 }
+; 1123 
+; 1124 void ClearScreenInt() {
 clearscreenint:
-; 1122     hl = SCREEN_BEGIN;
+; 1125     hl = SCREEN_BEGIN;
 	ld hl, 59392
-; 1123     de = SCREEN_ATTRIB_BEGIN;
+; 1126     de = SCREEN_ATTRIB_BEGIN;
 	ld de, 57344
-; 1124     for (;;) {
+; 1127     for (;;) {
 l_107:
-; 1125         *hl = ' ';
+; 1128         *hl = ' ';
 	ld (hl), 32
-; 1126         hl++;
+; 1129         hl++;
 	inc hl
-; 1127         a = 0;
+; 1130         a = 0;
 	ld a, 0
-; 1128         *de = a;
+; 1131         *de = a;
 	ld (de), a
-; 1129         de++;
+; 1132         de++;
 	inc de
-; 1130         a = h;
+; 1133         a = h;
 	ld a, h
-; 1131         if (a == SCREEN_END >> 8)
+; 1134         if (a == SCREEN_END >> 8)
 	cp 65520
-; 1132             return;
+; 1135             return;
 	ret z
 	jp l_107
-; 1133     }
-; 1134 }
-; 1135 
-; 1136 void MoveCursorRight(...) {
+; 1136     }
+; 1137 }
+; 1138 
+; 1139 void MoveCursorRight(...) {
 movecursorright:
-; 1137     hl++;
+; 1140     hl++;
 	inc hl
-; 1138     if ((a = h) != SCREEN_END >> 8)
+; 1141     if ((a = h) != SCREEN_END >> 8)
 	ld a, h
 	cp 65520
-; 1139         return MoveCursor(hl);
+; 1142         return MoveCursor(hl);
 	jp nz, movecursor
-; 1140     if (flag_z) /* Not needed */
-; 1141         return MoveCursorHome();
+; 1143     if (flag_z) /* Not needed */
+; 1144         return MoveCursorHome();
 	jp z, movecursorhome
-; 1142     MoveCursorLeft(hl); /* Not needed */
-; 1143 }
-; 1144 
-; 1145 void MoveCursorLeft(...) {
+; 1145     MoveCursorLeft(hl); /* Not needed */
+; 1146 }
+; 1147 
+; 1148 void MoveCursorLeft(...) {
 movecursorleft:
-; 1146     hl--;
+; 1149     hl--;
 	dec hl
-; 1147     if ((a = h) != (SCREEN_BEGIN >> 8) - 1)
+; 1150     if ((a = h) != (SCREEN_BEGIN >> 8) - 1)
 	ld a, h
 	cp 65511
-; 1148         return MoveCursor(hl);
+; 1151         return MoveCursor(hl);
 	jp nz, movecursor
-; 1149     MoveCursor(hl = SCREEN_END - 1);
+; 1152     MoveCursor(hl = SCREEN_END - 1);
 	ld hl, 61439
 	jp movecursor
-; 1150 }
-; 1151 
-; 1152 void MoveCursorDown(...) {
+; 1153 }
+; 1154 
+; 1155 void MoveCursorDown(...) {
 movecursordown:
-; 1153     hl += (de = SCREEN_WIDTH);
+; 1156     hl += (de = SCREEN_WIDTH);
 	ld de, 64
 	add hl, de
-; 1154     if ((a = h) != SCREEN_END >> 8)
+; 1157     if ((a = h) != SCREEN_END >> 8)
 	ld a, h
 	cp 65520
-; 1155         return MoveCursor(hl);
+; 1158         return MoveCursor(hl);
 	jp nz, movecursor
-; 1156     h = SCREEN_BEGIN >> 8;
+; 1159     h = SCREEN_BEGIN >> 8;
 	ld h, 232
-; 1157     MoveCursor(hl);
+; 1160     MoveCursor(hl);
 	jp movecursor
-; 1158 }
-; 1159 
-; 1160 void MoveCursorUp(...) {
+; 1161 }
+; 1162 
+; 1163 void MoveCursorUp(...) {
 movecursorup:
-; 1161     hl += (de = -SCREEN_WIDTH);
+; 1164     hl += (de = -SCREEN_WIDTH);
 	ld de, 65472
 	add hl, de
-; 1162     if ((a = h) != (SCREEN_BEGIN >> 8) - 1)
+; 1165     if ((a = h) != (SCREEN_BEGIN >> 8) - 1)
 	ld a, h
 	cp 65511
-; 1163         return MoveCursor(hl);
+; 1166         return MoveCursor(hl);
 	jp nz, movecursor
-; 1164     hl += (de = SCREEN_WIDTH * SCREEN_HEIGHT);
+; 1167     hl += (de = SCREEN_WIDTH * SCREEN_HEIGHT);
 	ld de, 2048
 	add hl, de
-; 1165     MoveCursor(hl);
+; 1168     MoveCursor(hl);
 	jp movecursor
-; 1166 }
-; 1167 
-; 1168 void MoveCursorNextLine(...) {
+; 1169 }
+; 1170 
+; 1171 void MoveCursorNextLine(...) {
 movecursornextline:
-; 1169     for (;;) {
+; 1172     for (;;) {
 l_110:
-; 1170         hl++;
+; 1173         hl++;
 	inc hl
-; 1171         a = l;
+; 1174         a = l;
 	ld a, l
-; 1172         if (a == SCREEN_WIDTH * 0)
+; 1175         if (a == SCREEN_WIDTH * 0)
 	or a
-; 1173             return MoveCursorNextLine1(hl);
+; 1176             return MoveCursorNextLine1(hl);
 	jp z, movecursornextline1
-; 1174         if (a == SCREEN_WIDTH * 1)
+; 1177         if (a == SCREEN_WIDTH * 1)
 	cp 64
-; 1175             return MoveCursorNextLine1(hl);
+; 1178             return MoveCursorNextLine1(hl);
 	jp z, movecursornextline1
-; 1176         if (a == SCREEN_WIDTH * 2)
+; 1179         if (a == SCREEN_WIDTH * 2)
 	cp 128
-; 1177             return MoveCursorNextLine1(hl);
+; 1180             return MoveCursorNextLine1(hl);
 	jp z, movecursornextline1
-; 1178         if (a == SCREEN_WIDTH * 3)
+; 1181         if (a == SCREEN_WIDTH * 3)
 	cp 192
-; 1179             return MoveCursorNextLine1(hl);
+; 1182             return MoveCursorNextLine1(hl);
 	jp z, movecursornextline1
 	jp l_110
-; 1180     }
-; 1181 }
-; 1182 
-; 1183 void MoveCursorNextLine1(...) {
+; 1183     }
+; 1184 }
+; 1185 
+; 1186 void MoveCursorNextLine1(...) {
 movecursornextline1:
-; 1184     if ((a = h) != SCREEN_END >> 8)
+; 1187     if ((a = h) != SCREEN_END >> 8)
 	ld a, h
 	cp 65520
-; 1185         return MoveCursor(hl);
+; 1188         return MoveCursor(hl);
 	jp nz, movecursor
-; 1186 
-; 1187     IsKeyPressed();
+; 1189 
+; 1190     IsKeyPressed();
 	call iskeypressed
-; 1188     if (a == 0)
+; 1191     if (a == 0)
 	or a
-; 1189         return ClearScreen();
+; 1192         return ClearScreen();
 	jp z, clearscreen
-; 1190     ReadKey();
+; 1193     ReadKey();
 	call readkey
-; 1191     ClearScreen();
+; 1194     ClearScreen();
 	jp clearscreen
-; 1192 }
-; 1193 
-; 1194 void ReadKey(...) {
+; 1195 }
+; 1196 
+; 1197 void ReadKey() {
 readkey:
-; 1195     push(bc, de, hl);
+; 1198     push(bc, de, hl);
 	push bc
 	push de
 	push hl
-; 1196 
-; 1197     for (;;) {
+; 1199 
+; 1200     for (;;) {
 l_113:
-; 1198         b = 0;
+; 1201         b = 0;
 	ld b, 0
-; 1199         c = 1 ^ 0xFF;
+; 1202         c = 1 ^ 0xFF;
 	ld c, 254
-; 1200         d = KEYBOARD_COLUMN_COUNT;
+; 1203         d = KEYBOARD_COLUMN_COUNT;
 	ld d, 8
-; 1201         do {
+; 1204         do {
 l_115:
-; 1202             out(PORT_KEYBOARD_COLUMN, a = c);
+; 1205             out(PORT_KEYBOARD_COLUMN, a = c);
 	ld a, c
 	out (7), a
-; 1203             cyclic_rotate_left(a, 1);
+; 1206             cyclic_rotate_left(a, 1);
 	rlca
-; 1204             c = a;
+; 1207             c = a;
 	ld c, a
-; 1205             a = in(PORT_KEYBOARD_ROW);
+; 1208             a = in(PORT_KEYBOARD_ROW);
 	in a, (6)
-; 1206             a &= KEYBOARD_ROW_MASK;
+; 1209             a &= KEYBOARD_ROW_MASK;
 	and 127
-; 1207             if (a != KEYBOARD_ROW_MASK)
+; 1210             if (a != KEYBOARD_ROW_MASK)
 	cp 127
-; 1208                 return ReadKey1(a, b);
+; 1211                 return ReadKey1(a, b);
 	jp nz, readkey1
-; 1209             b = ((a = b) += KEYBOARD_ROW_COUNT);
+; 1212             b = ((a = b) += KEYBOARD_ROW_COUNT);
 	ld a, b
 	add 7
 	ld b, a
 l_116:
-; 1210         } while (flag_nz(d--));
+; 1213         } while (flag_nz(d--));
 	dec d
 	jp nz, l_115
 	jp l_113
-; 1211     }
-; 1212 }
-; 1213 
-; 1214 void ReadKey1(...) {
-readkey1:
-; 1215     keyLast = a;
-	ld (keylast), a
+; 1214     }
+; 1215 }
 ; 1216 
-; 1217     for (;;) {
+; 1217 void ReadKey1(...) {
+readkey1:
+; 1218     keyLast = a;
+	ld (keylast), a
+; 1219 
+; 1220     for (;;) {
 l_119:
-; 1218         carry_rotate_right(a, 1);
+; 1221         carry_rotate_right(a, 1);
 	rra
-; 1219         if (flag_nc)
-; 1220             break;
+; 1222         if (flag_nc)
+; 1223             break;
 	jp nc, l_120
-; 1221         b++;
+; 1224         b++;
 	inc b
 	jp l_119
 l_120:
-; 1222     }
-; 1223 
-; 1224     /* b - key number */
-; 1225 
-; 1226     /*  0    0    1 !   2 "   3 #   4 $   5 %   6 &   7 ,
-; 1227      *  8   8 (   9 )   : *   ; +   , <   - =   . >   / ?
-; 1228      * 16   @ Ю   A А   B Б   C Ц   D Д   E Е   F Ф   G Г
-; 1229      * 24   H Х   I И   J Й   K К   L Л   M М   N Н   O О
-; 1230      * 32   P П   Q Я   R Р   S С   T Т   U У   V Ж   W В
-; 1231      * 40   X Ь   Y Ы   Z З   [ Ш   \ Э   ] Щ   ^ Ч    _
-; 1232      * 48   Space Right Left  Up    Down  Vk    Str   Home */
-; 1233 
-; 1234     a = b;
+; 1225     }
+; 1226 
+; 1227     /* b - key number */
+; 1228 
+; 1229     /*  0    0    1 !   2 "   3 #   4 $   5 %   6 &   7 ,
+; 1230      *  8   8 (   9 )   : *   ; +   , <   - =   . >   / ?
+; 1231      * 16   @ Ю   A А   B Б   C Ц   D Д   E Е   F Ф   G Г
+; 1232      * 24   H Х   I И   J Й   K К   L Л   M М   N Н   O О
+; 1233      * 32   P П   Q Я   R Р   S С   T Т   U У   V Ж   W В
+; 1234      * 40   X Ь   Y Ы   Z З   [ Ш   \ Э   ] Щ   ^ Ч    _
+; 1235      * 48   Space Right Left  Up    Down  Vk    Str   Home */
+; 1236 
+; 1237     a = b;
 	ld a, b
-; 1235     if (a < 48) {
+; 1238     if (a < 48) {
 	cp 48
 	jp nc, l_121
-; 1236         a += '0';
+; 1239         a += '0';
 	add 48
-; 1237         if (a >= 0x3C)
+; 1240         if (a >= 0x3C)
 	cp 60
-; 1238             if (a < 0x40)
+; 1241             if (a < 0x40)
 	jp c, l_123
 	cp 64
-; 1239                 a &= 0x2F; /* <=>? to .-./ */
+; 1242                 a &= 0x2F; /* <=>? to .-./ */
 	jp nc, l_125
 	and 47
 l_125:
 l_123:
-; 1240         c = a;
+; 1243         c = a;
 	ld c, a
 	jp l_122
 l_121:
-; 1241     } else {
-; 1242         hl = &keyTable;
+; 1244     } else {
+; 1245         hl = &keyTable;
 	ld hl, keytable
-; 1243         a -= 48;
+; 1246         a -= 48;
 	sub 48
-; 1244         c = a;
+; 1247         c = a;
 	ld c, a
-; 1245         b = 0;
+; 1248         b = 0;
 	ld b, 0
-; 1246         hl += bc;
+; 1249         hl += bc;
 	add hl, bc
-; 1247         a = *hl;
+; 1250         a = *hl;
 	ld a, (hl)
-; 1248         return ReadKey2(a);
+; 1251         return ReadKey2(a);
 	jp readkey2
 l_122:
-; 1249     }
-; 1250 
-; 1251     a = in(PORT_KEYBOARD_MODS);
+; 1252     }
+; 1253 
+; 1254     a = in(PORT_KEYBOARD_MODS);
 	in a, (5)
-; 1252     a &= KEYBOARD_MODS_MASK;
+; 1255     a &= KEYBOARD_MODS_MASK;
 	and 7
-; 1253     if (a == KEYBOARD_MODS_MASK)
+; 1256     if (a == KEYBOARD_MODS_MASK)
 	cp 7
-; 1254         goto ReadKeyNoMods;
+; 1257         goto ReadKeyNoMods;
 	jp z, readkeynomods
-; 1255     carry_rotate_right(a, 2);
+; 1258     carry_rotate_right(a, 2);
 	rra
-	rra
-; 1256     if (flag_nc)
-; 1257         goto ReadKeyControl;
-	jp nc, readkeycontrol
-; 1258     carry_rotate_right(a, 1);
 	rra
 ; 1259     if (flag_nc)
-; 1260         goto ReadKeyShift;
+; 1260         goto ReadKeyControl;
+	jp nc, readkeycontrol
+; 1261     carry_rotate_right(a, 1);
+	rra
+; 1262     if (flag_nc)
+; 1263         goto ReadKeyShift;
 	jp nc, readkeyshift
-; 1261 
-; 1262     /* RUS key pressed */
-; 1263     a = c;
+; 1264 
+; 1265     /* RUS key pressed */
+; 1266     a = c;
 	ld a, c
-; 1264     a |= 0x20;
+; 1267     a |= 0x20;
 	or 32
-; 1265     return ReadKey2(a);
+; 1268     return ReadKey2(a);
 	jp readkey2
-; 1266 
-; 1267     /* US (Control) key pressed */
-; 1268 ReadKeyControl:
+; 1269 
+; 1270     /* US (Control) key pressed */
+; 1271 ReadKeyControl:
 readkeycontrol:
-; 1269     a = c;
+; 1272     a = c;
 	ld a, c
-; 1270     a &= 0x1F;
+; 1273     a &= 0x1F;
 	and 31
-; 1271     return ReadKey2(a);
+; 1274     return ReadKey2(a);
 	jp readkey2
-; 1272 
-; 1273     /* SS (Shift) key pressed */
-; 1274 ReadKeyShift:
+; 1275 
+; 1276     /* SS (Shift) key pressed */
+; 1277 ReadKeyShift:
 readkeyshift:
-; 1275     a = c;
+; 1278     a = c;
 	ld a, c
-; 1276     if (a >= 0x40) /* @ A-Z [ \ ] ^ _ */
+; 1279     if (a >= 0x40) /* @ A-Z [ \ ] ^ _ */
 	cp 64
-; 1277         return ReadKey2(a);
+; 1280         return ReadKey2(a);
 	jp nc, readkey2
-; 1278     if (a < 0x30) { /* .-./ to <=>? */
+; 1281     if (a < 0x30) { /* .-./ to <=>? */
 	cp 48
 	jp nc, l_127
-; 1279         a |= 0x10;
+; 1282         a |= 0x10;
 	or 16
-; 1280         return ReadKey2(a);
+; 1283         return ReadKey2(a);
 	jp readkey2
 l_127:
-; 1281     }
-; 1282     a &= 0x2F; /* 0123456789:; to !@#$%&'()*+ */
+; 1284     }
+; 1285     a &= 0x2F; /* 0123456789:; to !@#$%&'()*+ */
 	and 47
-; 1283     return ReadKey2(a);
+; 1286     return ReadKey2(a);
 	jp readkey2
-; 1284 
-; 1285 ReadKeyNoMods:
+; 1287 
+; 1288 ReadKeyNoMods:
 readkeynomods:
-; 1286     ReadKey2(a = c);
+; 1289     ReadKey2(a = c);
 	ld a, c
-; 1287 }
-; 1288 
-; 1289 void ReadKey2(...) {
-readkey2:
-; 1290     c = a;
-	ld c, a
+; 1290 }
 ; 1291 
-; 1292     ReadKeyDelay();
+; 1292 void ReadKey2(...) {
+readkey2:
+; 1293     c = a;
+	ld c, a
+; 1294 
+; 1295     ReadKeyDelay();
 	call readkeydelay
-; 1293 
-; 1294     hl = &keyLast;
+; 1296 
+; 1297     hl = &keyLast;
 	ld hl, 0FFFFh & (keylast)
-; 1295     do {
+; 1298     do {
 l_129:
-; 1296         a = in(PORT_KEYBOARD_ROW);
+; 1299         a = in(PORT_KEYBOARD_ROW);
 	in a, (6)
 l_130:
-; 1297     } while (a == *hl);
+; 1300     } while (a == *hl);
 	cp (hl)
 	jp z, l_129
-; 1298 
-; 1299     ReadKeyDelay();
+; 1301 
+; 1302     ReadKeyDelay();
 	call readkeydelay
-; 1300 
-; 1301     a = c;
+; 1303 
+; 1304     a = c;
 	ld a, c
-; 1302     pop(bc, de, hl);
+; 1305     pop(bc, de, hl);
 	pop hl
 	pop de
 	pop bc
 	ret
-; 1303 }
-; 1304 
-; 1305 void ReadKeyDelay(...) {
+; 1306 }
+; 1307 
+; 1308 void ReadKeyDelay() {
 readkeydelay:
-; 1306     de = 0x1000;
+; 1309     de = 0x1000;
 	ld de, 4096
-; 1307     for (;;) {
+; 1310     for (;;) {
 l_133:
-; 1308         de--;
+; 1311         de--;
 	dec de
-; 1309         if (flag_z((a = d) |= e))
+; 1312         if (flag_z((a = d) |= e))
 	ld a, d
 	or e
-; 1310             return;
+; 1313             return;
 	ret z
 	jp l_133
-; 1311     }
-; 1312 }
-; 1313 
-; 1314 uint8_t keyTable[] = {
+; 1314     }
+; 1315 }
+; 1316 
+; 1317 uint8_t keyTable[] = {
 keytable:
 	db 32
 	db 24
@@ -2526,25 +2526,25 @@ keytable:
 	db 13
 	db 31
 	db 12
-; 1325  IsKeyPressed(...) {
+; 1328  IsKeyPressed() {
 iskeypressed:
-; 1326     out(PORT_KEYBOARD_COLUMN, a = 0);
+; 1329     out(PORT_KEYBOARD_COLUMN, a = 0);
 	ld a, 0
 	out (7), a
-; 1327     a = in(PORT_KEYBOARD_ROW);
+; 1330     a = in(PORT_KEYBOARD_ROW);
 	in a, (6)
-; 1328     a &= KEYBOARD_ROW_MASK;
+; 1331     a &= KEYBOARD_ROW_MASK;
 	and 127
-; 1329     if (a == KEYBOARD_ROW_MASK) {
+; 1332     if (a == KEYBOARD_ROW_MASK) {
 	cp 127
 	jp nz, l_135
-; 1330         a ^= a; /* Returns 0 if no key is pressed */
+; 1333         a ^= a; /* Returns 0 if no key is pressed */
 	xor a
-; 1331         return;
+; 1334         return;
 	ret
 l_135:
-; 1332     }
-; 1333     a = 0xFF; /* Returns 0xFF if there are any keys pressed */
+; 1335     }
+; 1336     a = 0xFF; /* Returns 0xFF if there are any keys pressed */
 	ld a, 255
 	ret
  savebin "micro80.bin", 0xF800, 0x10000

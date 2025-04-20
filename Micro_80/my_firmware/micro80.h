@@ -1,6 +1,6 @@
 #include "cmm.h"
 
-/* Экран */
+/* Screen */
 const int SCREEN_ATTRIB_BEGIN = 0xE000;
 const int SCREEN_SIZE = 0x800;
 const int SCREEN_BEGIN = 0xE800;
@@ -12,38 +12,39 @@ const int SCREEN_ATTRIB_BLANK = 0x07;
 const int SCREEN_ATTRIB_INPUT = 0x23;
 const int SCREEN_ATTRIB_UNDERLINE = 1 << 7;
 
-/* Биты для keybMode */
+/* Bits of keybMode */
 const int KEYB_MODE_CAP = 1 << 0;
 const int KEYB_MODE_RUS = 1 << 1;
 
-/* Порты ввода/вывода */
+/* IO ports */
 const int PORT_TAPE = 1;
 const int PORT_KEYBOARD_MODE = 4;
 const int PORT_KEYBOARD_COLUMN = 7;
 const int PORT_KEYBOARD_ROW = 6;
 const int PORT_KEYBOARD_MODS = 5;
 
-/* Клавиатура */
+/* Keyboard */
 const int KEYBOARD_ROW_MASK = 0x7F;
 const int KEYBOARD_MODS_MASK = 0x07;
 const int KEYBOARD_RUS_MOD = 1 << 0;
 const int KEYBOARD_COLUMN_COUNT = 8;
 const int KEYBOARD_ROW_COUNT = 7;
 
-/* Магнитофон */
+/* Tape */
 const int READ_TAPE_FIRST_BYTE = 0xFF;
 const int READ_TAPE_NEXT_BYTE = 8;
 const int TAPE_START = 0xE6;
 
-/* Опкоды процессора i8080 */
+/* i8080 opcodes */
 const int OPCODE_RST_38 = 0xFF;
 const int OPCODE_JMP = 0xC3;
 
-/* Вектор прерывания */
+/* Interrupt vector */
 extern uint8_t rst38Opcode __address(0x38);
 extern uint16_t rst38Address __address(0x39);
 
-/* Переменные */
+/* BIOS variables */
+void jumpParam1(void) __address(0xF750);
 extern uint8_t jumpOpcode __address(0xF750);
 extern uint16_t param1 __address(0xF751);
 extern uint8_t param1h __address(0xF752);
