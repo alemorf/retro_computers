@@ -257,17 +257,16 @@ void EntryF82A_CalculateCheckSum(...) {
 }
 
 void EntryF82D_EnableScreen() {
-    return;
 }
 
 uint16_t empty = 0;
 
 void EntryF830_GetRamTop() {
-    return GetRamTop();
+    GetRamTop();
 }
 
 void EntryF833_SetRamTop(...) {
-    return SetRamTop(hl);
+    SetRamTop(hl);
 }
 
 // Инициализация. Выполняется после перезагрузки или пользовательской программой.
