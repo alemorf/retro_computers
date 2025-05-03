@@ -1,0 +1,2918 @@
+0001   0000                 device zxspectrum48 ; It has nothing to do with ZX Spectrum 48K, it is needed for the sjasmplus compiler.
+0002   0000             rst30opcode equ 48
+0003   0000             rst30address equ 49
+0004   0000             rst38opcode equ 56
+0005   0000             rst38address equ 57
+0006   0000             pressedkey equ 63321
+0007   0000             cursor equ 63322
+0008   0000             tapereadspeed equ 63324
+0009   0000             tapewritespeed equ 63325
+0010   0000             cursorvisible equ 63326
+0011   0000             escstate equ 63327
+0012   0000             keydelay equ 63328
+0013   0000             regpc equ 63330
+0014   0000             reghl equ 63332
+0015   0000             regbc equ 63334
+0016   0000             regde equ 63336
+0017   0000             regsp equ 63338
+0018   0000             regaf equ 63340
+0019   0000             breakpointaddress equ 63345
+0020   0000             breakpointvalue equ 63347
+0021   0000             jmpparam1opcode equ 63348
+0022   0000             param1 equ 63349
+0023   0000             param2 equ 63351
+0024   0000             param3 equ 63353
+0025   0000             param2exists equ 63355
+0026   0000             tapepolarity equ 63356
+0027   0000             translatecodeenabled equ 63357
+0028   0000             translatecodepagejump equ 63358
+0029   0000             translatecodepageaddress equ 63359
+0030   0000             ramtop equ 63361
+0031   0000             inputbuffer equ 63363
+0032   0000             jmpparam1 equ 63348
+0033   0000             translatecodepage equ 63358
+0034   0000              .org 0xF800
+0035   F800             ; 53  uint8_t rst30Opcode __address(0x30);
+0036   F800             ; 54 extern uint16_t rst30Address __address(0x31);
+0037   F800             ; 55 extern uint8_t rst38Opcode __address(0x38);
+0038   F800             ; 56 extern uint16_t rst38Address __address(0x39);
+0039   F800             ; 57 
+0040   F800             ; 58 // Прототипы
+0041   F800             ; 59 void Reboot(...);
+0042   F800             ; 60 void EntryF86C_Monitor(...);
+0043   F800             ; 61 void Reboot2(...);
+0044   F800             ; 62 void Monitor(...);
+0045   F800             ; 63 void Monitor2();
+0046   F800             ; 64 void ReadStringBackspace(...);
+0047   F800             ; 65 void ReadString(...);
+0048   F800             ; 66 void ReadStringBegin(...);
+0049   F800             ; 67 void ReadStringLoop(...);
+0050   F800             ; 68 void ReadStringExit(...);
+0051   F800             ; 69 void PrintString(...);
+0052   F800             ; 70 void ParseParams(...);
+0053   F800             ; 71 void ParseWord(...);
+0054   F800             ; 72 void ParseWordReturnCf(...);
+0055   F800             ; 73 void CompareHlDe(...);
+0056   F800             ; 74 void LoopWithBreak(...);
+0057   F800             ; 75 void Loop(...);
+0058   F800             ; 76 void PopRet();
+0059   F800             ; 77 void IncHl(...);
+0060   F800             ; 78 void CtrlC(...);
+0061   F800             ; 79 void PrintCrLfTab();
+0062   F800             ; 80 void PrintHexByteFromHlSpace(...);
+0063   F800             ; 81 void PrintHexByteSpace(...);
+0064   F800             ; 82 void CmdR(...);
+0065   F800             ; 83 void GetRamTop(...);
+0066   F800             ; 84 void SetRamTop(...);
+0067   F800             ; 85 void CmdA(...);
+0068   F800             ; 86 void CmdD(...);
+0069   F800             ; 87 void PrintSpacesTo(...);
+0070   F800             ; 88 void PrintSpace();
+0071   F800             ; 89 void CmdC(...);
+0072   F800             ; 90 void CmdF(...);
+0073   F800             ; 91 void CmdS(...);
+0074   F800             ; 92 void CmdW(...);
+0075   F800             ; 93 void CmdT(...);
+0076   F800             ; 94 void CmdM(...);
+0077   F800             ; 95 void CmdG(...);
+0078   F800             ; 96 void BreakPointHandler(...);
+0079   F800             ; 97 void CmdX(...);
+0080   F800             ; 98 void GetCursor();
+0081   F800             ; 99 void GetCursorChar();
+0082   F800             ; 100 void CmdH(...);
+0083   F800             ; 101 void CmdI(...);
+0084   F800             ; 102 void MonitorError();
+0085   F800             ; 103 void ReadTapeFile(...);
+0086   F800             ; 104 void ReadTapeWordNext();
+0087   F800             ; 105 void ReadTapeWord(...);
+0088   F800             ; 106 void ReadTapeBlock(...);
+0089   F800             ; 107 void CalculateCheckSum(...);
+0090   F800             ; 108 void CmdO(...);
+0091   F800             ; 109 void WriteTapeFile(...);
+0092   F800             ; 110 void PrintCrLfTabHexWordSpace(...);
+0093   F800             ; 111 void PrintHexWordSpace(...);
+0094   F800             ; 112 void WriteTapeBlock(...);
+0095   F800             ; 113 void WriteTapeWord(...);
+0096   F800             ; 114 void ReadTapeByte(...);
+0097   F800             ; 115 void ReadTapeByteInternal(...);
+0098   F800             ; 116 void ReadTapeByteTimeout(...);
+0099   F800             ; 117 void WriteTapeByte(...);
+0100   F800             ; 118 void PrintHexByte(...);
+0101   F800             ; 119 void PrintHexNibble(...);
+0102   F800             ; 120 void PrintCharA(...);
+0103   F800             ; 121 void PrintChar(...);
+0104   F800             ; 122 void PrintCharSetEscState(...);
+0105   F800             ; 123 void PrintCharSaveCursor(...);
+0106   F800             ; 124 void PrintCharExit(...);
+0107   F800             ; 125 void DrawCursor(...);
+0108   F800             ; 126 void PrintCharEscY2(...);
+0109   F800             ; 127 void PrintCharResetEscState(...);
+0110   F800             ; 128 void PrintCharEsc(...);
+0111   F800             ; 129 void SetCursorVisible(...);
+0112   F800             ; 130 void PrintCharNoEsc(...);
+0113   F800             ; 131 void PrintChar4(...);
+0114   F800             ; 132 void ClearScreen(...);
+0115   F800             ; 133 void MoveCursorHome(...);
+0116   F800             ; 134 void PrintChar3(...);
+0117   F800             ; 135 void PrintCharBeep(...);
+0118   F800             ; 136 void MoveCursorCr(...);
+0119   F800             ; 137 void MoveCursorRight(...);
+0120   F800             ; 138 void MoveCursorBoundary(...);
+0121   F800             ; 139 void MoveCursorLeft(...);
+0122   F800             ; 140 void MoveCursorLf(...);
+0123   F800             ; 141 void MoveCursorUp(...);
+0124   F800             ; 142 void MoveCursor(...);
+0125   F800             ; 143 void MoveCursorDown(...);
+0126   F800             ; 144 void PrintCrLf();
+0127   F800             ; 145 void IsAnyKeyPressed();
+0128   F800             ; 146 void ReadKey();
+0129   F800             ; 147 void ReadKeyInternal(...);
+0130   F800             ; 148 void ScanKey();
+0131   F800             ; 149 void ScanKey2(...);
+0132   F800             ; 150 void ScanKeyExit(...);
+0133   F800             ; 151 void ScanKeyControl(...);
+0134   F800             ; 152 void ScanKeyShift(...);
+0135   F800             ; 153 void ScanKeySpecial(...);
+0136   F800             ; 154 void TranslateCodePageDefault(...);
+0137   F800             ; 155 
+0138   F800             ; 156 // Переменные Монитора
+0139   F800             ; 157 
+0140   F800             ; 158 extern uint8_t pressedKey __address(0xF759);
+0141   F800             ; 159 extern uint16_t cursor __address(0xF75A);
+0142   F800             ; 160 extern uint8_t tapeReadSpeed __address(0xF75C);
+0143   F800             ; 161 extern uint8_t tapeWriteSpeed __address(0xF75D);
+0144   F800             ; 162 extern uint8_t cursorVisible __address(0xF75E);
+0145   F800             ; 163 extern uint8_t escState __address(0xF75F);
+0146   F800             ; 164 extern uint16_t keyDelay __address(0xF760);
+0147   F800             ; 165 extern uint16_t regPC __address(0xF762);
+0148   F800             ; 166 extern uint16_t regHL __address(0xF764);
+0149   F800             ; 167 extern uint16_t regBC __address(0xF766);
+0150   F800             ; 168 extern uint16_t regDE __address(0xF768);
+0151   F800             ; 169 extern uint16_t regSP __address(0xF76A);
+0152   F800             ; 170 extern uint16_t regAF __address(0xF76C);
+0153   F800             ; 171 extern uint16_t breakPointAddress __address(0xF771);
+0154   F800             ; 172 extern uint8_t breakPointValue __address(0xF773);
+0155   F800             ; 173 extern uint8_t jmpParam1Opcode __address(0xF774);
+0156   F800             ; 174 extern uint16_t param1 __address(0xF775);
+0157   F800             ; 175 extern uint16_t param2 __address(0xF777);
+0158   F800             ; 176 extern uint16_t param3 __address(0xF779);
+0159   F800             ; 177 extern uint8_t param2Exists __address(0xF77B);
+0160   F800             ; 178 extern uint8_t tapePolarity __address(0xF77C);
+0161   F800             ; 179 extern uint8_t translateCodeEnabled __address(0xF77D);
+0162   F800             ; 180 extern uint8_t translateCodePageJump __address(0xF77E);
+0163   F800             ; 181 extern uint16_t translateCodePageAddress __address(0xF77F);
+0164   F800             ; 182 extern uint16_t ramTop __address(0xF781);
+0165   F800             ; 183 extern uint8_t inputBuffer[32] __address(0xF783);
+0166   F800             ; 184 
+0167   F800             ; 185 extern uint8_t specialKeyTable[8];
+0168   F800             ; 186 extern uint8_t aPrompt[6];
+0169   F800             ; 187 extern uint8_t aCrLfTab[6];
+0170   F800             ; 188 extern uint8_t aRegisters[37];
+0171   F800             ; 189 extern uint8_t aBackspace[4];
+0172   F800             ; 190 extern uint8_t aHello[9];
+0173   F800             ; 191 
+0174   F800             ; 192 // Для удобства
+0175   F800             ; 193 
+0176   F800             ; 194 void JmpParam1() __address(0xF774);
+0177   F800             ; 195 void TranslateCodePage() __address(0xF77E);
+0178   F800             ; 196 
+0179   F800             ; 197 // Точки входа
+0180   F800             ; 198 
+0181   F800             ; 199 void EntryF800_Reboot() {
+0182   F800             entryf800_reboot: 
+0183   F800             ; 200     Reboot();
+0184   F800 C3 36 F8    	jp reboot
+0185   F803             ; 201 }
+0186   F803             ; 202 
+0187   F803             ; 203 void EntryF803_ReadKey() {
+0188   F803             entryf803_readkey: 
+0189   F803             ; 204     ReadKey();
+0190   F803 C3 C8 FE    	jp readkey
+0191   F806             ; 205 }
+0192   F806             ; 206 
+0193   F806             ; 207 void EntryF806_ReadTapeByte(...) {
+0194   F806             entryf806_readtapebyte: 
+0195   F806             ; 208     ReadTapeByte(a);
+0196   F806 C3 74 FC    	jp readtapebyte
+0197   F809             ; 209 }
+0198   F809             ; 210 
+0199   F809             ; 211 void EntryF809_PrintChar(...) {
+0200   F809             entryf809_printchar: 
+0201   F809             ; 212     PrintChar(c);
+0202   F809 C3 23 FD    	jp printchar
+0203   F80C             ; 213 }
+0204   F80C             ; 214 
+0205   F80C             ; 215 void EntryF80C_WriteTapeByte(...) {
+0206   F80C             entryf80c_writetapebyte: 
+0207   F80C             ; 216     WriteTapeByte(c);
+0208   F80C C3 DD FC    	jp writetapebyte
+0209   F80F             ; 217 }
+0210   F80F             ; 218 
+0211   F80F             ; 219 void EntryF80F_TranslateCodePage(...) {
+0212   F80F             entryf80f_translatecodepage: 
+0213   F80F             ; 220     TranslateCodePage(c);
+0214   F80F C3 7E F7    	jp translatecodepage
+0215   F812             ; 221 }
+0216   F812             ; 222 
+0217   F812             ; 223 void EntryF812_IsAnyKeyPressed() {
+0218   F812             entryf812_isanykeypressed: 
+0219   F812             ; 224     IsAnyKeyPressed();
+0220   F812 C3 B7 FE    	jp isanykeypressed
+0221   F815             ; 225 }
+0222   F815             ; 226 
+0223   F815             ; 227 void EntryF815_PrintHexByte(...) {
+0224   F815             entryf815_printhexbyte: 
+0225   F815             ; 228     PrintHexByte(a);
+0226   F815 C3 0E FD    	jp printhexbyte
+0227   F818             ; 229 }
+0228   F818             ; 230 
+0229   F818             ; 231 void EntryF818_PrintString(...) {
+0230   F818             entryf818_printstring: 
+0231   F818             ; 232     PrintString(hl);
+0232   F818 C3 48 F9    	jp printstring
+0233   F81B             ; 233 }
+0234   F81B             ; 234 
+0235   F81B             ; 235 void EntryF81B_ScanKey() {
+0236   F81B             entryf81b_scankey: 
+0237   F81B             ; 236     ScanKey();
+0238   F81B C3 FE FE    	jp scankey
+0239   F81E             ; 237 }
+0240   F81E             ; 238 
+0241   F81E             ; 239 void EntryF81E_GetCursor() {
+0242   F81E             entryf81e_getcursor: 
+0243   F81E             ; 240     GetCursor();
+0244   F81E C3 49 FB    	jp getcursor
+0245   F821             ; 241 }
+0246   F821             ; 242 
+0247   F821             ; 243 void EntryF821_GetCursorChar() {
+0248   F821             entryf821_getcursorchar: 
+0249   F821             ; 244     GetCursorChar();
+0250   F821 C3 5E FB    	jp getcursorchar
+0251   F824             ; 245 }
+0252   F824             ; 246 
+0253   F824             ; 247 void EntryF824_ReadTapeFile(...) {
+0254   F824             entryf824_readtapefile: 
+0255   F824             ; 248     ReadTapeFile(hl);
+0256   F824 C3 BA FB    	jp readtapefile
+0257   F827             ; 249 }
+0258   F827             ; 250 
+0259   F827             ; 251 void EntryF827_WriteTapeFile(...) {
+0260   F827             entryf827_writetapefile: 
+0261   F827             ; 252     WriteTapeFile(bc, de, hl);
+0262   F827 C3 24 FC    	jp writetapefile
+0263   F82A             ; 253 }
+0264   F82A             ; 254 
+0265   F82A             ; 255 void EntryF82A_CalculateCheckSum(...) {
+0266   F82A             entryf82a_calculatechecksum: 
+0267   F82A             ; 256     CalculateCheckSum(hl, de);
+0268   F82A C3 F1 FB    	jp calculatechecksum
+0269   F82D             ; 257 }
+0270   F82D             ; 258 
+0271   F82D             ; 259 void EntryF82D_EnableScreen() {
+0272   F82D             entryf82d_enablescreen: 
+0273   F82D             ; 260     return;
+0274   F82D C9          	ret
+0275   F82E             ; 261 }
+0276   F82E             ; 262 
+0277   F82E             ; 263 uint16_t empty = 0;
+0278   F82E             empty: 
+0279   F82E 00 00       	dw 0
+0280   F830             ; 265  EntryF830_GetRamTop() {
+0281   F830             entryf830_getramtop: 
+0282   F830             ; 266     return GetRamTop();
+0283   F830 C3 FA F9    	jp getramtop
+0284   F833             ; 267 }
+0285   F833             ; 268 
+0286   F833             ; 269 void EntryF833_SetRamTop(...) {
+0287   F833             entryf833_setramtop: 
+0288   F833             ; 270     return SetRamTop(hl);
+0289   F833 C3 FE F9    	jp setramtop
+0290   F836             ; 271 }
+0291   F836             ; 272 
+0292   F836             ; 273 // Инициализация. Выполняется после перезагрузки или пользовательской программой.
+0293   F836             ; 274 // Параметры: нет. Функция никогда не завершается.
+0294   F836             ; 275 
+0295   F836             ; 276 void Reboot(...) {
+0296   F836             reboot: 
+0297   F836             ; 277     sp = STACK_TOP;
+0298   F836 31 00 F8    	ld sp, 63488
+0299   F839             ; 278 
+0300   F839             ; 279     // Очистка памяти
+0301   F839             ; 280     hl = &tapeWriteSpeed;
+0302   F839 21 5D F7    	ld hl, 0FFFFh & (tapewritespeed)
+0303   F83C             ; 281     de = inputBuffer + sizeof(inputBuffer) - 1;
+0304   F83C 11 A2 F7    	ld de, 0FFFFh & (((inputbuffer) + (32)) - (1))
+0305   F83F             ; 282     bc = 0;
+0306   F83F 01 00 00    	ld bc, 0
+0307   F842             ; 283     CmdF();
+0308   F842 CD 82 FA    	call cmdf
+0309   F845             ; 284 
+0310   F845             ; 285     translateCodePageJump = a = OPCODE_JMP;
+0311   F845 3E C3       	ld a, 195
+0312   F847 32 7E F7    	ld (translatecodepagejump), a
+0313   F84A             ; 286 
+0314   F84A             ; 287     PrintString(hl = aHello);
+0315   F84A 21 D4 FF    	ld hl, 0FFFFh & (ahello)
+0316   F84D CD 48 F9    	call printstring
+0317   F850             ; 288 
+0318   F850             ; 289     // Проверка ОЗУ
+0319   F850             ; 290     hl = 0;
+0320   F850 21 00 00    	ld hl, 0
+0321   F853             ; 291     for (;;) {
+0322   F853             l_1: 
+0323   F853             ; 292         c = *hl;
+0324   F853 4E          	ld c, (hl)
+0325   F854             ; 293         a = 0x55;
+0326   F854 3E 55       	ld a, 85
+0327   F856             ; 294         *hl = a;
+0328   F856 77          	ld (hl), a
+0329   F857             ; 295         a ^= *hl;
+0330   F857 AE          	xor (hl)
+0331   F858             ; 296         b = a;
+0332   F858 47          	ld b, a
+0333   F859             ; 297         a = 0xAA;
+0334   F859 3E AA       	ld a, 170
+0335   F85B             ; 298         *hl = a;
+0336   F85B 77          	ld (hl), a
+0337   F85C             ; 299         a ^= *hl;
+0338   F85C AE          	xor (hl)
+0339   F85D             ; 300         a |= b;
+0340   F85D B0          	or b
+0341   F85E             ; 301         if (flag_nz)
+0342   F85E             ; 302             return Reboot2();
+0343   F85E C2 6F F8    	jp nz, reboot2
+0344   F861             ; 303         *hl = c;
+0345   F861 71          	ld (hl), c
+0346   F862             ; 304         hl++;
+0347   F862 23          	inc hl
+0348   F863             ; 305         if ((a = h) == SCREEN_ATTRIB_BEGIN >> 8)
+0349   F863 7C          	ld a, h
+0350   F864 FE E0       	cp 65504
+0351   F866             ; 306             return Reboot2();
+0352   F866 CA 6F F8    	jp z, reboot2
+0353   F869 C3 53 F8    	jp l_1
+0354   F86C             ; 307     }
+0355   F86C             ; 308 
+0356   F86C             ; 309     Reboot2();
+0357   F86C C3 6F F8    	jp reboot2
+0358   F86F              .org 0xF86C
+0359   F86C             ; 310 }
+0360   F86C             ; 311 
+0361   F86C             ; 312 asm(" .org 0xF86C");
+0362   F86C             ; 313 
+0363   F86C             ; 314 void EntryF86C_Monitor() {
+0364   F86C             entryf86c_monitor: 
+0365   F86C             ; 315     return Monitor();
+0366   F86C C3 88 F8    	jp monitor
+0367   F86F             ; 316 }
+0368   F86F             ; 317 
+0369   F86F             ; 318 void Reboot2(...) {
+0370   F86F             reboot2: 
+0371   F86F             ; 319     hl--;
+0372   F86F 2B          	dec hl
+0373   F870             ; 320     ramTop = hl;
+0374   F870 22 81 F7    	ld (ramtop), hl
+0375   F873             ; 321     PrintHexWordSpace(hl);
+0376   F873 CD 5A FC    	call printhexwordspace
+0377   F876             ; 322     tapeReadSpeed = hl = TAPE_SPEED;
+0378   F876 21 54 38    	ld hl, 14420
+0379   F879 22 5C F7    	ld (tapereadspeed), hl
+0380   F87C             ; 323     translateCodePageAddress = hl = &TranslateCodePageDefault;
+0381   F87C 21 DD FF    	ld hl, 0FFFFh & (translatecodepagedefault)
+0382   F87F 22 7F F7    	ld (translatecodepageaddress), hl
+0383   F882             ; 324     regSP = hl = 0xF7FE;
+0384   F882 21 FE F7    	ld hl, 63486
+0385   F885 22 6A F7    	ld (regsp), hl
+0386   F888             ; 325     Monitor();
+0387   F888             ; 326 }
+0388   F888             ; 327 
+0389   F888             ; 328 void Monitor() {
+0390   F888             monitor: 
+0391   F888             ; 329     out(PORT_KEYBOARD_MODE, a = 0x83);
+0392   F888 3E 83       	ld a, 131
+0393   F88A D3 04       	out (4), a
+0394   F88C             ; 330     cursorVisible = a;
+0395   F88C 32 5E F7    	ld (cursorvisible), a
+0396   F88F             ; 331     jmpParam1Opcode = a = OPCODE_JMP;
+0397   F88F 3E C3       	ld a, 195
+0398   F891 32 74 F7    	ld (jmpparam1opcode), a
+0399   F894             ; 332     Monitor2();
+0400   F894             ; 333 }
+0401   F894             ; 334 
+0402   F894             ; 335 void Monitor2() {
+0403   F894             monitor2: 
+0404   F894             ; 336     sp = STACK_TOP;
+0405   F894 31 00 F8    	ld sp, 63488
+0406   F897             ; 337     PrintString(hl = aPrompt);
+0407   F897 21 9F FF    	ld hl, 0FFFFh & (aprompt)
+0408   F89A CD 48 F9    	call printstring
+0409   F89D             ; 338     ReadString();
+0410   F89D CD 14 F9    	call readstring
+0411   F8A0             ; 339 
+0412   F8A0             ; 340     push(hl = &EntryF86C_Monitor);
+0413   F8A0 21 6C F8    	ld hl, 0FFFFh & (entryf86c_monitor)
+0414   F8A3 E5          	push hl
+0415   F8A4             ; 341 
+0416   F8A4             ; 342     hl = inputBuffer;
+0417   F8A4 21 83 F7    	ld hl, 0FFFFh & (inputbuffer)
+0418   F8A7             ; 343     a = *hl;
+0419   F8A7 7E          	ld a, (hl)
+0420   F8A8             ; 344 
+0421   F8A8             ; 345     if (a == 'X')
+0422   F8A8 FE 58       	cp 88
+0423   F8AA             ; 346         return CmdX();
+0424   F8AA CA 1C FB    	jp z, cmdx
+0425   F8AD             ; 347 
+0426   F8AD             ; 348     push_pop(a) {
+0427   F8AD F5          	push af
+0428   F8AE             ; 349         ParseParams();
+0429   F8AE CD 52 F9    	call parseparams
+0430   F8B1             ; 350         hl = param3;
+0431   F8B1 2A 79 F7    	ld hl, (param3)
+0432   F8B4             ; 351         c = l;
+0433   F8B4 4D          	ld c, l
+0434   F8B5             ; 352         b = h;
+0435   F8B5 44          	ld b, h
+0436   F8B6             ; 353         hl = param2;
+0437   F8B6 2A 77 F7    	ld hl, (param2)
+0438   F8B9             ; 354         swap(hl, de);
+0439   F8B9 EB          	ex hl, de
+0440   F8BA             ; 355         hl = param1;
+0441   F8BA 2A 75 F7    	ld hl, (param1)
+0442   F8BD F1          	pop af
+0443   F8BE             ; 356     }
+0444   F8BE             ; 357 
+0445   F8BE             ; 358     if (a == 'D')
+0446   F8BE FE 44       	cp 68
+0447   F8C0             ; 359         return CmdD();
+0448   F8C0 CA 06 FA    	jp z, cmdd
+0449   F8C3             ; 360     if (a == 'C')
+0450   F8C3 FE 43       	cp 67
+0451   F8C5             ; 361         return CmdC();
+0452   F8C5 CA 6C FA    	jp z, cmdc
+0453   F8C8             ; 362     if (a == 'F')
+0454   F8C8 FE 46       	cp 70
+0455   F8CA             ; 363         return CmdF();
+0456   F8CA CA 82 FA    	jp z, cmdf
+0457   F8CD             ; 364     if (a == 'S')
+0458   F8CD FE 53       	cp 83
+0459   F8CF             ; 365         return CmdS();
+0460   F8CF CA 89 FA    	jp z, cmds
+0461   F8D2             ; 366     if (a == 'T')
+0462   F8D2 FE 54       	cp 84
+0463   F8D4             ; 367         return CmdT();
+0464   F8D4 CA A6 FA    	jp z, cmdt
+0465   F8D7             ; 368     if (a == 'M')
+0466   F8D7 FE 4D       	cp 77
+0467   F8D9             ; 369         return CmdM();
+0468   F8D9 CA AF FA    	jp z, cmdm
+0469   F8DC             ; 370     if (a == 'G')
+0470   F8DC FE 47       	cp 71
+0471   F8DE             ; 371         return CmdG();
+0472   F8DE CA C8 FA    	jp z, cmdg
+0473   F8E1             ; 372     if (a == 'I')
+0474   F8E1 FE 49       	cp 73
+0475   F8E3             ; 373         return CmdI();
+0476   F8E3 CA 8A FB    	jp z, cmdi
+0477   F8E6             ; 374     if (a == 'O')
+0478   F8E6 FE 4F       	cp 79
+0479   F8E8             ; 375         return CmdO();
+0480   F8E8 CA 08 FC    	jp z, cmdo
+0481   F8EB             ; 376     if (a == 'W')
+0482   F8EB FE 57       	cp 87
+0483   F8ED             ; 377         return CmdW();
+0484   F8ED CA 94 FA    	jp z, cmdw
+0485   F8F0             ; 378     if (a == 'A')
+0486   F8F0 FE 41       	cp 65
+0487   F8F2             ; 379         return CmdA();
+0488   F8F2 CA 02 FA    	jp z, cmda
+0489   F8F5             ; 380     if (a == 'H')
+0490   F8F5 FE 48       	cp 72
+0491   F8F7             ; 381         return CmdH();
+0492   F8F7 CA 65 FB    	jp z, cmdh
+0493   F8FA             ; 382     if (a == 'R')
+0494   F8FA FE 52       	cp 82
+0495   F8FC             ; 383         return CmdR();
+0496   F8FC CA E6 F9    	jp z, cmdr
+0497   F8FF             ; 384     return MonitorError();
+0498   F8FF C3 B2 FB    	jp monitorerror
+0499   F902             ; 385 }
+0500   F902             ; 386 
+0501   F902             ; 387 void ReadStringBackspace(...) {
+0502   F902             readstringbackspace: 
+0503   F902             ; 388     if ((a = inputBuffer) == l)
+0504   F902 3E 83       	ld a, 0FFh & (inputbuffer)
+0505   F904 BD          	cp l
+0506   F905             ; 389         return ReadStringBegin(hl);
+0507   F905 CA 17 F9    	jp z, readstringbegin
+0508   F908             ; 390     push_pop(hl) {
+0509   F908 E5          	push hl
+0510   F909             ; 391         PrintString(hl = aBackspace);
+0511   F909 21 D0 FF    	ld hl, 0FFFFh & (abackspace)
+0512   F90C CD 48 F9    	call printstring
+0513   F90F E1          	pop hl
+0514   F910             ; 392     }
+0515   F910             ; 393     hl--;
+0516   F910 2B          	dec hl
+0517   F911             ; 394     return ReadStringLoop(b, hl);
+0518   F911 C3 19 F9    	jp readstringloop
+0519   F914             ; 395 }
+0520   F914             ; 396 
+0521   F914             ; 397 void ReadString() {
+0522   F914             readstring: 
+0523   F914             ; 398     hl = inputBuffer;
+0524   F914 21 83 F7    	ld hl, 0FFFFh & (inputbuffer)
+0525   F917             ; 399     ReadStringBegin(hl);
+0526   F917             ; 400 }
+0527   F917             ; 401 
+0528   F917             ; 402 void ReadStringBegin(...) {
+0529   F917             readstringbegin: 
+0530   F917             ; 403     b = 0;
+0531   F917 06 00       	ld b, 0
+0532   F919             ; 404     ReadStringLoop(b, hl);
+0533   F919             ; 405 }
+0534   F919             ; 406 
+0535   F919             ; 407 void ReadStringLoop(...) {
+0536   F919             readstringloop: 
+0537   F919             ; 408     for (;;) {
+0538   F919             l_4: 
+0539   F919             ; 409         ReadKey();
+0540   F919 CD C8 FE    	call readkey
+0541   F91C             ; 410         if (a == 127)
+0542   F91C FE 7F       	cp 127
+0543   F91E             ; 411             return ReadStringBackspace();
+0544   F91E CA 02 F9    	jp z, readstringbackspace
+0545   F921             ; 412         if (a == 8)
+0546   F921 FE 08       	cp 8
+0547   F923             ; 413             return ReadStringBackspace();
+0548   F923 CA 02 F9    	jp z, readstringbackspace
+0549   F926             ; 414         if (flag_nz)
+0550   F926             ; 415             PrintCharA(a);
+0551   F926 C4 22 FD    	call nz, printchara
+0552   F929             ; 416         *hl = a;
+0553   F929 77          	ld (hl), a
+0554   F92A             ; 417         if (a == 13)
+0555   F92A FE 0D       	cp 13
+0556   F92C             ; 418             return ReadStringExit(b);
+0557   F92C CA 40 F9    	jp z, readstringexit
+0558   F92F             ; 419         if (a == '.')
+0559   F92F FE 2E       	cp 46
+0560   F931             ; 420             return Monitor2();
+0561   F931 CA 94 F8    	jp z, monitor2
+0562   F934             ; 421         b = 255;
+0563   F934 06 FF       	ld b, 255
+0564   F936             ; 422         if ((a = inputBuffer + sizeof(inputBuffer) - 1) == l)
+0565   F936 3E A2       	ld a, 0FFh & (((inputbuffer) + (32)) - (1))
+0566   F938 BD          	cp l
+0567   F939             ; 423             return MonitorError();
+0568   F939 CA B2 FB    	jp z, monitorerror
+0569   F93C             ; 424         hl++;
+0570   F93C 23          	inc hl
+0571   F93D C3 19 F9    	jp l_4
+0572   F940             ; 425     }
+0573   F940             ; 426 }
+0574   F940             ; 427 
+0575   F940             ; 428 void ReadStringExit(...) {
+0576   F940             readstringexit: 
+0577   F940             ; 429     a = b;
+0578   F940 78          	ld a, b
+0579   F941             ; 430     carry_rotate_left(a, 1);
+0580   F941 17          	rla
+0581   F942             ; 431     de = inputBuffer;
+0582   F942 11 83 F7    	ld de, 0FFFFh & (inputbuffer)
+0583   F945             ; 432     b = 0;
+0584   F945 06 00       	ld b, 0
+0585   F947 C9          	ret
+0586   F948             ; 433 }
+0587   F948             ; 434 
+0588   F948             ; 435 // Функция для пользовательской программы.
+0589   F948             ; 436 // Вывод строки на экран.
+0590   F948             ; 437 // Параметры: hl - адрес стороки. Результат: hl - следующий адрес за терминатором строки. Сохраняются: b, de.
+0591   F948             ; 438 
+0592   F948             ; 439 void PrintString(...) {
+0593   F948             printstring: 
+0594   F948             ; 440     for (;;) {
+0595   F948             l_7: 
+0596   F948             ; 441         a = *hl;
+0597   F948 7E          	ld a, (hl)
+0598   F949             ; 442         if (flag_z(a &= a))
+0599   F949 A7          	and a
+0600   F94A             ; 443             return;
+0601   F94A C8          	ret z
+0602   F94B             ; 444         PrintCharA(a);
+0603   F94B CD 22 FD    	call printchara
+0604   F94E             ; 445         hl++;
+0605   F94E 23          	inc hl
+0606   F94F C3 48 F9    	jp l_7
+0607   F952             ; 446     }
+0608   F952             ; 447 }
+0609   F952             ; 448 
+0610   F952             ; 449 void ParseParams(...) {
+0611   F952             parseparams: 
+0612   F952             ; 450     hl = &param1;
+0613   F952 21 75 F7    	ld hl, 0FFFFh & (param1)
+0614   F955             ; 451     de = &param2Exists;
+0615   F955 11 7B F7    	ld de, 0FFFFh & (param2exists)
+0616   F958             ; 452     c = 0;
+0617   F958 0E 00       	ld c, 0
+0618   F95A             ; 453     CmdF();
+0619   F95A CD 82 FA    	call cmdf
+0620   F95D             ; 454 
+0621   F95D             ; 455     de = inputBuffer + 1;
+0622   F95D 11 84 F7    	ld de, 0FFFFh & ((inputbuffer) + (1))
+0623   F960             ; 456 
+0624   F960             ; 457     ParseWord();
+0625   F960 CD 80 F9    	call parseword
+0626   F963             ; 458     param1 = hl;
+0627   F963 22 75 F7    	ld (param1), hl
+0628   F966             ; 459     param2 = hl;
+0629   F966 22 77 F7    	ld (param2), hl
+0630   F969             ; 460     if (flag_c)
+0631   F969             ; 461         return;
+0632   F969 D8          	ret c
+0633   F96A             ; 462 
+0634   F96A             ; 463     param2Exists = a = 0xFF;
+0635   F96A 3E FF       	ld a, 255
+0636   F96C 32 7B F7    	ld (param2exists), a
+0637   F96F             ; 464     ParseWord();
+0638   F96F CD 80 F9    	call parseword
+0639   F972             ; 465     param2 = hl;
+0640   F972 22 77 F7    	ld (param2), hl
+0641   F975             ; 466     if (flag_c)
+0642   F975             ; 467         return;
+0643   F975 D8          	ret c
+0644   F976             ; 468 
+0645   F976             ; 469     ParseWord();
+0646   F976 CD 80 F9    	call parseword
+0647   F979             ; 470     param3 = hl;
+0648   F979 22 79 F7    	ld (param3), hl
+0649   F97C             ; 471     if (flag_c)
+0650   F97C             ; 472         return;
+0651   F97C D8          	ret c
+0652   F97D             ; 473 
+0653   F97D             ; 474     MonitorError();
+0654   F97D C3 B2 FB    	jp monitorerror
+0655   F980             ; 475 }
+0656   F980             ; 476 
+0657   F980             ; 477 void ParseWord(...) {
+0658   F980             parseword: 
+0659   F980             ; 478     hl = 0;
+0660   F980 21 00 00    	ld hl, 0
+0661   F983             ; 479     for (;;) {
+0662   F983             l_10: 
+0663   F983             ; 480         a = *de;
+0664   F983 1A          	ld a, (de)
+0665   F984             ; 481         de++;
+0666   F984 13          	inc de
+0667   F985             ; 482         if (a == 13)
+0668   F985 FE 0D       	cp 13
+0669   F987             ; 483             return ParseWordReturnCf(hl);
+0670   F987 CA B4 F9    	jp z, parsewordreturncf
+0671   F98A             ; 484         if (a == ',')
+0672   F98A FE 2C       	cp 44
+0673   F98C             ; 485             return;
+0674   F98C C8          	ret z
+0675   F98D             ; 486         if (a == ' ')
+0676   F98D FE 20       	cp 32
+0677   F98F             ; 487             continue;
+0678   F98F CA 83 F9    	jp z, l_10
+0679   F992             ; 488         a -= '0';
+0680   F992 D6 30       	sub 48
+0681   F994             ; 489         if (flag_m)
+0682   F994             ; 490             return MonitorError();
+0683   F994 FA B2 FB    	jp m, monitorerror
+0684   F997             ; 491         if (flag_p(compare(a, 10))) {
+0685   F997 FE 0A       	cp 10
+0686   F999 FA A8 F9    	jp m, l_12
+0687   F99C             ; 492             if (flag_m(compare(a, 17)))
+0688   F99C FE 11       	cp 17
+0689   F99E             ; 493                 return MonitorError();
+0690   F99E FA B2 FB    	jp m, monitorerror
+0691   F9A1             ; 494             if (flag_p(compare(a, 23)))
+0692   F9A1 FE 17       	cp 23
+0693   F9A3             ; 495                 return MonitorError();
+0694   F9A3 F2 B2 FB    	jp p, monitorerror
+0695   F9A6             ; 496             a -= 7;
+0696   F9A6 D6 07       	sub 7
+0697   F9A8             l_12: 
+0698   F9A8             ; 497         }
+0699   F9A8             ; 498         c = a;
+0700   F9A8 4F          	ld c, a
+0701   F9A9             ; 499         hl += hl;
+0702   F9A9 29          	add hl, hl
+0703   F9AA             ; 500         hl += hl;
+0704   F9AA 29          	add hl, hl
+0705   F9AB             ; 501         hl += hl;
+0706   F9AB 29          	add hl, hl
+0707   F9AC             ; 502         hl += hl;
+0708   F9AC 29          	add hl, hl
+0709   F9AD             ; 503         if (flag_c)
+0710   F9AD             ; 504             return MonitorError();
+0711   F9AD DA B2 FB    	jp c, monitorerror
+0712   F9B0             ; 505         hl += bc;
+0713   F9B0 09          	add hl, bc
+0714   F9B1 C3 83 F9    	jp l_10
+0715   F9B4             ; 506     }
+0716   F9B4             ; 507 }
+0717   F9B4             ; 508 
+0718   F9B4             ; 509 void ParseWordReturnCf(...) {
+0719   F9B4             parsewordreturncf: 
+0720   F9B4             ; 510     set_flag_c();
+0721   F9B4 37          	scf
+0722   F9B5 C9          	ret
+0723   F9B6             ; 511 }
+0724   F9B6             ; 512 
+0725   F9B6             ; 513 void CompareHlDe(...) {
+0726   F9B6             comparehlde: 
+0727   F9B6             ; 514     if ((a = h) != d)
+0728   F9B6 7C          	ld a, h
+0729   F9B7 BA          	cp d
+0730   F9B8             ; 515         return;
+0731   F9B8 C0          	ret nz
+0732   F9B9             ; 516     compare(a = l, e);
+0733   F9B9 7D          	ld a, l
+0734   F9BA BB          	cp e
+0735   F9BB C9          	ret
+0736   F9BC             ; 517 }
+0737   F9BC             ; 518 
+0738   F9BC             ; 519 void LoopWithBreak(...) {
+0739   F9BC             loopwithbreak: 
+0740   F9BC             ; 520     CtrlC();
+0741   F9BC CD CA F9    	call ctrlc
+0742   F9BF             ; 521     Loop(hl, de);
+0743   F9BF             ; 522 }
+0744   F9BF             ; 523 
+0745   F9BF             ; 524 void Loop(...) {
+0746   F9BF             loop: 
+0747   F9BF             ; 525     CompareHlDe(hl, de);
+0748   F9BF CD B6 F9    	call comparehlde
+0749   F9C2             ; 526     if (flag_nz)
+0750   F9C2             ; 527         return IncHl(hl);
+0751   F9C2 C2 C8 F9    	jp nz, inchl
+0752   F9C5             ; 528     PopRet();
+0753   F9C5             ; 529 }
+0754   F9C5             ; 530 
+0755   F9C5             ; 531 void PopRet() {
+0756   F9C5             popret: 
+0757   F9C5             ; 532     sp++;
+0758   F9C5 33          	inc sp
+0759   F9C6             ; 533     sp++;
+0760   F9C6 33          	inc sp
+0761   F9C7 C9          	ret
+0762   F9C8             ; 534 }
+0763   F9C8             ; 535 
+0764   F9C8             ; 536 void IncHl(...) {
+0765   F9C8             inchl: 
+0766   F9C8             ; 537     hl++;
+0767   F9C8 23          	inc hl
+0768   F9C9 C9          	ret
+0769   F9CA             ; 538 }
+0770   F9CA             ; 539 
+0771   F9CA             ; 540 void CtrlC() {
+0772   F9CA             ctrlc: 
+0773   F9CA             ; 541     ScanKey();
+0774   F9CA CD FE FE    	call scankey
+0775   F9CD             ; 542     if (a != 3)  // УПР + C
+0776   F9CD FE 03       	cp 3
+0777   F9CF             ; 543         return;
+0778   F9CF C0          	ret nz
+0779   F9D0             ; 544     MonitorError();
+0780   F9D0 C3 B2 FB    	jp monitorerror
+0781   F9D3             ; 545 }
+0782   F9D3             ; 546 
+0783   F9D3             ; 547 void PrintCrLfTab() {
+0784   F9D3             printcrlftab: 
+0785   F9D3             ; 548     push_pop(hl) {
+0786   F9D3 E5          	push hl
+0787   F9D4             ; 549         PrintString(hl = aCrLfTab);
+0788   F9D4 21 A5 FF    	ld hl, 0FFFFh & (acrlftab)
+0789   F9D7 CD 48 F9    	call printstring
+0790   F9DA E1          	pop hl
+0791   F9DB C9          	ret
+0792   F9DC             ; 550     }
+0793   F9DC             ; 551 }
+0794   F9DC             ; 552 
+0795   F9DC             ; 553 void PrintHexByteFromHlSpace(...) {
+0796   F9DC             printhexbytefromhlspace: 
+0797   F9DC             ; 554     PrintHexByteSpace(a = *hl);
+0798   F9DC 7E          	ld a, (hl)
+0799   F9DD             ; 555 }
+0800   F9DD             ; 556 
+0801   F9DD             ; 557 void PrintHexByteSpace(...) {
+0802   F9DD             printhexbytespace: 
+0803   F9DD             ; 558     push_pop(bc) {
+0804   F9DD C5          	push bc
+0805   F9DE             ; 559         PrintHexByte(a);
+0806   F9DE CD 0E FD    	call printhexbyte
+0807   F9E1             ; 560         PrintSpace();
+0808   F9E1 CD 67 FA    	call printspace
+0809   F9E4 C1          	pop bc
+0810   F9E5 C9          	ret
+0811   F9E6             ; 561     }
+0812   F9E6             ; 562 }
+0813   F9E6             ; 563 
+0814   F9E6             ; 564 // Команда R <начальный адрес ПЗУ> <конечный адрес ПЗУ> <начальный адрес назаначения>
+0815   F9E6             ; 565 // Скопировать блок из внешнего ПЗУ в адресное пространство процессора
+0816   F9E6             ; 566 
+0817   F9E6             ; 567 void CmdR(...) {
+0818   F9E6             cmdr: 
+0819   F9E6             ; 568     out(PORT_EXT_MODE, a = 0x90);
+0820   F9E6 3E 90       	ld a, 144
+0821   F9E8 D3 A3       	out (163), a
+0822   F9EA             ; 569     for (;;) {
+0823   F9EA             l_15: 
+0824   F9EA             ; 570         out(PORT_EXT_ADDR_LOW, a = l);
+0825   F9EA 7D          	ld a, l
+0826   F9EB D3 A1       	out (161), a
+0827   F9ED             ; 571         out(PORT_EXT_ADDR_HIGH, a = h);
+0828   F9ED 7C          	ld a, h
+0829   F9EE D3 A2       	out (162), a
+0830   F9F0             ; 572         *bc = a = in(PORT_EXT_DATA);
+0831   F9F0 DB A0       	in a, (160)
+0832   F9F2 02          	ld (bc), a
+0833   F9F3             ; 573         bc++;
+0834   F9F3 03          	inc bc
+0835   F9F4             ; 574         Loop();
+0836   F9F4 CD BF F9    	call loop
+0837   F9F7 C3 EA F9    	jp l_15
+0838   F9FA             ; 575     }
+0839   F9FA             ; 576 }
+0840   F9FA             ; 577 
+0841   F9FA             ; 578 // Функция для пользовательской программы.
+0842   F9FA             ; 579 // Получить адрес последнего доступного байта оперативной памяти.
+0843   F9FA             ; 580 // Параметры: нет. Результат: hl - адрес. Сохраняет: a, bc, de.
+0844   F9FA             ; 581 
+0845   F9FA             ; 582 void GetRamTop(...) {
+0846   F9FA             getramtop: 
+0847   F9FA             ; 583     hl = ramTop;
+0848   F9FA 2A 81 F7    	ld hl, (ramtop)
+0849   F9FD C9          	ret
+0850   F9FE             ; 584 }
+0851   F9FE             ; 585 
+0852   F9FE             ; 586 // Функция для пользовательской программы.
+0853   F9FE             ; 587 // Установить адрес последнего доступного байта оперативной памяти.
+0854   F9FE             ; 588 // Параметры: hl - адрес. Результат: нет. Сохраняет: a, bc, de, hl.
+0855   F9FE             ; 589 
+0856   F9FE             ; 590 void SetRamTop(...) {
+0857   F9FE             setramtop: 
+0858   F9FE             ; 591     ramTop = hl;
+0859   F9FE 22 81 F7    	ld (ramtop), hl
+0860   FA01 C9          	ret
+0861   FA02             ; 592 }
+0862   FA02             ; 593 
+0863   FA02             ; 594 // Команда A <адрес>
+0864   FA02             ; 595 // Установить программу преобразования кодировки символов выводимых на экран
+0865   FA02             ; 596 
+0866   FA02             ; 597 void CmdA(...) {
+0867   FA02             cmda: 
+0868   FA02             ; 598     translateCodePageAddress = hl;
+0869   FA02 22 7F F7    	ld (translatecodepageaddress), hl
+0870   FA05 C9          	ret
+0871   FA06             ; 599 }
+0872   FA06             ; 600 
+0873   FA06             ; 601 // Команда D <начальный адрес> <конечный адрес>
+0874   FA06             ; 602 // Вывод блока данных из адресного пространства на экран в 16-ричном виде
+0875   FA06             ; 603 
+0876   FA06             ; 604 void CmdD(...) {
+0877   FA06             cmdd: 
+0878   FA06             ; 605     for (;;) {
+0879   FA06             l_18: 
+0880   FA06             ; 606         PrintCrLf();
+0881   FA06 CD AD FE    	call printcrlf
+0882   FA09             ; 607         PrintHexWordSpace(hl);
+0883   FA09 CD 5A FC    	call printhexwordspace
+0884   FA0C             ; 608         push_pop(hl) {
+0885   FA0C E5          	push hl
+0886   FA0D             ; 609             c = ((a = l) &= 0x0F);
+0887   FA0D 7D          	ld a, l
+0888   FA0E E6 0F       	and 15
+0889   FA10 4F          	ld c, a
+0890   FA11             ; 610             carry_rotate_right(a, 1);
+0891   FA11 1F          	rra
+0892   FA12             ; 611             b = (((a += c) += c) += 5);
+0893   FA12 81          	add c
+0894   FA13 81          	add c
+0895   FA14 C6 05       	add 5
+0896   FA16 47          	ld b, a
+0897   FA17             ; 612             PrintSpacesTo();
+0898   FA17 CD 5A FA    	call printspacesto
+0899   FA1A             ; 613             do {
+0900   FA1A             l_20: 
+0901   FA1A             ; 614                 PrintHexByte(a = *hl);
+0902   FA1A 7E          	ld a, (hl)
+0903   FA1B CD 0E FD    	call printhexbyte
+0904   FA1E             ; 615                 CompareHlDe(hl, de);
+0905   FA1E CD B6 F9    	call comparehlde
+0906   FA21             ; 616                 hl++;
+0907   FA21 23          	inc hl
+0908   FA22             ; 617                 if (flag_z)
+0909   FA22             ; 618                     break;
+0910   FA22 CA 32 FA    	jp z, l_22
+0911   FA25             ; 619                 (a = l) &= 0x0F;
+0912   FA25 7D          	ld a, l
+0913   FA26 E6 0F       	and 15
+0914   FA28             ; 620                 push_pop(a) {
+0915   FA28 F5          	push af
+0916   FA29             ; 621                     a &= 1;
+0917   FA29 E6 01       	and 1
+0918   FA2B             ; 622                     if (flag_z)
+0919   FA2B             ; 623                         PrintSpace();
+0920   FA2B CC 67 FA    	call z, printspace
+0921   FA2E F1          	pop af
+0922   FA2F             l_21: 
+0923   FA2F C2 1A FA    	jp nz, l_20
+0924   FA32             l_22: 
+0925   FA32 E1          	pop hl
+0926   FA33             ; 624                 }
+0927   FA33             ; 625             } while (flag_nz);
+0928   FA33             ; 626         }
+0929   FA33             ; 627 
+0930   FA33             ; 628         b = (((a = l) &= 0x0F) += 46);
+0931   FA33 7D          	ld a, l
+0932   FA34 E6 0F       	and 15
+0933   FA36 C6 2E       	add 46
+0934   FA38 47          	ld b, a
+0935   FA39             ; 629         PrintSpacesTo(b);
+0936   FA39 CD 5A FA    	call printspacesto
+0937   FA3C             ; 630 
+0938   FA3C             ; 631         do {
+0939   FA3C             l_23: 
+0940   FA3C             ; 632             a = *hl;
+0941   FA3C 7E          	ld a, (hl)
+0942   FA3D             ; 633             if (a < 127)
+0943   FA3D FE 7F       	cp 127
+0944   FA3F             ; 634                 if (a >= 32)
+0945   FA3F D2 47 FA    	jp nc, l_26
+0946   FA42 FE 20       	cp 32
+0947   FA44             ; 635                     goto loc_fa49;
+0948   FA44 D2 49 FA    	jp nc, loc_fa49
+0949   FA47             l_26: 
+0950   FA47             ; 636             a = '.';
+0951   FA47 3E 2E       	ld a, 46
+0952   FA49             ; 637         loc_fa49:
+0953   FA49             loc_fa49: 
+0954   FA49             ; 638             PrintCharA(a);
+0955   FA49 CD 22 FD    	call printchara
+0956   FA4C             ; 639             CompareHlDe(hl, de);
+0957   FA4C CD B6 F9    	call comparehlde
+0958   FA4F             ; 640             if (flag_z)
+0959   FA4F             ; 641                 return;
+0960   FA4F C8          	ret z
+0961   FA50             ; 642             hl++;
+0962   FA50 23          	inc hl
+0963   FA51             ; 643             (a = l) &= 0x0F;
+0964   FA51 7D          	ld a, l
+0965   FA52 E6 0F       	and 15
+0966   FA54             l_24: 
+0967   FA54 C2 3C FA    	jp nz, l_23
+0968   FA57 C3 06 FA    	jp l_18
+0969   FA5A             ; 644         } while (flag_nz);
+0970   FA5A             ; 645     }
+0971   FA5A             ; 646 }
+0972   FA5A             ; 647 
+0973   FA5A             ; 648 void PrintSpacesTo(...) {
+0974   FA5A             printspacesto: 
+0975   FA5A             ; 649     for (;;) {
+0976   FA5A             l_29: 
+0977   FA5A             ; 650         if (((a = cursor) &= (SCREEN_WIDTH - 1)) >= b)
+0978   FA5A 3A 5A F7    	ld a, (cursor)
+0979   FA5D E6 3F       	and 63
+0980   FA5F B8          	cp b
+0981   FA60             ; 651             return;
+0982   FA60 D0          	ret nc
+0983   FA61             ; 652         PrintSpace();
+0984   FA61 CD 67 FA    	call printspace
+0985   FA64 C3 5A FA    	jp l_29
+0986   FA67             ; 653     }
+0987   FA67             ; 654 }
+0988   FA67             ; 655 
+0989   FA67             ; 656 void PrintSpace() {
+0990   FA67             printspace: 
+0991   FA67             ; 657     return PrintCharA(a = ' ');
+0992   FA67 3E 20       	ld a, 32
+0993   FA69 C3 22 FD    	jp printchara
+0994   FA6C             ; 658 }
+0995   FA6C             ; 659 
+0996   FA6C             ; 660 // Команда С <начальный адрес 1> <конечный адрес 1> <начальный адрес 2>
+0997   FA6C             ; 661 // Сравнить два блока адресного пространство
+0998   FA6C             ; 662 
+0999   FA6C             ; 663 void CmdC(...) {
+1000   FA6C             cmdc: 
+1001   FA6C             ; 664     for (;;) {
+1002   FA6C             l_32: 
+1003   FA6C             ; 665         if ((a = *bc) != *hl) {
+1004   FA6C 0A          	ld a, (bc)
+1005   FA6D BE          	cp (hl)
+1006   FA6E CA 7B FA    	jp z, l_34
+1007   FA71             ; 666             PrintCrLfTabHexWordSpace(hl);
+1008   FA71 CD 51 FC    	call printcrlftabhexwordspace
+1009   FA74             ; 667             PrintHexByteFromHlSpace(hl);
+1010   FA74 CD DC F9    	call printhexbytefromhlspace
+1011   FA77             ; 668             PrintHexByteSpace(a = *bc);
+1012   FA77 0A          	ld a, (bc)
+1013   FA78 CD DD F9    	call printhexbytespace
+1014   FA7B             l_34: 
+1015   FA7B             ; 669         }
+1016   FA7B             ; 670         bc++;
+1017   FA7B 03          	inc bc
+1018   FA7C             ; 671         LoopWithBreak();
+1019   FA7C CD BC F9    	call loopwithbreak
+1020   FA7F C3 6C FA    	jp l_32
+1021   FA82             ; 672     }
+1022   FA82             ; 673 }
+1023   FA82             ; 674 
+1024   FA82             ; 675 // Команда F <начальный адрес> <конечный адрес> <байт>
+1025   FA82             ; 676 // Заполнить блок в адресном пространстве одним байтом
+1026   FA82             ; 677 
+1027   FA82             ; 678 void CmdF(...) {
+1028   FA82             cmdf: 
+1029   FA82             ; 679     for (;;) {
+1030   FA82             l_37: 
+1031   FA82             ; 680         *hl = c;
+1032   FA82 71          	ld (hl), c
+1033   FA83             ; 681         Loop();
+1034   FA83 CD BF F9    	call loop
+1035   FA86 C3 82 FA    	jp l_37
+1036   FA89             ; 682     }
+1037   FA89             ; 683 }
+1038   FA89             ; 684 
+1039   FA89             ; 685 // Команда S <начальный адрес> <конечный адрес> <байт>
+1040   FA89             ; 686 // Найти байт (8 битное значение) в адресном пространстве
+1041   FA89             ; 687 
+1042   FA89             ; 688 void CmdS(...) {
+1043   FA89             cmds: 
+1044   FA89             ; 689     for (;;) {
+1045   FA89             l_40: 
+1046   FA89             ; 690         if ((a = c) == *hl)
+1047   FA89 79          	ld a, c
+1048   FA8A BE          	cp (hl)
+1049   FA8B             ; 691             PrintCrLfTabHexWordSpace(hl);
+1050   FA8B CC 51 FC    	call z, printcrlftabhexwordspace
+1051   FA8E             ; 692         LoopWithBreak();
+1052   FA8E CD BC F9    	call loopwithbreak
+1053   FA91 C3 89 FA    	jp l_40
+1054   FA94             ; 693     }
+1055   FA94             ; 694 }
+1056   FA94             ; 695 
+1057   FA94             ; 696 // Команда W <начальный адрес> <конечный адрес> <слово>
+1058   FA94             ; 697 // Найти слово (16 битное значение) в адресном пространстве
+1059   FA94             ; 698 
+1060   FA94             ; 699 void CmdW(...) {
+1061   FA94             cmdw: 
+1062   FA94             ; 700     for (;;) {
+1063   FA94             l_43: 
+1064   FA94             ; 701         if ((a = *hl) == c) {
+1065   FA94 7E          	ld a, (hl)
+1066   FA95 B9          	cp c
+1067   FA96 C2 A0 FA    	jp nz, l_45
+1068   FA99             ; 702             hl++;
+1069   FA99 23          	inc hl
+1070   FA9A             ; 703             compare((a = *hl), b);
+1071   FA9A 7E          	ld a, (hl)
+1072   FA9B B8          	cp b
+1073   FA9C             ; 704             hl--;
+1074   FA9C 2B          	dec hl
+1075   FA9D             ; 705             if (flag_z)
+1076   FA9D             ; 706                 PrintCrLfTabHexWordSpace(hl);
+1077   FA9D CC 51 FC    	call z, printcrlftabhexwordspace
+1078   FAA0             l_45: 
+1079   FAA0             ; 707         }
+1080   FAA0             ; 708         LoopWithBreak();
+1081   FAA0 CD BC F9    	call loopwithbreak
+1082   FAA3 C3 94 FA    	jp l_43
+1083   FAA6             ; 709     }
+1084   FAA6             ; 710 }
+1085   FAA6             ; 711 
+1086   FAA6             ; 712 // Команда T <начальный адрес источника> <конечный адрес источника> <начальный адрес назначения>
+1087   FAA6             ; 713 // Копировать блок в адресном пространстве
+1088   FAA6             ; 714 
+1089   FAA6             ; 715 void CmdT(...) {
+1090   FAA6             cmdt: 
+1091   FAA6             ; 716     for (;;) {
+1092   FAA6             l_48: 
+1093   FAA6             ; 717         *bc = a = *hl;
+1094   FAA6 7E          	ld a, (hl)
+1095   FAA7 02          	ld (bc), a
+1096   FAA8             ; 718         bc++;
+1097   FAA8 03          	inc bc
+1098   FAA9             ; 719         Loop();
+1099   FAA9 CD BF F9    	call loop
+1100   FAAC C3 A6 FA    	jp l_48
+1101   FAAF             ; 720     }
+1102   FAAF             ; 721 }
+1103   FAAF             ; 722 
+1104   FAAF             ; 723 // Команда M <начальный адрес>
+1105   FAAF             ; 724 // Вывести на экран адресное пространство побайтно с возможностью изменения
+1106   FAAF             ; 725 
+1107   FAAF             ; 726 void CmdM(...) {
+1108   FAAF             cmdm: 
+1109   FAAF             ; 727     for (;;) {
+1110   FAAF             l_51: 
+1111   FAAF             ; 728         PrintCrLfTabHexWordSpace(hl);
+1112   FAAF CD 51 FC    	call printcrlftabhexwordspace
+1113   FAB2             ; 729         PrintHexByteFromHlSpace();
+1114   FAB2 CD DC F9    	call printhexbytefromhlspace
+1115   FAB5             ; 730         push_pop(hl) {
+1116   FAB5 E5          	push hl
+1117   FAB6             ; 731             ReadString();
+1118   FAB6 CD 14 F9    	call readstring
+1119   FAB9 E1          	pop hl
+1120   FABA             ; 732         }
+1121   FABA             ; 733         if (flag_c) {
+1122   FABA D2 C4 FA    	jp nc, l_53
+1123   FABD             ; 734             push_pop(hl) {
+1124   FABD E5          	push hl
+1125   FABE             ; 735                 ParseWord();
+1126   FABE CD 80 F9    	call parseword
+1127   FAC1             ; 736                 a = l;
+1128   FAC1 7D          	ld a, l
+1129   FAC2 E1          	pop hl
+1130   FAC3             ; 737             }
+1131   FAC3             ; 738             *hl = a;
+1132   FAC3 77          	ld (hl), a
+1133   FAC4             l_53: 
+1134   FAC4             ; 739         }
+1135   FAC4             ; 740         hl++;
+1136   FAC4 23          	inc hl
+1137   FAC5 C3 AF FA    	jp l_51
+1138   FAC8             ; 741     }
+1139   FAC8             ; 742 }
+1140   FAC8             ; 743 
+1141   FAC8             ; 744 // Команда G <начальный адрес> <конечный адрес>
+1142   FAC8             ; 745 // Запуск программы и возможным указанием точки останова.
+1143   FAC8             ; 746 
+1144   FAC8             ; 747 void CmdG(...) {
+1145   FAC8             cmdg: 
+1146   FAC8             ; 748     CompareHlDe(hl, de);
+1147   FAC8 CD B6 F9    	call comparehlde
+1148   FACB             ; 749     if (flag_nz) {
+1149   FACB CA E3 FA    	jp z, l_55
+1150   FACE             ; 750         swap(hl, de);
+1151   FACE EB          	ex hl, de
+1152   FACF             ; 751         breakPointAddress = hl;
+1153   FACF 22 71 F7    	ld (breakpointaddress), hl
+1154   FAD2             ; 752         breakPointValue = a = *hl;
+1155   FAD2 7E          	ld a, (hl)
+1156   FAD3 32 73 F7    	ld (breakpointvalue), a
+1157   FAD6             ; 753         *hl = OPCODE_RST_30;
+1158   FAD6 36 F7       	ld (hl), 247
+1159   FAD8             ; 754         rst30Opcode = a = OPCODE_JMP;
+1160   FAD8 3E C3       	ld a, 195
+1161   FADA 32 30 00    	ld (rst30opcode), a
+1162   FADD             ; 755         rst30Address = hl = &BreakPointHandler;
+1163   FADD 21 F1 FA    	ld hl, 0FFFFh & (breakpointhandler)
+1164   FAE0 22 31 00    	ld (rst30address), hl
+1165   FAE3             l_55: 
+1166   FAE3             ; 756     }
+1167   FAE3             ; 757     sp = &regBC;
+1168   FAE3 31 66 F7    	ld sp, 0FFFFh & (regbc)
+1169   FAE6             ; 758     pop(bc);
+1170   FAE6 C1          	pop bc
+1171   FAE7             ; 759     pop(de);
+1172   FAE7 D1          	pop de
+1173   FAE8             ; 760     pop(hl);
+1174   FAE8 E1          	pop hl
+1175   FAE9             ; 761     pop(a);
+1176   FAE9 F1          	pop af
+1177   FAEA             ; 762     sp = hl;
+1178   FAEA F9          	ld sp, hl
+1179   FAEB             ; 763     hl = regHL;
+1180   FAEB 2A 64 F7    	ld hl, (reghl)
+1181   FAEE             ; 764     return JmpParam1();
+1182   FAEE C3 74 F7    	jp jmpparam1
+1183   FAF1             ; 765 }
+1184   FAF1             ; 766 
+1185   FAF1             ; 767 void BreakPointHandler(...) {
+1186   FAF1             breakpointhandler: 
+1187   FAF1             ; 768     regHL = hl;
+1188   FAF1 22 64 F7    	ld (reghl), hl
+1189   FAF4             ; 769     push(a);
+1190   FAF4 F5          	push af
+1191   FAF5             ; 770     pop(hl);
+1192   FAF5 E1          	pop hl
+1193   FAF6             ; 771     regAF = hl;
+1194   FAF6 22 6C F7    	ld (regaf), hl
+1195   FAF9             ; 772     pop(hl);
+1196   FAF9 E1          	pop hl
+1197   FAFA             ; 773     hl--;
+1198   FAFA 2B          	dec hl
+1199   FAFB             ; 774     regPC = hl;
+1200   FAFB 22 62 F7    	ld (regpc), hl
+1201   FAFE             ; 775     (hl = 0) += sp;
+1202   FAFE 21 00 00    	ld hl, 0
+1203   FB01 39          	add hl, sp
+1204   FB02             ; 776     sp = &regAF;
+1205   FB02 31 6C F7    	ld sp, 0FFFFh & (regaf)
+1206   FB05             ; 777     push(hl);
+1207   FB05 E5          	push hl
+1208   FB06             ; 778     push(de);
+1209   FB06 D5          	push de
+1210   FB07             ; 779     push(bc);
+1211   FB07 C5          	push bc
+1212   FB08             ; 780     sp = STACK_TOP;
+1213   FB08 31 00 F8    	ld sp, 63488
+1214   FB0B             ; 781     hl = regPC;
+1215   FB0B 2A 62 F7    	ld hl, (regpc)
+1216   FB0E             ; 782     swap(hl, de);
+1217   FB0E EB          	ex hl, de
+1218   FB0F             ; 783     hl = breakPointAddress;
+1219   FB0F 2A 71 F7    	ld hl, (breakpointaddress)
+1220   FB12             ; 784     CompareHlDe(hl, de);
+1221   FB12 CD B6 F9    	call comparehlde
+1222   FB15             ; 785     if (flag_nz)
+1223   FB15             ; 786         return CmdX();
+1224   FB15 C2 1C FB    	jp nz, cmdx
+1225   FB18             ; 787     *hl = a = breakPointValue;
+1226   FB18 3A 73 F7    	ld a, (breakpointvalue)
+1227   FB1B 77          	ld (hl), a
+1228   FB1C             ; 788     CmdX();
+1229   FB1C             ; 789 }
+1230   FB1C             ; 790 
+1231   FB1C             ; 791 // Команда X
+1232   FB1C             ; 792 // Вывод на экран содержимого регистров микропроцессора с возможностью их изменения.
+1233   FB1C             ; 793 
+1234   FB1C             ; 794 void CmdX(...) {
+1235   FB1C             cmdx: 
+1236   FB1C             ; 795     PrintString(hl = aRegisters);
+1237   FB1C 21 AB FF    	ld hl, 0FFFFh & (aregisters)
+1238   FB1F CD 48 F9    	call printstring
+1239   FB22             ; 796     hl = &regPC;
+1240   FB22 21 62 F7    	ld hl, 0FFFFh & (regpc)
+1241   FB25             ; 797     b = 6;
+1242   FB25 06 06       	ld b, 6
+1243   FB27             ; 798     do {
+1244   FB27             l_57: 
+1245   FB27             ; 799         e = *hl;
+1246   FB27 5E          	ld e, (hl)
+1247   FB28             ; 800         hl++;
+1248   FB28 23          	inc hl
+1249   FB29             ; 801         d = *hl;
+1250   FB29 56          	ld d, (hl)
+1251   FB2A             ; 802         push(bc);
+1252   FB2A C5          	push bc
+1253   FB2B             ; 803         push(hl);
+1254   FB2B E5          	push hl
+1255   FB2C             ; 804         swap(hl, de);
+1256   FB2C EB          	ex hl, de
+1257   FB2D             ; 805         PrintCrLfTabHexWordSpace(hl);
+1258   FB2D CD 51 FC    	call printcrlftabhexwordspace
+1259   FB30             ; 806         ReadString();
+1260   FB30 CD 14 F9    	call readstring
+1261   FB33             ; 807         if (flag_c) {
+1262   FB33 D2 3F FB    	jp nc, l_60
+1263   FB36             ; 808             ParseWord();
+1264   FB36 CD 80 F9    	call parseword
+1265   FB39             ; 809             pop(de);
+1266   FB39 D1          	pop de
+1267   FB3A             ; 810             push(de);
+1268   FB3A D5          	push de
+1269   FB3B             ; 811             swap(hl, de);
+1270   FB3B EB          	ex hl, de
+1271   FB3C             ; 812             *hl = d;
+1272   FB3C 72          	ld (hl), d
+1273   FB3D             ; 813             hl--;
+1274   FB3D 2B          	dec hl
+1275   FB3E             ; 814             *hl = e;
+1276   FB3E 73          	ld (hl), e
+1277   FB3F             l_60: 
+1278   FB3F             ; 815         }
+1279   FB3F             ; 816         pop(hl);
+1280   FB3F E1          	pop hl
+1281   FB40             ; 817         pop(bc);
+1282   FB40 C1          	pop bc
+1283   FB41             ; 818         b--;
+1284   FB41 05          	dec b
+1285   FB42             ; 819         hl++;
+1286   FB42 23          	inc hl
+1287   FB43             l_58: 
+1288   FB43 C2 27 FB    	jp nz, l_57
+1289   FB46             ; 820     } while (flag_nz);
+1290   FB46             ; 821     EntryF86C_Monitor();
+1291   FB46 C3 6C F8    	jp entryf86c_monitor
+1292   FB49             ; 822 }
+1293   FB49             ; 823 
+1294   FB49             ; 824 // Функция для пользовательской программы.
+1295   FB49             ; 825 // Получить координаты курсора.
+1296   FB49             ; 826 // Параметры: нет. Результат: l = x + 8, h = y + 3. Сохраняет регистры: bc, de, hl.
+1297   FB49             ; 827 
+1298   FB49             ; 828 void GetCursor() {
+1299   FB49             getcursor: 
+1300   FB49             ; 829     push_pop(a) {
+1301   FB49 F5          	push af
+1302   FB4A             ; 830         hl = cursor;
+1303   FB4A 2A 5A F7    	ld hl, (cursor)
+1304   FB4D             ; 831         h = ((a = h) &= 7);
+1305   FB4D 7C          	ld a, h
+1306   FB4E E6 07       	and 7
+1307   FB50 67          	ld h, a
+1308   FB51             ; 832 
+1309   FB51             ; 833         // Вычисление X
+1310   FB51             ; 834         a = l;
+1311   FB51 7D          	ld a, l
+1312   FB52             ; 835         a &= (SCREEN_WIDTH - 1);
+1313   FB52 E6 3F       	and 63
+1314   FB54             ; 836         a += 8;  // Смещение Радио 86РК
+1315   FB54 C6 08       	add 8
+1316   FB56             ; 837 
+1317   FB56             ; 838         // Вычисление Y
+1318   FB56             ; 839         hl += hl;
+1319   FB56 29          	add hl, hl
+1320   FB57             ; 840         hl += hl;
+1321   FB57 29          	add hl, hl
+1322   FB58             ; 841         h++;  // Смещение Радио 86РК
+1323   FB58 24          	inc h
+1324   FB59             ; 842         h++;
+1325   FB59 24          	inc h
+1326   FB5A             ; 843         h++;
+1327   FB5A 24          	inc h
+1328   FB5B             ; 844 
+1329   FB5B             ; 845         l = a;
+1330   FB5B 6F          	ld l, a
+1331   FB5C F1          	pop af
+1332   FB5D C9          	ret
+1333   FB5E             ; 846     }
+1334   FB5E             ; 847 }
+1335   FB5E             ; 848 
+1336   FB5E             ; 849 // Функция для пользовательской программы.
+1337   FB5E             ; 850 // Получить символ под курсором.
+1338   FB5E             ; 851 // Параметры: нет. Результат: a - код символа. Сохраняет регистры: bc, de, hl.
+1339   FB5E             ; 852 
+1340   FB5E             ; 853 void GetCursorChar() {
+1341   FB5E             getcursorchar: 
+1342   FB5E             ; 854     push_pop(hl) {
+1343   FB5E E5          	push hl
+1344   FB5F             ; 855         hl = cursor;
+1345   FB5F 2A 5A F7    	ld hl, (cursor)
+1346   FB62             ; 856         a = *hl;
+1347   FB62 7E          	ld a, (hl)
+1348   FB63 E1          	pop hl
+1349   FB64 C9          	ret
+1350   FB65             ; 857     }
+1351   FB65             ; 858 }
+1352   FB65             ; 859 
+1353   FB65             ; 860 // Команда H
+1354   FB65             ; 861 // Определить скорости записанной программы.
+1355   FB65             ; 862 // Выводит 4 цифры на экран.
+1356   FB65             ; 863 // Первые две цифры - константа вывода для команды O
+1357   FB65             ; 864 // Последние две цифры - константа вввода для команды I
+1358   FB65             ; 865 
+1359   FB65             ; 866 void CmdH(...) {
+1360   FB65             cmdh: 
+1361   FB65             ; 867     PrintCrLfTab();
+1362   FB65 CD D3 F9    	call printcrlftab
+1363   FB68             ; 868     hl = 65408;
+1364   FB68 21 80 FF    	ld hl, 65408
+1365   FB6B             ; 869     b = 123;
+1366   FB6B 06 7B       	ld b, 123
+1367   FB6D             ; 870 
+1368   FB6D             ; 871     c = a = in(PORT_TAPE);
+1369   FB6D DB 01       	in a, (1)
+1370   FB6F 4F          	ld c, a
+1371   FB70             ; 872 
+1372   FB70             ; 873     do {
+1373   FB70             l_62: 
+1374   FB70             l_63: 
+1375   FB70             ; 874     } while ((a = in(PORT_TAPE)) == c);
+1376   FB70 DB 01       	in a, (1)
+1377   FB72 B9          	cp c
+1378   FB73 CA 70 FB    	jp z, l_62
+1379   FB76             ; 875 
+1380   FB76             ; 876     do {
+1381   FB76             l_65: 
+1382   FB76             ; 877         c = a;
+1383   FB76 4F          	ld c, a
+1384   FB77             ; 878         do {
+1385   FB77             l_68: 
+1386   FB77             ; 879             hl++;
+1387   FB77 23          	inc hl
+1388   FB78             l_69: 
+1389   FB78             ; 880         } while ((a = in(PORT_TAPE)) == c);
+1390   FB78 DB 01       	in a, (1)
+1391   FB7A B9          	cp c
+1392   FB7B CA 77 FB    	jp z, l_68
+1393   FB7E             l_66: 
+1394   FB7E             ; 881     } while (flag_nz(b--));
+1395   FB7E 05          	dec b
+1396   FB7F C2 76 FB    	jp nz, l_65
+1397   FB82             ; 882 
+1398   FB82             ; 883     hl += hl;
+1399   FB82 29          	add hl, hl
+1400   FB83             ; 884     a = h;
+1401   FB83 7C          	ld a, h
+1402   FB84             ; 885     hl += hl;
+1403   FB84 29          	add hl, hl
+1404   FB85             ; 886     l = (a += h);
+1405   FB85 84          	add h
+1406   FB86 6F          	ld l, a
+1407   FB87             ; 887 
+1408   FB87             ; 888     PrintHexWordSpace();
+1409   FB87 C3 5A FC    	jp printhexwordspace
+1410   FB8A             ; 889 }
+1411   FB8A             ; 890 
+1412   FB8A             ; 891 // Команда I <смещение> <скорость>
+1413   FB8A             ; 892 // Загрузить файл с магнитной ленты
+1414   FB8A             ; 893 
+1415   FB8A             ; 894 void CmdI(...) {
+1416   FB8A             cmdi: 
+1417   FB8A             ; 895     if ((a = param2Exists) != 0)
+1418   FB8A 3A 7B F7    	ld a, (param2exists)
+1419   FB8D B7          	or a
+1420   FB8E             ; 896         tapeReadSpeed = a = e;
+1421   FB8E CA 95 FB    	jp z, l_71
+1422   FB91 7B          	ld a, e
+1423   FB92 32 5C F7    	ld (tapereadspeed), a
+1424   FB95             l_71: 
+1425   FB95             ; 897     ReadTapeFile();
+1426   FB95 CD BA FB    	call readtapefile
+1427   FB98             ; 898     PrintCrLfTabHexWordSpace(hl);
+1428   FB98 CD 51 FC    	call printcrlftabhexwordspace
+1429   FB9B             ; 899     swap(hl, de);
+1430   FB9B EB          	ex hl, de
+1431   FB9C             ; 900     PrintCrLfTabHexWordSpace(hl);
+1432   FB9C CD 51 FC    	call printcrlftabhexwordspace
+1433   FB9F             ; 901     swap(hl, de);
+1434   FB9F EB          	ex hl, de
+1435   FBA0             ; 902     push(bc);
+1436   FBA0 C5          	push bc
+1437   FBA1             ; 903     CalculateCheckSum();
+1438   FBA1 CD F1 FB    	call calculatechecksum
+1439   FBA4             ; 904     h = b;
+1440   FBA4 60          	ld h, b
+1441   FBA5             ; 905     l = c;
+1442   FBA5 69          	ld l, c
+1443   FBA6             ; 906     PrintCrLfTabHexWordSpace(hl);
+1444   FBA6 CD 51 FC    	call printcrlftabhexwordspace
+1445   FBA9             ; 907     pop(de);
+1446   FBA9 D1          	pop de
+1447   FBAA             ; 908     CompareHlDe(hl, de);
+1448   FBAA CD B6 F9    	call comparehlde
+1449   FBAD             ; 909     if (flag_z)
+1450   FBAD             ; 910         return;
+1451   FBAD C8          	ret z
+1452   FBAE             ; 911     swap(hl, de);
+1453   FBAE EB          	ex hl, de
+1454   FBAF             ; 912     PrintCrLfTabHexWordSpace(hl);
+1455   FBAF CD 51 FC    	call printcrlftabhexwordspace
+1456   FBB2             ; 913     MonitorError();
+1457   FBB2             ; 914 }
+1458   FBB2             ; 915 
+1459   FBB2             ; 916 void MonitorError() {
+1460   FBB2             monitorerror: 
+1461   FBB2             ; 917     PrintCharA(a = '?');
+1462   FBB2 3E 3F       	ld a, 63
+1463   FBB4 CD 22 FD    	call printchara
+1464   FBB7             ; 918     Monitor2();
+1465   FBB7 C3 94 F8    	jp monitor2
+1466   FBBA             ; 919 }
+1467   FBBA             ; 920 
+1468   FBBA             ; 921 // Функция для пользовательской программы.
+1469   FBBA             ; 922 // Загрузить файл с магнитной ленты.
+1470   FBBA             ; 923 // Параметры: hl - смещение загрузки. Результат: bc - прочитанная КС, hl - адрес загрузки
+1471   FBBA             ; 924 
+1472   FBBA             ; 925 void ReadTapeFile(...) {
+1473   FBBA             readtapefile: 
+1474   FBBA             ; 926     ReadTapeWord(a = READ_TAPE_FIRST_BYTE);
+1475   FBBA 3E FF       	ld a, 255
+1476   FBBC CD DA FB    	call readtapeword
+1477   FBBF             ; 927     push_pop(hl) {
+1478   FBBF E5          	push hl
+1479   FBC0             ; 928         hl += bc;
+1480   FBC0 09          	add hl, bc
+1481   FBC1             ; 929         swap(hl, de);
+1482   FBC1 EB          	ex hl, de
+1483   FBC2             ; 930         ReadTapeWordNext();
+1484   FBC2 CD D8 FB    	call readtapewordnext
+1485   FBC5 E1          	pop hl
+1486   FBC6             ; 931     }
+1487   FBC6             ; 932     hl += bc;
+1488   FBC6 09          	add hl, bc
+1489   FBC7             ; 933     swap(hl, de);
+1490   FBC7 EB          	ex hl, de
+1491   FBC8             ; 934 
+1492   FBC8             ; 935     a = in(PORT_KEYBOARD_MODS);
+1493   FBC8 DB 05       	in a, (5)
+1494   FBCA             ; 936     a &= KEYBOARD_SHIFT_MOD;
+1495   FBCA E6 04       	and 4
+1496   FBCC             ; 937     if (flag_z)
+1497   FBCC             ; 938         return;
+1498   FBCC C8          	ret z
+1499   FBCD             ; 939 
+1500   FBCD             ; 940     push_pop(hl) {
+1501   FBCD E5          	push hl
+1502   FBCE             ; 941         ReadTapeBlock();
+1503   FBCE CD E5 FB    	call readtapeblock
+1504   FBD1             ; 942         ReadTapeWord(a = READ_TAPE_FIRST_BYTE);
+1505   FBD1 3E FF       	ld a, 255
+1506   FBD3 CD DA FB    	call readtapeword
+1507   FBD6 E1          	pop hl
+1508   FBD7 C9          	ret
+1509   FBD8             ; 943     }
+1510   FBD8             ; 944 }
+1511   FBD8             ; 945 
+1512   FBD8             ; 946 void ReadTapeWordNext() {
+1513   FBD8             readtapewordnext: 
+1514   FBD8             ; 947     ReadTapeWord(a = READ_TAPE_NEXT_BYTE);
+1515   FBD8 3E 08       	ld a, 8
+1516   FBDA             ; 948 }
+1517   FBDA             ; 949 
+1518   FBDA             ; 950 void ReadTapeWord(...) {
+1519   FBDA             readtapeword: 
+1520   FBDA             ; 951     ReadTapeByte(a);
+1521   FBDA CD 74 FC    	call readtapebyte
+1522   FBDD             ; 952     b = a;
+1523   FBDD 47          	ld b, a
+1524   FBDE             ; 953     ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+1525   FBDE 3E 08       	ld a, 8
+1526   FBE0 CD 74 FC    	call readtapebyte
+1527   FBE3             ; 954     c = a;
+1528   FBE3 4F          	ld c, a
+1529   FBE4 C9          	ret
+1530   FBE5             ; 955 }
+1531   FBE5             ; 956 
+1532   FBE5             ; 957 void ReadTapeBlock(...) {
+1533   FBE5             readtapeblock: 
+1534   FBE5             ; 958     for (;;) {
+1535   FBE5             l_74: 
+1536   FBE5             ; 959         ReadTapeByte(a = READ_TAPE_NEXT_BYTE);
+1537   FBE5 3E 08       	ld a, 8
+1538   FBE7 CD 74 FC    	call readtapebyte
+1539   FBEA             ; 960         *hl = a;
+1540   FBEA 77          	ld (hl), a
+1541   FBEB             ; 961         Loop();
+1542   FBEB CD BF F9    	call loop
+1543   FBEE C3 E5 FB    	jp l_74
+1544   FBF1             ; 962     }
+1545   FBF1             ; 963 }
+1546   FBF1             ; 964 
+1547   FBF1             ; 965 // Функция для пользовательской программы.
+1548   FBF1             ; 966 // Вычистить 16-битную сумму всех байт по адресам hl..de.
+1549   FBF1             ; 967 // Параметры: hl - начальный адрес, de - конечный адрес. Результат: bc - сумма. Сохраяет: de.
+1550   FBF1             ; 968 
+1551   FBF1             ; 969 void CalculateCheckSum(...) {
+1552   FBF1             calculatechecksum: 
+1553   FBF1             ; 970     bc = 0;
+1554   FBF1 01 00 00    	ld bc, 0
+1555   FBF4             ; 971     for (;;) {
+1556   FBF4             l_77: 
+1557   FBF4             ; 972         c = ((a = *hl) += c);
+1558   FBF4 7E          	ld a, (hl)
+1559   FBF5 81          	add c
+1560   FBF6 4F          	ld c, a
+1561   FBF7             ; 973         push_pop(a) {
+1562   FBF7 F5          	push af
+1563   FBF8             ; 974             CompareHlDe(hl, de);
+1564   FBF8 CD B6 F9    	call comparehlde
+1565   FBFB             ; 975             if (flag_z)
+1566   FBFB             ; 976                 return PopRet();
+1567   FBFB CA C5 F9    	jp z, popret
+1568   FBFE F1          	pop af
+1569   FBFF             ; 977         }
+1570   FBFF             ; 978         a = b;
+1571   FBFF 78          	ld a, b
+1572   FC00             ; 979         carry_add(a, *hl);
+1573   FC00 8E          	adc (hl)
+1574   FC01             ; 980         b = a;
+1575   FC01 47          	ld b, a
+1576   FC02             ; 981         Loop();
+1577   FC02 CD BF F9    	call loop
+1578   FC05 C3 F4 FB    	jp l_77
+1579   FC08             ; 982     }
+1580   FC08             ; 983 }
+1581   FC08             ; 984 
+1582   FC08             ; 985 // Команда O <начальный адрес> <конечный адрес> <скорость>
+1583   FC08             ; 986 // Сохранить блок данных на магнитную ленту
+1584   FC08             ; 987 
+1585   FC08             ; 988 void CmdO(...) {
+1586   FC08             cmdo: 
+1587   FC08             ; 989     if ((a = c) != 0)
+1588   FC08 79          	ld a, c
+1589   FC09 B7          	or a
+1590   FC0A             ; 990         tapeWriteSpeed = a;
+1591   FC0A CA 10 FC    	jp z, l_79
+1592   FC0D 32 5D F7    	ld (tapewritespeed), a
+1593   FC10             l_79: 
+1594   FC10             ; 991     push_pop(hl) {
+1595   FC10 E5          	push hl
+1596   FC11             ; 992         CalculateCheckSum(hl, de);
+1597   FC11 CD F1 FB    	call calculatechecksum
+1598   FC14 E1          	pop hl
+1599   FC15             ; 993     }
+1600   FC15             ; 994     PrintCrLfTabHexWordSpace(hl);
+1601   FC15 CD 51 FC    	call printcrlftabhexwordspace
+1602   FC18             ; 995     swap(hl, de);
+1603   FC18 EB          	ex hl, de
+1604   FC19             ; 996     PrintCrLfTabHexWordSpace(hl);
+1605   FC19 CD 51 FC    	call printcrlftabhexwordspace
+1606   FC1C             ; 997     swap(hl, de);
+1607   FC1C EB          	ex hl, de
+1608   FC1D             ; 998     push_pop(hl) {
+1609   FC1D E5          	push hl
+1610   FC1E             ; 999         h = b;
+1611   FC1E 60          	ld h, b
+1612   FC1F             ; 1000         l = c;
+1613   FC1F 69          	ld l, c
+1614   FC20             ; 1001         PrintCrLfTabHexWordSpace(hl);
+1615   FC20 CD 51 FC    	call printcrlftabhexwordspace
+1616   FC23 E1          	pop hl
+1617   FC24             ; 1002     }
+1618   FC24             ; 1003     WriteTapeFile(hl, de);
+1619   FC24             ; 1004 }
+1620   FC24             ; 1005 
+1621   FC24             ; 1006 // Функция для пользовательской программы.
+1622   FC24             ; 1007 // Запись файла на магнитную ленту.
+1623   FC24             ; 1008 // Параметры: de - начальный адрес, hl - конечный адрес, bc - контрольная сумма. Результат: нет.
+1624   FC24             ; 1009 
+1625   FC24             ; 1010 void WriteTapeFile(...) {
+1626   FC24             writetapefile: 
+1627   FC24             ; 1011     push(bc);
+1628   FC24 C5          	push bc
+1629   FC25             ; 1012     bc = 0;
+1630   FC25 01 00 00    	ld bc, 0
+1631   FC28             ; 1013     do {
+1632   FC28             l_81: 
+1633   FC28             ; 1014         WriteTapeByte(c);
+1634   FC28 CD DD FC    	call writetapebyte
+1635   FC2B             ; 1015         b--;
+1636   FC2B 05          	dec b
+1637   FC2C             ; 1016         swap(hl, *sp);
+1638   FC2C E3          	ex (sp), hl
+1639   FC2D             ; 1017         swap(hl, *sp);
+1640   FC2D E3          	ex (sp), hl
+1641   FC2E             l_82: 
+1642   FC2E C2 28 FC    	jp nz, l_81
+1643   FC31             ; 1018     } while (flag_nz);
+1644   FC31             ; 1019     WriteTapeByte(c = TAPE_START);
+1645   FC31 0E E6       	ld c, 230
+1646   FC33 CD DD FC    	call writetapebyte
+1647   FC36             ; 1020     WriteTapeWord(hl);
+1648   FC36 CD 6C FC    	call writetapeword
+1649   FC39             ; 1021     swap(hl, de);
+1650   FC39 EB          	ex hl, de
+1651   FC3A             ; 1022     WriteTapeWord(hl);
+1652   FC3A CD 6C FC    	call writetapeword
+1653   FC3D             ; 1023     swap(hl, de);
+1654   FC3D EB          	ex hl, de
+1655   FC3E             ; 1024     WriteTapeBlock(hl, de);
+1656   FC3E CD 62 FC    	call writetapeblock
+1657   FC41             ; 1025     WriteTapeWord(hl = 0);
+1658   FC41 21 00 00    	ld hl, 0
+1659   FC44 CD 6C FC    	call writetapeword
+1660   FC47             ; 1026     WriteTapeByte(c = TAPE_START);
+1661   FC47 0E E6       	ld c, 230
+1662   FC49 CD DD FC    	call writetapebyte
+1663   FC4C             ; 1027     pop(hl);
+1664   FC4C E1          	pop hl
+1665   FC4D             ; 1028     WriteTapeWord(hl);
+1666   FC4D CD 6C FC    	call writetapeword
+1667   FC50             ; 1029     return;
+1668   FC50 C9          	ret
+1669   FC51             ; 1030 }
+1670   FC51             ; 1031 
+1671   FC51             ; 1032 void PrintCrLfTabHexWordSpace(...) {
+1672   FC51             printcrlftabhexwordspace: 
+1673   FC51             ; 1033     push_pop(bc) {
+1674   FC51 C5          	push bc
+1675   FC52             ; 1034         PrintCrLfTab();
+1676   FC52 CD D3 F9    	call printcrlftab
+1677   FC55             ; 1035         PrintHexWordSpace(hl);
+1678   FC55 CD 5A FC    	call printhexwordspace
+1679   FC58 C1          	pop bc
+1680   FC59 C9          	ret
+1681   FC5A             ; 1036     }
+1682   FC5A             ; 1037 }
+1683   FC5A             ; 1038 
+1684   FC5A             ; 1039 void PrintHexWordSpace(...) {
+1685   FC5A             printhexwordspace: 
+1686   FC5A             ; 1040     PrintHexByte(a = h);
+1687   FC5A 7C          	ld a, h
+1688   FC5B CD 0E FD    	call printhexbyte
+1689   FC5E             ; 1041     PrintHexByteSpace(a = l);
+1690   FC5E 7D          	ld a, l
+1691   FC5F C3 DD F9    	jp printhexbytespace
+1692   FC62             ; 1042 }
+1693   FC62             ; 1043 
+1694   FC62             ; 1044 void WriteTapeBlock(...) {
+1695   FC62             writetapeblock: 
+1696   FC62             ; 1045     for (;;) {
+1697   FC62             l_85: 
+1698   FC62             ; 1046         WriteTapeByte(c = *hl);
+1699   FC62 4E          	ld c, (hl)
+1700   FC63 CD DD FC    	call writetapebyte
+1701   FC66             ; 1047         Loop();
+1702   FC66 CD BF F9    	call loop
+1703   FC69 C3 62 FC    	jp l_85
+1704   FC6C             ; 1048     }
+1705   FC6C             ; 1049 }
+1706   FC6C             ; 1050 
+1707   FC6C             ; 1051 void WriteTapeWord(...) {
+1708   FC6C             writetapeword: 
+1709   FC6C             ; 1052     WriteTapeByte(c = h);
+1710   FC6C 4C          	ld c, h
+1711   FC6D CD DD FC    	call writetapebyte
+1712   FC70             ; 1053     WriteTapeByte(c = l);
+1713   FC70 4D          	ld c, l
+1714   FC71 C3 DD FC    	jp writetapebyte
+1715   FC74             ; 1054 }
+1716   FC74             ; 1055 
+1717   FC74             ; 1056 // Загрузка байта с магнитной ленты.
+1718   FC74             ; 1057 // Параметры: a = 0xFF с синхронизацией, = 8 без синхронизации.
+1719   FC74             ; 1058 // Результат: a = прочитанный байт.
+1720   FC74             ; 1059 
+1721   FC74             ; 1060 void ReadTapeByte(...) {
+1722   FC74             readtapebyte: 
+1723   FC74             ; 1061     push(hl, bc, de);
+1724   FC74 E5          	push hl
+1725   FC75 C5          	push bc
+1726   FC76 D5          	push de
+1727   FC77             ; 1062     d = a;
+1728   FC77 57          	ld d, a
+1729   FC78             ; 1063     ReadTapeByteInternal(d);
+1730   FC78             ; 1064 }
+1731   FC78             ; 1065 
+1732   FC78             ; 1066 void ReadTapeByteInternal(...) {
+1733   FC78             readtapebyteinternal: 
+1734   FC78             ; 1067     c = 0;
+1735   FC78 0E 00       	ld c, 0
+1736   FC7A             ; 1068     e = ((a = in(PORT_TAPE)) &= PORT_TAPE_BIT);
+1737   FC7A DB 01       	in a, (1)
+1738   FC7C E6 01       	and 1
+1739   FC7E 5F          	ld e, a
+1740   FC7F             ; 1069     do {
+1741   FC7F             l_87: 
+1742   FC7F             ; 1070     retry:  // Сдвиг результата
+1743   FC7F             retry: 
+1744   FC7F             ; 1071         (a = c) &= 0x7F;
+1745   FC7F 79          	ld a, c
+1746   FC80 E6 7F       	and 127
+1747   FC82             ; 1072         cyclic_rotate_left(a, 1);
+1748   FC82 07          	rlca
+1749   FC83             ; 1073         c = a;
+1750   FC83 4F          	ld c, a
+1751   FC84             ; 1074 
+1752   FC84             ; 1075         // Ожидание изменения бита
+1753   FC84             ; 1076         h = 0;
+1754   FC84 26 00       	ld h, 0
+1755   FC86             ; 1077         do {
+1756   FC86             l_90: 
+1757   FC86             ; 1078             h--;
+1758   FC86 25          	dec h
+1759   FC87             ; 1079             if (flag_z)
+1760   FC87             ; 1080                 return ReadTapeByteTimeout(d);
+1761   FC87 CA D2 FC    	jp z, readtapebytetimeout
+1762   FC8A             l_91: 
+1763   FC8A             ; 1081         } while (((a = in(PORT_TAPE)) &= PORT_TAPE_BIT) == e);
+1764   FC8A DB 01       	in a, (1)
+1765   FC8C E6 01       	and 1
+1766   FC8E BB          	cp e
+1767   FC8F CA 86 FC    	jp z, l_90
+1768   FC92             ; 1082 
+1769   FC92             ; 1083         // Сохранение бита
+1770   FC92             ; 1084         c = (a |= c);
+1771   FC92 B1          	or c
+1772   FC93 4F          	ld c, a
+1773   FC94             ; 1085 
+1774   FC94             ; 1086         // Задержка
+1775   FC94             ; 1087         d--;
+1776   FC94 15          	dec d
+1777   FC95             ; 1088         a = tapeReadSpeed;
+1778   FC95 3A 5C F7    	ld a, (tapereadspeed)
+1779   FC98             ; 1089         if (flag_z)
+1780   FC98             ; 1090             a -= 18;
+1781   FC98 C2 9D FC    	jp nz, l_93
+1782   FC9B D6 12       	sub 18
+1783   FC9D             l_93: 
+1784   FC9D             ; 1091         b = a;
+1785   FC9D 47          	ld b, a
+1786   FC9E             ; 1092         do {
+1787   FC9E             l_95: 
+1788   FC9E             l_96: 
+1789   FC9E             ; 1093         } while (flag_nz(b--));
+1790   FC9E 05          	dec b
+1791   FC9F C2 9E FC    	jp nz, l_95
+1792   FCA2             ; 1094         d++;
+1793   FCA2 14          	inc d
+1794   FCA3             ; 1095 
+1795   FCA3             ; 1096         // Новое значение бита
+1796   FCA3             ; 1097         e = ((a = in(PORT_TAPE)) &= PORT_TAPE_BIT);
+1797   FCA3 DB 01       	in a, (1)
+1798   FCA5 E6 01       	and 1
+1799   FCA7 5F          	ld e, a
+1800   FCA8             ; 1098 
+1801   FCA8             ; 1099         // Режим поиска синхробайта
+1802   FCA8             ; 1100         if (flag_m((a = d) |= a)) {
+1803   FCA8 7A          	ld a, d
+1804   FCA9 B7          	or a
+1805   FCAA F2 C6 FC    	jp p, l_98
+1806   FCAD             ; 1101             if ((a = c) == TAPE_START) {
+1807   FCAD 79          	ld a, c
+1808   FCAE FE E6       	cp 230
+1809   FCB0 C2 BA FC    	jp nz, l_100
+1810   FCB3             ; 1102                 tapePolarity = (a ^= a);
+1811   FCB3 AF          	xor a
+1812   FCB4 32 7C F7    	ld (tapepolarity), a
+1813   FCB7 C3 C4 FC    	jp l_101
+1814   FCBA             l_100: 
+1815   FCBA             ; 1103             } else {
+1816   FCBA             ; 1104                 if (a != ~TAPE_START)
+1817   FCBA FE 19       	cp 65305
+1818   FCBC             ; 1105                     goto retry;
+1819   FCBC C2 7F FC    	jp nz, retry
+1820   FCBF             ; 1106                 tapePolarity = a = 255;
+1821   FCBF 3E FF       	ld a, 255
+1822   FCC1 32 7C F7    	ld (tapepolarity), a
+1823   FCC4             l_101: 
+1824   FCC4             ; 1107             }
+1825   FCC4             ; 1108             d = 8 + 1;
+1826   FCC4 16 09       	ld d, 9
+1827   FCC6             l_98: 
+1828   FCC6             l_88: 
+1829   FCC6             ; 1109         }
+1830   FCC6             ; 1110     } while (flag_nz(d--));
+1831   FCC6 15          	dec d
+1832   FCC7 C2 7F FC    	jp nz, l_87
+1833   FCCA             ; 1111     (a = tapePolarity) ^= c;
+1834   FCCA 3A 7C F7    	ld a, (tapepolarity)
+1835   FCCD A9          	xor c
+1836   FCCE             ; 1112     pop(hl, bc, de);
+1837   FCCE D1          	pop de
+1838   FCCF C1          	pop bc
+1839   FCD0 E1          	pop hl
+1840   FCD1 C9          	ret
+1841   FCD2             ; 1113 }
+1842   FCD2             ; 1114 
+1843   FCD2             ; 1115 void ReadTapeByteTimeout(...) {
+1844   FCD2             readtapebytetimeout: 
+1845   FCD2             ; 1116     if (flag_p((a = d) |= a))
+1846   FCD2 7A          	ld a, d
+1847   FCD3 B7          	or a
+1848   FCD4             ; 1117         return MonitorError();
+1849   FCD4 F2 B2 FB    	jp p, monitorerror
+1850   FCD7             ; 1118     CtrlC();
+1851   FCD7 CD CA F9    	call ctrlc
+1852   FCDA             ; 1119     return ReadTapeByteInternal();
+1853   FCDA C3 78 FC    	jp readtapebyteinternal
+1854   FCDD             ; 1120 }
+1855   FCDD             ; 1121 
+1856   FCDD             ; 1122 // Функция для пользовательской программы.
+1857   FCDD             ; 1123 // Запись байта на магнитную ленту.
+1858   FCDD             ; 1124 // Параметры: c = байт. Результат: нет. Сохрнаяет: a, bc, de, hl.
+1859   FCDD             ; 1125 
+1860   FCDD             ; 1126 void WriteTapeByte(...) {
+1861   FCDD             writetapebyte: 
+1862   FCDD             ; 1127     push_pop(bc, de, a) {
+1863   FCDD C5          	push bc
+1864   FCDE D5          	push de
+1865   FCDF F5          	push af
+1866   FCE0             ; 1128         d = 8;
+1867   FCE0 16 08       	ld d, 8
+1868   FCE2             ; 1129         do {
+1869   FCE2             l_102: 
+1870   FCE2             ; 1130             // Сдвиг исходного байта
+1871   FCE2             ; 1131             a = c;
+1872   FCE2 79          	ld a, c
+1873   FCE3             ; 1132             cyclic_rotate_left(a, 1);
+1874   FCE3 07          	rlca
+1875   FCE4             ; 1133             c = a;
+1876   FCE4 4F          	ld c, a
+1877   FCE5             ; 1134 
+1878   FCE5             ; 1135             // Вывод
+1879   FCE5             ; 1136             (a = PORT_TAPE_BIT) ^= c;
+1880   FCE5 3E 01       	ld a, 1
+1881   FCE7 A9          	xor c
+1882   FCE8             ; 1137             out(PORT_TAPE, a);
+1883   FCE8 D3 01       	out (1), a
+1884   FCEA             ; 1138 
+1885   FCEA             ; 1139             // Задержка
+1886   FCEA             ; 1140             b = a = tapeWriteSpeed;
+1887   FCEA 3A 5D F7    	ld a, (tapewritespeed)
+1888   FCED 47          	ld b, a
+1889   FCEE             ; 1141             do {
+1890   FCEE             l_105: 
+1891   FCEE             ; 1142                 b--;
+1892   FCEE 05          	dec b
+1893   FCEF             l_106: 
+1894   FCEF C2 EE FC    	jp nz, l_105
+1895   FCF2             ; 1143             } while (flag_nz);
+1896   FCF2             ; 1144 
+1897   FCF2             ; 1145             // Вывод
+1898   FCF2             ; 1146             (a = 0) ^= c;
+1899   FCF2 3E 00       	ld a, 0
+1900   FCF4 A9          	xor c
+1901   FCF5             ; 1147             out(PORT_TAPE, a);
+1902   FCF5 D3 01       	out (1), a
+1903   FCF7             ; 1148 
+1904   FCF7             ; 1149             // Задержка
+1905   FCF7             ; 1150             d--;
+1906   FCF7 15          	dec d
+1907   FCF8             ; 1151             a = tapeWriteSpeed;
+1908   FCF8 3A 5D F7    	ld a, (tapewritespeed)
+1909   FCFB             ; 1152             if (flag_z)
+1910   FCFB             ; 1153                 a -= 14;
+1911   FCFB C2 00 FD    	jp nz, l_108
+1912   FCFE D6 0E       	sub 14
+1913   FD00             l_108: 
+1914   FD00             ; 1154             b = a;
+1915   FD00 47          	ld b, a
+1916   FD01             ; 1155             do {
+1917   FD01             l_110: 
+1918   FD01             ; 1156                 b--;
+1919   FD01 05          	dec b
+1920   FD02             l_111: 
+1921   FD02 C2 01 FD    	jp nz, l_110
+1922   FD05             ; 1157             } while (flag_nz);
+1923   FD05             ; 1158             d++;
+1924   FD05 14          	inc d
+1925   FD06             l_103: 
+1926   FD06             ; 1159         } while (flag_nz(d--));
+1927   FD06 15          	dec d
+1928   FD07 C2 E2 FC    	jp nz, l_102
+1929   FD0A F1          	pop af
+1930   FD0B D1          	pop de
+1931   FD0C C1          	pop bc
+1932   FD0D C9          	ret
+1933   FD0E             ; 1160     }
+1934   FD0E             ; 1161 }
+1935   FD0E             ; 1162 
+1936   FD0E             ; 1163 // Функция для пользовательской программы.
+1937   FD0E             ; 1164 // Вывод 8 битного числа на экран.
+1938   FD0E             ; 1165 // Параметры: а - число. Результат: нет. Сохраняет: bc, de, hl.
+1939   FD0E             ; 1166 
+1940   FD0E             ; 1167 void PrintHexByte(...) {
+1941   FD0E             printhexbyte: 
+1942   FD0E             ; 1168     push_pop(a) {
+1943   FD0E F5          	push af
+1944   FD0F             ; 1169         cyclic_rotate_right(a, 4);
+1945   FD0F 0F          	rrca
+1946   FD10 0F          	rrca
+1947   FD11 0F          	rrca
+1948   FD12 0F          	rrca
+1949   FD13             ; 1170         PrintHexNibble(a);
+1950   FD13 CD 17 FD    	call printhexnibble
+1951   FD16 F1          	pop af
+1952   FD17             ; 1171     }
+1953   FD17             ; 1172     PrintHexNibble(a);
+1954   FD17             ; 1173 }
+1955   FD17             ; 1174 
+1956   FD17             ; 1175 void PrintHexNibble(...) {
+1957   FD17             printhexnibble: 
+1958   FD17             ; 1176     a &= 0x0F;
+1959   FD17 E6 0F       	and 15
+1960   FD19             ; 1177     if (flag_p(compare(a, 10)))
+1961   FD19 FE 0A       	cp 10
+1962   FD1B             ; 1178         a += 'A' - '0' - 10;
+1963   FD1B FA 20 FD    	jp m, l_113
+1964   FD1E C6 07       	add 7
+1965   FD20             l_113: 
+1966   FD20             ; 1179     a += '0';
+1967   FD20 C6 30       	add 48
+1968   FD22             ; 1180     PrintCharA(a);
+1969   FD22             ; 1181 }
+1970   FD22             ; 1182 
+1971   FD22             ; 1183 // Вывод символа на экран.
+1972   FD22             ; 1184 // Параметры: а - символ. Результат: a и c - символ. Сохраняет: a, b, de, hl.
+1973   FD22             ; 1185 
+1974   FD22             ; 1186 void PrintCharA(...) {
+1975   FD22             printchara: 
+1976   FD22             ; 1187     PrintChar(c = a);
+1977   FD22 4F          	ld c, a
+1978   FD23             ; 1188 }
+1979   FD23             ; 1189 
+1980   FD23             ; 1190 // Функция для пользовательской программы.
+1981   FD23             ; 1191 // Вывод символа на экран.
+1982   FD23             ; 1192 // Параметры: c - символ. Результат: нет. Сохраняет: a, b, de, hl.
+1983   FD23             ; 1193 
+1984   FD23             ; 1194 void PrintChar(...) {
+1985   FD23             printchar: 
+1986   FD23             ; 1195     push(a, bc, de, hl);
+1987   FD23 F5          	push af
+1988   FD24 C5          	push bc
+1989   FD25 D5          	push de
+1990   FD26 E5          	push hl
+1991   FD27             ; 1196     IsAnyKeyPressed();
+1992   FD27 CD B7 FE    	call isanykeypressed
+1993   FD2A             ; 1197     DrawCursor(b = 0);
+1994   FD2A 06 00       	ld b, 0
+1995   FD2C CD 77 FD    	call drawcursor
+1996   FD2F             ; 1198     hl = cursor;
+1997   FD2F 2A 5A F7    	ld hl, (cursor)
+1998   FD32             ; 1199     a = escState;
+1999   FD32 3A 5F F7    	ld a, (escstate)
+2000   FD35             ; 1200     a--;
+2001   FD35 3D          	dec a
+2002   FD36             ; 1201     if (flag_m)
+2003   FD36             ; 1202         return PrintCharNoEsc();
+2004   FD36 FA BF FD    	jp m, printcharnoesc
+2005   FD39             ; 1203     if (flag_z)
+2006   FD39             ; 1204         return PrintCharEsc();
+2007   FD39 CA A0 FD    	jp z, printcharesc
+2008   FD3C             ; 1205     a--;
+2009   FD3C 3D          	dec a
+2010   FD3D             ; 1206     if (flag_nz)
+2011   FD3D             ; 1207         return PrintCharEscY2();
+2012   FD3D C2 85 FD    	jp nz, printcharescy2
+2013   FD40             ; 1208 
+2014   FD40             ; 1209     // Первый параметр ESC Y
+2015   FD40             ; 1210     a = c;
+2016   FD40 79          	ld a, c
+2017   FD41             ; 1211     a -= ' ';
+2018   FD41 D6 20       	sub 32
+2019   FD43             ; 1212     if (flag_m) {
+2020   FD43 F2 4A FD    	jp p, l_115
+2021   FD46             ; 1213         a ^= a;
+2022   FD46 AF          	xor a
+2023   FD47 C3 51 FD    	jp l_116
+2024   FD4A             l_115: 
+2025   FD4A             ; 1214     } else {
+2026   FD4A             ; 1215         if (flag_p(compare(a, SCREEN_HEIGHT)))
+2027   FD4A FE 20       	cp 32
+2028   FD4C             ; 1216             a = SCREEN_HEIGHT - 1;
+2029   FD4C FA 51 FD    	jp m, l_117
+2030   FD4F 3E 1F       	ld a, 31
+2031   FD51             l_117: 
+2032   FD51             l_116: 
+2033   FD51             ; 1217     }
+2034   FD51             ; 1218     cyclic_rotate_right(a, 2);
+2035   FD51 0F          	rrca
+2036   FD52 0F          	rrca
+2037   FD53             ; 1219     c = a;
+2038   FD53 4F          	ld c, a
+2039   FD54             ; 1220     b = (a &= 192);
+2040   FD54 E6 C0       	and 192
+2041   FD56 47          	ld b, a
+2042   FD57             ; 1221     l = (((a = l) &= 63) |= b);
+2043   FD57 7D          	ld a, l
+2044   FD58 E6 3F       	and 63
+2045   FD5A B0          	or b
+2046   FD5B 6F          	ld l, a
+2047   FD5C             ; 1222     b = ((a = c) &= 7);
+2048   FD5C 79          	ld a, c
+2049   FD5D E6 07       	and 7
+2050   FD5F 47          	ld b, a
+2051   FD60             ; 1223     h = (((a = h) &= 248) |= b);
+2052   FD60 7C          	ld a, h
+2053   FD61 E6 F8       	and 248
+2054   FD63 B0          	or b
+2055   FD64 67          	ld h, a
+2056   FD65             ; 1224     PrintCharSetEscState(hl, a = 3);
+2057   FD65 3E 03       	ld a, 3
+2058   FD67             ; 1225 }
+2059   FD67             ; 1226 
+2060   FD67             ; 1227 void PrintCharSetEscState(...) {
+2061   FD67             printcharsetescstate: 
+2062   FD67             ; 1228     escState = a;
+2063   FD67 32 5F F7    	ld (escstate), a
+2064   FD6A             ; 1229     PrintCharSaveCursor(hl);
+2065   FD6A             ; 1230 }
+2066   FD6A             ; 1231 
+2067   FD6A             ; 1232 void PrintCharSaveCursor(...) {
+2068   FD6A             printcharsavecursor: 
+2069   FD6A             ; 1233     cursor = hl;
+2070   FD6A 22 5A F7    	ld (cursor), hl
+2071   FD6D             ; 1234     PrintCharExit();
+2072   FD6D             ; 1235 }
+2073   FD6D             ; 1236 
+2074   FD6D             ; 1237 void PrintCharExit(...) {
+2075   FD6D             printcharexit: 
+2076   FD6D             ; 1238     DrawCursor(b = 0xFF);
+2077   FD6D 06 FF       	ld b, 255
+2078   FD6F CD 77 FD    	call drawcursor
+2079   FD72             ; 1239     pop(a, bc, de, hl);
+2080   FD72 E1          	pop hl
+2081   FD73 D1          	pop de
+2082   FD74 C1          	pop bc
+2083   FD75 F1          	pop af
+2084   FD76 C9          	ret
+2085   FD77             ; 1240 }
+2086   FD77             ; 1241 
+2087   FD77             ; 1242 void DrawCursor(...) {
+2088   FD77             drawcursor: 
+2089   FD77             ; 1243     if ((a = cursorVisible) == 0)
+2090   FD77 3A 5E F7    	ld a, (cursorvisible)
+2091   FD7A B7          	or a
+2092   FD7B             ; 1244         return;
+2093   FD7B C8          	ret z
+2094   FD7C             ; 1245     hl = cursor;
+2095   FD7C 2A 5A F7    	ld hl, (cursor)
+2096   FD7F             ; 1246     hl += (de = -SCREEN_SIZE + 1);
+2097   FD7F 11 01 F8    	ld de, 63489
+2098   FD82 19          	add hl, de
+2099   FD83             ; 1247     *hl = b;
+2100   FD83 70          	ld (hl), b
+2101   FD84 C9          	ret
+2102   FD85             ; 1248 }
+2103   FD85             ; 1249 
+2104   FD85             ; 1250 void PrintCharEscY2(...) {
+2105   FD85             printcharescy2: 
+2106   FD85             ; 1251     a = c;
+2107   FD85 79          	ld a, c
+2108   FD86             ; 1252     a -= ' ';
+2109   FD86 D6 20       	sub 32
+2110   FD88             ; 1253     if (flag_m) {
+2111   FD88 F2 8F FD    	jp p, l_119
+2112   FD8B             ; 1254         a ^= a;
+2113   FD8B AF          	xor a
+2114   FD8C C3 96 FD    	jp l_120
+2115   FD8F             l_119: 
+2116   FD8F             ; 1255     } else {
+2117   FD8F             ; 1256         if (flag_p(compare(a, SCREEN_WIDTH)))
+2118   FD8F FE 40       	cp 64
+2119   FD91             ; 1257             a = SCREEN_WIDTH - 1;
+2120   FD91 FA 96 FD    	jp m, l_121
+2121   FD94 3E 3F       	ld a, 63
+2122   FD96             l_121: 
+2123   FD96             l_120: 
+2124   FD96             ; 1258     }
+2125   FD96             ; 1259     b = a;
+2126   FD96 47          	ld b, a
+2127   FD97             ; 1260     l = (((a = l) &= 192) |= b);
+2128   FD97 7D          	ld a, l
+2129   FD98 E6 C0       	and 192
+2130   FD9A B0          	or b
+2131   FD9B 6F          	ld l, a
+2132   FD9C             ; 1261     PrintCharResetEscState();
+2133   FD9C             ; 1262 }
+2134   FD9C             ; 1263 
+2135   FD9C             ; 1264 void PrintCharResetEscState(...) {
+2136   FD9C             printcharresetescstate: 
+2137   FD9C             ; 1265     a ^= a;
+2138   FD9C AF          	xor a
+2139   FD9D             ; 1266     return PrintCharSetEscState();
+2140   FD9D C3 67 FD    	jp printcharsetescstate
+2141   FDA0             ; 1267 }
+2142   FDA0             ; 1268 
+2143   FDA0             ; 1269 void PrintCharEsc(...) {
+2144   FDA0             printcharesc: 
+2145   FDA0             ; 1270     a = c;
+2146   FDA0 79          	ld a, c
+2147   FDA1             ; 1271     if (a == 'Y') {
+2148   FDA1 FE 59       	cp 89
+2149   FDA3 C2 AB FD    	jp nz, l_123
+2150   FDA6             ; 1272         a = 2;
+2151   FDA6 3E 02       	ld a, 2
+2152   FDA8             ; 1273         return PrintCharSetEscState();
+2153   FDA8 C3 67 FD    	jp printcharsetescstate
+2154   FDAB             l_123: 
+2155   FDAB             ; 1274     }
+2156   FDAB             ; 1275     if (a == 97) {
+2157   FDAB FE 61       	cp 97
+2158   FDAD C2 B4 FD    	jp nz, l_125
+2159   FDB0             ; 1276         a ^= a;
+2160   FDB0 AF          	xor a
+2161   FDB1             ; 1277         return SetCursorVisible();
+2162   FDB1 C3 B9 FD    	jp setcursorvisible
+2163   FDB4             l_125: 
+2164   FDB4             ; 1278     }
+2165   FDB4             ; 1279     if (a != 98)
+2166   FDB4 FE 62       	cp 98
+2167   FDB6             ; 1280         return PrintCharResetEscState();
+2168   FDB6 C2 9C FD    	jp nz, printcharresetescstate
+2169   FDB9             ; 1281     SetCursorVisible();
+2170   FDB9             ; 1282 }
+2171   FDB9             ; 1283 
+2172   FDB9             ; 1284 void SetCursorVisible(...) {
+2173   FDB9             setcursorvisible: 
+2174   FDB9             ; 1285     cursorVisible = a;
+2175   FDB9 32 5E F7    	ld (cursorvisible), a
+2176   FDBC             ; 1286     return PrintCharResetEscState();
+2177   FDBC C3 9C FD    	jp printcharresetescstate
+2178   FDBF             ; 1287 }
+2179   FDBF             ; 1288 
+2180   FDBF             ; 1289 void PrintCharNoEsc(...) {
+2181   FDBF             printcharnoesc: 
+2182   FDBF             ; 1290     // Остановка вывода нажатием УС + Шифт
+2183   FDBF             ; 1291     do {
+2184   FDBF             l_127: 
+2185   FDBF             ; 1292         a = in(PORT_KEYBOARD_MODS);
+2186   FDBF DB 05       	in a, (5)
+2187   FDC1             l_128: 
+2188   FDC1             ; 1293     } while (flag_z(a &= (KEYBOARD_US_MOD | KEYBOARD_SHIFT_MOD)));
+2189   FDC1 E6 06       	and 6
+2190   FDC3 CA BF FD    	jp z, l_127
+2191   FDC6             ; 1294 
+2192   FDC6             ; 1295     compare(a = 16, c);
+2193   FDC6 3E 10       	ld a, 16
+2194   FDC8 B9          	cp c
+2195   FDC9             ; 1296     a = translateCodeEnabled;
+2196   FDC9 3A 7D F7    	ld a, (translatecodeenabled)
+2197   FDCC             ; 1297     if (flag_z) {
+2198   FDCC C2 D6 FD    	jp nz, l_130
+2199   FDCF             ; 1298         invert(a);
+2200   FDCF 2F          	cpl
+2201   FDD0             ; 1299         translateCodeEnabled = a;
+2202   FDD0 32 7D F7    	ld (translatecodeenabled), a
+2203   FDD3             ; 1300         return PrintCharSaveCursor();
+2204   FDD3 C3 6A FD    	jp printcharsavecursor
+2205   FDD6             l_130: 
+2206   FDD6             ; 1301     }
+2207   FDD6             ; 1302     if (a != 0)
+2208   FDD6 B7          	or a
+2209   FDD7             ; 1303         TranslateCodePage(c);
+2210   FDD7 C4 7E F7    	call nz, translatecodepage
+2211   FDDA             ; 1304     a = c;
+2212   FDDA 79          	ld a, c
+2213   FDDB             ; 1305     if (a == 31)
+2214   FDDB FE 1F       	cp 31
+2215   FDDD             ; 1306         return ClearScreen();
+2216   FDDD CA F1 FD    	jp z, clearscreen
+2217   FDE0             ; 1307     if (flag_m)
+2218   FDE0             ; 1308         return PrintChar3(a);
+2219   FDE0 FA 06 FE    	jp m, printchar3
+2220   FDE3             ; 1309     PrintChar4(a);
+2221   FDE3             ; 1310 }
+2222   FDE3             ; 1311 
+2223   FDE3             ; 1312 void PrintChar4(...) {
+2224   FDE3             printchar4: 
+2225   FDE3             ; 1313     *hl = a;
+2226   FDE3 77          	ld (hl), a
+2227   FDE4             ; 1314     hl++;
+2228   FDE4 23          	inc hl
+2229   FDE5             ; 1315     if (flag_m(compare(a = h, SCREEN_END >> 8)))
+2230   FDE5 7C          	ld a, h
+2231   FDE6 FE F0       	cp 240
+2232   FDE8             ; 1316         return PrintCharSaveCursor(hl);
+2233   FDE8 FA 6A FD    	jp m, printcharsavecursor
+2234   FDEB             ; 1317     PrintCrLf();
+2235   FDEB CD AD FE    	call printcrlf
+2236   FDEE             ; 1318     PrintCharExit();
+2237   FDEE C3 6D FD    	jp printcharexit
+2238   FDF1             ; 1319 }
+2239   FDF1             ; 1320 
+2240   FDF1             ; 1321 void ClearScreen(...) {
+2241   FDF1             clearscreen: 
+2242   FDF1             ; 1322     b = ' ';
+2243   FDF1 06 20       	ld b, 32
+2244   FDF3             ; 1323     a = SCREEN_END >> 8;
+2245   FDF3 3E F0       	ld a, 240
+2246   FDF5             ; 1324     hl = SCREEN_ATTRIB_BEGIN;
+2247   FDF5 21 00 E0    	ld hl, 57344
+2248   FDF8             ; 1325     do {
+2249   FDF8             l_132: 
+2250   FDF8             ; 1326         *hl = b;
+2251   FDF8 70          	ld (hl), b
+2252   FDF9             ; 1327         hl++;
+2253   FDF9 23          	inc hl
+2254   FDFA             ; 1328         *hl = b;
+2255   FDFA 70          	ld (hl), b
+2256   FDFB             ; 1329         hl++;
+2257   FDFB 23          	inc hl
+2258   FDFC             l_133: 
+2259   FDFC             ; 1330     } while (a != h);
+2260   FDFC BC          	cp h
+2261   FDFD C2 F8 FD    	jp nz, l_132
+2262   FE00             ; 1331     MoveCursorHome();
+2263   FE00             ; 1332 }
+2264   FE00             ; 1333 
+2265   FE00             ; 1334 void MoveCursorHome(...) {
+2266   FE00             movecursorhome: 
+2267   FE00             ; 1335     return PrintCharSaveCursor(hl = SCREEN_BEGIN);
+2268   FE00 21 00 E8    	ld hl, 59392
+2269   FE03 C3 6A FD    	jp printcharsavecursor
+2270   FE06             ; 1336 }
+2271   FE06             ; 1337 
+2272   FE06             ; 1338 void PrintChar3(...) {
+2273   FE06             printchar3: 
+2274   FE06             ; 1339     if (a == 12)
+2275   FE06 FE 0C       	cp 12
+2276   FE08             ; 1340         return MoveCursorHome();
+2277   FE08 CA 00 FE    	jp z, movecursorhome
+2278   FE0B             ; 1341     if (a == 13)
+2279   FE0B FE 0D       	cp 13
+2280   FE0D             ; 1342         return MoveCursorCr(hl);
+2281   FE0D CA 55 FE    	jp z, movecursorcr
+2282   FE10             ; 1343     if (a == 10)
+2283   FE10 FE 0A       	cp 10
+2284   FE12             ; 1344         return MoveCursorLf(hl);
+2285   FE12 CA 6A FE    	jp z, movecursorlf
+2286   FE15             ; 1345     if (a == 8)
+2287   FE15 FE 08       	cp 8
+2288   FE17             ; 1346         return MoveCursorLeft(hl);
+2289   FE17 CA 66 FE    	jp z, movecursorleft
+2290   FE1A             ; 1347     if (a == 24)
+2291   FE1A FE 18       	cp 24
+2292   FE1C             ; 1348         return MoveCursorRight(hl);
+2293   FE1C CA 5C FE    	jp z, movecursorright
+2294   FE1F             ; 1349     if (a == 25)
+2295   FE1F FE 19       	cp 25
+2296   FE21             ; 1350         return MoveCursorUp(hl);
+2297   FE21 CA A0 FE    	jp z, movecursorup
+2298   FE24             ; 1351     if (a == 7)
+2299   FE24 FE 07       	cp 7
+2300   FE26             ; 1352         return PrintCharBeep();
+2301   FE26 CA 38 FE    	jp z, printcharbeep
+2302   FE29             ; 1353     if (a == 26)
+2303   FE29 FE 1A       	cp 26
+2304   FE2B             ; 1354         return MoveCursorDown();
+2305   FE2B CA A7 FE    	jp z, movecursordown
+2306   FE2E             ; 1355     if (a != 27)
+2307   FE2E FE 1B       	cp 27
+2308   FE30             ; 1356         return PrintChar4(hl, a);
+2309   FE30 C2 E3 FD    	jp nz, printchar4
+2310   FE33             ; 1357     a = 1;
+2311   FE33 3E 01       	ld a, 1
+2312   FE35             ; 1358     return PrintCharSetEscState();
+2313   FE35 C3 67 FD    	jp printcharsetescstate
+2314   FE38             ; 1359 }
+2315   FE38             ; 1360 
+2316   FE38             ; 1361 void PrintCharBeep(...) {
+2317   FE38             printcharbeep: 
+2318   FE38             ; 1362     c = 128;  // Длительность
+2319   FE38 0E 80       	ld c, 128
+2320   FE3A             ; 1363     e = 32;   // Частота
+2321   FE3A 1E 20       	ld e, 32
+2322   FE3C             ; 1364     do {
+2323   FE3C             l_135: 
+2324   FE3C             ; 1365         d = e;
+2325   FE3C 53          	ld d, e
+2326   FE3D             ; 1366         do {
+2327   FE3D             l_138: 
+2328   FE3D             ; 1367             out(PORT_KEYBOARD_MODE, a = 1 | (7 << 1));
+2329   FE3D 3E 0F       	ld a, 15
+2330   FE3F D3 04       	out (4), a
+2331   FE41             l_139: 
+2332   FE41             ; 1368         } while (flag_nz(e--));
+2333   FE41 1D          	dec e
+2334   FE42 C2 3D FE    	jp nz, l_138
+2335   FE45             ; 1369         e = d;
+2336   FE45 5A          	ld e, d
+2337   FE46             ; 1370         do {
+2338   FE46             l_141: 
+2339   FE46             ; 1371             out(PORT_KEYBOARD_MODE, a = (7 << 1));
+2340   FE46 3E 0E       	ld a, 14
+2341   FE48 D3 04       	out (4), a
+2342   FE4A             l_142: 
+2343   FE4A             ; 1372         } while (flag_nz(d--));
+2344   FE4A 15          	dec d
+2345   FE4B C2 46 FE    	jp nz, l_141
+2346   FE4E             l_136: 
+2347   FE4E             ; 1373     } while (flag_nz(c--));
+2348   FE4E 0D          	dec c
+2349   FE4F C2 3C FE    	jp nz, l_135
+2350   FE52             ; 1374 
+2351   FE52             ; 1375     return PrintCharExit();
+2352   FE52 C3 6D FD    	jp printcharexit
+2353   FE55             ; 1376 }
+2354   FE55             ; 1377 
+2355   FE55             ; 1378 void MoveCursorCr(...) {
+2356   FE55             movecursorcr: 
+2357   FE55             ; 1379     l = ((a = l) &= ~(SCREEN_WIDTH - 1));
+2358   FE55 7D          	ld a, l
+2359   FE56 E6 C0       	and 192
+2360   FE58 6F          	ld l, a
+2361   FE59             ; 1380     return PrintCharSaveCursor(hl);
+2362   FE59 C3 6A FD    	jp printcharsavecursor
+2363   FE5C             ; 1381 }
+2364   FE5C             ; 1382 
+2365   FE5C             ; 1383 void MoveCursorRight(...) {
+2366   FE5C             movecursorright: 
+2367   FE5C             ; 1384     hl++;
+2368   FE5C 23          	inc hl
+2369   FE5D             ; 1385     MoveCursorBoundary(hl);
+2370   FE5D             ; 1386 }
+2371   FE5D             ; 1387 
+2372   FE5D             ; 1388 void MoveCursorBoundary(...) {
+2373   FE5D             movecursorboundary: 
+2374   FE5D             ; 1389     a = h;
+2375   FE5D 7C          	ld a, h
+2376   FE5E             ; 1390     a &= 7;
+2377   FE5E E6 07       	and 7
+2378   FE60             ; 1391     a |= SCREEN_BEGIN >> 8;
+2379   FE60 F6 E8       	or 232
+2380   FE62             ; 1392     h = a;
+2381   FE62 67          	ld h, a
+2382   FE63             ; 1393     return PrintCharSaveCursor(hl);
+2383   FE63 C3 6A FD    	jp printcharsavecursor
+2384   FE66             ; 1394 }
+2385   FE66             ; 1395 
+2386   FE66             ; 1396 void MoveCursorLeft(...) {
+2387   FE66             movecursorleft: 
+2388   FE66             ; 1397     hl--;
+2389   FE66 2B          	dec hl
+2390   FE67             ; 1398     return MoveCursorBoundary(hl);
+2391   FE67 C3 5D FE    	jp movecursorboundary
+2392   FE6A             ; 1399 }
+2393   FE6A             ; 1400 
+2394   FE6A             ; 1401 void MoveCursorLf(...) {
+2395   FE6A             movecursorlf: 
+2396   FE6A             ; 1402     hl += (bc = SCREEN_WIDTH);
+2397   FE6A 01 40 00    	ld bc, 64
+2398   FE6D 09          	add hl, bc
+2399   FE6E             ; 1403     if (flag_m(compare(a = h, SCREEN_END >> 8)))
+2400   FE6E 7C          	ld a, h
+2401   FE6F FE F0       	cp 240
+2402   FE71             ; 1404         return PrintCharSaveCursor(hl);
+2403   FE71 FA 6A FD    	jp m, printcharsavecursor
+2404   FE74             ; 1405 
+2405   FE74             ; 1406     hl = SCREEN_BEGIN;
+2406   FE74 21 00 E8    	ld hl, 59392
+2407   FE77             ; 1407     bc = (SCREEN_BEGIN + SCREEN_WIDTH);
+2408   FE77 01 40 E8    	ld bc, 59456
+2409   FE7A             ; 1408     do {
+2410   FE7A             l_144: 
+2411   FE7A             ; 1409         *hl = (a = *bc);
+2412   FE7A 0A          	ld a, (bc)
+2413   FE7B 77          	ld (hl), a
+2414   FE7C             ; 1410         hl++;
+2415   FE7C 23          	inc hl
+2416   FE7D             ; 1411         bc++;
+2417   FE7D 03          	inc bc
+2418   FE7E             ; 1412         *hl = (a = *bc);
+2419   FE7E 0A          	ld a, (bc)
+2420   FE7F 77          	ld (hl), a
+2421   FE80             ; 1413         hl++;
+2422   FE80 23          	inc hl
+2423   FE81             ; 1414         bc++;
+2424   FE81 03          	inc bc
+2425   FE82             l_145: 
+2426   FE82             ; 1415     } while (flag_m(compare(a = b, SCREEN_END >> 8)));
+2427   FE82 78          	ld a, b
+2428   FE83 FE F0       	cp 240
+2429   FE85 FA 7A FE    	jp m, l_144
+2430   FE88             ; 1416     a = SCREEN_END >> 8;
+2431   FE88 3E F0       	ld a, 240
+2432   FE8A             ; 1417     c = ' ';
+2433   FE8A 0E 20       	ld c, 32
+2434   FE8C             ; 1418     do {
+2435   FE8C             l_147: 
+2436   FE8C             ; 1419         *hl = c;
+2437   FE8C 71          	ld (hl), c
+2438   FE8D             ; 1420         hl++;
+2439   FE8D 23          	inc hl
+2440   FE8E             ; 1421         *hl = c;
+2441   FE8E 71          	ld (hl), c
+2442   FE8F             ; 1422         hl++;
+2443   FE8F 23          	inc hl
+2444   FE90             l_148: 
+2445   FE90             ; 1423     } while (a != h);
+2446   FE90 BC          	cp h
+2447   FE91 C2 8C FE    	jp nz, l_147
+2448   FE94             ; 1424     hl = cursor;
+2449   FE94 2A 5A F7    	ld hl, (cursor)
+2450   FE97             ; 1425     h = ((SCREEN_END >> 8) - 1);
+2451   FE97 26 EF       	ld h, 239
+2452   FE99             ; 1426     l = ((a = l) |= 192);
+2453   FE99 7D          	ld a, l
+2454   FE9A F6 C0       	or 192
+2455   FE9C 6F          	ld l, a
+2456   FE9D             ; 1427     return PrintCharSaveCursor(hl);
+2457   FE9D C3 6A FD    	jp printcharsavecursor
+2458   FEA0             ; 1428 }
+2459   FEA0             ; 1429 
+2460   FEA0             ; 1430 void MoveCursorUp(...) {
+2461   FEA0             movecursorup: 
+2462   FEA0             ; 1431     MoveCursor(hl, bc = -SCREEN_WIDTH);
+2463   FEA0 01 C0 FF    	ld bc, 65472
+2464   FEA3             ; 1432 }
+2465   FEA3             ; 1433 
+2466   FEA3             ; 1434 void MoveCursor(...) {
+2467   FEA3             movecursor: 
+2468   FEA3             ; 1435     hl += bc;
+2469   FEA3 09          	add hl, bc
+2470   FEA4             ; 1436     return MoveCursorBoundary(hl);
+2471   FEA4 C3 5D FE    	jp movecursorboundary
+2472   FEA7             ; 1437 }
+2473   FEA7             ; 1438 
+2474   FEA7             ; 1439 void MoveCursorDown(...) {
+2475   FEA7             movecursordown: 
+2476   FEA7             ; 1440     return MoveCursor(hl, bc = SCREEN_WIDTH);
+2477   FEA7 01 40 00    	ld bc, 64
+2478   FEAA C3 A3 FE    	jp movecursor
+2479   FEAD             ; 1441 }
+2480   FEAD             ; 1442 
+2481   FEAD             ; 1443 void PrintCrLf() {
+2482   FEAD             printcrlf: 
+2483   FEAD             ; 1444     PrintChar(c = 13);
+2484   FEAD 0E 0D       	ld c, 13
+2485   FEAF CD 23 FD    	call printchar
+2486   FEB2             ; 1445     PrintChar(c = 10);
+2487   FEB2 0E 0A       	ld c, 10
+2488   FEB4 C3 23 FD    	jp printchar
+2489   FEB7             ; 1446 }
+2490   FEB7             ; 1447 
+2491   FEB7             ; 1448 // Функция для пользовательской программы.
+2492   FEB7             ; 1449 // Нажата ли хотя бы одна клавиша на клавиатуре?
+2493   FEB7             ; 1450 // Параметры: нет. Результат:  a - 0xFF если клавиша нажата, 0 если нет. Сохраняет: bc, de, hl.
+2494   FEB7             ; 1451 
+2495   FEB7             ; 1452 void IsAnyKeyPressed() {
+2496   FEB7             isanykeypressed: 
+2497   FEB7             ; 1453     out(PORT_KEYBOARD_COLUMN, a ^= a);
+2498   FEB7 AF          	xor a
+2499   FEB8 D3 07       	out (7), a
+2500   FEBA             ; 1454     a = in(PORT_KEYBOARD_ROW);
+2501   FEBA DB 06       	in a, (6)
+2502   FEBC             ; 1455     a &= KEYBOARD_ROW_MASK;
+2503   FEBC E6 7F       	and 127
+2504   FEBE             ; 1456     if (a == KEYBOARD_ROW_MASK) {
+2505   FEBE FE 7F       	cp 127
+2506   FEC0 C2 C5 FE    	jp nz, l_150
+2507   FEC3             ; 1457         a ^= a;
+2508   FEC3 AF          	xor a
+2509   FEC4             ; 1458         return;
+2510   FEC4 C9          	ret
+2511   FEC5             l_150: 
+2512   FEC5             ; 1459     }
+2513   FEC5             ; 1460     a = 0xFF;
+2514   FEC5 3E FF       	ld a, 255
+2515   FEC7 C9          	ret
+2516   FEC8             ; 1461 }
+2517   FEC8             ; 1462 
+2518   FEC8             ; 1463 // Функция для пользовательской программы.
+2519   FEC8             ; 1464 // Получить код нажатой клавиши на клавиатуре.
+2520   FEC8             ; 1465 // В отличии от функции ScanKey, в этой функции есть задержка повтора.
+2521   FEC8             ; 1466 // Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
+2522   FEC8             ; 1467 
+2523   FEC8             ; 1468 void ReadKey() {
+2524   FEC8             readkey: 
+2525   FEC8             ; 1469     push_pop(hl) {
+2526   FEC8 E5          	push hl
+2527   FEC9             ; 1470         hl = keyDelay;
+2528   FEC9 2A 60 F7    	ld hl, (keydelay)
+2529   FECC             ; 1471         ReadKeyInternal(hl);
+2530   FECC CD E8 FE    	call readkeyinternal
+2531   FECF             ; 1472         l = 32;         // Задержка повтора нажатия клавиши
+2532   FECF 2E 20       	ld l, 32
+2533   FED1             ; 1473         if (flag_nz) {  // Не таймаут
+2534   FED1 CA E3 FE    	jp z, l_152
+2535   FED4             ; 1474             do {
+2536   FED4             l_154: 
+2537   FED4             ; 1475                 do {
+2538   FED4             l_157: 
+2539   FED4             ; 1476                     l = 2;
+2540   FED4 2E 02       	ld l, 2
+2541   FED6             ; 1477                     ReadKeyInternal(hl);
+2542   FED6 CD E8 FE    	call readkeyinternal
+2543   FED9             l_158: 
+2544   FED9 C2 D4 FE    	jp nz, l_157
+2545   FEDC             l_155: 
+2546   FEDC             ; 1478                 } while (flag_nz);  // Цикл длится, пока не наступит таймаут
+2547   FEDC             ; 1479             } while (a >= 128);     // Цикл длится, пока не нажата клавиша
+2548   FEDC FE 80       	cp 128
+2549   FEDE D2 D4 FE    	jp nc, l_154
+2550   FEE1             ; 1480             l = 128;                // Задержка повтора первого нажатия клавиши
+2551   FEE1 2E 80       	ld l, 128
+2552   FEE3             l_152: 
+2553   FEE3             ; 1481         }
+2554   FEE3             ; 1482         keyDelay = hl;
+2555   FEE3 22 60 F7    	ld (keydelay), hl
+2556   FEE6 E1          	pop hl
+2557   FEE7 C9          	ret
+2558   FEE8             ; 1483     }
+2559   FEE8             ; 1484 }
+2560   FEE8             ; 1485 
+2561   FEE8             ; 1486 void ReadKeyInternal(...) {
+2562   FEE8             readkeyinternal: 
+2563   FEE8             ; 1487     do {
+2564   FEE8             l_160: 
+2565   FEE8             ; 1488         ScanKey();
+2566   FEE8 CD FE FE    	call scankey
+2567   FEEB             ; 1489         if (a != h)
+2568   FEEB BC          	cp h
+2569   FEEC             ; 1490             break;
+2570   FEEC C2 FC FE    	jp nz, l_162
+2571   FEEF             ; 1491 
+2572   FEEF             ; 1492         // Задержка
+2573   FEEF             ; 1493         push_pop(a) {
+2574   FEEF F5          	push af
+2575   FEF0             ; 1494             a ^= a;
+2576   FEF0 AF          	xor a
+2577   FEF1             ; 1495             do {
+2578   FEF1             l_163: 
+2579   FEF1             ; 1496                 swap(hl, de);
+2580   FEF1 EB          	ex hl, de
+2581   FEF2             ; 1497                 swap(hl, de);
+2582   FEF2 EB          	ex hl, de
+2583   FEF3             l_164: 
+2584   FEF3             ; 1498             } while (flag_nz(a--));
+2585   FEF3 3D          	dec a
+2586   FEF4 C2 F1 FE    	jp nz, l_163
+2587   FEF7 F1          	pop af
+2588   FEF8             l_161: 
+2589   FEF8             ; 1499         }
+2590   FEF8             ; 1500     } while (flag_nz(l--));
+2591   FEF8 2D          	dec l
+2592   FEF9 C2 E8 FE    	jp nz, l_160
+2593   FEFC             l_162: 
+2594   FEFC             ; 1501     h = a;
+2595   FEFC 67          	ld h, a
+2596   FEFD C9          	ret
+2597   FEFE             ; 1502 }
+2598   FEFE             ; 1503 
+2599   FEFE             ; 1504 // Функция для пользовательской программы.
+2600   FEFE             ; 1505 // Получить код нажатой клавиши на клавиатуре.
+2601   FEFE             ; 1506 // Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
+2602   FEFE             ; 1507 
+2603   FEFE             ; 1508 void ScanKey() {
+2604   FEFE             scankey: 
+2605   FEFE             ; 1509     push(bc, de, hl);
+2606   FEFE C5          	push bc
+2607   FEFF D5          	push de
+2608   FF00 E5          	push hl
+2609   FF01             ; 1510 
+2610   FF01             ; 1511     bc = 0x00FE;
+2611   FF01 01 FE 00    	ld bc, 254
+2612   FF04             ; 1512     d = KEYBOARD_COLUMN_COUNT;
+2613   FF04 16 08       	ld d, 8
+2614   FF06             ; 1513     do {
+2615   FF06             l_166: 
+2616   FF06             ; 1514         a = c;
+2617   FF06 79          	ld a, c
+2618   FF07             ; 1515         out(PORT_KEYBOARD_COLUMN, a);
+2619   FF07 D3 07       	out (7), a
+2620   FF09             ; 1516         cyclic_rotate_left(a, 1);
+2621   FF09 07          	rlca
+2622   FF0A             ; 1517         c = a;
+2623   FF0A 4F          	ld c, a
+2624   FF0B             ; 1518         a = in(PORT_KEYBOARD_ROW);
+2625   FF0B DB 06       	in a, (6)
+2626   FF0D             ; 1519         a &= KEYBOARD_ROW_MASK;
+2627   FF0D E6 7F       	and 127
+2628   FF0F             ; 1520         if (a != KEYBOARD_ROW_MASK)
+2629   FF0F FE 7F       	cp 127
+2630   FF11             ; 1521             return ScanKey2(a);
+2631   FF11 C2 28 FF    	jp nz, scankey2
+2632   FF14             ; 1522         b = ((a = b) += KEYBOARD_ROW_COUNT);
+2633   FF14 78          	ld a, b
+2634   FF15 C6 07       	add 7
+2635   FF17 47          	ld b, a
+2636   FF18             l_167: 
+2637   FF18             ; 1523     } while (flag_nz(d--));
+2638   FF18 15          	dec d
+2639   FF19 C2 06 FF    	jp nz, l_166
+2640   FF1C             ; 1524 
+2641   FF1C             ; 1525     a = in(PORT_KEYBOARD_MODS);
+2642   FF1C DB 05       	in a, (5)
+2643   FF1E             ; 1526     carry_rotate_right(a, 1);
+2644   FF1E 1F          	rra
+2645   FF1F             ; 1527     a = 0xFF;  // No key
+2646   FF1F 3E FF       	ld a, 255
+2647   FF21             ; 1528     if (flag_c)
+2648   FF21             ; 1529         return ScanKeyExit(a);
+2649   FF21 DA 64 FF    	jp c, scankeyexit
+2650   FF24             ; 1530     a--;  // Rus key
+2651   FF24 3D          	dec a
+2652   FF25             ; 1531     return ScanKeyExit(a);
+2653   FF25 C3 64 FF    	jp scankeyexit
+2654   FF28             ; 1532 }
+2655   FF28             ; 1533 
+2656   FF28             ; 1534 void ScanKey2(...) {
+2657   FF28             scankey2: 
+2658   FF28             ; 1535     for (;;) {
+2659   FF28             l_170: 
+2660   FF28             ; 1536         carry_rotate_right(a, 1);
+2661   FF28 1F          	rra
+2662   FF29             ; 1537         if (flag_nc)
+2663   FF29             ; 1538             break;
+2664   FF29 D2 30 FF    	jp nc, l_171
+2665   FF2C             ; 1539         b++;
+2666   FF2C 04          	inc b
+2667   FF2D C3 28 FF    	jp l_170
+2668   FF30             l_171: 
+2669   FF30             ; 1540     }
+2670   FF30             ; 1541     a = b;
+2671   FF30 78          	ld a, b
+2672   FF31             ; 1542     if (a >= 48)
+2673   FF31 FE 30       	cp 48
+2674   FF33             ; 1543         return ScanKeySpecial(a);
+2675   FF33 D2 8A FF    	jp nc, scankeyspecial
+2676   FF36             ; 1544     a += 48;
+2677   FF36 C6 30       	add 48
+2678   FF38             ; 1545     if (a >= 60)
+2679   FF38 FE 3C       	cp 60
+2680   FF3A             ; 1546         if (a < 64)
+2681   FF3A DA 44 FF    	jp c, l_172
+2682   FF3D FE 40       	cp 64
+2683   FF3F             ; 1547             a &= 47;
+2684   FF3F D2 44 FF    	jp nc, l_174
+2685   FF42 E6 2F       	and 47
+2686   FF44             l_174: 
+2687   FF44             l_172: 
+2688   FF44             ; 1548 
+2689   FF44             ; 1549     if (a == 95)
+2690   FF44 FE 5F       	cp 95
+2691   FF46             ; 1550         a = 127;
+2692   FF46 C2 4B FF    	jp nz, l_176
+2693   FF49 3E 7F       	ld a, 127
+2694   FF4B             l_176: 
+2695   FF4B             ; 1551 
+2696   FF4B             ; 1552     c = a;
+2697   FF4B 4F          	ld c, a
+2698   FF4C             ; 1553     a = in(PORT_KEYBOARD_MODS);
+2699   FF4C DB 05       	in a, (5)
+2700   FF4E             ; 1554     a &= KEYBOARD_MODS_MASK;
+2701   FF4E E6 07       	and 7
+2702   FF50             ; 1555     compare(a, KEYBOARD_MODS_MASK);
+2703   FF50 FE 07       	cp 7
+2704   FF52             ; 1556     b = a;
+2705   FF52 47          	ld b, a
+2706   FF53             ; 1557     a = c;
+2707   FF53 79          	ld a, c
+2708   FF54             ; 1558     if (flag_z)
+2709   FF54             ; 1559         return ScanKeyExit(a);
+2710   FF54 CA 64 FF    	jp z, scankeyexit
+2711   FF57             ; 1560     a = b;
+2712   FF57 78          	ld a, b
+2713   FF58             ; 1561     carry_rotate_right(a, 2);
+2714   FF58 1F          	rra
+2715   FF59 1F          	rra
+2716   FF5A             ; 1562     if (flag_nc)
+2717   FF5A             ; 1563         return ScanKeyControl(c);
+2718   FF5A D2 68 FF    	jp nc, scankeycontrol
+2719   FF5D             ; 1564     carry_rotate_right(a, 1);
+2720   FF5D 1F          	rra
+2721   FF5E             ; 1565     if (flag_nc)
+2722   FF5E             ; 1566         return ScanKeyShift();
+2723   FF5E D2 6E FF    	jp nc, scankeyshift
+2724   FF61             ; 1567     (a = c) |= 0x20;
+2725   FF61 79          	ld a, c
+2726   FF62 F6 20       	or 32
+2727   FF64             ; 1568     ScanKeyExit(a);
+2728   FF64             ; 1569 }
+2729   FF64             ; 1570 
+2730   FF64             ; 1571 void ScanKeyExit(...) {
+2731   FF64             scankeyexit: 
+2732   FF64             ; 1572     pop(bc, de, hl);
+2733   FF64 E1          	pop hl
+2734   FF65 D1          	pop de
+2735   FF66 C1          	pop bc
+2736   FF67 C9          	ret
+2737   FF68             ; 1573 }
+2738   FF68             ; 1574 
+2739   FF68             ; 1575 void ScanKeyControl(...) {
+2740   FF68             scankeycontrol: 
+2741   FF68             ; 1576     a = c;
+2742   FF68 79          	ld a, c
+2743   FF69             ; 1577     a &= 0x1F;
+2744   FF69 E6 1F       	and 31
+2745   FF6B             ; 1578     return ScanKeyExit(a);
+2746   FF6B C3 64 FF    	jp scankeyexit
+2747   FF6E             ; 1579 }
+2748   FF6E             ; 1580 
+2749   FF6E             ; 1581 void ScanKeyShift(...) {
+2750   FF6E             scankeyshift: 
+2751   FF6E             ; 1582     if ((a = c) == 127)
+2752   FF6E 79          	ld a, c
+2753   FF6F FE 7F       	cp 127
+2754   FF71             ; 1583         a = 95;
+2755   FF71 C2 76 FF    	jp nz, l_178
+2756   FF74 3E 5F       	ld a, 95
+2757   FF76             l_178: 
+2758   FF76             ; 1584     if (a >= 64)
+2759   FF76 FE 40       	cp 64
+2760   FF78             ; 1585         return ScanKeyExit();
+2761   FF78 D2 64 FF    	jp nc, scankeyexit
+2762   FF7B             ; 1586     if (a < 48) {
+2763   FF7B FE 30       	cp 48
+2764   FF7D D2 85 FF    	jp nc, l_180
+2765   FF80             ; 1587         a |= 16;
+2766   FF80 F6 10       	or 16
+2767   FF82             ; 1588         return ScanKeyExit();
+2768   FF82 C3 64 FF    	jp scankeyexit
+2769   FF85             l_180: 
+2770   FF85             ; 1589     }
+2771   FF85             ; 1590     a &= 47;
+2772   FF85 E6 2F       	and 47
+2773   FF87             ; 1591     return ScanKeyExit();
+2774   FF87 C3 64 FF    	jp scankeyexit
+2775   FF8A             ; 1592 }
+2776   FF8A             ; 1593 
+2777   FF8A             ; 1594 void ScanKeySpecial(...) {
+2778   FF8A             scankeyspecial: 
+2779   FF8A             ; 1595     hl = specialKeyTable;
+2780   FF8A 21 97 FF    	ld hl, 0FFFFh & (specialkeytable)
+2781   FF8D             ; 1596     c = (a -= 48);
+2782   FF8D D6 30       	sub 48
+2783   FF8F 4F          	ld c, a
+2784   FF90             ; 1597     b = 0;
+2785   FF90 06 00       	ld b, 0
+2786   FF92             ; 1598     hl += bc;
+2787   FF92 09          	add hl, bc
+2788   FF93             ; 1599     a = *hl;
+2789   FF93 7E          	ld a, (hl)
+2790   FF94             ; 1600     return ScanKeyExit(a);
+2791   FF94 C3 64 FF    	jp scankeyexit
+2792   FF97             ; 1601 }
+2793   FF97             ; 1602 
+2794   FF97             ; 1603 uint8_t specialKeyTable[] = {
+2795   FF97             specialkeytable: 
+2796   FF97 20          	db 32
+2797   FF98 18          	db 24
+2798   FF99 08          	db 8
+2799   FF9A 19          	db 25
+2800   FF9B 1A          	db 26
+2801   FF9C 0D          	db 13
+2802   FF9D 1F          	db 31
+2803   FF9E 0C          	db 12
+2804   FF9F             ; 1614  aPrompt[6] = "\r\n-->";
+2805   FF9F             aprompt: 
+2806   FF9F 0D          	db 13
+2807   FFA0 0A          	db 10
+2808   FFA1 2D          	db 45
+2809   FFA2 2D          	db 45
+2810   FFA3 3E          	db 62
+2811   FFA4 00          	ds 1
+2812   FFA5             ; 1615  aCrLfTab[6] = "\r\n\x18\x18\x18";
+2813   FFA5             acrlftab: 
+2814   FFA5 0D          	db 13
+2815   FFA6 0A          	db 10
+2816   FFA7 18          	db 24
+2817   FFA8 18          	db 24
+2818   FFA9 18          	db 24
+2819   FFAA 00          	ds 1
+2820   FFAB             ; 1616  aRegisters[] = "\r\nPC-\r\nHL-\r\nBC-\r\nDE-\r\nSP-\r\nAF-\x19\x19\x19\x19\x19\x19";
+2821   FFAB             aregisters: 
+2822   FFAB 0D          	db 13
+2823   FFAC 0A          	db 10
+2824   FFAD 50          	db 80
+2825   FFAE 43          	db 67
+2826   FFAF 2D          	db 45
+2827   FFB0 0D          	db 13
+2828   FFB1 0A          	db 10
+2829   FFB2 48          	db 72
+2830   FFB3 4C          	db 76
+2831   FFB4 2D          	db 45
+2832   FFB5 0D          	db 13
+2833   FFB6 0A          	db 10
+2834   FFB7 42          	db 66
+2835   FFB8 43          	db 67
+2836   FFB9 2D          	db 45
+2837   FFBA 0D          	db 13
+2838   FFBB 0A          	db 10
+2839   FFBC 44          	db 68
+2840   FFBD 45          	db 69
+2841   FFBE 2D          	db 45
+2842   FFBF 0D          	db 13
+2843   FFC0 0A          	db 10
+2844   FFC1 53          	db 83
+2845   FFC2 50          	db 80
+2846   FFC3 2D          	db 45
+2847   FFC4 0D          	db 13
+2848   FFC5 0A          	db 10
+2849   FFC6 41          	db 65
+2850   FFC7 46          	db 70
+2851   FFC8 2D          	db 45
+2852   FFC9 19          	db 25
+2853   FFCA 19          	db 25
+2854   FFCB 19          	db 25
+2855   FFCC 19          	db 25
+2856   FFCD 19          	db 25
+2857   FFCE 19          	db 25
+2858   FFCF 00          	ds 1
+2859   FFD0             ; 1617  aBackspace[4] = "\x08 \x08";
+2860   FFD0             abackspace: 
+2861   FFD0 08          	db 8
+2862   FFD1 20          	db 32
+2863   FFD2 08          	db 8
+2864   FFD3 00          	ds 1
+2865   FFD4             ; 1618  aHello[] = "\x1F\nm/80k ";
+2866   FFD4             ahello: 
+2867   FFD4 1F          	db 31
+2868   FFD5 0A          	db 10
+2869   FFD6 6D          	db 109
+2870   FFD7 2F          	db 47
+2871   FFD8 38          	db 56
+2872   FFD9 30          	db 48
+2873   FFDA 6B          	db 107
+2874   FFDB 20          	db 32
+2875   FFDC 00          	ds 1
+2876   FFDD             ; 1620  TranslateCodePageDefault(...) {
+2877   FFDD             translatecodepagedefault: 
+2878   FFDD C9          	ret
+2879   FFDE             ; 1621 }
+2880   FFDE             ; 1622 
+2881   FFDE             ; 1623 uint8_t padding[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+2882   FFDE             padding: 
+2883   FFDE FF          	db 255
+2884   FFDF FF          	db 255
+2885   FFE0 FF          	db 255
+2886   FFE1 FF          	db 255
+2887   FFE2 FF          	db 255
+2888   FFE3 FF          	db 255
+2889   FFE4 FF          	db 255
+2890   FFE5 FF          	db 255
+2891   FFE6 FF          	db 255
+2892   FFE7 FF          	db 255
+2893   FFE8 FF          	db 255
+2894   FFE9 FF          	db 255
+2895   FFEA FF          	db 255
+2896   FFEB FF          	db 255
+2897   FFEC FF          	db 255
+2898   FFED FF          	db 255
+2899   FFEE FF          	db 255
+2900   FFEF FF          	db 255
+2901   FFF0 FF          	db 255
+2902   FFF1 FF          	db 255
+2903   FFF2 FF          	db 255
+2904   FFF3 FF          	db 255
+2905   FFF4 FF          	db 255
+2906   FFF5 FF          	db 255
+2907   FFF6 FF          	db 255
+2908   FFF7 FF          	db 255
+2909   FFF8 FF          	db 255
+2910   FFF9 FF          	db 255
+2911   FFFA FF          	db 255
+2912   FFFB FF          	db 255
+2913   FFFC FF          	db 255
+2914   FFFD FF          	db 255
+2915   FFFE FF          	db 255
+2916   FFFF FF          	db 255
+2917   0000              savebin "micro80.bin", 0xF800, 0x10000
+2918   0000             

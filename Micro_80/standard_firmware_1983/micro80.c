@@ -1,10 +1,51 @@
-/* Прошивка компьютера Микро 80 из журнала Радио за 1983 год
- * Реверc-инженеринг 5-06-2024 Алексей Морозов aleksey.f.morozov@gmail.com
- */
+// Прошивка компьютера Микро 80 из журнала Радио за 1983 год
+// Реверc-инженеринг 3-05-2025 Алексей Морозов aleksey.f.morozov@gmail.com
 
 #include "cmm.h"
-#include "micro80.h"
 
+asm(" .org 0xF800");
+
+// Экран
+const int SCREEN_ATTRIB_BEGIN = 0xE000;
+const int SCREEN_BEGIN = 0xE800;
+const int SCREEN_SIZE = 0x800;
+const int SCREEN_END = SCREEN_BEGIN + SCREEN_SIZE;
+const int SCREEN_WIDTH = 64;
+const int SCREEN_HEIGHT = 32;
+const int SCREEN_ATTRIB_DEFAULT = 0;
+const int SCREEN_ATTRIB_UNDERLINE = 1 << 7;
+
+// Порты ввода-вывода
+const int PORT_TAPE = 0x01;
+const int PORT_TAPE_BIT = 0x01;
+const int PORT_KEYBOARD_MODE = 0x04;
+const int PORT_KEYBOARD_COLUMN = 0x07;
+const int PORT_KEYBOARD_ROW = 0x06;
+const int PORT_KEYBOARD_MODS = 0x05;
+
+// Клавиатура
+const int KEYBOARD_ROW_MASK = 0x7F;
+const int KEYBOARD_MODS_MASK = 0x07;
+const int KEYBOARD_RUS_MOD = 1 << 0;
+const int KEYBOARD_US_MOD = 1 << 1;
+const int KEYBOARD_SHIFT_MOD = 1 << 2;
+const int KEYBOARD_COLUMN_COUNT = 8;
+const int KEYBOARD_ROW_COUNT = 7;
+
+// Константы магнитофона
+const int READ_TAPE_FIRST_BYTE = 0xFF;
+const int READ_TAPE_NEXT_BYTE = 8;
+const int TAPE_START = 0xE6;
+
+// Опкоды процессора КР580ВМ80А
+const int OPCODE_JMP = 0xC3;
+const int OPCODE_RST_38 = 0xFF;
+
+// Вектора перываний
+extern uint8_t rst38Opcode __address(0x38);
+extern uint16_t rst38Address __address(0x39);
+
+// Прототипы
 void Reboot();
 void ReadKey();
 void ReadKey0();
@@ -15,7 +56,7 @@ void ReadTapeByte(...);
 void PrintChar(...);
 void WriteTapeByte(...);
 void PrintChar(...);
-void IsKeyPressed();
+void IsAnyKeyPressed();
 void PrintHexByte(...);
 void PrintString(...);
 void Monitor();
@@ -31,10 +72,9 @@ void InputEndSpace(...);
 void PopWordReturn(...);
 void InputLoop(...);
 void InputInit(...);
-void ParseDword(...);
-void CmpHlDe(...);
-void ReturnCf(...);
-void ParseDword1(...);
+void ParseWord(...);
+void CompareHlDe(...);
+void ParseWordReturnCf(...);
 void PrintHex(...);
 void PrintParam1Space();
 void PrintHexWordSpace(...);
@@ -75,48 +115,101 @@ extern uint8_t regList[19];
 extern uint8_t aLf[2];
 extern uint8_t keyTable[8];
 
-asm(" org 0F800h");
+// Переменные монитора
+void jumpParam1(void) __address(0xF750);
+extern uint8_t jumpOpcode __address(0xF750);
+extern uint16_t param1 __address(0xF751);
+extern uint8_t param1h __address(0xF752);
+extern uint16_t param2 __address(0xF753);
+extern uint8_t param2h __address(0xF754);
+extern uint16_t param3 __address(0xF755);
+extern uint8_t param3h __address(0xF756);
+extern uint8_t tapePolarity __address(0xF757);
+// Unused 0xF758
+// Unused 0xF759
+extern uint16_t cursor __address(0xF75A);
+extern uint8_t readDelay __address(0xF75C);
+extern uint8_t writeDelay __address(0xF75D);
+extern uint8_t tapeStartL __address(0xF75E);
+extern uint8_t tapeStartH __address(0xF75F);
+extern uint8_t tapeStopL __address(0xF760);
+extern uint8_t tapeStopH __address(0xF761);
+// Unused 0xF762
+// Unused 0xF763
+extern uint8_t keyLast __address(0xF764);
+extern uint16_t regs __address(0xF765);
+extern uint16_t regSP __address(0xF765);
+extern uint8_t regSPH __address(0xF766);
+extern uint16_t regF __address(0xF767);
+extern uint16_t regA __address(0xF768);
+extern uint16_t regC __address(0xF769);
+extern uint16_t regB __address(0xF76A);
+extern uint16_t regE __address(0xF76B);
+extern uint16_t regD __address(0xF76C);
+extern uint16_t regL __address(0xF76D);
+extern uint16_t regHL __address(0xF76D);
+extern uint16_t regH __address(0xF76E);
+extern uint16_t lastBreakAddress __address(0xF76F);
+extern uint8_t lastBreakAddressHigh __address(0xF770);
+extern uint8_t breakCounter __address(0xF771);
+extern uint16_t breakAddress __address(0xF772);
+extern uint8_t breakPrevByte __address(0xF774);
+extern uint16_t breakAddress2 __address(0xF775);
+extern uint8_t breakPrevByte2 __address(0xF777);
+extern uint16_t breakAddress3 __address(0xF778);
+extern uint8_t breakPrevByte3 __address(0xF77A);
+extern uint8_t cmdBuffer __address(0xF77B);
+extern uint8_t cmdBuffer1 __address(0xF77B + 1);
+extern uint8_t cmdBufferEnd __address(0xF77B + 32);
 
-void EntryReboot() {
+const int USER_STACK_TOP = 0xF7C0;
+const int STACK_TOP = 0xF7FF;
+
+// Точки входа
+
+void EntryF800_Reboot() {
     Reboot();
 }
 
-void EntryReadChar(...) {
+void EntryF803_ReadKey() {
     ReadKey();
 }
 
-void EntryReadTapeByte(...) {
-    ReadTapeByte();
+void EntryF806_ReadTapeByte(...) {
+    ReadTapeByte(a);
 }
 
-void EntryPrintChar(...) {
-    PrintChar();
+void EntryF809_PrintChar(...) {
+    PrintChar(c);
 }
 
-void EntryWriteTapeByte(...) {
-    WriteTapeByte();
+void EntryF80C_WriteTapeByte(...) {
+    WriteTapeByte(c);
 }
 
-void EntryPrintChar2(...) {
-    PrintChar();
+void EntryF80F_TranslateCodePage(...) {
+    PrintChar(c);
 }
 
-void EntryIsKeyPressed() {
-    IsKeyPressed();
+void EntryF812_IsAnyKeyPressed() {
+    IsAnyKeyPressed();
 }
 
-void EntryPrintHexByte(...) {
-    PrintHexByte();
+void EntryF815_PrintHexByte(...) {
+    PrintHexByte(a);
 }
 
-void EntryPrintString(...) {
-    PrintString();
+void EntryF818_PrintString(...) {
+    PrintString(hl);
 }
+
+// Инициализация. Выполняется после перезагрузки или пользовательской программой.
+// Параметры: нет. Функция никогда не завершается.
 
 void Reboot() {
     regSP = hl = USER_STACK_TOP;
     sp = STACK_TOP;
-    PrintCharA(a = 0x1F); /* Clear screen */
+    PrintCharA(a = 0x1F);  // Clear screen
     Monitor();
 }
 
@@ -265,41 +358,40 @@ void ParseParams() {
     } while (flag_nz(b--));
 
     de = &cmdBuffer + 1;
-    ParseDword();
+    ParseWord();
     param1 = hl;
     param2 = hl;
     if (flag_c)
         return;
-    ParseDword();
+
+    ParseWord();
     param2 = hl;
     push_pop(a, de) {
         swap(hl, de);
         hl = param1;
         swap(hl, de);
-        CmpHlDe();
+        CompareHlDe();
         if (flag_c)
             return MonitorError();
     }
     if (flag_c)
         return;
-    ParseDword();
+
+    ParseWord();
     param3 = hl;
     if (flag_c)
         return;
+
     MonitorError();
 }
 
-void ParseDword(...) {
+void ParseWord(...) {
     hl = 0;
-    ParseDword1();
-}
-
-void ParseDword1(...) {
     for (;;) {
         a = *de;
         de++;
-        if (a == 0x0D)
-            return ReturnCf();
+        if (a == 13)
+            return ParseWordReturnCf(hl);
         if (a == ',')
             return;
         if (a == ' ')
@@ -308,9 +400,9 @@ void ParseDword1(...) {
         if (flag_m)
             return MonitorError();
         if (flag_p(compare(a, 10))) {
-            if (flag_m(compare(a, 0x11)))
+            if (flag_m(compare(a, 17)))
                 return MonitorError();
-            if (flag_p(compare(a, 0x17)))
+            if (flag_p(compare(a, 23)))
                 return MonitorError();
             a -= 7;
         }
@@ -325,7 +417,7 @@ void ParseDword1(...) {
     }
 }
 
-void ReturnCf(...) {
+void ParseWordReturnCf(...) {
     set_flag_c();
 }
 
@@ -375,7 +467,7 @@ void Loop(...) {
         hl = param1;
         swap(hl, de);
         hl = param2;
-        CmpHlDe(hl, de);
+        CompareHlDe(hl, de);
     }
     if (flag_z)
         return PopWordReturn();
@@ -390,13 +482,14 @@ void IncWord(...) {
     (*hl)++;
 }
 
-void CmpHlDe(...) {
+void CompareHlDe(...) {
     if ((a = h) != d)
         return;
     compare(a = l, e);
 }
 
-/* X - Изменение содержимого внутреннего регистра микропроцессора */
+// Команда X
+// Изменение содержимого внутреннего регистра микропроцессора
 
 void CmdX() {
     hl = &cmdBuffer1;
@@ -415,7 +508,7 @@ void CmdX() {
         Input();
         if (flag_nc)
             return Monitor();
-        ParseDword();
+        ParseWord();
         a = l;
     }
     *hl = a;
@@ -427,7 +520,7 @@ void CmdXS() {
     Input();
     if (flag_nc)
         return Monitor();
-    ParseDword();
+    ParseWord();
     regSP = hl;
 }
 
@@ -483,7 +576,8 @@ uint8_t regList[] = {'A', (uint8_t)(uintptr_t)&regA, 'B', (uint8_t)(uintptr_t)&r
 uint8_t aStart[] = "\x0ASTART-";
 uint8_t aDir_[] = "\x0ADIR. -";
 
-/* B - Задание адреса останова при отладке */
+// Команда B
+// Задание адреса останова при отладке
 
 void CmdB() {
     ParseParams();
@@ -524,15 +618,15 @@ void BreakPoint(...) {
     lastBreakAddress = hl;
 
     hl = breakAddress;
-    CmpHlDe();
+    CompareHlDe();
     if (flag_nz) {
         hl = breakAddress2;
-        CmpHlDe(hl, de);
+        CompareHlDe(hl, de);
         if (flag_z)
             return BreakPointAt2();
 
         hl = breakAddress3;
-        CmpHlDe(hl, de);
+        CompareHlDe(hl, de);
         if (flag_z)
             return BreakpointAt3();
 
@@ -543,7 +637,8 @@ void BreakPoint(...) {
     return Monitor();
 }
 
-/* G<адрес> - Запуск программы в отладочном режиме */
+// Команда G<адрес>
+// Запуск программы в отладочном режиме
 
 void CmdG() {
     ParseParams();
@@ -629,7 +724,8 @@ void BreakpointAt3(...) {
     Monitor();
 }
 
-/* D<адрес>,<адрес> - Просмотр содержимого области памяти в шестнадцатеричном виде */
+// Команда D<адрес>,<адрес>
+// Просмотр содержимого области памяти в шестнадцатеричном виде
 
 void CmdD() {
     ParseParams();
@@ -647,7 +743,8 @@ CmdDLine:
     }
 }
 
-/* C<адрес от>,<адрес до>,<адрес от 2> - Сравнение содержимого двух областей памяти */
+// Команда C<адрес от>,<адрес до>,<адрес от 2>
+// Сравнение содержимого двух областей памяти
 
 void CmdC() {
     ParseParams();
@@ -669,7 +766,8 @@ void CmdC() {
     }
 }
 
-/* F<адрес>,<адрес>,<байт> - Запись байта во все ячейки области памяти */
+// Команда F<адрес>,<адрес>,<байт>
+// Запись байта во все ячейки области памяти
 
 void CmdF() {
     ParseParams();
@@ -681,7 +779,8 @@ void CmdF() {
     }
 }
 
-/* S<адрес>,<адрес>,<байт> - Поиск байта в области памяти */
+// Команда S<адрес>,<адрес>,<байт>
+// Поиск байта в области памяти
 
 void CmdS() {
     ParseParams();
@@ -695,7 +794,8 @@ void CmdS() {
     }
 }
 
-/* T<начало>,<конец>,<куда> - Пересылка содержимого одной области в другую */
+// Команда T<начало>,<конец>,<куда>
+// Пересылка содержимого одной области в другую
 
 void CmdT() {
     ParseParams();
@@ -709,7 +809,8 @@ void CmdT() {
     }
 }
 
-/* M<адрес> - Просмотр или изменение содержимого ячейки (ячеек) памяти */
+// Команда M<адрес>
+// Просмотр или изменение содержимого ячейки (ячеек) памяти
 
 void CmdM() {
     ParseParams();
@@ -718,7 +819,7 @@ void CmdM() {
         PrintByteFromParam1();
         Input();
         if (flag_c) {
-            ParseDword();
+            ParseWord();
             a = l;
             hl = param1;
             *hl = a;
@@ -729,7 +830,8 @@ void CmdM() {
     }
 }
 
-/* J<адрес> - Запуск программы с указанного адреса */
+// Команда J<адрес>
+// Запуск программы с указанного адреса
 
 void CmdJ() {
     ParseParams();
@@ -737,7 +839,8 @@ void CmdJ() {
     return hl();
 }
 
-/* А<символ> - Вывод кода символа на экран */
+// Команда А<символ>
+// Вывод кода символа на экран
 
 void CmdA() {
     PrintLf();
@@ -745,18 +848,20 @@ void CmdA() {
     PrintLf();
 }
 
-/* K - Вывод символа с клавиатуры на экран */
+// Команда K
+// Вывод символа с клавиатуры на экран
 
 void CmdK() {
     for (;;) {
         ReadKey();
-        if (a == 1) /* УС + А */
+        if (a == 1)  // УС + А
             return Monitor();
         PrintCharA(a);
     }
 }
 
-/* Q<начало>,<конец> - Тестирование области памяти */
+// Команда Q<начало>,<конец>
+// Тестирование области памяти
 
 void CmdQ() {
     ParseParams();
@@ -790,7 +895,8 @@ void CmdQResult(...) {
     return;
 }
 
-/* L<начало>,<конец> - Посмотр области памяти в символьном виде */
+// Команда L<начало>,<конец>
+// Посмотр области памяти в символьном виде
 
 void CmdL() {
     ParseParams();
@@ -817,7 +923,8 @@ CmdLLine:
     }
 }
 
-/* H<число 1>,<число 2> - Сложение и вычитание чисел */
+// Команда H<число 1>,<число 2>
+// Сложение и вычитание чисел
 
 void CmdH(...) {
     hl = &param1;
@@ -829,10 +936,10 @@ void CmdH(...) {
 
     de = &cmdBuffer1;
 
-    ParseDword();
+    ParseWord();
     param1 = hl;
 
-    ParseDword();
+    ParseWord();
     param2 = hl;
 
     PrintLf();
@@ -859,7 +966,8 @@ void CmdH(...) {
     PrintLf();
 }
 
-/* I - Ввод информации с магнитной ленты */
+// Команда I
+// Ввод информации с магнитной ленты
 
 void CmdI() {
     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
@@ -897,7 +1005,8 @@ void CmdIEnd(...) {
     PrintLf();
 }
 
-/* O<начало>,<конец> - Вывод содержимого области памяти на магнитную ленту */
+// Команда O<начало>,<конец>
+// Вывод содержимого области памяти на магнитную ленту
 
 void CmdO() {
     ParseParams();
@@ -919,7 +1028,8 @@ void CmdO() {
     }
 }
 
-/* V - Сравнение информации на магнитной ленте с содержимым области памяти */
+// Команда V
+// Сравнение информации на магнитной ленте с содержимым области памяти
 
 void CmdV() {
     ReadTapeByte(a = READ_TAPE_FIRST_BYTE);
@@ -1094,7 +1204,7 @@ void PrintCharInt(...) {
         return MoveCursorHome();
 
     if ((a = h) == SCREEN_END >> 8) {
-        IsKeyPressed();
+        IsAnyKeyPressed();
         if (a != 0) {
             ReadKey();
         }
@@ -1142,9 +1252,9 @@ void MoveCursorRight(...) {
     hl++;
     if ((a = h) != SCREEN_END >> 8)
         return MoveCursor(hl);
-    if (flag_z) /* Not needed */
+    if (flag_z)  // Лишнее
         return MoveCursorHome();
-    MoveCursorLeft(hl); /* Not needed */
+    MoveCursorLeft(hl);  // Лишнее
 }
 
 void MoveCursorLeft(...) {
@@ -1189,7 +1299,7 @@ void MoveCursorNextLine1(...) {
     if ((a = h) != SCREEN_END >> 8)
         return MoveCursor(hl);
 
-    IsKeyPressed();
+    IsAnyKeyPressed();
     if (a == 0)
         return ClearScreen();
     ReadKey();
@@ -1226,22 +1336,22 @@ void ReadKey1(...) {
         b++;
     }
 
-    /* b - key number */
+    // b - key number
 
-    /*  0    0    1 !   2 "   3 #   4 $   5 %   6 &   7 ,
-     *  8   8 (   9 )   : *   ; +   , <   - =   . >   / ?
-     * 16   @ Ю   A А   B Б   C Ц   D Д   E Е   F Ф   G Г
-     * 24   H Х   I И   J Й   K К   L Л   M М   N Н   O О
-     * 32   P П   Q Я   R Р   S С   T Т   U У   V Ж   W В
-     * 40   X Ь   Y Ы   Z З   [ Ш   \ Э   ] Щ   ^ Ч    _
-     * 48   Space Right Left  Up    Down  Vk    Str   Home */
+    //  0    0    1 !   2 "   3 #   4 $   5 %   6 &   7 ,
+    //  8   8 (   9 )   : *   ; +   , <   - =   . >   / ?
+    // 16   @ Ю   A А   B Б   C Ц   D Д   E Е   F Ф   G Г
+    // 24   H Х   I И   J Й   K К   L Л   M М   N Н   O О
+    // 32   P П   Q Я   R Р   S С   T Т   U У   V Ж   W В
+    // 40   X Ь   Y Ы   Z З   [ Ш   \ Э   ] Щ   ^ Ч    _
+    // 48   Space Right Left  Up    Down  Vk    Str   Home
 
     a = b;
     if (a < 48) {
         a += '0';
         if (a >= 0x3C)
             if (a < 0x40)
-                a &= 0x2F; /* <=>? to .-./ */
+                a &= 0x2F;  // <=>? to .-./
         c = a;
     } else {
         hl = &keyTable;
@@ -1264,27 +1374,27 @@ void ReadKey1(...) {
     if (flag_nc)
         goto ReadKeyShift;
 
-    /* RUS key pressed */
+    // RUS key pressed
     a = c;
     a |= 0x20;
     return ReadKey2(a);
 
-    /* US (Control) key pressed */
+    // US (Control) key pressed
 ReadKeyControl:
     a = c;
     a &= 0x1F;
     return ReadKey2(a);
 
-    /* SS (Shift) key pressed */
+    // SS (Shift) key pressed
 ReadKeyShift:
     a = c;
-    if (a >= 0x40) /* @ A-Z [ \ ] ^ _ */
+    if (a >= 0x40)  // @ A-Z [ \ ] ^ _
         return ReadKey2(a);
-    if (a < 0x30) { /* .-./ to <=>? */
+    if (a < 0x30) {  // .-./ to <=>?
         a |= 0x10;
         return ReadKey2(a);
     }
-    a &= 0x2F; /* 0123456789:; to !@#$%&'()*+ */
+    a &= 0x2F;  // 0123456789:; to !@#$%&'()*+
     return ReadKey2(a);
 
 ReadKeyNoMods:
@@ -1317,23 +1427,25 @@ void ReadKeyDelay() {
 }
 
 uint8_t keyTable[] = {
-    0x20, /* Space */
-    0x18, /* Right */
-    0x08, /* Left */
-    0x19, /* Up */
-    0x1A, /* Down */
-    0x0D, /* Enter */
-    0x1F, /* Clear */
-    0x0C, /* Home */
+    0x20,  // Space
+    0x18,  // Right
+    0x08,  // Left
+    0x19,  // Up
+    0x1A,  // Down
+    0x0D,  // Enter
+    0x1F,  // Clear
+    0x0C,  // Home
 };
 
-void IsKeyPressed() {
+void IsAnyKeyPressed() {
     out(PORT_KEYBOARD_COLUMN, a = 0);
     a = in(PORT_KEYBOARD_ROW);
     a &= KEYBOARD_ROW_MASK;
     if (a == KEYBOARD_ROW_MASK) {
-        a ^= a; /* Returns 0 if no key is pressed */
+        a ^= a;  // Returns 0 if no key is pressed
         return;
     }
-    a = 0xFF; /* Returns 0xFF if there are any keys pressed */
+    a = 0xFF;  // Returns 0xFF if there are any keys pressed
 }
+
+asm(" savebin \"micro80.bin\", 0xF800, 0x10000");
