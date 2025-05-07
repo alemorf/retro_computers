@@ -154,7 +154,6 @@ void TranslateCodePageDefault(...);
 
 // Переменные Монитора
 
-extern uint8_t pressedKey __address(0xF759);
 extern uint16_t cursor __address(0xF75A);
 extern uint8_t tapeReadSpeed __address(0xF75C);
 extern uint8_t tapeWriteSpeed __address(0xF75D);
@@ -310,7 +309,7 @@ void Reboot(...) {
 asm(" .org 0xF86C");
 
 void EntryF86C_Monitor() {
-    return Monitor();
+    Monitor();
 }
 
 void Reboot2(...) {
@@ -1353,7 +1352,7 @@ void PrintChar3(...) {
     if (a != 27)
         return PrintChar4(hl, a);
     a = 1;
-    return PrintCharSetEscState();
+    PrintCharSetEscState();
 }
 
 void PrintCharBeep(...) {
@@ -1370,12 +1369,12 @@ void PrintCharBeep(...) {
         } while (flag_nz(d--));
     } while (flag_nz(c--));
 
-    return PrintCharExit();
+    PrintCharExit();
 }
 
 void MoveCursorCr(...) {
     l = ((a = l) &= ~(SCREEN_WIDTH - 1));
-    return PrintCharSaveCursor(hl);
+    PrintCharSaveCursor(hl);
 }
 
 void MoveCursorRight(...) {
@@ -1404,10 +1403,10 @@ void MoveCursorLf(...) {
     hl = SCREEN_BEGIN;
     bc = (SCREEN_BEGIN + SCREEN_WIDTH);
     do {
-        *hl = (a = *bc);
+        *hl = a = *bc;
         hl++;
         bc++;
-        *hl = (a = *bc);
+        *hl = a = *bc;
         hl++;
         bc++;
     } while (flag_m(compare(a = b, SCREEN_END >> 8)));
@@ -1422,7 +1421,7 @@ void MoveCursorLf(...) {
     hl = cursor;
     h = ((SCREEN_END >> 8) - 1);
     l = ((a = l) |= 192);
-    return PrintCharSaveCursor(hl);
+    PrintCharSaveCursor(hl);
 }
 
 void MoveCursorUp(...) {
@@ -1431,7 +1430,7 @@ void MoveCursorUp(...) {
 
 void MoveCursor(...) {
     hl += bc;
-    return MoveCursorBoundary(hl);
+    MoveCursorBoundary(hl);
 }
 
 void MoveCursorDown(...) {
@@ -1536,6 +1535,17 @@ void ScanKey2(...) {
             break;
         b++;
     }
+
+    /* b - key number */
+
+    /*  0    0    1 !   2 "   3 #   4 $   5 %   6 &   7 ,
+     *  8   8 (   9 )   : *   ; +   , <   - =   . >   / ?
+     * 16   @ Ю   A А   B Б   C Ц   D Д   E Е   F Ф   G Г
+     * 24   H Х   I И   J Й   K К   L Л   M М   N Н   O О
+     * 32   P П   Q Я   R Р   S С   T Т   U У   V Ж   W В
+     * 40   X Ь   Y Ы   Z З   [ Ш   \ Э   ] Щ   ^ Ч    _
+     * 48   Space Right Left  Up    Down  Vk    Str   Home */
+
     a = b;
     if (a >= 48)
         return ScanKeySpecial(a);
