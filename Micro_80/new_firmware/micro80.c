@@ -11,7 +11,11 @@ const int SCREEN_BEGIN = 0xE800;
 const int SCREEN_SIZE = 0x800;
 const int SCREEN_END = SCREEN_BEGIN + SCREEN_SIZE;
 const int SCREEN_WIDTH = 64;
-const int SCREEN_HEIGHT = 32;
+const int SCREEN_HEIGHT = 25;
+const int SCREEN_ATTRIB_DEFAULT = 0x27;
+const int SCREEN_ATTRIB_UNDERLINE = 1 << 7;
+const int SCREEN_ATTRIB_BLANK = 0x07;
+const int SCREEN_ATTRIB_INPUT = 0x23;
 
 // Порты ввода-вывода
 const int PORT_TAPE = 0x01;
@@ -33,6 +37,8 @@ const int KEYBOARD_US_MOD = 1 << 1;
 const int KEYBOARD_SHIFT_MOD = 1 << 2;
 const int KEYBOARD_COLUMN_COUNT = 8;
 const int KEYBOARD_ROW_COUNT = 7;
+const int KEYB_MODE_CAP = 1 << 0;
+const int KEYB_MODE_RUS = 1 << 1;
 
 // Константы магнитофона
 const int READ_TAPE_FIRST_BYTE = 0xFF;
@@ -57,7 +63,6 @@ extern uint16_t rst38Address __address(0x39);
 // Прототипы
 void Reboot(...);
 void EntryF86C_Monitor(...);
-void Reboot2(...);
 void Monitor(...);
 void Monitor2();
 void ReadStringBackspace(...);
@@ -78,10 +83,14 @@ void CtrlC(...);
 void PrintCrLfTab();
 void PrintHexByteFromHlSpace(...);
 void PrintHexByteSpace(...);
+#ifdef CMD_R_ENABLED
 void CmdR(...);
+#endif
 void GetRamTop(...);
 void SetRamTop(...);
+#ifdef CMD_A_ENABLED
 void CmdA(...);
+#endif
 void CmdD(...);
 void PrintSpacesTo(...);
 void PrintSpace();
@@ -147,13 +156,17 @@ void ReadKeyInternal(...);
 void ScanKey();
 void ScanKey2(...);
 void ScanKeyExit(...);
-void ScanKeyControl(...);
-void ScanKeyShift(...);
-void ScanKeySpecial(...);
+#ifdef CMD_A_ENABLED
 void TranslateCodePageDefault(...);
+#endif
+void PrintKeyStatus1(...);
+void PrintKeyStatus();
 
 // Переменные Монитора
 
+extern uint8_t keyCode __address(0xF757);
+extern uint8_t keyMode __address(0xF758);
+extern uint8_t color __address(0xF759);
 extern uint16_t cursor __address(0xF75A);
 extern uint8_t tapeReadSpeed __address(0xF75C);
 extern uint8_t tapeWriteSpeed __address(0xF75D);
@@ -174,17 +187,19 @@ extern uint16_t param2 __address(0xF777);
 extern uint16_t param3 __address(0xF779);
 extern uint8_t param2Exists __address(0xF77B);
 extern uint8_t tapePolarity __address(0xF77C);
+#ifdef CMD_A_ENABLED
 extern uint8_t translateCodeEnabled __address(0xF77D);
 extern uint8_t translateCodePageJump __address(0xF77E);
 extern uint16_t translateCodePageAddress __address(0xF77F);
+#endif
 extern uint16_t ramTop __address(0xF781);
 extern uint8_t inputBuffer[32] __address(0xF783);
 
-#define firstVariableAddress (&tapeWriteSpeed)
+#define firstVariableAddress (&keyMode)
 #define lastVariableAddress (&inputBuffer[sizeof(inputBuffer) - 1])
 
 extern uint8_t specialKeyTable[8];
-extern uint8_t aPrompt[6];
+extern uint8_t aPrompt[8];
 extern uint8_t aCrLfTab[6];
 extern uint8_t aRegisters[37];
 extern uint8_t aBackspace[4];
@@ -218,7 +233,13 @@ void EntryF80C_WriteTapeByte(...) {
 }
 
 void EntryF80F_TranslateCodePage(...) {
+#ifdef CMD_A_ENABLED
     TranslateCodePage(c);
+#else
+    return;
+    return;
+    return;
+#endif
 }
 
 void EntryF812_IsAnyKeyPressed() {
@@ -280,34 +301,23 @@ void Reboot(...) {
     // Очистка памяти
     hl = firstVariableAddress;
     de = lastVariableAddress;
-    bc = 0;
+    c = 0;
     CmdF();
 
+#ifdef CMD_A_ENABLED
     translateCodePageJump = a = OPCODE_JMP;
+#endif
+    ramTop = hl = SCREEN_ATTRIB_BEGIN - 1;
+    tapeReadSpeed = hl = TAPE_SPEED;
+#ifdef CMD_A_ENABLED
+    translateCodePageAddress = hl = &TranslateCodePageDefault;
+#endif
+    regSP = hl = 0xF7FE;
+    color = a = SCREEN_ATTRIB_DEFAULT;
 
     PrintString(hl = aHello);
 
-    // Проверка ОЗУ
-    hl = 0;
-    for (;;) {
-        c = *hl;
-        a = 0x55;
-        *hl = a;
-        a ^= *hl;
-        b = a;
-        a = 0xAA;
-        *hl = a;
-        a ^= *hl;
-        a |= b;
-        if (flag_nz)
-            return Reboot2();
-        *hl = c;
-        hl++;
-        if ((a = h) == SCREEN_ATTRIB_BEGIN >> 8)
-            return Reboot2();
-    }
-
-    Reboot2();
+    EntryF86C_Monitor();
 }
 
 asm(" .org 0xF86C");
@@ -316,19 +326,8 @@ void EntryF86C_Monitor() {
     Monitor();
 }
 
-void Reboot2(...) {
-    hl--;
-    ramTop = hl;
-    PrintHexWordSpace(hl);
-    tapeReadSpeed = hl = TAPE_SPEED;
-    translateCodePageAddress = hl = &TranslateCodePageDefault;
-    regSP = hl = 0xF7FE;
-    Monitor();
-}
-
 void Monitor() {
     out(PORT_KEYBOARD_MODE, a = 0x83);
-    cursorVisible = a;
     jmpParam1Opcode = a = OPCODE_JMP;
     Monitor2();
 }
@@ -336,7 +335,9 @@ void Monitor() {
 void Monitor2() {
     sp = STACK_TOP;
     PrintString(hl = aPrompt);
+    color = a = SCREEN_ATTRIB_INPUT;
     ReadString();
+    color = a = SCREEN_ATTRIB_DEFAULT;
 
     push(hl = &EntryF86C_Monitor);
 
@@ -376,12 +377,16 @@ void Monitor2() {
         return CmdO();
     if (a == 'W')
         return CmdW();
+#ifdef CMD_A_ENABLED
     if (a == 'A')
         return CmdA();
+#endif
     if (a == 'H')
         return CmdH();
+#ifdef CMD_R_ENABLED
     if (a == 'R')
         return CmdR();
+#endif
     return MonitorError();
 }
 
@@ -562,6 +567,7 @@ void PrintHexByteSpace(...) {
     }
 }
 
+#ifdef CMD_R_ENABLED
 // Команда R <начальный адрес ПЗУ> <конечный адрес ПЗУ> <начальный адрес назаначения>
 // Скопировать блок из внешнего ПЗУ в адресное пространство процессора
 
@@ -575,6 +581,7 @@ void CmdR(...) {
         Loop();
     }
 }
+#endif
 
 // Функция для пользовательской программы.
 // Получить адрес последнего доступного байта оперативной памяти.
@@ -592,12 +599,14 @@ void SetRamTop(...) {
     ramTop = hl;
 }
 
+#ifdef CMD_A_ENABLED
 // Команда A <адрес>
 // Установить программу преобразования кодировки символов выводимых на экран
 
 void CmdA(...) {
     translateCodePageAddress = hl;
 }
+#endif
 
 // Команда D <начальный адрес> <конечный адрес>
 // Вывод блока данных из адресного пространства на экран в 16-ричном виде
@@ -631,11 +640,8 @@ void CmdD(...) {
 
         do {
             a = *hl;
-            if (a < 127)
-                if (a >= 32)
-                    goto loc_fa49;
-            a = '.';
-        loc_fa49:
+            if (a < 32)
+                a = '.';
             PrintCharA(a);
             CompareHlDe(hl, de);
             if (flag_z)
@@ -1194,8 +1200,7 @@ void PrintCharA(...) {
 
 void PrintChar(...) {
     push(a, bc, de, hl);
-    IsAnyKeyPressed();
-    DrawCursor(b = 0);
+    DrawCursor();
     hl = cursor;
     a = escState;
     a--;
@@ -1236,7 +1241,7 @@ void PrintCharSaveCursor(...) {
 }
 
 void PrintCharExit(...) {
-    DrawCursor(b = 0xFF);
+    DrawCursor();
     pop(a, bc, de, hl);
 }
 
@@ -1244,8 +1249,10 @@ void DrawCursor(...) {
     if ((a = cursorVisible) == 0)
         return;
     hl = cursor;
-    hl += (de = -SCREEN_SIZE + 1);
-    *hl = b;
+    hl += (de = -SCREEN_SIZE);
+    a = *hl;
+    a ^= SCREEN_ATTRIB_UNDERLINE;
+    *hl = a;
 }
 
 void PrintCharEscY2(...) {
@@ -1293,6 +1300,7 @@ void PrintCharNoEsc(...) {
         a = in(PORT_KEYBOARD_MODS);
     } while (flag_z(a &= (KEYBOARD_US_MOD | KEYBOARD_SHIFT_MOD)));
 
+#ifdef CMD_A_ENABLED
     compare(a = 16, c);
     a = translateCodeEnabled;
     if (flag_z) {
@@ -1302,6 +1310,8 @@ void PrintCharNoEsc(...) {
     }
     if (a != 0)
         TranslateCodePage(c);
+#endif
+
     a = c;
     if (a == 31)
         return ClearScreen();
@@ -1312,23 +1322,34 @@ void PrintCharNoEsc(...) {
 
 void PrintChar4(...) {
     *hl = a;
-    hl++;
-    if (flag_m(compare(a = h, SCREEN_END >> 8)))
-        return PrintCharSaveCursor(hl);
-    PrintCrLf();
-    PrintCharExit();
+    push_pop(hl) {
+        hl += (de = -SCREEN_SIZE);
+        *hl = a = color;
+    }
+    MoveCursorRight(hl);
 }
 
-void ClearScreen(...) {
-    b = ' ';
-    a = SCREEN_END >> 8;
-    hl = SCREEN_ATTRIB_BEGIN;
+void ClearScreenInt() {
     do {
-        *hl = b;
-        hl++;
-        *hl = b;
-        hl++;
-    } while (a != h);
+        do {
+            *hl = 0;
+            hl++;
+            *de = a;
+            de++;
+        } while (flag_nz(c--));
+    } while (flag_nz(b--));
+}
+
+void ClearScreen() {
+    hl = SCREEN_BEGIN;
+    de = SCREEN_ATTRIB_BEGIN;
+    bc = 25 * SCREEN_WIDTH + 0x100;  // 25 строк
+    a = color;
+    ClearScreenInt();
+    a = SCREEN_ATTRIB_BLANK;
+    bc = 7 * SCREEN_WIDTH + 0x100;  // 7 строк
+    ClearScreenInt();
+    PrintKeyStatus();
     MoveCursorHome();
 }
 
@@ -1342,7 +1363,7 @@ void PrintChar3(...) {
     if (a == 13)
         return MoveCursorCr(hl);
     if (a == 10)
-        return MoveCursorLf(hl);
+        return MoveCursorDown(hl);
     if (a == 8)
         return MoveCursorLeft(hl);
     if (a == 24)
@@ -1350,7 +1371,11 @@ void PrintChar3(...) {
     if (a == 25)
         return MoveCursorUp(hl);
     if (a == 7)
+#ifdef BEEP_ENABLED
         return PrintCharBeep();
+#else
+        return PrintCharExit();
+#endif
     if (a == 26)
         return MoveCursorDown();
     if (a != 27)
@@ -1359,6 +1384,7 @@ void PrintChar3(...) {
     PrintCharSetEscState();
 }
 
+#ifdef BEEP_ENABLED
 void PrintCharBeep(...) {
     c = 128;  // Длительность
     e = 32;   // Частота
@@ -1375,6 +1401,7 @@ void PrintCharBeep(...) {
 
     PrintCharExit();
 }
+#endif
 
 void MoveCursorCr(...) {
     l = ((a = l) &= ~(SCREEN_WIDTH - 1));
@@ -1388,44 +1415,48 @@ void MoveCursorRight(...) {
 
 void MoveCursorBoundary(...) {
     a = h;
-    a &= 7;
-    a |= SCREEN_BEGIN >> 8;
-    h = a;
-    return PrintCharSaveCursor(hl);
+    if (a == (SCREEN_BEGIN >> 8) - 1) {
+        hl += (de = SCREEN_WIDTH * SCREEN_HEIGHT);
+        return PrintCharSaveCursor(hl);
+    }
+
+    swap(hl, de);
+    hl = -(SCREEN_BEGIN + SCREEN_WIDTH * (SCREEN_HEIGHT + 0));
+    hl += de;
+    swap(hl, de);
+    if (flag_c) {
+        push_pop(hl) {
+            // Scroll up
+            hl = SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_HEIGHT - 1;
+            c = SCREEN_WIDTH;
+            do {
+                push_pop(hl) {
+                    de = SCREEN_SIZE - SCREEN_WIDTH;
+                    b = 0;
+                    c = a = color;
+                    do {
+                        a = b;
+                        b = *hl;
+                        *hl = a;
+                        h = ((a = h) -= 8);
+                        a = c;
+                        c = *hl;
+                        *hl = a;
+                        hl += de;
+                    } while ((a = h) != 0xE7);
+                }
+                l--;
+            } while ((a = l) != SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_HEIGHT - 1 - SCREEN_WIDTH);
+        }
+        hl += (de = -SCREEN_WIDTH);
+    }
+
+    PrintCharSaveCursor(hl);
 }
 
 void MoveCursorLeft(...) {
     hl--;
     return MoveCursorBoundary(hl);
-}
-
-void MoveCursorLf(...) {
-    hl += (bc = SCREEN_WIDTH);
-    if (flag_m(compare(a = h, SCREEN_END >> 8)))
-        return PrintCharSaveCursor(hl);
-
-    hl = SCREEN_BEGIN;
-    bc = (SCREEN_BEGIN + SCREEN_WIDTH);
-    do {
-        *hl = a = *bc;
-        hl++;
-        bc++;
-        *hl = a = *bc;
-        hl++;
-        bc++;
-    } while (flag_m(compare(a = b, SCREEN_END >> 8)));
-    a = SCREEN_END >> 8;
-    c = ' ';
-    do {
-        *hl = c;
-        hl++;
-        *hl = c;
-        hl++;
-    } while (a != h);
-    hl = cursor;
-    h = ((SCREEN_END >> 8) - 1);
-    l = ((a = l) |= 192);
-    PrintCharSaveCursor(hl);
 }
 
 void MoveCursorUp(...) {
@@ -1467,37 +1498,56 @@ void IsAnyKeyPressed() {
 // Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
 
 void ReadKey() {
-    push_pop(hl) {
-        hl = keyDelay;
-        ReadKeyInternal(hl);
-        l = 32;         // Задержка повтора нажатия клавиши
-        if (flag_nz) {  // Не таймаут
-            do {
+    push_pop(bc, de, hl) {
+    retry:
+        do {
+            hl = keyDelay;
+            ReadKeyInternal(hl);
+            l = 32;         // Задержка повтора нажатия клавиши
+            if (flag_nz) {  // Не таймаут
                 do {
                     l = 2;
                     ReadKeyInternal(hl);
                 } while (flag_nz);  // Цикл длится, пока не наступит таймаут
-            } while (a >= 128);     // Цикл длится, пока не нажата клавиша
-            l = 128;                // Задержка повтора первого нажатия клавиши
+                l = 128;            // Задержка повтора первого нажатия клавиши
+            }
+            keyDelay = hl;
+            a++;
+        } while (flag_z);  // Цикл длится, пока не нажата клавиша
+
+        // Переключение Рус/Лат, Заг/Стр
+        a++;
+        if (flag_z) {
+            a = in(PORT_KEYBOARD_MODS);
+            carry_rotate_right(a, 3); /* Shift */
+            a = KEYB_MODE_CAP;
+            carry_add(a, 0); /* KEYB_MODE_CAP -> KEYB_MODE_RUS */
+            hl = &keyMode;
+            a ^= *hl;
+            *hl = a;
+            PrintKeyStatus();
+            goto retry;
         }
-        keyDelay = hl;
+
+        a = c;
     }
 }
 
 void ReadKeyInternal(...) {
     do {
         ScanKey();
+        c = a;
+        a = keyCode;
         if (a != h)
             break;
 
         // Задержка
-        push_pop(a) {
-            a ^= a;
-            do {
-                swap(hl, de);
-                swap(hl, de);
-            } while (flag_nz(a--));
-        }
+        a ^= a;
+        do {
+            swap(hl, de);
+            swap(hl, de);
+        } while (flag_nz(a--));
+        a = h;
     } while (flag_nz(l--));
     h = a;
 }
@@ -1525,10 +1575,10 @@ void ScanKey() {
 
     a = in(PORT_KEYBOARD_MODS);
     carry_rotate_right(a, 1);
-    a = 0xFF;  // Клавиша не нажата
-    if (flag_c)
-        return ScanKeyExit(a);
-    a--;  // Рус/Лат
+    a = 0xFE;         // Рус/Лат
+    carry_add(a, 0);  // Клавиша не нажата
+
+    keyCode = a;
     ScanKeyExit(a);
 }
 
@@ -1551,8 +1601,15 @@ void ScanKey2(...) {
      * 48   Space Right Left  Up    Down  Vk    Str   Home */
 
     a = b;
-    if (a >= 48)
-        return ScanKeySpecial(a);
+    keyCode = a;
+
+    if (a >= 48) {
+        h = (uintptr_t)specialKeyTable >> 8;
+        l = (a += (uintptr_t)specialKeyTable - 48);
+        a = *hl;
+        return ScanKeyExit(a);
+    }
+
     a += 48;
     if (a >= 60)
         if (a < 64)
@@ -1562,54 +1619,58 @@ void ScanKey2(...) {
         a = 127;
 
     c = a;
-    a = in(PORT_KEYBOARD_MODS);
-    a &= KEYBOARD_MODS_MASK;
-    compare(a, KEYBOARD_MODS_MASK);
-    b = a;
-    a = c;
-    if (flag_z)
-        return ScanKeyExit(a);
-    a = b;
+
+    a = keyMode;
     carry_rotate_right(a, 2);
-    if (flag_nc)
-        return ScanKeyControl(c);
+    if (flag_c) {  // Рус/Лат
+        a = c;
+        a |= 0x20;
+        c = a;
+    }
+
+    a = in(PORT_KEYBOARD_MODS);
+    carry_rotate_right(a, 2);
+    if (flag_nc) {  // Ус
+        a = c;
+        a &= 0x1F;
+        return ScanKeyExit(a);
+    }
+
     carry_rotate_right(a, 1);
-    if (flag_nc)
-        return ScanKeyShift();
-    (a = c) |= 0x20;
+    a = c;
+    if (flag_nc) {  // Шифт
+        if (a == 127)
+            a = 95;
+        a ^= 0x10;
+        if (a >= 0x40)
+            a ^= 0x80 | 0x10;
+    }
+    c = a;
+
+    a = keyMode;
+    cyclic_rotate_right(a, 1);  // Заг/Стр
+    if (flag_c) {
+        a = c;
+        a &= 0x7F;
+        if (a >= 0x60)  // Кириллица
+            goto convert;
+        if (a >= 'A') {
+            if (a < 'Z' + 1) {
+            convert:
+                a = c;
+                a ^= 0x80;
+                c = a;
+            }
+        }
+    }
+
+    a = c;
+
     ScanKeyExit(a);
 }
 
 void ScanKeyExit(...) {
     pop(bc, de, hl);
-}
-
-void ScanKeyControl(...) {
-    a = c;
-    a &= 0x1F;
-    return ScanKeyExit(a);
-}
-
-void ScanKeyShift(...) {
-    if ((a = c) == 127)
-        a = 95;
-    if (a >= 64)
-        return ScanKeyExit();
-    if (a < 48) {
-        a |= 16;
-        return ScanKeyExit();
-    }
-    a &= 47;
-    return ScanKeyExit();
-}
-
-void ScanKeySpecial(...) {
-    hl = specialKeyTable;
-    c = (a -= 48);
-    b = 0;
-    hl += bc;
-    a = *hl;
-    return ScanKeyExit(a);
 }
 
 uint8_t specialKeyTable[] = {
@@ -1623,17 +1684,45 @@ uint8_t specialKeyTable[] = {
     0x0C,  // Home
 };
 
-uint8_t aPrompt[6] = "\r\n-->";
-uint8_t aCrLfTab[6] = "\r\n\x18\x18\x18";
+uint8_t aPrompt[] = "\r\n\x1B\x62-->";
+uint8_t aCrLfTab[] = "\r\n\x18\x18\x18";
 uint8_t aRegisters[] = "\r\nPC-\r\nHL-\r\nBC-\r\nDE-\r\nSP-\r\nAF-\x19\x19\x19\x19\x19\x19";
-uint8_t aBackspace[4] = "\x08 \x08";
-uint8_t aHello[] = "\x1F\nm/80k ";
+uint8_t aBackspace[] = "\x08 \x08";
+uint8_t aHello[] = "\x1F\x1B\x62m/80k";
 
+#ifdef CMD_A_ENABLED
 void TranslateCodePageDefault(...) {
 }
+#endif
 
-uint8_t padding[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+extern uint8_t aZag[6];
+extern uint8_t aLat[6];
+
+void PrintKeyStatus() {
+    bc = SCREEN_BEGIN + 56 + 31 * SCREEN_WIDTH;
+    a = keyMode;
+    hl = &aZag;
+    PrintKeyStatus1(a, bc, hl);
+    bc++;
+    l = &aLat;  // Оптимизация hl = &aLat;
+    PrintKeyStatus1(a, bc, hl);
+}
+
+void PrintKeyStatus1(...) {
+    de = 3;  // Размер строки
+    cyclic_rotate_right(a, 1);
+    if (flag_c)
+        hl += de;
+    d = a;
+    do {
+        *bc = a = *hl;
+        bc++;
+        hl++;
+    } while (flag_nz(e--));
+    a = d;
+}
+
+uint8_t aZag[] = {'z', 'a' | 0x80, 'g' | 0x80, 's', 't' | 0x80, 'r' | 0x80};
+uint8_t aLat[] = {'l', 'a' | 0x80, 't' | 0x80, 'r', 'u' | 0x80, 's' | 0x80};
 
 asm(" savebin \"micro80.bin\", 0xF800, 0x10000");
