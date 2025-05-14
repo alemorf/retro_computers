@@ -2,6 +2,7 @@
 // Реверc-инженеринг 1-05-2025 Алексей Морозов aleksey.f.morozov@gmail.com
 
 #include "cmm.h"
+#include <codepage/koi7.h>
 
 asm(" .org 0xF800");
 
@@ -151,6 +152,7 @@ void ScanKeyControl(...);
 void ScanKeyShift(...);
 void ScanKeySpecial(...);
 void TranslateCodePageDefault(...);
+void TryScrollUp(...);
 
 // Переменные Монитора
 
@@ -655,7 +657,7 @@ void PrintSpacesTo(...) {
 }
 
 void PrintSpace() {
-    return PrintCharA(a = ' ');
+    PrintCharA(a = ' ');
 }
 
 // Команда С <начальный адрес 1> <конечный адрес 1> <начальный адрес 2>
@@ -762,7 +764,7 @@ void CmdG(...) {
     pop(a);
     sp = hl;
     hl = regHL;
-    return JmpParam1();
+    JmpParam1();
 }
 
 void BreakPointHandler(...) {
@@ -1391,16 +1393,20 @@ void MoveCursorBoundary(...) {
     a &= 7;
     a |= SCREEN_BEGIN >> 8;
     h = a;
-    return PrintCharSaveCursor(hl);
+    PrintCharSaveCursor(hl);
 }
 
 void MoveCursorLeft(...) {
     hl--;
-    return MoveCursorBoundary(hl);
+    MoveCursorBoundary(hl);
 }
 
 void MoveCursorLf(...) {
     hl += (bc = SCREEN_WIDTH);
+    TryScrollUp(hl);
+}
+
+void TryScrollUp(...) {
     if (flag_m(compare(a = h, SCREEN_END >> 8)))
         return PrintCharSaveCursor(hl);
 
@@ -1591,16 +1597,17 @@ void ScanKeyControl(...) {
 }
 
 void ScanKeyShift(...) {
-    if ((a = c) == 127)
+    a = c;
+    if (a == 127)
         a = 95;
     if (a >= 64)
-        return ScanKeyExit();
+        return ScanKeyExit(a);
     if (a < 48) {
         a |= 16;
-        return ScanKeyExit();
+        return ScanKeyExit(a);
     }
     a &= 47;
-    return ScanKeyExit();
+    ScanKeyExit();
 }
 
 void ScanKeySpecial(...) {
@@ -1609,7 +1616,7 @@ void ScanKeySpecial(...) {
     b = 0;
     hl += bc;
     a = *hl;
-    return ScanKeyExit(a);
+    ScanKeyExit(a);
 }
 
 uint8_t specialKeyTable[] = {
@@ -1623,11 +1630,11 @@ uint8_t specialKeyTable[] = {
     0x0C,  // Home
 };
 
-uint8_t aPrompt[6] = "\r\n-->";
-uint8_t aCrLfTab[6] = "\r\n\x18\x18\x18";
+uint8_t aPrompt[] = "\r\n-->";
+uint8_t aCrLfTab[] = "\r\n\x18\x18\x18";
 uint8_t aRegisters[] = "\r\nPC-\r\nHL-\r\nBC-\r\nDE-\r\nSP-\r\nAF-\x19\x19\x19\x19\x19\x19";
-uint8_t aBackspace[4] = "\x08 \x08";
-uint8_t aHello[] = "\x1F\nm/80k ";
+uint8_t aBackspace[] = "\x08 \x08";
+uint8_t aHello[] = "\x1F\nМ/80К ";
 
 void TranslateCodePageDefault(...) {
 }
