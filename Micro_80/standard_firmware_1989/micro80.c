@@ -384,7 +384,7 @@ void Monitor2() {
         return CmdH();
     if (a == 'R')
         return CmdR();
-    return MonitorError();
+    MonitorError();
 }
 
 void ReadStringBackspace(...) {
@@ -394,7 +394,7 @@ void ReadStringBackspace(...) {
         PrintString(hl = aBackspace);
     }
     hl--;
-    return ReadStringLoop(b, hl);
+    ReadStringLoop(b, hl);
 }
 
 void ReadString() {
@@ -1119,7 +1119,7 @@ void ReadTapeByteTimeout(...) {
     if (flag_p((a = d) |= a))
         return MonitorError();
     CtrlC();
-    return ReadTapeByteInternal();
+    ReadTapeByteInternal();
 }
 
 // Функция для пользовательской программы.
@@ -1266,7 +1266,7 @@ void PrintCharEscY2(...) {
 
 void PrintCharResetEscState(...) {
     a ^= a;
-    return PrintCharSetEscState();
+    PrintCharSetEscState();
 }
 
 void PrintCharEsc(...) {
@@ -1286,7 +1286,7 @@ void PrintCharEsc(...) {
 
 void SetCursorVisible(...) {
     cursorVisible = a;
-    return PrintCharResetEscState();
+    PrintCharResetEscState();
 }
 
 void PrintCharNoEsc(...) {
@@ -1335,7 +1335,7 @@ void ClearScreen(...) {
 }
 
 void MoveCursorHome(...) {
-    return PrintCharSaveCursor(hl = SCREEN_BEGIN);
+    PrintCharSaveCursor(hl = SCREEN_BEGIN);
 }
 
 void PrintChar3(...) {
@@ -1593,7 +1593,7 @@ void ScanKeyExit(...) {
 void ScanKeyControl(...) {
     a = c;
     a &= 0x1F;
-    return ScanKeyExit(a);
+    ScanKeyExit(a);
 }
 
 void ScanKeyShift(...) {

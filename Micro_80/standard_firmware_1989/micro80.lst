@@ -497,7 +497,7 @@
 0497   F8FA FE 52       	cp 82
 0498   F8FC             ; 386         return CmdR();
 0499   F8FC CA E6 F9    	jp z, cmdr
-0500   F8FF             ; 387     return MonitorError();
+0500   F8FF             ; 387     MonitorError();
 0501   F8FF C3 B2 FB    	jp monitorerror
 0502   F902             ; 388 }
 0503   F902             ; 389 
@@ -517,7 +517,7 @@
 0517   F910             ; 395     }
 0518   F910             ; 396     hl--;
 0519   F910 2B          	dec hl
-0520   F911             ; 397     return ReadStringLoop(b, hl);
+0520   F911             ; 397     ReadStringLoop(b, hl);
 0521   F911 C3 19 F9    	jp readstringloop
 0522   F914             ; 398 }
 0523   F914             ; 399 
@@ -1852,7 +1852,7 @@
 1852   FCD4 F2 B2 FB    	jp p, monitorerror
 1853   FCD7             ; 1121     CtrlC();
 1854   FCD7 CD CA F9    	call ctrlc
-1855   FCDA             ; 1122     return ReadTapeByteInternal();
+1855   FCDA             ; 1122     ReadTapeByteInternal();
 1856   FCDA C3 78 FC    	jp readtapebyteinternal
 1857   FCDD             ; 1123 }
 1858   FCDD             ; 1124 
@@ -2139,7 +2139,7 @@
 2139   FD9C             printcharresetescstate: 
 2140   FD9C             ; 1268     a ^= a;
 2141   FD9C AF          	xor a
-2142   FD9D             ; 1269     return PrintCharSetEscState();
+2142   FD9D             ; 1269     PrintCharSetEscState();
 2143   FD9D C3 67 FD    	jp printcharsetescstate
 2144   FDA0             ; 1270 }
 2145   FDA0             ; 1271 
@@ -2176,7 +2176,7 @@
 2176   FDB9             setcursorvisible: 
 2177   FDB9             ; 1288     cursorVisible = a;
 2178   FDB9 32 5E F7    	ld (cursorvisible), a
-2179   FDBC             ; 1289     return PrintCharResetEscState();
+2179   FDBC             ; 1289     PrintCharResetEscState();
 2180   FDBC C3 9C FD    	jp printcharresetescstate
 2181   FDBF             ; 1290 }
 2182   FDBF             ; 1291 
@@ -2267,7 +2267,7 @@
 2267   FE00             ; 1336 
 2268   FE00             ; 1337 void MoveCursorHome(...) {
 2269   FE00             movecursorhome: 
-2270   FE00             ; 1338     return PrintCharSaveCursor(hl = SCREEN_BEGIN);
+2270   FE00             ; 1338     PrintCharSaveCursor(hl = SCREEN_BEGIN);
 2271   FE00 21 00 E8    	ld hl, 59392
 2272   FE03 C3 6A FD    	jp printcharsavecursor
 2273   FE06             ; 1339 }
@@ -2761,7 +2761,7 @@
 2761   FF68 79          	ld a, c
 2762   FF69             ; 1595     a &= 0x1F;
 2763   FF69 E6 1F       	and 31
-2764   FF6B             ; 1596     return ScanKeyExit(a);
+2764   FF6B             ; 1596     ScanKeyExit(a);
 2765   FF6B C3 64 FF    	jp scankeyexit
 2766   FF6E             ; 1597 }
 2767   FF6E             ; 1598 

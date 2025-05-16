@@ -497,7 +497,7 @@ monitor2:
 	cp 82
 ; 386         return CmdR();
 	jp z, cmdr
-; 387     return MonitorError();
+; 387     MonitorError();
 	jp monitorerror
 ; 388 }
 ; 389 
@@ -517,7 +517,7 @@ readstringbackspace:
 ; 395     }
 ; 396     hl--;
 	dec hl
-; 397     return ReadStringLoop(b, hl);
+; 397     ReadStringLoop(b, hl);
 	jp readstringloop
 ; 398 }
 ; 399 
@@ -1852,7 +1852,7 @@ readtapebytetimeout:
 	jp p, monitorerror
 ; 1121     CtrlC();
 	call ctrlc
-; 1122     return ReadTapeByteInternal();
+; 1122     ReadTapeByteInternal();
 	jp readtapebyteinternal
 ; 1123 }
 ; 1124 
@@ -2139,7 +2139,7 @@ l_120:
 printcharresetescstate:
 ; 1268     a ^= a;
 	xor a
-; 1269     return PrintCharSetEscState();
+; 1269     PrintCharSetEscState();
 	jp printcharsetescstate
 ; 1270 }
 ; 1271 
@@ -2176,7 +2176,7 @@ l_125:
 setcursorvisible:
 ; 1288     cursorVisible = a;
 	ld (cursorvisible), a
-; 1289     return PrintCharResetEscState();
+; 1289     PrintCharResetEscState();
 	jp printcharresetescstate
 ; 1290 }
 ; 1291 
@@ -2267,7 +2267,7 @@ l_133:
 ; 1336 
 ; 1337 void MoveCursorHome(...) {
 movecursorhome:
-; 1338     return PrintCharSaveCursor(hl = SCREEN_BEGIN);
+; 1338     PrintCharSaveCursor(hl = SCREEN_BEGIN);
 	ld hl, 59392
 	jp printcharsavecursor
 ; 1339 }
@@ -2761,7 +2761,7 @@ scankeycontrol:
 	ld a, c
 ; 1595     a &= 0x1F;
 	and 31
-; 1596     return ScanKeyExit(a);
+; 1596     ScanKeyExit(a);
 	jp scankeyexit
 ; 1597 }
 ; 1598 
