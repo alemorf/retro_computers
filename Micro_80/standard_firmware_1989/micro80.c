@@ -1,5 +1,6 @@
-// Прошивка компьютера Микро 80 из журнала Радио за 1989 год
-// Реверc-инженеринг 1-05-2025 Алексей Морозов aleksey.f.morozov@gmail.com
+// Firmware for Micro 80 computer from Radio magazine 1989
+// Reverse engneering 1-05-2025 Alexey Morozov aleksey.f.morozov@gmail.com
+// License: Apache License Version 2.0
 
 #include "cmm.h"
 #include <codepage/koi7.h>

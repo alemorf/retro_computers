@@ -1,7 +1,9 @@
-// Прошивка компьютера Микро 80 из журнала Радио за 1983 год
-// Реверc-инженеринг 3-05-2025 Алексей Морозов aleksey.f.morozov@gmail.com
+// Firmware for Micro 80 computer from Radio magazine 1983
+// Reverse engneering 1-05-2025 Alexey Morozov aleksey.f.morozov@gmail.com
+// License: Apache License Version 2.0
 
 #include "cmm.h"
+#include <codepage/koi7.h>
 
 asm(" .org 0xF800");
 
@@ -1167,7 +1169,7 @@ uint8_t monitorCommandsH = 'H';
 uint16_t monitorCommandsHa = (uintptr_t)&CmdH;
 uint8_t monitorCommandsEnd = 0;
 
-uint8_t aPrompt[] = "\x0A*MikrO/80* MONITOR\x0A>";
+uint8_t aPrompt[] = "\x0A*MИКРO/80* MONITOR\x0A>";
 uint8_t aLf[] = "\x0A";
 
 void PrintCharA(...) {
