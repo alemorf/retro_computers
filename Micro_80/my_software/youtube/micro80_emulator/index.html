@@ -1,0 +1,30 @@
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<style>
+#video {
+    width: 1024px;
+    height: 640px;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -o-crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+</style>
+</head>
+<body>
+<a href="javascript:reset()">Сброс</a>
+ | <a href="javascript:loadBasic80()">Загрузить Байсик</a>
+ | <a href="javascript:loadFile()">Загрузить файл</a><br>
+<canvas width=512 height=320 id="video"></canvas>
+<script src="i8080.js"></script>
+<script src="micro80bios.js"></script>
+<script src="micro80font.js"></script>
+<script src="micro80video.js"></script>
+<script src="micro80keyboard.js"></script>
+<script src="micro80screenkeyboard.js"></script>
+<script src="filetools.js"></script>
+<script src="basic80.js"></script>
+<script src="micro80.js"></script>
+</body>
+</html>

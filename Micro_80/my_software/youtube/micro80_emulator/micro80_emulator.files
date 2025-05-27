@@ -1,0 +1,16 @@
+Makefile
+font.bin
+i8080.js
+index.html
+micro80.bin
+micro80.js
+micro80_emulator.cflags
+micro80_emulator.creator
+micro80_emulator.creator.user
+micro80_emulator.cxxflags
+micro80_emulator.files
+micro80_emulator.includes
+micro80bios.js
+micro80font.js
+micro80keyboard.js
+micro80video.js
