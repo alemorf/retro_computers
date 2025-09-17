@@ -6,7 +6,7 @@
 #include "cmm.h"
 #include <codepage/koi7.h>
 
-#define BEEP_ENABLED
+//#define BEEP_ENABLED
 //#define CMD_R_ENABLED
 
 asm(" .org 0xF800");
@@ -18,8 +18,7 @@ const int SCREEN_SIZE = 0x800;
 const int SCREEN_END = SCREEN_BEGIN + SCREEN_SIZE;
 const int SCREEN_WIDTH = 64;
 const int SCREEN_HEIGHT = 25;
-const int SCREEN_ATTRIB_DEFAULT = 0x27;
-const int SCREEN_ATTRIB_INPUT = 0x23;
+const int SCREEN_ATTRIB_DEFAULT = 0x17;
 const int SCREEN_ATTRIB_BLANK = 0x07;
 const int SCREEN_ATTRIB_UNDERLINE = 1 << 7;
 
@@ -154,6 +153,7 @@ void MoveCursorUp(...);
 void MoveCursor(...);
 void MoveCursorDown(...);
 void IsAnyKeyPressed();
+void IsAnyKeyPressed2();
 void ReadKey();
 void ReadKeyInternal(...);
 void ScanKey();
@@ -171,6 +171,7 @@ void PrintKeyStatus();
 
 // Переменные Монитора
 
+extern uint8_t keyBuffer __address(0xF756);
 extern uint8_t keyCode __address(0xF757);
 extern uint8_t keyboardMode __address(0xF758);
 extern uint8_t color __address(0xF759);
@@ -180,6 +181,7 @@ extern uint8_t tapeWriteSpeed __address(0xF75D);
 extern uint8_t cursorVisible __address(0xF75E);
 extern uint8_t escState __address(0xF75F);
 extern uint16_t keyDelay __address(0xF760);
+extern uint16_t keyLast __address(0xF761);
 extern uint16_t regPC __address(0xF762);
 extern uint16_t regHL __address(0xF764);
 extern uint16_t regBC __address(0xF766);
@@ -202,7 +204,7 @@ extern uint16_t translateCodePageAddress __address(0xF77F);
 extern uint16_t ramTop __address(0xF781);
 extern uint8_t inputBuffer[32] __address(0xF783);
 
-#define firstVariableAddress (&keyboardMode)
+#define firstVariableAddress (&keyBuffer)
 #define lastVariableAddress (&inputBuffer[sizeof(inputBuffer) - 1])
 
 extern uint8_t specialKeyTable[9];
@@ -301,13 +303,7 @@ void EntryF833_SetRamTop(...) {
     SetRamTop(hl);
 }
 
-// Инициализация. Выполняется после перезагрузки или пользовательской программой.
-// Параметры: нет. Функция никогда не завершается.
-
-void Reboot(...) {
-    disable_interrupts();
-    sp = STACK_TOP;
-
+void EntryF836_InitMonitor(...) {
     // Очистка памяти
     hl = firstVariableAddress;
     de = lastVariableAddress;
@@ -326,8 +322,20 @@ void Reboot(...) {
 #ifdef CMD_A_ENABLED
     translateCodePageAddress = hl = &TranslateCodePageDefault;
 #endif
-    regSP = hl = 0xF7FE;
-    EntryF86C_Monitor();
+    regSP = hl = STACK_TOP - 2;
+    
+    out(PORT_KEYBOARD_MODE, a = 0x83);
+}
+
+// Инициализация. Выполняется после перезагрузки или пользовательской программой.
+// Параметры: нет. Функция никогда не завершается.
+
+void Reboot(...) {
+    disable_interrupts();
+    sp = STACK_TOP;
+    EntryF836_InitMonitor();
+    asm(" nop");
+    asm(" nop");
 }
 
 asm(" .org 0xF86C");
@@ -1488,38 +1496,48 @@ void MoveCursorDown(...) {
 }
 
 // Функция для пользовательской программы.
+// 1) Эта функция вызывается из CP/M при выводе каждого символа.
+// 2) Эта функция вызывается из игры Zork перед вызовом ReadKey
 // Нажата ли хотя бы одна клавиша на клавиатуре?
 // Параметры: нет. Результат:  a - 0xFF если клавиша нажата, 0 если нет. Сохраняет: bc, de, hl.
 
+void IsAnyKeyPressed3();
+
 void IsAnyKeyPressed() {
-    out(PORT_KEYBOARD_COLUMN, a ^= a);
-    a = in(PORT_KEYBOARD_ROW);
-    invert(a);
-    a += a;
-    if (flag_z)
+    // Если ли клавиша в буфере
+    IsAnyKeyPressed3();
+    if (flag_nz)
         return;
-    a = 0xFF;
+    
+    // Если при прошлом вызове была нажата клавиша
+    a = keyLast;
+    a++;
+    if (flag_nz) {
+        // Если клавиша все еще нажата
+        out(PORT_KEYBOARD_COLUMN, a ^= a);
+        a = in(PORT_KEYBOARD_ROW);
+        invert(a);
+        a += a;
+        // Выход с кодом 0, если клавиша все еще нажата 
+        a = 0;
+        if (flag_nz)
+            return;
+    }
+    
+    IsAnyKeyPressed2();
 }
 
-// Функция для пользовательской программы.
-// Получить код нажатой клавиши на клавиатуре.
-// В отличии от функции ScanKey, в этой функции есть задержка повтора.
-// Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
-
-void ReadKey() {
+void IsAnyKeyPressed2() {
     push_pop(bc, de, hl) {
-retry:
         hl = keyDelay;
         ReadKeyInternal(hl);
-        l = 32;         // Задержка повтора нажатия клавиши
-        if (flag_nz) {  // Не таймаут
-            do {
-                do {
-                    l = 2;
-                    ReadKeyInternal(hl);
-                } while (flag_nz);  // Цикл длится, пока не наступит таймаут
-            } while (a == 255);     // Цикл длится, пока не нажата клавиша
-            l = 128;                // Задержка повтора первого нажатия клавиши
+        l = 32; // Задержка повтора нажатия клавиши
+        if (flag_nz) { // Это было первое нажатие клавиши. Антидребезг.
+            l = 2;
+            ReadKeyInternal(hl);
+            if (flag_nz)
+                a = 0xFF;
+            l = 128; // Задержка повтора первого нажатия клавиши
         }
         keyDelay = hl;
 
@@ -1532,10 +1550,19 @@ retry:
             a ^= *hl;
             *hl = a;
             PrintKeyStatus();
-            goto retry;
+        } else {
+            a = c;
+            a++;
+            keyBuffer = a;
         }
-        a = c;
     }
+    IsAnyKeyPressed3();
+}
+
+void IsAnyKeyPressed3() {
+    a = keyBuffer;
+    a += 0xFF;
+    carry_sub(a, a);
 }
 
 void ReadKeyInternal(...) {
@@ -1543,20 +1570,42 @@ void ReadKeyInternal(...) {
         ScanKey();
         c = a;
         a = keyCode;
-        if (a != h)
-            break;
-
+        compare(a, h);
+        h = a;
+        if (flag_nz) // Нажата другая клавиша
+            return;
+        if (a == 0xFF)
+            return; // Ни одна клавиша не нажата
+        
         // Задержка
-        a ^= a;
+        b = 0;
         do {
             swap(hl, de);
             swap(hl, de);
-        } while (flag_nz(a--));
-        a = h;
+        } while (flag_nz(b--));
     } while (flag_nz(l--));
-    h = a;
 }
 
+
+// Функция для пользовательской программы.
+// Получить код нажатой клавиши на клавиатуре.
+// В отличии от функции ScanKey, в этой функции есть задержка повтора.
+// Параметры: нет. Результат: a. Сохраняет: bc, de, hl.
+
+void ReadKey() {
+    push_pop(hl) {
+        hl = &keyBuffer;
+        for (;;) {
+            a = *hl;
+            if (a != 0)
+                break;
+            IsAnyKeyPressed2();
+        }
+        *hl = 0;
+        a--;
+    }
+}
+    
 // Функция для пользовательской программы.
 // Получить код нажатой клавиши на клавиатуре.
 // Параметры: нет. Результат: a. Сохраняет: bc, de, hl.

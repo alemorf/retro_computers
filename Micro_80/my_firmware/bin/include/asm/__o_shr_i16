@@ -1,0 +1,14 @@
+__o_shr_i16:
+    inc e
+__o_shr_i16__l1:
+    dec e
+    ret z
+    ld a, h
+    rla
+    ld a, h
+    rra
+    ld h, a
+    ld a, l
+    rra
+    ld l, a
+    jp __o_shr_i16__l1
