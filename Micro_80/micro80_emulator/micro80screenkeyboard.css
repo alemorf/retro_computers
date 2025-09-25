@@ -1,0 +1,25 @@
+.keyboard {
+    margin-top: 8px;
+    position: relative;
+}
+.keyboard div {
+    position: absolute;
+    width: 45px;
+    height: 40px;
+    background: #C0C0C0;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    padding-top: 6px;
+    font-family: Arial, Ubuntu;
+    font-size: 14px;
+    overflow: hidden
+}
+.keyboard div span {
+    color: gray;
+}
+.keyboard .p {
+    background: #808080;
+}
+</style>
+
