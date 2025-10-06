@@ -15,8 +15,12 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-STACK_TOP = 0F800h
 BIOS_INIT = 0F836h
+BIOS_INIT_SP = 0F800h
+BIOS_REBOOT = 0F800h
+BIOS_READ_KEY = 0F803h
+BIOS_CHECK_KEY = 0F812h
+BIOS_PRINT_CHAR = 0F809h
 
 PORT_ROM = 0FFh
 PORT_ROM__ENABLE_ROM = 0
@@ -32,9 +36,11 @@ PORT_ROM__ROM_A15 = 1 << 3
 cold_boot:
     ; Инициализация BIOS
     di
-    ld   sp, STACK_TOP
+    ld   sp, BIOS_INIT_SP
     call BIOS_INIT
-    ld   c, 0 ; По умолчанию накопитель A:
+
+    ; По умолчанию накопитель A:
+    ld   c, 0
 
 warm_boot:
     ; Копирование CP/M из ПЗУ в ОЗУ
@@ -45,12 +51,13 @@ copy_loop:
     inc  de
     ld   (hl), a
     inc  hl
-    ld   a, d
-    cp   ((cpm_in_rom + end - begin) >> 8) + 1
+    ld   a, h
+    cp   (end >> 8) + 1
     jp   c, copy_loop
 
-    ; Запуск
+    ; Продолжение запуска в ОЗУ
     jp   boot
+
 cpm_in_rom:
 
 ;----------------------------------------------------------------------------
@@ -111,7 +118,7 @@ BIOS_WBOOT:
 ;----------------------------------------------------------------------------
 
 BIOS_CONST:
-    jp   0F812h
+    jp   BIOS_CHECK_KEY
 
 ;----------------------------------------------------------------------------
 
@@ -123,12 +130,12 @@ BIOS_CONOUT:
     call nc, CODEPAGE
     ld   c, a
     pop  af
-    jp   0F809h
+    jp   BIOS_PRINT_CHAR
 
 ;----------------------------------------------------------------------------
 
 BIOS_CONIN:
-    call 0F803h
+    call BIOS_READ_KEY
 
     ; Кодировка ASCII -> Микро80
     cp   060h
@@ -163,12 +170,12 @@ BIOS_PRSTAT:
 
 BIOS_LIST:
     ret ; Принтер
-	
+
 ;----------------------------------------------------------------------------
 
 BIOS_PUNCH:
     ret ; RS232
-	
+
 ;----------------------------------------------------------------------------
 
 BIOS_READER:
