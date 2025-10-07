@@ -11,14 +11,23 @@
     image-rendering1: crisp-edges;
 }
 </style>
+<link href="menu.css" rel="stylesheet">
 </head>
 <body>
-<a href="javascript:reset()">CP/M</a>
- | <a href="javascript:reset(0x10000)">Монитор</a>
- | <a href="javascript:loadBasic80()">Загрузить Бейсик</a>
- | <a href="javascript:loadColorLines()">Загрузить Цветные линии</a>
- | <a href="javascript:loadKosoban()">Загрузить Кособан</a>
- | <a href="javascript:loadFile()">Загрузить файл</a><br>
+
+<ul class="menu" style="width:720px">
+  <li><div>Перезагрузка</div>
+    <ul id="softMenu">
+      <li onclick="reset()"><div>CP/M</div></li>
+      <li onclick="reset(0x10000)"><div>Монитор</div></li>
+      <li onclick="loadBasic80()"><div>Бейсик</div></li>
+      <li onclick="loadColorLines()"><div>Цветные линии</div></li>
+      <li onclick="loadKosoban()"><div>Кособан</div></li>
+      <li onclick="loadFile()"><div>Загрузить файл</div></li>
+    </ul>
+  </li>
+</ul>
+
 <canvas width=512 height=320 id="video"></canvas>
 <script src="i8080.js"></script>
 <script src="micro80bios.js"></script>
@@ -30,6 +39,7 @@
 <script src="filetools.js"></script>
 <script src="basic80.js"></script>
 <script src="test.js"></script>
+<script src="menu.js"></script>
 <script src="kosoban.js"></script>
 <script src="micro80.js"></script>
 </body>

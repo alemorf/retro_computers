@@ -17,7 +17,7 @@ let portFF = 0;
 
 function readMemory(addr) {
     if (addr < 0x8000 && (portFF & PORT_ROM__ENABLE_RAM) == 0)
-        return cpmBios[(addr + (portFF >> PORT_ROM__ROM_SHIFT) * 0x8000) % cpmBios.length];
+        return cpmBios[((addr ^ 0x7FFF) + (portFF >> PORT_ROM__ROM_SHIFT) * 0x8000) % cpmBios.length];
     if (addr >= 0xF800)
         init = false;
     if (addr >= 0xF800 || init)

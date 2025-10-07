@@ -1,8 +1,0 @@
-op_or16:
-    mov a, h
-    ora d
-    mov h, a
-    mov a, l
-    ora e
-    mov l, a
-    ret

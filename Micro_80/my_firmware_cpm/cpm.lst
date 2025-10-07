@@ -15,59 +15,66 @@
 0015   0000             ; See the License for the specific language governing permissions and
 0016   0000             ; limitations under the License.
 0017   0000             
-0018   0000             STACK_TOP = 0F800h
-0019   0000             BIOS_INIT = 0F836h
-0020   0000             
-0021   0000             PORT_ROM = 0FFh
-0022   0000             PORT_ROM__ENABLE_ROM = 0
-0023   0000             PORT_ROM__FLOPPY_B = 1 << 0
-0024   0000             PORT_ROM__FLOPPY_SIDE = 1 << 1
-0025   0000             PORT_ROM__ENABLE_RAM = 1 << 2
-0026   0000             PORT_ROM__ROM_A15 = 1 << 3
-0027   0000             
-0028   0000             ;----------------------------------------------------------------------------
-0029   0000             
-0030   0000                 .org 0
+0018   0000             BIOS_INIT = 0F836h
+0019   0000             BIOS_INIT_SP = 0F800h
+0020   0000             BIOS_REBOOT = 0F800h
+0021   0000             BIOS_READ_KEY = 0F803h
+0022   0000             BIOS_CHECK_KEY = 0F812h
+0023   0000             BIOS_PRINT_CHAR = 0F809h
+0024   0000             
+0025   0000             PORT_ROM = 0FFh
+0026   0000             PORT_ROM__ENABLE_ROM = 0
+0027   0000             PORT_ROM__FLOPPY_B = 1 << 0
+0028   0000             PORT_ROM__FLOPPY_SIDE = 1 << 1
+0029   0000             PORT_ROM__ENABLE_RAM = 1 << 2
+0030   0000             PORT_ROM__ROM_A15 = 1 << 3
 0031   0000             
-0032   0000             cold_boot:
-0033   0000                 ; Инициализация BIOS
-0034   0000 F3              di
-0035   0001 31 00 F8        ld   sp, STACK_TOP
-0036   0004 CD 36 F8        call BIOS_INIT
-0037   0007 0E 00           ld   c, 0 ; По умолчанию накопитель A:
-0038   0009             
-0039   0009             warm_boot:
-0040   0009                 ; Копирование CP/M из ПЗУ в ОЗУ
-0041   0009 11 1C 00        ld   de, cpm_in_rom
-0042   000C 21 00 C4        ld   hl, begin
-0043   000F             copy_loop:
-0044   000F 1A              ld   a, (de)
-0045   0010 13              inc  de
-0046   0011 77              ld   (hl), a
-0047   0012 23              inc  hl
-0048   0013 7A              ld   a, d
-0049   0014 FE 1C           cp   ((cpm_in_rom + end - begin) >> 8) + 1
-0050   0016 DA 0F 00        jp   c, copy_loop
-0051   0019             
-0052   0019                 ; Запуск
-0053   0019 C3 A5 DE        jp   boot
-0054   001C             cpm_in_rom:
-0055   001C             
-0056   001C             ;----------------------------------------------------------------------------
-0057   001C             
-0058   C400                 .org 0C400h
-0059   C400             begin:
-0060   C400             
-0061   C400             STORAGE_COUNT = 1
-0062   C400             
-0063   C400             ROM_STORAGE_ADDRESS = 1C00h
-0064   C400             ROM_STORAGE_SIZE = 10000h - ROM_STORAGE_ADDRESS
-0065   C400             
-0066   C400             A_BLOCK_SIZE = 1024
-0067   C400             A_DIRECTORY_BLOCKS = 1
-0068   C400             A_BLOCK_COUNT = ROM_STORAGE_SIZE / A_BLOCK_SIZE
+0032   0000             ;----------------------------------------------------------------------------
+0033   0000             
+0034   0000                 .org 0
+0035   0000             
+0036   0000             cold_boot:
+0037   0000                 ; Инициализация BIOS
+0038   0000 F3              di
+0039   0001 31 00 F8        ld   sp, BIOS_INIT_SP
+0040   0004 CD 36 F8        call BIOS_INIT
+0041   0007             
+0042   0007                 ; По умолчанию накопитель A:
+0043   0007 0E 00           ld   c, 0
+0044   0009             
+0045   0009             warm_boot:
+0046   0009                 ; Копирование CP/M из ПЗУ в ОЗУ
+0047   0009 11 1C 00        ld   de, cpm_in_rom
+0048   000C 21 00 C4        ld   hl, begin
+0049   000F             copy_loop:
+0050   000F 1A              ld   a, (de)
+0051   0010 13              inc  de
+0052   0011 77              ld   (hl), a
+0053   0012 23              inc  hl
+0054   0013 7C              ld   a, h
+0055   0014 FE E0           cp   (end >> 8) + 1
+0056   0016 DA 0F 00        jp   c, copy_loop
+0057   0019             
+0058   0019                 ; Продолжение запуска в ОЗУ
+0059   0019 C3 A5 DE        jp   boot
+0060   001C             
+0061   001C             cpm_in_rom:
+0062   001C             
+0063   001C             ;----------------------------------------------------------------------------
+0064   001C             
+0065   C400                 .org 0C400h
+0066   C400             begin:
+0067   C400             
+0068   C400             STORAGE_COUNT = 1
 0069   C400             
-0070   C400                 .include "cpm22.inc"
+0070   C400             ROM_STORAGE_ADDRESS = 1C00h
+0071   C400             ROM_STORAGE_SIZE = 10000h - ROM_STORAGE_ADDRESS
+0072   C400             
+0073   C400             A_BLOCK_SIZE = 1024
+0074   C400             A_DIRECTORY_BLOCKS = 1
+0075   C400             A_BLOCK_COUNT = ROM_STORAGE_SIZE / A_BLOCK_SIZE
+0076   C400             
+0077   C400                 .include "cpm22.inc"
 0001+  C400             ;**************************************************************
 0002+  C400             ;*
 0003+  C400             ;*             C P / M   version   2 . 2
@@ -4454,176 +4461,176 @@
 4290+  DEA2 1A              LD	A,(DE)
 4291+  DEA3 BC              CP	H
 4292+  DEA4 C9              RET
-0071   DEA5             
-0072   DEA5             ;----------------------------------------------------------------------------
-0073   DEA5             
-0074   DEA5             boot:
-0075   DEA5                 ; Включение ОЗУ
-0076   DEA5 3E 04           ld   a, PORT_ROM__ENABLE_RAM
-0077   DEA7 D3 FF           out  (PORT_ROM), a
-0078   DEA9             
-0079   DEA9 C3 FA DC        jp   RUNCPM
-0080   DEAC             
-0081   DEAC             ;----------------------------------------------------------------------------
-0082   DEAC             
-0083   DEAC             BIOS_BOOT:
-0084   DEAC                 ; Выключение прерываний
-0085   DEAC F3              di
-0086   DEAD             
-0087   DEAD                 ; Включение ПЗУ
-0088   DEAD 3E 00           ld   a, PORT_ROM__ENABLE_ROM
-0089   DEAF D3 FF           out  (PORT_ROM), a
-0090   DEB1             
-0091   DEB1                 ; Перезагрузка всего компьютера
-0092   DEB1 C3 00 00        jp   cold_boot
-0093   DEB4             
-0094   DEB4             ;----------------------------------------------------------------------------
-0095   DEB4             
-0096   DEB4             BIOS_WBOOT:
-0097   DEB4                 ; Выключение прерываний
-0098   DEB4 F3              di
-0099   DEB5             
-0100   DEB5                 ; Сохранение выбранного диска
-0101   DEB5 3A 04 00        ld   a, (TDRIVE)
-0102   DEB8 4F              ld   c, a
-0103   DEB9             
-0104   DEB9                 ; Включение ПЗУ
-0105   DEB9 3E 00           ld   a, PORT_ROM__ENABLE_ROM
-0106   DEBB D3 FF           out  (PORT_ROM), a
-0107   DEBD             
-0108   DEBD                 ; Перезагрузка CP/M
-0109   DEBD C3 09 00        jp   warm_boot
-0110   DEC0             
-0111   DEC0             ;----------------------------------------------------------------------------
-0112   DEC0             
-0113   DEC0             BIOS_CONST:
-0114   DEC0 C3 12 F8        jp   0F812h
-0115   DEC3             
-0116   DEC3             ;----------------------------------------------------------------------------
-0117   DEC3             
-0118   DEC3             BIOS_CONOUT:
-0119   DEC3                 ; Кодировка ASCII -> Микро80
-0120   DEC3 F5              push af
-0121   DEC4 79              ld   a, c
-0122   DEC5 FE 60           cp   060h
-0123   DEC7 D4 D5 DE        call nc, CODEPAGE
-0124   DECA 4F              ld   c, a
-0125   DECB F1              pop  af
-0126   DECC C3 09 F8        jp   0F809h
-0127   DECF             
-0128   DECF             ;----------------------------------------------------------------------------
-0129   DECF             
-0130   DECF             BIOS_CONIN:
-0131   DECF CD 03 F8        call 0F803h
-0132   DED2             
-0133   DED2                 ; Кодировка ASCII -> Микро80
-0134   DED2 FE 60           cp   060h
-0135   DED4 D8              ret  c
-0136   DED5             
-0137   DED5             ;----------------------------------------------------------------------------
-0138   DED5             
-0139   DED5             CODEPAGE:
-0140   DED5 FE 7F           cp   7Fh
-0141   DED7 CA E9 DE        jp   z, CODEPAGE_2
-0142   DEDA D2 E0 DE        jp   nc, CODEPAGE_1
-0143   DEDD C6 60           add  060h
-0144   DEDF C9              ret
-0145   DEE0             CODEPAGE_1:
-0146   DEE0 FE C0           cp   0C0h
-0147   DEE2 D8              ret  c
-0148   DEE3 FE E0           cp   0E0h
-0149   DEE5 D0              ret  nc
-0150   DEE6 D6 60           sub  060h
-0151   DEE8 C9              ret
-0152   DEE9             CODEPAGE_2:
-0153   DEE9 3E 08           ld   a, 8
-0154   DEEB C9              ret
-0155   DEEC             
-0156   DEEC             ;----------------------------------------------------------------------------
-0157   DEEC             
-0158   DEEC             BIOS_PRSTAT:
-0159   DEEC AF              xor  a ; Принтер не готов
-0160   DEED C9              ret
-0161   DEEE             
-0162   DEEE             ;----------------------------------------------------------------------------
-0163   DEEE             
-0164   DEEE             BIOS_LIST:
-0165   DEEE C9              ret ; Принтер
-0166   DEEF             	
-0167   DEEF             ;----------------------------------------------------------------------------
-0168   DEEF             
-0169   DEEF             BIOS_PUNCH:
-0170   DEEF C9              ret ; RS232
-0171   DEF0             	
-0172   DEF0             ;----------------------------------------------------------------------------
-0173   DEF0             
-0174   DEF0             BIOS_READER:
-0175   DEF0 3E 1A           ld  a, 26
-0176   DEF2 C9              ret ; RS232
-0177   DEF3             
-0178   DEF3             ;----------------------------------------------------------------------------
-0179   DEF3             
-0180   DEF3             BIOS_READ_512:
-0181   DEF3                 ; Вычисление номера сектора
-0182   DEF3 2A 48 DA        ld   hl, (BUFFER_SECTOR)
-0183   DEF6 11 0E 00        ld   de, ROM_STORAGE_ADDRESS / 512
-0184   DEF9 19              add  hl, de
-0185   DEFA 45              ld   b, l
-0186   DEFB             
-0187   DEFB                 ; Выбор страницы ПЗУ
-0188   DEFB 29              add  hl, hl
-0189   DEFC 29              add  hl, hl
-0190   DEFD 7C              ld   a, h
-0191   DEFE 87              add  a
-0192   DEFF 87              add  a
-0193   DF00 87              add  a
-0194   DF01 D3 FF           out  (PORT_ROM), a
-0195   DF03             
-0196   DF03                 ; Вычисление адреса сектора в памяти
-0197   DF03 78              ld   a, b
-0198   DF04 E6 3F           and  3Fh
-0199   DF06 87              add  a
-0200   DF07 67              ld   h, a
-0201   DF08 2E 00           ld   l, 0
-0202   DF0A             
-0203   DF0A                 ; Скопировать туда
-0204   DF0A 11 4B DA        ld   de, BUFFER
-0205   DF0D             
-0206   DF0D                 ; Копирование сектора из ПЗУ в ОЗУ
-0207   DF0D 0E 00           ld   c, 0
-0208   DF0F             BIOS_READ_1:
-0209   DF0F 7E              ld   a, (hl)
-0210   DF10 12              ld   (de), a
-0211   DF11 23              inc  hl
-0212   DF12 13              inc  de
-0213   DF13 7E              ld   a, (hl)
-0214   DF14 12              ld   (de), a
-0215   DF15 23              inc  hl
-0216   DF16 13              inc  de
-0217   DF17 0D              dec  c
-0218   DF18 C2 0F DF        jp   nz, BIOS_READ_1
-0219   DF1B             
-0220   DF1B                 ; Выключение ПЗУ
-0221   DF1B 3E 04           ld   a, PORT_ROM__ENABLE_RAM
-0222   DF1D D3 FF           out  (PORT_ROM), a
-0223   DF1F             
-0224   DF1F                 ; Код ошибки - Нет ошибки
-0225   DF1F AF              xor  a
-0226   DF20 C9              ret
-0227   DF21             
-0228   DF21             ;----------------------------------------------------------------------------
-0229   DF21             
-0230   DF21             BIOS_WRITE_512:
-0231   DF21                 ; Код ошибки - Все полохо
-0232   DF21 3E 01           ld   a, 1
-0233   DF23 C9              ret
-0234   DF24             
-0235   DF24             ;----------------------------------------------------------------------------
-0236   DF24             
-0237   DF24~                .IF $ >= 0E000h
-0238   DF24~                CPM_ADDRESS too big
-0239   DF24                 .ENDIF
-0240   DF24             
-0241   DF24             end:
-0242   DF24                 .end
+0078   DEA5             
+0079   DEA5             ;----------------------------------------------------------------------------
+0080   DEA5             
+0081   DEA5             boot:
+0082   DEA5                 ; Включение ОЗУ
+0083   DEA5 3E 04           ld   a, PORT_ROM__ENABLE_RAM
+0084   DEA7 D3 FF           out  (PORT_ROM), a
+0085   DEA9             
+0086   DEA9 C3 FA DC        jp   RUNCPM
+0087   DEAC             
+0088   DEAC             ;----------------------------------------------------------------------------
+0089   DEAC             
+0090   DEAC             BIOS_BOOT:
+0091   DEAC                 ; Выключение прерываний
+0092   DEAC F3              di
+0093   DEAD             
+0094   DEAD                 ; Включение ПЗУ
+0095   DEAD 3E 00           ld   a, PORT_ROM__ENABLE_ROM
+0096   DEAF D3 FF           out  (PORT_ROM), a
+0097   DEB1             
+0098   DEB1                 ; Перезагрузка всего компьютера
+0099   DEB1 C3 00 00        jp   cold_boot
+0100   DEB4             
+0101   DEB4             ;----------------------------------------------------------------------------
+0102   DEB4             
+0103   DEB4             BIOS_WBOOT:
+0104   DEB4                 ; Выключение прерываний
+0105   DEB4 F3              di
+0106   DEB5             
+0107   DEB5                 ; Сохранение выбранного диска
+0108   DEB5 3A 04 00        ld   a, (TDRIVE)
+0109   DEB8 4F              ld   c, a
+0110   DEB9             
+0111   DEB9                 ; Включение ПЗУ
+0112   DEB9 3E 00           ld   a, PORT_ROM__ENABLE_ROM
+0113   DEBB D3 FF           out  (PORT_ROM), a
+0114   DEBD             
+0115   DEBD                 ; Перезагрузка CP/M
+0116   DEBD C3 09 00        jp   warm_boot
+0117   DEC0             
+0118   DEC0             ;----------------------------------------------------------------------------
+0119   DEC0             
+0120   DEC0             BIOS_CONST:
+0121   DEC0 C3 12 F8        jp   BIOS_CHECK_KEY
+0122   DEC3             
+0123   DEC3             ;----------------------------------------------------------------------------
+0124   DEC3             
+0125   DEC3             BIOS_CONOUT:
+0126   DEC3                 ; Кодировка ASCII -> Микро80
+0127   DEC3 F5              push af
+0128   DEC4 79              ld   a, c
+0129   DEC5 FE 60           cp   060h
+0130   DEC7 D4 D5 DE        call nc, CODEPAGE
+0131   DECA 4F              ld   c, a
+0132   DECB F1              pop  af
+0133   DECC C3 09 F8        jp   BIOS_PRINT_CHAR
+0134   DECF             
+0135   DECF             ;----------------------------------------------------------------------------
+0136   DECF             
+0137   DECF             BIOS_CONIN:
+0138   DECF CD 03 F8        call BIOS_READ_KEY
+0139   DED2             
+0140   DED2                 ; Кодировка ASCII -> Микро80
+0141   DED2 FE 60           cp   060h
+0142   DED4 D8              ret  c
+0143   DED5             
+0144   DED5             ;----------------------------------------------------------------------------
+0145   DED5             
+0146   DED5             CODEPAGE:
+0147   DED5 FE 7F           cp   7Fh
+0148   DED7 CA E9 DE        jp   z, CODEPAGE_2
+0149   DEDA D2 E0 DE        jp   nc, CODEPAGE_1
+0150   DEDD C6 60           add  060h
+0151   DEDF C9              ret
+0152   DEE0             CODEPAGE_1:
+0153   DEE0 FE C0           cp   0C0h
+0154   DEE2 D8              ret  c
+0155   DEE3 FE E0           cp   0E0h
+0156   DEE5 D0              ret  nc
+0157   DEE6 D6 60           sub  060h
+0158   DEE8 C9              ret
+0159   DEE9             CODEPAGE_2:
+0160   DEE9 3E 08           ld   a, 8
+0161   DEEB C9              ret
+0162   DEEC             
+0163   DEEC             ;----------------------------------------------------------------------------
+0164   DEEC             
+0165   DEEC             BIOS_PRSTAT:
+0166   DEEC AF              xor  a ; Принтер не готов
+0167   DEED C9              ret
+0168   DEEE             
+0169   DEEE             ;----------------------------------------------------------------------------
+0170   DEEE             
+0171   DEEE             BIOS_LIST:
+0172   DEEE C9              ret ; Принтер
+0173   DEEF             
+0174   DEEF             ;----------------------------------------------------------------------------
+0175   DEEF             
+0176   DEEF             BIOS_PUNCH:
+0177   DEEF C9              ret ; RS232
+0178   DEF0             
+0179   DEF0             ;----------------------------------------------------------------------------
+0180   DEF0             
+0181   DEF0             BIOS_READER:
+0182   DEF0 3E 1A           ld  a, 26
+0183   DEF2 C9              ret ; RS232
+0184   DEF3             
+0185   DEF3             ;----------------------------------------------------------------------------
+0186   DEF3             
+0187   DEF3             BIOS_READ_512:
+0188   DEF3                 ; Вычисление номера сектора
+0189   DEF3 2A 48 DA        ld   hl, (BUFFER_SECTOR)
+0190   DEF6 11 0E 00        ld   de, ROM_STORAGE_ADDRESS / 512
+0191   DEF9 19              add  hl, de
+0192   DEFA 45              ld   b, l
+0193   DEFB             
+0194   DEFB                 ; Выбор страницы ПЗУ
+0195   DEFB 29              add  hl, hl
+0196   DEFC 29              add  hl, hl
+0197   DEFD 7C              ld   a, h
+0198   DEFE 87              add  a
+0199   DEFF 87              add  a
+0200   DF00 87              add  a
+0201   DF01 D3 FF           out  (PORT_ROM), a
+0202   DF03             
+0203   DF03                 ; Вычисление адреса сектора в памяти
+0204   DF03 78              ld   a, b
+0205   DF04 E6 3F           and  3Fh
+0206   DF06 87              add  a
+0207   DF07 67              ld   h, a
+0208   DF08 2E 00           ld   l, 0
+0209   DF0A             
+0210   DF0A                 ; Скопировать туда
+0211   DF0A 11 4B DA        ld   de, BUFFER
+0212   DF0D             
+0213   DF0D                 ; Копирование сектора из ПЗУ в ОЗУ
+0214   DF0D 0E 00           ld   c, 0
+0215   DF0F             BIOS_READ_1:
+0216   DF0F 7E              ld   a, (hl)
+0217   DF10 12              ld   (de), a
+0218   DF11 23              inc  hl
+0219   DF12 13              inc  de
+0220   DF13 7E              ld   a, (hl)
+0221   DF14 12              ld   (de), a
+0222   DF15 23              inc  hl
+0223   DF16 13              inc  de
+0224   DF17 0D              dec  c
+0225   DF18 C2 0F DF        jp   nz, BIOS_READ_1
+0226   DF1B             
+0227   DF1B                 ; Выключение ПЗУ
+0228   DF1B 3E 04           ld   a, PORT_ROM__ENABLE_RAM
+0229   DF1D D3 FF           out  (PORT_ROM), a
+0230   DF1F             
+0231   DF1F                 ; Код ошибки - Нет ошибки
+0232   DF1F AF              xor  a
+0233   DF20 C9              ret
+0234   DF21             
+0235   DF21             ;----------------------------------------------------------------------------
+0236   DF21             
+0237   DF21             BIOS_WRITE_512:
+0238   DF21                 ; Код ошибки - Все полохо
+0239   DF21 3E 01           ld   a, 1
+0240   DF23 C9              ret
+0241   DF24             
+0242   DF24             ;----------------------------------------------------------------------------
+0243   DF24             
+0244   DF24~                .IF $ >= 0E000h
+0245   DF24~                CPM_ADDRESS too big
+0246   DF24                 .ENDIF
+0247   DF24             
+0248   DF24             end:
+0249   DF24                 .end
 tasm: Number of errors = 0

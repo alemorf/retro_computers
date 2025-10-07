@@ -118,6 +118,10 @@ int main() {
         const unsigned offset = storage_offset + block_count * BLOCK_SIZE;
         std::cout << "FREE SPACE " << (rom.size() - offset) << " bytes" << std::endl;
 
+        static const uint16_t PAGE_SIZE = 0x8000;
+        for (size_t i = 0; i + PAGE_SIZE - 1 < rom.size(); i += PAGE_SIZE)
+            std::reverse(rom.data() + i, rom.data() + i + PAGE_SIZE);
+
         SaveFile("micro80cpm.bin", rom.data(), rom.size());
     } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;

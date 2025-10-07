@@ -1,0 +1,2 @@
+#!/bin/bash
+minipro -p "W27C512 @DIP28" -w micro80cpm.bin
