@@ -169,8 +169,6 @@ headLoop:
         cpi  3 ; CTRL+C
         lxi  d, aBreak
         jz   PrintString
-        cpi  1Bh ; ESC
-        jz   PrintString
 
         ; Форматирование дорожки. Если произошла ошибка, то возвращается флаг NZ.
         call FormatTrack

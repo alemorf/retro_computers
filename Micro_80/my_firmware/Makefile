@@ -1,6 +1,6 @@
 all: micro80.bin micro80a.bin micro80b.bin
-	cp micro80.bin ~/a/work/micro80_emulator/
-	cd ~/a/work/micro80_emulator && make
+	cp micro80.bin ../micro80_emulator/
+	cd ../micro80_emulator && make
 
 .PHONY: clean
 clean:

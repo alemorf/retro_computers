@@ -1,6 +1,6 @@
 all: font_8x10_k573rf4.bin Makefile
 
-clean:
+clear:
 	rm -f font_8x10_k573rf4.bin convert
 
 font_8x10_k573rf4.bin: convert font_8x10.bin Makefile

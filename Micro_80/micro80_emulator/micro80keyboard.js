@@ -91,7 +91,7 @@ function Micro80Keyboard(screenKeyboard) {
         'ShiftRight' : 66,
         'F1' : 65, // УС
         'F2' : 61, // РУС
-        'F3' : 62, // Home
+        'Escape' : 62, // Home
     };
 
     function keyEvent(e, pressed) {

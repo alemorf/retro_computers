@@ -624,7 +624,7 @@ COMMAND:LD	SP,CCPSTACK	;setup stack area.
 ;   Entry point to get a command line from the console.
 ;
 CMMND1:	LD	SP,CCPSTACK	;set stack straight.
-    CALL	CRLF		;start a new line on the screen.
+    CALL  BIOS_SHELL ;CALL	CRLF		;start a new line on the screen.
     CALL	GETDSK		;get current drive.
     ADD	'A'
     CALL	PRINT		;print current drive.
@@ -1128,7 +1128,7 @@ UNKWN3:	PUSH	HL
 ;
 UNKWN4:	POP	HL
     DEC	A		;normal end of file?
-    JP	NZ,UNKWN0
+    CALL	BIOS_SET_USER_FOR_PROGRAMM    ;    JP	NZ,UNKWN0
     CALL	RESETDR		;yes, reset previous drive.
     CALL	CONVFST		;convert the first file name that follows
     LD	HL,CHGDRV	;command name.
@@ -1703,7 +1703,7 @@ USRSTACK: .DW	0		;save users stack pointer here.
 ;
     .DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     .DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-STKAREA .EQU	$		;end of stack area.
+STKAREA_ .EQU	$		;end of stack area.
 ;
 USERNO:	.DB	0		;current user number.
 ACTIVE:	.DB	0		;currently active drive.
@@ -3774,7 +3774,7 @@ DPHLIST:
     .DS 8
     .DW DIRBUF2
     .DW A_DPB
-    .IFNDEF A_FIXED
+    .IF !A_FIXED
     .DW A_CSV
     .ELSE
     .DW 0
@@ -3785,7 +3785,7 @@ DPHLIST:
     .DS 8
     .DW DIRBUF2
     .DW B_DPB
-    .IFNDEF B_FIXED
+    .IF !B_FIXED
     .DW B_CSV
     .ELSE
     .DW 0
@@ -3796,12 +3796,12 @@ DPHLIST:
     .IF STORAGE_COUNT >= 3
     .DS 8
     .DW DIRBUF2
-    .IFNDEF A_FIXED
+    .DW C_DPB
+    .IF !C_FIXED
     .DW C_CSV
     .ELSE
     .DW 0
     .ENDIF
-    .DW C_CSV
     .DW C_ALV
     .ENDIF
 
@@ -3809,7 +3809,7 @@ DPHLIST:
     .DS 8
     .DW DIRBUF2
     .DW D_DPB
-    .IFNDEF D_FIXED
+    .IF !D_FIXED
     .DW D_CSV
     .ELSE
     .DW 0
@@ -3828,11 +3828,7 @@ A_FILES_COUNT = ((A_BLOCK_SIZE / CPM_ENTRY_SIZE) * A_DIRECTORY_BLOCKS)
 
 A_DPB:
     ; SPT - Number of 128-byte records per track
-    .IFDEF A_SECTOR_PER_TRACK
-    .DW A_SECTOR_PER_TRACK
-    .ELSE
-    .DW 0FFFFh
-    .ENDIF
+    .DW A_128_PER_TRACK
     ; BSH - Block shift. 3 => 1k,4 => 2k,5 => 4k....
     ; BLM - Block mask. 7 => 1k,0Fh => 2k,1Fh => 4k...
     ; ЕХМ - Extent mask
@@ -3868,7 +3864,7 @@ A_DPB:
     .DB (0FFFF00h >> A_DIRECTORY_BLOCKS) & 0FFh
     .DB (0FF0000h >> A_DIRECTORY_BLOCKS) & 0FFh
     ; CKS - Checksum vector size,0 or 8000h for a fixed disc.
-    .IFDEF A_FIXED
+    .IF A_FIXED
     .DW 0
     .ELSE
     .DW (A_FILES_COUNT + 3) / 4
@@ -3876,7 +3872,7 @@ A_DPB:
     ; OFF - Offset,number of reserved tracks
     .DW 0
 
-    .IFNDEF A_FIXED
+    .IF !A_FIXED
 A_CSV:	.DS (A_FILES_COUNT + 3) / 4
     .ENDIF
 A_ALV:	.DS (A_BLOCK_COUNT + 7) / 8
@@ -3886,11 +3882,7 @@ B_FILES_COUNT = ((B_BLOCK_SIZE / CPM_ENTRY_SIZE) * B_DIRECTORY_BLOCKS)
 
 B_DPB:
     ; SPT - Number of 128-byte records per track
-    .IFDEF B_SECTOR_PER_TRACK
-    .DW B_SECTOR_PER_TRACK
-    .ELSE
-    .DW 0FFFFh
-    .ENDIF
+    .DW B_128_PER_TRACK
     ; BSH - Block shift. 3 => 1k,4 => 2k,5 => 4k....
     ; BLM - Block mask. 7 => 1k,0Fh => 2k,1Fh => 4k...
     ; ЕХМ - Extent mask
@@ -3926,7 +3918,7 @@ B_DPB:
     .DB (0FFFF00h >> B_DIRECTORY_BLOCKS) & 0FFh
     .DB (0FF0000h >> B_DIRECTORY_BLOCKS) & 0FFh
     ; CKS - Checksum vector size,0 or 8000h for a fixed disc.
-    .IFDEF B_FIXED
+    .IF B_FIXED
     .DW 0
     .ELSE
     .DW (B_FILES_COUNT + 3) / 4
@@ -3934,23 +3926,117 @@ B_DPB:
     ; OFF - Offset,number of reserved tracks
     .DW 0
 
-    .IFNDEF B_FIXED
+    .IF !B_FIXED
 B_CSV:	.DS (B_FILES_COUNT + 3) / 4
     .ENDIF
 B_ALV:	.DS (B_BLOCK_COUNT + 7) / 8
     .ENDIF
 
     .IF STORAGE_COUNT >= 3
-; TODO
-    .IFNDEF C_FIXED
+C_FILES_COUNT = ((C_BLOCK_SIZE / CPM_ENTRY_SIZE) * C_DIRECTORY_BLOCKS)
+
+C_DPB:
+    ; SPT - Number of 128-byte records per track
+    .DW C_128_PER_TRACK
+    ; BSH - Block shift. 3 => 1k,4 => 2k,5 => 4k....
+    ; BLM - Block mask. 7 => 1k,0Fh => 2k,1Fh => 4k...
+    ; ЕХМ - Extent mask
+    .IF C_BLOCK_SIZE = 1024
+    .DB 3,07h,0
+    .IF C_BLOCK_COUNT >= 100h
+    Incorrect C_BLOCK_COUNT
+    .ENDIF
+    .ELSE
+    .IF C_BLOCK_SIZE = 2048
+    .DB 4,0Fh,1 >> (C_BLOCK_COUNT >= 100h)
+    .ELSE
+    .IF C_BLOCK_SIZE = 4096
+    .DB 5,1Fh,3 >> (C_BLOCK_COUNT >= 100h)
+    .ELSE
+    .IF C_BLOCK_SIZE = 8192
+    .DB 6,3Fh,7 >> (C_BLOCK_COUNT >= 100h)
+    .ELSE
+    .IF C_BLOCK_SIZE = 16384
+    .DB 7,7Fh,15 >> (C_BLOCK_COUNT >= 100h)
+    .ELSE
+    Incorrect C_BLOCK_SIZE
+    .ENDIF
+    .ENDIF
+    .ENDIF
+    .ENDIF
+    .ENDIF
+    ; DSM - (no. of blocks on the disc)-1
+    .DW C_BLOCK_COUNT - 1
+    ; DRM - (no. of directory entries)-1
+    .DW C_FILES_COUNT - 1
+    ; AL - Directory allocation bitmap
+    .DB (0FFFF00h >> C_DIRECTORY_BLOCKS) & 0FFh
+    .DB (0FF0000h >> C_DIRECTORY_BLOCKS) & 0FFh
+    ; CKS - Checksum vector size,0 or 8000h for a fixed disc.
+    .IF C_FIXED
+    .DW 0
+    .ELSE
+    .DW (C_FILES_COUNT + 3) / 4
+    .ENDIF
+    ; OFF - Offset,number of reserved tracks
+    .DW 0
+
+    .IF !C_FIXED
 C_CSV:	.DS (C_FILES_COUNT + 3) / 4
     .ENDIF
 C_ALV:	.DS (C_BLOCK_COUNT + 7) / 8
     .ENDIF
 
     .IF STORAGE_COUNT >= 4
-; TODO
-    .IFNDEF D_FIXED
+D_FILES_COUNT = ((D_BLOCK_SIZE / CPM_ENTRY_SIZE) * D_DIRECTORY_BLOCKS)
+
+D_DPB:
+    ; SPT - Number of 128-byte records per track
+    .DW D_128_PER_TRACK
+    ; BSH - Block shift. 3 => 1k,4 => 2k,5 => 4k....
+    ; BLM - Block mask. 7 => 1k,0Fh => 2k,1Fh => 4k...
+    ; ЕХМ - Extent mask
+    .IF D_BLOCK_SIZE = 1024
+    .DB 3,07h,0
+    .IF D_BLOCK_COUNT >= 100h
+    Incorrect D_BLOCK_COUNT
+    .ENDIF
+    .ELSE
+    .IF D_BLOCK_SIZE = 2048
+    .DB 4,0Fh,1 >> (D_BLOCK_COUNT >= 100h)
+    .ELSE
+    .IF D_BLOCK_SIZE = 4096
+    .DB 5,1Fh,3 >> (D_BLOCK_COUNT >= 100h)
+    .ELSE
+    .IF D_BLOCK_SIZE = 8192
+    .DB 6,3Fh,7 >> (D_BLOCK_COUNT >= 100h)
+    .ELSE
+    .IF D_BLOCK_SIZE = 16384
+    .DB 7,7Fh,15 >> (D_BLOCK_COUNT >= 100h)
+    .ELSE
+    Incorrect D_BLOCK_SIZE
+    .ENDIF
+    .ENDIF
+    .ENDIF
+    .ENDIF
+    .ENDIF
+    ; DSM - (no. of blocks on the disc)-1
+    .DW D_BLOCK_COUNT - 1
+    ; DRM - (no. of directory entries)-1
+    .DW D_FILES_COUNT - 1
+    ; AL - Directory allocation bitmap
+    .DB (0FFFF00h >> D_DIRECTORY_BLOCKS) & 0FFh
+    .DB (0FF0000h >> D_DIRECTORY_BLOCKS) & 0FFh
+    ; CKS - Checksum vector size,0 or 8000h for a fixed disc.
+    .IF D_FIXED
+    .DW 0
+    .ELSE
+    .DW (D_FILES_COUNT + 3) / 4
+    .ENDIF
+    ; OFF - Offset,number of reserved tracks
+    .DW 0
+
+    .IF !D_FIXED
 D_CSV:	.DS (D_FILES_COUNT + 3) / 4
     .ENDIF
 D_ALV:	.DS (D_BLOCK_COUNT + 7) / 8
@@ -3963,6 +4049,11 @@ D_ALV:	.DS (D_BLOCK_COUNT + 7) / 8
 ;**************************************************************
 
 RUNCPM:
+    XOR A
+    LD	(INBUFF+1), A
+RUNCOMMAND:
+    LD  HL, INBUFF + 2
+    LD  (INPOINT), HL
     LD	A,C
     LD	(TDRIVE),A
     LD	A,0C3h ; JMP OPCODE
@@ -3976,7 +4067,7 @@ RUNCPM:
     LD	(ARG_DMA),HL
     LD	A,81h
     LD	(IOBYTE),a
-    JP	CBASE
+    JP	COMMAND
 
 BIOS_HOME:
     PUSH	HL
@@ -3990,7 +4081,7 @@ BIOS_SELDSK:
     CP	STORAGE_COUNT
     LD	HL,0
     RET	NC
-    LD	(TDRIVE),A	; save current device number
+
     LD	(ARG_SELDSK),A
     LD	L,A		; calc DPH address
     ADD	HL,HL
@@ -4008,6 +4099,16 @@ BIOS_SELDSK:
     LD	D,(HL)
     EX	HL,DE
     LD	(ARG_DPB),HL
+
+    LD   H, A
+    LD   A, (USERNO)
+    ADD  A
+    ADD  A
+    ADD  A
+    ADD  A
+    ADD  H
+    LD	 (TDRIVE),A	; save current device number
+
     POP	HL
     POP	DE
     RET
@@ -4228,7 +4329,12 @@ BUFFER_WORK_3:
     CALL	NZ,BIOS_READ_512
     POP	BC
     OR	A
-    RET	NZ ; TODO: Очистить буфер
+    JP  Z,BUFFER_WORK_5
+
+    ; Очистить буфер, если не удалось прочитать
+    LD	A,-1
+    LD	(BUFFER_DISK),A
+    RET
 
 BUFFER_WORK_5:
     ; Вычисляем адрес 128 байтного сектора в буфере

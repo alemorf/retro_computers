@@ -17,7 +17,7 @@ function Micro80ScreenKeyboard(parentDocumentElement) {
     html += '<div style="left:500px;top:0px" id="key0">0<br>&nbsp;</div>';
     html += '<div style="left:550px;top:0px" id="key14">-<br>=</div>';
     html += '<div style="left:600px;top:0px" id="key64">ЗБ</div>';
-    html += '<div style="left:750px;top:0px" id="key62">↖<br><span>F3</span></div>';
+    html += '<div style="left:750px;top:0px" id="key62">ESC<br><span>F3</span></div>';
     html += '<div style="left:800px;top:0px" id="key61">РУС<br><span>F2</span></div>';
     html += '<div style="left:25px;top:50px" id="key29">Й<br>J</div>';
     html += '<div style="left:75px;top:50px" id="key21">Ц<br>C</div>';
