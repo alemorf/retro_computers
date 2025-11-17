@@ -1,7 +1,0 @@
-__o_shl_16:
-    inc e
-__o_shl_16__l1:
-    dec e
-    ret z
-    add hl, hl
-    jp __o_shl_16__l1

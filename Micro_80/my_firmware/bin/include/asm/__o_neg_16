@@ -1,8 +1,0 @@
-__o_neg_16:
-    ld a, l
-    cpl
-    ld l, a
-    ld a, h
-    cpl
-    ld h, a
-    ret

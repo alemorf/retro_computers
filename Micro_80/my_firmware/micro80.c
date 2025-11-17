@@ -4,7 +4,7 @@
 // License: Apache License Version 2.0
 
 #include "cmm.h"
-#include <codepage/koi7.h>
+#include <c8080/codepage/micro80.h>
 
 //#define BEEP_ENABLED
 //#define CMD_R_ENABLED
@@ -18,7 +18,7 @@ const int SCREEN_SIZE = 0x800;
 const int SCREEN_END = SCREEN_BEGIN + SCREEN_SIZE;
 const int SCREEN_WIDTH = 64;
 const int SCREEN_HEIGHT = 25;
-const int SCREEN_ATTRIB_DEFAULT = 0x17;
+const int SCREEN_ATTRIB_DEFAULT = 0x07;
 const int SCREEN_ATTRIB_BLANK = 0x07;
 const int SCREEN_ATTRIB_UNDERLINE = 1 << 7;
 

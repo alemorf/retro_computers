@@ -3,7 +3,7 @@
 // License: Apache License Version 2.0
 
 #include "cmm.h"
-#include <codepage/koi7.h>
+#include <c8080/codepage/koi7.h>
 
 asm(" .org 0xF800");
 
@@ -1130,43 +1130,43 @@ void WriteTapeDelay(...) {
 }
 
 uint8_t monitorCommands = 'M';
-uint16_t monitorCommandsMa = (uintptr_t)&CmdM;
+uint16_t monitorCommandsMa = (uintptr_t)CmdM;
 uint8_t monitorCommandsC = 'C';
-uint16_t monitorCommandsCa = (uintptr_t)&CmdC;
+uint16_t monitorCommandsCa = (uintptr_t)CmdC;
 uint8_t monitorCommandsD = 'D';
-uint16_t monitorCommandsDa = (uintptr_t)&CmdD;
+uint16_t monitorCommandsDa = (uintptr_t)CmdD;
 uint8_t monitorCommandsB = 'B';
-uint16_t monitorCommandsBa = (uintptr_t)&CmdB;
+uint16_t monitorCommandsBa = (uintptr_t)CmdB;
 uint8_t monitorCommandsG = 'G';
-uint16_t monitorCommandsGa = (uintptr_t)&CmdG;
+uint16_t monitorCommandsGa = (uintptr_t)CmdG;
 uint8_t monitorCommandsP = 'P';
-uint16_t monitorCommandsPa = (uintptr_t)&CmdP;
+uint16_t monitorCommandsPa = (uintptr_t)CmdP;
 uint8_t monitorCommandsX = 'X';
-uint16_t monitorCommandsXa = (uintptr_t)&CmdX;
+uint16_t monitorCommandsXa = (uintptr_t)CmdX;
 uint8_t monitorCommandsF = 'F';
-uint16_t monitorCommandsFa = (uintptr_t)&CmdF;
+uint16_t monitorCommandsFa = (uintptr_t)CmdF;
 uint8_t monitorCommandsS = 'S';
-uint16_t monitorCommandsSa = (uintptr_t)&CmdS;
+uint16_t monitorCommandsSa = (uintptr_t)CmdS;
 uint8_t monitorCommandsT = 'T';
-uint16_t monitorCommandsTa = (uintptr_t)&CmdT;
+uint16_t monitorCommandsTa = (uintptr_t)CmdT;
 uint8_t monitorCommandsI = 'I';
-uint16_t monitorCommandsIa = (uintptr_t)&CmdI;
+uint16_t monitorCommandsIa = (uintptr_t)CmdI;
 uint8_t monitorCommandsO = 'O';
-uint16_t monitorCommandsOa = (uintptr_t)&CmdO;
+uint16_t monitorCommandsOa = (uintptr_t)CmdO;
 uint8_t monitorCommandsV = 'V';
-uint16_t monitorCommandsVa = (uintptr_t)&CmdV;
+uint16_t monitorCommandsVa = (uintptr_t)CmdV;
 uint8_t monitorCommandsJ = 'J';
-uint16_t monitorCommandsJa = (uintptr_t)&CmdJ;
+uint16_t monitorCommandsJa = (uintptr_t)CmdJ;
 uint8_t monitorCommandsA = 'A';
-uint16_t monitorCommandsAa = (uintptr_t)&CmdA;
+uint16_t monitorCommandsAa = (uintptr_t)CmdA;
 uint8_t monitorCommandsK = 'K';
-uint16_t monitorCommandsKa = (uintptr_t)&CmdK;
+uint16_t monitorCommandsKa = (uintptr_t)CmdK;
 uint8_t monitorCommandsQ = 'Q';
-uint16_t monitorCommandsQa = (uintptr_t)&CmdQ;
+uint16_t monitorCommandsQa = (uintptr_t)CmdQ;
 uint8_t monitorCommandsL = 'L';
-uint16_t monitorCommandsLa = (uintptr_t)&CmdL;
+uint16_t monitorCommandsLa = (uintptr_t)CmdL;
 uint8_t monitorCommandsH = 'H';
-uint16_t monitorCommandsHa = (uintptr_t)&CmdH;
+uint16_t monitorCommandsHa = (uintptr_t)CmdH;
 uint8_t monitorCommandsEnd = 0;
 
 uint8_t aPrompt[] = "\x0A*MИКРO/80* MONITOR\x0A>";

@@ -1,8 +1,0 @@
-        ld   de, __bss
-        xor  a
-__init_loop:
-        ld   (de), a
-        inc  de
-        ld   hl, 10000h - __end
-        add  hl, de
-        jp   nc, __init_loop

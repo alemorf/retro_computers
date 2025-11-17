@@ -1,8 +1,0 @@
-__o_minus_16:
-    xor a
-    sub l
-    ld l, a
-    ld a, 0
-    sbc h
-    ld h, a
-    ret

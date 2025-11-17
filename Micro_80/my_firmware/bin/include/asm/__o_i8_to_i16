@@ -1,6 +1,0 @@
-__o_i8_to_i16:
-    ld l, a
-    rla
-    sbc a
-    ld h, a
-    ret

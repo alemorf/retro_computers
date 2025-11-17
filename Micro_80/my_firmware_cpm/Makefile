@@ -14,8 +14,10 @@ micro80cpm.bin: cpm.bin make_micro80_rom files/* Makefile
 	./make_micro80_rom
 
 cpm.bin: cpm.asm cpm22.inc Makefile
-	wine ./TASM.EXE -t80 cpm.asm -b cpm1.bin
+	cp ~/bin/TASM80.TAB .
+	wine ~/bin/TASM.EXE -t80 cpm.asm -b cpm1.bin
+	rm TASM80.TAB
 	dd if=cpm1.bin of=cpm2.bin bs=1 count=256
-	dd if=cpm1.bin of=cpm3.bin bs=1 skip=49664
+	dd if=cpm1.bin of=cpm3.bin bs=1 skip=49408
 	cat cpm2.bin cpm3.bin >cpm.bin
 	rm cpm1.bin cpm2.bin cpm3.bin

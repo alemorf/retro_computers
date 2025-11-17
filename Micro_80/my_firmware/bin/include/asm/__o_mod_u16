@@ -1,7 +1,0 @@
-__o_mod_u16:
-    push bc
-    ex hl, de
-    call __o_div_u16__l0
-    ex hl, de
-    pop bc
-    ret

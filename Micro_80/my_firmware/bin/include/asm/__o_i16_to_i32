@@ -1,7 +1,0 @@
-__o_i16_to_i32:
-    ld de, 0
-    ld a, h
-    and 80h
-    ret z
-    dec de
-    ret

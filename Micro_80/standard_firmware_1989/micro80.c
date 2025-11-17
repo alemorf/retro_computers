@@ -3,7 +3,7 @@
 // License: Apache License Version 2.0
 
 #include "cmm.h"
-#include <codepage/koi7.h>
+#include <c8080/codepage/koi7.h>
 
 asm(" .org 0xF800");
 

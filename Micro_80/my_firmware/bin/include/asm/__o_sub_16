@@ -1,8 +1,0 @@
-__o_sub_16:
-    ld a, l
-    sub e
-    ld l, a
-    ld a, h
-    sbc d
-    ld h, a
-    ret
