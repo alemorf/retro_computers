@@ -3,6 +3,7 @@
 <meta charset="utf-8">
 <style>
 #video {
+    border: 8px solid black;
     width: 720px;
     height: 640px;
     image-rendering1: -webkit-optimize-contrast;
@@ -20,10 +21,17 @@
     <ul id="softMenu">
       <li onclick="reset()"><div>CP/M</div></li>
       <li onclick="reset(0x10000)"><div>Монитор</div></li>
-      <li onclick="loadBasic80()"><div>Бейсик</div></li>
-      <li onclick="loadColorLines()"><div>Цветные линии</div></li>
-      <li onclick="loadKosoban()"><div>Кособан</div></li>
-      <li onclick="loadFile()"><div>Загрузить файл</div></li>
+      <li onclick="loadUserFile()"><div>Загрузить файл</div></li>
+    </ul>
+  </li>
+  <li><div>Диск B:</div>
+    <ul id="softMenu">
+      <li onclick="resetFloppy(0)"><div>Сброс</div></li>
+    </ul>
+  </li>
+  <li><div>Диск С:</div>
+    <ul id="softMenu">
+      <li onclick="resetFloppy(1)"><div>Сброс</div></li>
     </ul>
   </li>
 </ul>
@@ -36,11 +44,11 @@
 <script src="micro80video.js"></script>
 <script src="micro80keyboard.js"></script>
 <script src="micro80screenkeyboard.js"></script>
+<script src="floppy.js"></script>
+<script src="vg93.js"></script>
 <script src="filetools.js"></script>
-<script src="basic80.js"></script>
-<script src="test.js"></script>
 <script src="menu.js"></script>
-<script src="kosoban.js"></script>
+<script src="filelist.js"></script>
 <script src="micro80.js"></script>
 </body>
 </html>

@@ -19,6 +19,7 @@ ul.menu ul { /* Выпадающее меню */
 ul.menu li { /* Элемент меню */
   list-style: none;
   padding: 0;
+  cursor: default;
 }
 ul.menu div { /* Элемент меню */
   padding: 4px 10px 4px 10px;
@@ -30,7 +31,7 @@ ul.menu div:hover { /* Элемент меню при наведении кур�
 .menu hr { /* Разделитель меню */
   border: none;
   border-top: 1px solid #888;
-  margin: 3px 0 6px 0;
+  margin: 3px 0 3px 0;
 }
 ul.menu .sub { /* Подменю */
     padding-right: 20px;

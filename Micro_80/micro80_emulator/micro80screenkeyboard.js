@@ -62,7 +62,7 @@ function Micro80ScreenKeyboard(parentDocumentElement) {
     html += '<div style="left:750px;top:150px" id="key59">↓</div>';
     html += '<div style="left:800px;top:150px" id="key56">→</div>';
     html += '<div style="left:125px;top:200px;width:395px" id="key54"> </div>';
-    
+
     let div = document.createElement('div');
     div.className = "keyboard";
     div.innerHTML = html;
@@ -71,7 +71,7 @@ function Micro80ScreenKeyboard(parentDocumentElement) {
     let uiObjects = [];
     let keyHandler = null;
     let touchmode = false;
-    
+
     function callKeyHandler(keyCode, press) {
         if (keyHandler)
             keyHandler(keyCode, press);
@@ -111,7 +111,7 @@ function Micro80ScreenKeyboard(parentDocumentElement) {
     this.keyPressed = function(index, pressed) {
         let key = uiObjects[index];
         if (key) {
-            if (pressed)        
+            if (pressed)
                 key.classList.add("p");
             else
                 key.classList.remove("p");

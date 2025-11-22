@@ -6,16 +6,25 @@ const PORT_ROM = 0xFF;
 const PORT_ROM_MASK = 0xFC;
 const PORT_ROM__ENABLE_RAM = 1 << 2;
 const PORT_ROM__ROM_SHIFT = 3;
+const PORT_VG93 = 0xE0;
+const PORT_VG93_MASK = 0xFC;
+const PORT_ROM__FLOPPY_B = 1 << 0;
+const PORT_ROM__FLOPPY_SIDE = 1 << 1;
 
 let ram = new Uint8Array(0x10000);
 let video = new Micro80Video("video", ram);
 let screenKeyboard = new Micro80ScreenKeyboard();
 let keyboard = new Micro80Keyboard(screenKeyboard);
-
-let init = true;
+let floppies = [ new Floppy(0), new Floppy(1) ];
 let portFF = 0;
+let vg93 = new Vg93(floppies, function() {
+    return portFF;
+});
+let init = false;
 
 function readMemory(addr) {
+    //    if (addr == 0x8001)
+    //	return 0x77;
     if (addr < 0x8000 && (portFF & PORT_ROM__ENABLE_RAM) == 0)
         return cpmBios[((addr ^ 0x7FFF) + (portFF >> PORT_ROM__ROM_SHIFT) * 0x8000) % cpmBios.length];
     if (addr >= 0xF800)
@@ -36,7 +45,13 @@ function readIo(addr) {
         return keyboard.read(port7 | 0x100);
     if (addr == 5)
         return keyboard.read(0xFF);
+    if ((addr & PORT_VG93_MASK) == PORT_VG93)
+        return vg93.read(addr & ~PORT_VG93_MASK);
     return 0x82;
+}
+
+function resetFloppy(n) {
+    floppies[n].reset();
 }
 
 function writeIo(addr, byte) {
@@ -44,6 +59,8 @@ function writeIo(addr, byte) {
         port7 = byte;
     else if (addr == 0xFF)
         portFF = byte;
+    else if ((addr & PORT_VG93_MASK) == PORT_VG93)
+        vg93.write(addr & ~PORT_VG93_MASK, byte);
 }
 
 let cpu = new I8080(readMemory, writeMemory, readIo, writeIo);
@@ -81,10 +98,13 @@ function reset(startAddress) {
         }
     } else {
         portFF = 0;
-    }    
+        init = false;
+    }
 }
 
-function loadFile() {
+// File menu
+
+function loadUserFile() {
     loadAs(function(name, data) {
         if (data.length <= 4)
             return;
@@ -96,28 +116,32 @@ function loadFile() {
     });
 }
 
-function loadAny(org, data) {
-    reset(org);
-    for (let i in testApp)
-        ram[(i | 0) + org] = data[i];
-}
+this.loadFile = function(data) {
+    if (data.length <= 4)
+        return;
+    const startAddress = (data[0] << 8) | data[1];
+    const length = Math.min(data.length - 4, 0x10000 - startAddress);
+    reset(startAddress);
+    for (let i = 0; i < length; i++)
+        ram[startAddress + i] = data[4 + i];
+};
 
-function loadBasic80() {
-    loadAny(0, basic80);
-}
+function executeJsFile(url) {
+    var script = document.createElement('script');
+    // script.onload = function() { ... }
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+};
 
-function loadColorLines() {
-    loadAny(0x100, testApp);
-}
+let fileInUrl = (document.URL + "").split("?");
+if (fileInUrl.length == 2)
+    executeJsFile("files/" + fileInUrl[1] + ".rk.js");
 
-function loadKosoban() {
-    loadAny(0x100, kosoban);
+function addFilesInMenu() {
+    let menu = document.getElementById("softMenu");
+    let html = "<hr></hr>";
+    for (let i in fileList)
+        html += "<li onclick='executeJsFile(\"" + fileList[i] + ".js\")'><div>" + fileList[i] + "</div></li>";
+    menu.innerHTML += html;
 }
-
-let fileInUrl = (document.URL+"").split("?");
-if(fileInUrl.length == 2) {
-    if (fileInUrl[1] == "ColorLines") 
-        loadColorLines();
-    else if (fileInUrl[1] == "Kosoban") 
-        loadKosoban();
-}
+addFilesInMenu();
