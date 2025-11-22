@@ -34,7 +34,7 @@ function Floppy(n) {
 
     this.reset = function() {
         data = new Uint8Array(BYTES_COUNT);
-        for (let i = 0; i < size; i++)
+        for (let i in data)
             data[i] = 0xE5;
         this.save();
     };
