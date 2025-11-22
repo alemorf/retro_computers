@@ -4,7 +4,7 @@ all: micro80.bin micro80a.bin micro80b.bin
 
 .PHONY: clean
 clean:
-	rm micro80.bin micro80.lst micro80.asm micro80.bin micro80a.bin 
+	rm micro80.bin micro80.lst micro80.asm micro80a.bin micro80b.bin
 
 micro80.bin: micro80.c Makefile
 	./bin/c8080 -m micro80.c

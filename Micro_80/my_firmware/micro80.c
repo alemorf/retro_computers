@@ -12,55 +12,55 @@
 asm(" .org 0xF800");
 
 // Экран
-const int SCREEN_ATTRIB_BEGIN = 0xE000;
-const int SCREEN_BEGIN = 0xE800;
-const int SCREEN_SIZE = 0x800;
-const int SCREEN_END = SCREEN_BEGIN + SCREEN_SIZE;
-const int SCREEN_WIDTH = 64;
-const int SCREEN_HEIGHT = 25;
-const int SCREEN_ATTRIB_DEFAULT = 0x07;
-const int SCREEN_ATTRIB_BLANK = 0x07;
-const int SCREEN_ATTRIB_UNDERLINE = 1 << 7;
+const uint16_t SCREEN_ATTRIB_BEGIN = 0xE000;
+const uint16_t SCREEN_BEGIN = 0xE800;
+const uint16_t SCREEN_SIZE = 0x800;
+const uint16_t SCREEN_END = SCREEN_BEGIN + SCREEN_SIZE;
+const uint16_t SCREEN_WIDTH = 64;
+const uint16_t SCREEN_HEIGHT = 25;
+const uint8_t SCREEN_ATTRIB_DEFAULT = 0x07;
+const uint8_t SCREEN_ATTRIB_BLANK = 0x07;
+const uint8_t SCREEN_ATTRIB_UNDERLINE = 1 << 7;
 
 // Порты ввода-вывода
-const int PORT_TAPE = 0x01;
-const int PORT_TAPE_BIT = 0x01;
-const int PORT_KEYBOARD_MODE = 0x04;
-const int PORT_KEYBOARD_COLUMN = 0x07;
-const int PORT_KEYBOARD_ROW = 0x06;
-const int PORT_KEYBOARD_MODS = 0x05;
-const int PORT_EXT_DATA = 0xA0;
-const int PORT_EXT_ADDR_LOW = 0xA1;
-const int PORT_EXT_ADDR_HIGH = 0xA2;
-const int PORT_EXT_MODE = 0xA3;
+const uint8_t PORT_TAPE = 0x01;
+const uint8_t PORT_TAPE_BIT = 0x01;
+const uint8_t PORT_KEYBOARD_MODE = 0x04;
+const uint8_t PORT_KEYBOARD_COLUMN = 0x07;
+const uint8_t PORT_KEYBOARD_ROW = 0x06;
+const uint8_t PORT_KEYBOARD_MODS = 0x05;
+const uint8_t PORT_EXT_DATA = 0xA0;
+const uint8_t PORT_EXT_ADDR_LOW = 0xA1;
+const uint8_t PORT_EXT_ADDR_HIGH = 0xA2;
+const uint8_t PORT_EXT_MODE = 0xA3;
 
 // Клавиатура
-const int KEYBOARD_ROW_MASK = 0x7F;
-const int KEYBOARD_MODS_MASK = 0x07;
-const int KEYBOARD_RUS_MOD = 1 << 0;
-const int KEYBOARD_US_MOD = 1 << 1;
-const int KEYBOARD_SHIFT_MOD = 1 << 2;
-const int KEYBOARD_COLUMN_COUNT = 8;
-const int KEYBOARD_ROW_COUNT = 7;
-const int KEYBOARD_MODE_RUS = 1 << 0;
-const int KEYBOARD_MODE_CAP = 1 << 1;
-const int SCAN_RUS = 54;
-const int KEY_RUS = 254;
-const int KEY_BACKSPACE = 0x7F;
+const uint8_t KEYBOARD_ROW_MASK = 0x7F;
+const uint8_t KEYBOARD_MODS_MASK = 0x07;
+const uint8_t KEYBOARD_RUS_MOD = 1 << 0;
+const uint8_t KEYBOARD_US_MOD = 1 << 1;
+const uint8_t KEYBOARD_SHIFT_MOD = 1 << 2;
+const uint8_t KEYBOARD_COLUMN_COUNT = 8;
+const uint8_t KEYBOARD_ROW_COUNT = 7;
+const uint8_t KEYBOARD_MODE_RUS = 1 << 0;
+const uint8_t KEYBOARD_MODE_CAP = 1 << 1;
+const uint8_t SCAN_RUS = 54;
+const uint8_t KEY_RUS = 254;
+const uint8_t KEY_BACKSPACE = 0x7F;
 
 // Константы магнитофона
-const int READ_TAPE_FIRST_BYTE = 0xFF;
-const int READ_TAPE_NEXT_BYTE = 8;
-const int TAPE_START = 0xE6;
-const int TAPE_SPEED = 0x3854;
+const uint8_t READ_TAPE_FIRST_BYTE = 0xFF;
+const uint8_t READ_TAPE_NEXT_BYTE = 8;
+const uint8_t TAPE_START = 0xE6;
+const uint16_t TAPE_SPEED = 0x3854;
 
 // Опкоды процессора КР580ВМ80А
-const int OPCODE_JMP = 0xC3;
-const int OPCODE_RST_30 = 0xF7;
-const int OPCODE_RST_38 = 0xFF;
+const uint8_t OPCODE_JMP = 0xC3;
+const uint8_t OPCODE_RST_30 = 0xF7;
+const uint8_t OPCODE_RST_38 = 0xFF;
 
 // Прочие константы
-const int STACK_TOP = 0xF800;
+const uint16_t STACK_TOP = 0xF800;
 
 // Вектора перываний
 extern uint8_t rst30Opcode __address(0x30);
@@ -1118,7 +1118,7 @@ retry:  // Сдвиг результата
             if ((a = c) == TAPE_START) {
                 tapePolarity = (a ^= a);
             } else {
-                if (a != ~TAPE_START)
+                if (a != (TAPE_START ^ 0xFF))
                     goto retry;
                 tapePolarity = a = 255;
             }
@@ -1421,7 +1421,7 @@ void MoveCursorRight(...) {
     MoveCursorBoundary(hl);
 }
 
-const int ZERO_LINE = (SCREEN_BEGIN >> 6) & 0xFF;
+const uint8_t ZERO_LINE = (SCREEN_BEGIN >> 6) & 0xFF;
 
 void MoveCursorBoundary(...) {
     push_pop(hl) {
@@ -1477,7 +1477,7 @@ void TryScrollUp(...) {
                 } while ((a = h) != (SCREEN_BEGIN >> 8) - 1);
             }
             l--;
-        } while ((a = l) != SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_HEIGHT - 1 - SCREEN_WIDTH);
+        } while ((a = l) != ((SCREEN_BEGIN + SCREEN_WIDTH * SCREEN_HEIGHT - 1 - SCREEN_WIDTH) & 0xFF));
     }
     MoveCursorUp();
 }
