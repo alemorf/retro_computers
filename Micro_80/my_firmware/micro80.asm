@@ -52,7 +52,7 @@ jmpparam1 equ 63348
 ; 83 void PopRet();
 ; 84 void IncHl(...);
 ; 85 void CtrlC(...);
-; 86 void PrintCrLfTab();	
+; 86 void PrintCrLfTab();
 ; 87 void PrintHexByteFromHlSpace(...);
 ; 88 void PrintHexByteSpace(...);
 ; 89 #ifdef CMD_R_ENABLED
