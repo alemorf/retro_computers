@@ -175,8 +175,9 @@ void Menu(...) {
         for (;;) {
             /* Ожидание нажатия клавиши */
             do {
-                push_pop(de, hl)
+                push_pop(de, hl) {
                     ReadKeyboard();
+                }
             } while(flag_z);
 
             /* Обработка нажатых клавиш */

@@ -53,7 +53,9 @@ void CpmSelDsk() {
 }
 
 void CpmSetTrk() {
-    drive_track = hl = bc;
+    h = b;
+    l = c;
+    drive_track = hl;
 }
 
 void CpmSetSec() {

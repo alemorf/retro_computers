@@ -41,13 +41,13 @@ void DrawChar4(...) {
     a = h;
     c = a;
     a |= a;
-    CarryRotateRight(a);
+    carry_rotate_right(a);
     invert(a);
     d = a;
 
     /* Calc chargen address */
     a = b;
-    SET_HL_A_PLUS_CONST(&font4);
+    SET_HL_A_PLUS_CONST(font4);
 
     /* Select function */
     if (flag_nz((a = c) &= 1))
@@ -196,14 +196,14 @@ void DrawCursor4() {
     /* Координаты в адрес */
     a = h;
     a |= a;
-    CarryRotateRight(a);
-    Invert(a);
+    carry_rotate_right(a);
+    invert(a);
     d = a;
     a = l;
     a *= 4;
     a += l;
     a += a;
-    Invert(a);
+    invert(a);
     e = a;
 
     /* Маска курсора */

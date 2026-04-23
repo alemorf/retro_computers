@@ -9,12 +9,12 @@ uint8_t cursor_visible = 0;
 uint8_t cursor_visible_1 = 0;
 uint8_t cursor_y = 0;
 uint8_t cursor_x = 0;
-extern uint16_t cursor_y_l_x_h __address(cursor_y);
+extern uint16_t cursor_y_l_x_h __address("cursor_y");
 uint8_t esc_param;
 uint8_t esc_param_2;
 uint16_t esc_param_ptr;
 uint16_t long_code;
-extern uint8_t long_code_high __address(long_code + 1);
+extern uint8_t long_code_high __address("long_code + 1");
 uint8_t console_xlat[256];
 uint8_t console_xlat_back[256];
 uint8_t con_attrib = 0;
@@ -27,7 +27,7 @@ uint8_t con_color_3;
 
 /* Звуковой сигнал */
 void Beep(...) {
-    DisableInterrupts();
+    disable_interrupts();
     c = 0; /* Длительность */
     do {
         out(PORT_TAPE_OUT, a);
@@ -36,7 +36,7 @@ void Beep(...) {
         } while (flag_nz(a--));
         c--;
     } while (flag_nz(c--));
-    EnableInterrupts();
+    enable_interrupts();
 }
 
 void BeginConsoleChange() {
@@ -46,10 +46,10 @@ void BeginConsoleChange() {
 
     /* Стираем курсор */
     hl = &cursor_visible;
-    DisableInterrupts();
+    disable_interrupts();
     a = *hl;
     *hl = 0;
-    EnableInterrupts();
+    enable_interrupts();
     if (a == 3) {
         DrawCursor(hl = cursor_y_l_x_h);
         a = 1;
@@ -93,7 +93,7 @@ void ConNextLine() {
 
 void ConPrintChar(...) {
     /* Преобразование кодировки */
-    SET_HL_A_PLUS_CONST(&console_xlat);
+    SET_HL_A_PLUS_CONST(console_xlat);
     a = *hl;
 
     /* Рисование символа */
@@ -120,9 +120,9 @@ void ConEraseInLine() {
 
             /* Смещение в байтах */
             a = h;
-            CyclicRotateRight(a, 2);
+            cyclic_rotate_right(a, 2);
             a &= 0x3F;
-            Invert(a);
+            invert(a);
             h = a;
             swap(hl, de);
 
@@ -151,7 +151,7 @@ void ConFindColor() {
     if (a == l)
         return;
     b++;
-    Compare(a, h);
+    compare(a, h);
 }
 
 void ConUpdateColor() {
@@ -172,7 +172,7 @@ void ConUpdateColor() {
         d = 10;
         b = 1; /* По умолчанию цвет 1 */
         a = con_attrib;
-        if (flag_c(CyclicRotateRight(a))) {
+        if (flag_c(cyclic_rotate_right(a))) {
             b = 2; /* Цвет 2 для теста, если установлен атрибут bright */
         } else if (flag_nz(a &= 0x1F)) {
             b = 3; /* Цвет 3 для теста, если установлены атрибуты атрибуты: dim, underscore, blink */
@@ -278,7 +278,7 @@ void CpmConoutCsi2() {
             b = a;
             a = 0x80;
             do {
-                CyclicRotateLeft(a);
+                cyclic_rotate_left(a);
             } while(flag_nz(b--));
             hl = &con_attrib;
             *hl = (a |= *hl);
@@ -431,17 +431,17 @@ uint8_t console_xlat_1251[] = {
     0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef
 };
 
-uint16_t codepages[] = {
-    &console_xlat_koi7,
-    &console_xlat_koi8,
-    &console_xlat_1251,
-};
+/*uint16_t codepages[] = {
+    console_xlat_koi7,
+    console_xlat_koi8,
+    console_xlat_1251,
+};*/
 
 void ConSetXlat(...) {
     /* Сброс таблиц */
     push_pop(a) {
-        de = &console_xlat;
-        hl = &console_xlat_back;
+        de = console_xlat;
+        hl = console_xlat_back;
         a ^= a;
         b = '?';
         do {
@@ -455,13 +455,13 @@ void ConSetXlat(...) {
     /* Коррекция */
     if (flag_nz(a |= a)) {
         if (flag_z(a--))
-            de = &console_xlat_1251;
+            de = console_xlat_1251;
         else if (flag_z(a--))
-            de = &console_xlat_koi7;
+            de = console_xlat_koi7;
         else
-            de = &console_xlat_koi8;
+            de = console_xlat_koi8;
         c = a = *de;
-        SET_HL_A_PLUS_CONST(&console_xlat);
+        SET_HL_A_PLUS_CONST(console_xlat);
         do {
             de++;
             *hl = a = *de;
@@ -470,11 +470,11 @@ void ConSetXlat(...) {
     }
 
     /* Расчет обратной таблицы */
-    de = &console_xlat + 0xFF;
+    de = console_xlat + 0xFF;
     c = 0xFF;
     do {
         a = *de;
-        SET_HL_A_PLUS_CONST(&console_xlat_back);
+        SET_HL_A_PLUS_CONST(console_xlat_back);
         *hl = c;
         de--;
     } while(flag_nz(c--));
@@ -584,12 +584,12 @@ void CpmConin() {
         if (a >= KEY_F1) {
             a -= KEY_F1;
             a *= 4;
-            SET_HL_A_PLUS_CONST(&con_special_keys);
+            SET_HL_A_PLUS_CONST(con_special_keys);
             long_code = hl;
             a = KEY_ESC;
         }
     }
     /* Преборвазование в выбранную кодировку */
-    SET_HL_A_PLUS_CONST(&console_xlat_back);
+    SET_HL_A_PLUS_CONST(console_xlat_back);
     d = *hl;
 }

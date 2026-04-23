@@ -25,9 +25,9 @@ uint8_t key_pressed = 0;
 uint8_t key_delay = 0;
 uint8_t key_rus = 0;
 extern uint8_t key_buffer[KEY_BUFFER_SIZE];
-uint8_t key_read = &key_buffer;
-uint8_t key_write = &key_buffer;
-extern uint16_t key_read_l_write_h __address(key_read);
+uint8_t key_read = key_buffer;
+uint8_t key_write = key_buffer;
+extern uint16_t key_read_l_write_h __address("key_read");
 
 /* Влияние SHIFT, CAP, NUM на нажатую клавишу */
 
@@ -132,7 +132,7 @@ uint8_t key_layout_table[] = {
 void CheckKeyboard() {
     /* Если буфер пуст, то выходим с флагом Z */
     hl = key_read_l_write_h;
-    Compare(a = h, l);
+    compare(a = h, l);
 }
 
 void ReadKeyboard() {
@@ -142,13 +142,13 @@ void ReadKeyboard() {
         return; /* Флаг Z */
 
     /* Считываем из буфера слово в DE */
-    h = &key_buffer >> 8;
+    h = (uintptr_t)key_buffer >> 8;
     d = *hl;
     l++;
 
     /* Если мы достигли конца буфера, то начинаем сначала */
     a = l;
-    if (a == &key_buffer + KEY_BUFFER_SIZE)
+    if (a == (uintptr_t)key_buffer + KEY_BUFFER_SIZE)
         a = &key_buffer;
     key_read = a;
 
@@ -159,12 +159,12 @@ void ReadKeyboard() {
 void KeyPush(...) {
     push_pop(hl) {
         hl = key_read_l_write_h;
-        h = &key_buffer >> 8;
+        h = (uintptr_t)key_buffer >> 8;
         *hl = a;
         l++;
         a = l;
-        if (a == ((&key_buffer + KEY_BUFFER_SIZE) & 0xFF))
-            a = &key_buffer;
+        if (a == (((uintptr_t)key_buffer + KEY_BUFFER_SIZE) & 0xFF))
+            a = key_buffer;
         key_write = a;
     }
     // TODO: keyboard_read == keyboard_write
@@ -211,7 +211,7 @@ void KeyPressed() {
     /* Если нажат CTR, то сканируем по таблице ctrLayout */
     if (flag_nz((a = e) &= MOD_CTR)) {
         a = d;
-        SET_HL_A_PLUS_CONST(&ctrLayout);
+        SET_HL_A_PLUS_CONST(ctrLayout);
         a = *hl;
         KeyPush(a);
         return;
@@ -219,7 +219,7 @@ void KeyPressed() {
 
     /* Определяем влияние SHIFT, CAP, NUM, RUS на нажатую клавишу */
     a = d;
-    SET_HL_A_PLUS_CONST(&shiftLayout);
+    SET_HL_A_PLUS_CONST(shiftLayout);
     if (flag_nz((a = key_rus) |= a)) {  // TODO: use e
         a = LAYOUT_SIZE;
         ADD_HL_A
@@ -244,7 +244,7 @@ void KeyPressed() {
     /* Преобразование по таблице */
     a = d;
     a += h;
-    SET_HL_A_PLUS_CONST(&key_layout_table);
+    SET_HL_A_PLUS_CONST(key_layout_table);
     if (flag_nz((a = key_rus) |= a)) {
         a = LAYOUT_SIZE * 2;
         ADD_HL_A
@@ -257,7 +257,7 @@ void KeyPressed() {
 void InterruptHandler() {
     /* Выходим, если не было кадрового прерывания */
     a = in(PORT_FRAME_IRQ_RESET);
-    CyclicRotateRight(a);
+    cyclic_rotate_right(a);
     if (flag_c)
         return;
 
@@ -291,14 +291,14 @@ void InterruptHandler() {
 
     /* Сканирование клавиш CTL, SHIFT */
     out(PORT_KEYBOARD, (a = key_leds) |= 8);
-    a = In(PORT_KEYBOARD);
+    a = in(PORT_KEYBOARD);
     a &= 8;
     a = key_leds;
     if (flag_nz)
         a |= MOD_CTR;
     e = a;
     out(PORT_KEYBOARD, (a = key_leds) |= 3);
-    a = In(PORT_KEYBOARD);
+    a = in(PORT_KEYBOARD);
     a &= 8;
     if (flag_nz)
         e = ((a = MOD_SHIFT) |= e);
@@ -307,7 +307,7 @@ void InterruptHandler() {
     b = 9;
     do {
         out(PORT_KEYBOARD, (a = key_leds) |= b);
-        a = In(PORT_KEYBOARD);
+        a = in(PORT_KEYBOARD);
         if (flag_nz(a |= a)) {
             c = 7;
             do {

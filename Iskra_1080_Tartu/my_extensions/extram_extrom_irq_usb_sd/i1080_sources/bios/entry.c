@@ -10,7 +10,7 @@ void Reboot() {
 /* Тут сохраняется размер прошивки */
 
 extern uint16_t file_end;
-uint16_t sector_count = (&file_end + 127) / 128;
+uint16_t sector_count = ((uintptr_t)&file_end + 127) / 128;
 
 /* Точки входа */
 
@@ -73,9 +73,10 @@ void EntryCpmPrSta() {
 asm(" org 0x38");
 
 void EntryInterrupt() {
-    push_pop(a, bc, de, hl)
+    push_pop(a, bc, de, hl) {
         InterruptHandler();
-    EnableInterrupts();
+    }
+    enable_interrupts();
 }
 
 /* Буфер должен распологаться в одной 256-байтной странице */

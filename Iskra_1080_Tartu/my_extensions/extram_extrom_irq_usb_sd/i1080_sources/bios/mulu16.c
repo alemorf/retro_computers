@@ -1,7 +1,9 @@
+#include <cmm.h>
 #include "mulu16.h"
 
 void MulU16(...) {
-    bc = hl;
+    b = h;
+    c = l;
     hl = 0;
     a = 17;
     for (;;) {

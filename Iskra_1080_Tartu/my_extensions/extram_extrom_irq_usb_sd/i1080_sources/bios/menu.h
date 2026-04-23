@@ -1,8 +1,8 @@
 #pragma once
 
-const int MIT_RETURN = 0;
-const int MIT_SUBMENU = 1;
-const int MIT_JUMP = 2;
+static const int MIT_RETURN = 0;
+static const int MIT_SUBMENU = 1;
+static const int MIT_JUMP = 2;
 
 /* Меню
  * Вход:

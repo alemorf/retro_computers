@@ -39,7 +39,7 @@ void StartBasic();
 void SaveConfig() {
     /* Расчет контрольной суммы */
     hl = &cfg_begin;
-    c = &cfg_check_sum - &cfg_begin;
+    c = &cfg_check_sum - cfg_begin;
     a = 0xAA;
     do {
         a ^= *hl;
@@ -48,7 +48,7 @@ void SaveConfig() {
     *hl = a;
 
     /* Сохранение */
-    return WriteConfig(hl = &cfg_begin, c = &cfg_check_sum - &cfg_begin + 1);
+    return WriteConfig(hl = cfg_begin, c = &cfg_check_sum - cfg_begin + 1);
 }
 
 uint16_t menu_screen[] = {
@@ -140,26 +140,26 @@ uint16_t menu_color[] = {
 
 uint16_t menu_root[] = {
     "Искра 1080М",
-    "Запуск CP/M", MIT_JUMP, &StartCpm, 0,
-    "Запуск T-BASIC", MIT_JUMP, &StartBasic, 0,
+    "Запуск CP/M", MIT_JUMP, StartCpm, 0,
+    "Запуск T-BASIC", MIT_JUMP, StartBasic, 0,
     "", 0, 0, 0,
-    "Кодировка", MIT_SUBMENU, &menu_code_page, &cfg_codepage,
-    "Экран", MIT_SUBMENU, &menu_screen, &cfg_screen_mode,
-    "Цвет 0", MIT_SUBMENU, &menu_color, &cfg_color_0,
-    "Цвет 1", MIT_SUBMENU, &menu_color, &cfg_color_1,
-    "Цвет 2", MIT_SUBMENU, &menu_color, &cfg_color_2,
-    "Цвет 3", MIT_SUBMENU, &menu_color, &cfg_color_3,
+    "Кодировка", MIT_SUBMENU, menu_code_page, &cfg_codepage,
+    "Экран", MIT_SUBMENU, menu_screen, &cfg_screen_mode,
+    "Цвет 0", MIT_SUBMENU, menu_color, &cfg_color_0,
+    "Цвет 1", MIT_SUBMENU, menu_color, &cfg_color_1,
+    "Цвет 2", MIT_SUBMENU, menu_color, &cfg_color_2,
+    "Цвет 3", MIT_SUBMENU, menu_color, &cfg_color_3,
     "", 0, 0, 0,
-    "UART скорость", MIT_SUBMENU, &menu_uart_baud_rate, &cfg_uart_baud_rate,
-    "UART бит данных", MIT_SUBMENU, &menu_uart_data_bits, &cfg_uart_data_bits,
-    "UART чётность", MIT_SUBMENU, &menu_uart_parity, &cfg_uart_parity,
-    "UART стоп биты", MIT_SUBMENU, &menu_uart_stop_bits, &cfg_uart_stop,
-    "UART контроль", MIT_SUBMENU, &menu_uart_flow, &cfg_uart_flow,
+    "UART скорость", MIT_SUBMENU, menu_uart_baud_rate, &cfg_uart_baud_rate,
+    "UART бит данных", MIT_SUBMENU, menu_uart_data_bits, &cfg_uart_data_bits,
+    "UART чётность", MIT_SUBMENU, menu_uart_parity, &cfg_uart_parity,
+    "UART стоп биты", MIT_SUBMENU, menu_uart_stop_bits, &cfg_uart_stop,
+    "UART контроль", MIT_SUBMENU, menu_uart_flow, &cfg_uart_flow,
     "", 0, 0, 0,
-    "Диск A:", MIT_SUBMENU, &menu_drive, &cfg_drive_0,
-    "Диск B:", MIT_SUBMENU, &menu_drive, &cfg_drive_1,
+    "Диск A:", MIT_SUBMENU, menu_drive, &cfg_drive_0,
+    "Диск B:", MIT_SUBMENU, menu_drive, &cfg_drive_1,
     "", 0, 0, 0,
-    "Сохранить настройки", MIT_JUMP, &SaveConfig, 0,
+    "Сохранить настройки", MIT_JUMP, SaveConfig, 0,
     0
 };
 
@@ -174,11 +174,11 @@ void main() {
     out(PORT_WINDOW(3), a = PAGE_STD);
 
     /* Чтение настроек */
-    ReadConfig(hl = SCREEN_0_ADDRESS, c = &cfg_check_sum - &cfg_begin + 1);
+    ReadConfig(hl = SCREEN_0_ADDRESS, c = &cfg_check_sum - cfg_begin + 1);
     if (flag_z) {
         /* Проверка контрольной суммы */
         hl = SCREEN_0_ADDRESS;
-        c = &cfg_check_sum - &cfg_begin + 1;
+        c = &cfg_check_sum - cfg_begin + 1;
         a = 0xAA;
         do {
             a ^= *hl;
@@ -186,7 +186,7 @@ void main() {
         } while(flag_nz(c--));
         /* Если контрольная сумма ОК, то применяем настройки */
         if (a == 0)
-            MEMCPY8(&cfg_begin, SCREEN_0_ADDRESS, &cfg_check_sum - &cfg_begin);
+            MEMCPY8(&cfg_begin, SCREEN_0_ADDRESS, &cfg_check_sum - cfg_begin);
     }
 
     /* Очистка экрана и запуск прерываний */
@@ -206,17 +206,17 @@ void main() {
 }
 
 void StartBasic4000() {
-    Out(PORT_WINDOW(0), a = 1);
-    Out(PORT_ROM_0000, a ^= a);
+    out(PORT_WINDOW(0), a = 1);
+    out(PORT_ROM_0000, a ^= a);
     return 0();
 }
 
 void StartBasic() {
-    DisableInterrupts();
-    Out(PORT_WINDOW(1), a = PAGE_STD);
-    Out(PORT_WINDOW(2), a);
-    Out(PORT_WINDOW(3), a);
-    MEMCPY8(0x4000, &StartBasic4000, &StartBasic - &StartBasic4000);
+    disable_interrupts();
+    out(PORT_WINDOW(1), a = PAGE_STD);
+    out(PORT_WINDOW(2), a);
+    out(PORT_WINDOW(3), a);
+    MEMCPY8(0x4000, (uintptr_t)StartBasic4000, (uintptr_t)StartBasic - (uintptr_t)StartBasic4000);
     0x4000();
 }
 
@@ -236,13 +236,13 @@ void StartCpm() {
 
     SetColor(a = 3);
     ClearScreen();
-    Out(PORT_PALETTE(0), a = cfg_color_0);
+    out(PORT_PALETTE(0), a = cfg_color_0);
     con_color_0 = ((a ^= 7) &= 7);
-    Out(PORT_PALETTE(1), a = cfg_color_1);
+    out(PORT_PALETTE(1), a = cfg_color_1);
     con_color_1 = ((a ^= 7) &= 7);
-    Out(PORT_PALETTE(2), a = cfg_color_2);
+    out(PORT_PALETTE(2), a = cfg_color_2);
     con_color_2 = ((a ^= 7) &= 7);
-    Out(PORT_PALETTE(3), a = cfg_color_3);
+    out(PORT_PALETTE(3), a = cfg_color_3);
     con_color_3 = ((a ^= 7) &= 7);
     DrawText(c = 0, de = 0, hl = "Искра 1080М");
     ConUpdateColor();

@@ -20,7 +20,7 @@ void CpmRead();
 void CpmWrite();
 void CpmPrSta();
 
-extern uint16_t entry_cpm_conout_address __address(EntryCpmConout + 1);
+extern uint16_t entry_cpm_conout_address __address("entrycpmconout + 1");
 
 extern uint8_t cpm_dph_a __address(0xFF60);
 extern uint8_t cpm_dph_b __address(0xFF70);
