@@ -105,4 +105,4 @@ void Entry2() {
     return Start();
 }
 
-asm(" savebin \"loader.bin\", 0, 10000h");
+asm(" savebin \"loader.bin\", 0, 0FFFFh");
