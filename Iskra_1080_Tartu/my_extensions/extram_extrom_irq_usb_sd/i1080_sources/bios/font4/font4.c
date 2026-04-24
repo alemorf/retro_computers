@@ -22,10 +22,9 @@ int main(int argc, char** argv) {
     if (read(s, buf, sizeof(buf)) != sizeof(buf)) {
         fprintf(stderr, "Can't read file %s, error %i\n", argv[1], errno);
         return 1;
-    }    
+    }
     unsigned i;
-    for (i = 0; i < sizeof(buf); i++)
-        buf[i] = (buf[i] << 4) | (buf[i] & 0x0F);
+    for (i = 0; i < sizeof(buf); i++) buf[i] = (buf[i] << 4) | (buf[i] & 0x0F);
     if (write(d, buf, sizeof(buf)) != sizeof(buf)) {
         fprintf(stderr, "Can't read file %s, error %i\n", argv[1], errno);
         return 1;

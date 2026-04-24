@@ -1,3 +1,20 @@
+/*
+ * Iskra 1080 Extension card firmware
+ * Copyright (c) 2026 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "bios.h"
 #include "graph.h"
 #include "graph4.h"
@@ -51,117 +68,189 @@ void SaveConfig() {
     return WriteConfig(hl = cfg_begin, c = &cfg_check_sum - cfg_begin + 1);
 }
 
-uint16_t menu_screen[] = {
-    "Выберите режим экрана",
-    "64x25 2 цвета", 0, 0, 0,
-    "64x25 4 цвета", 0, 1, 0,
-    "96x25 2 цвета", 0, 2, 0,
-    "96x25 4 цвета", 0, 3, 0,
-    0
-};
+uint16_t menu_screen[] = {"Выберите режим экрана",
+                          "64x25 2 цвета",
+                          0,
+                          0,
+                          0,
+                          "64x25 4 цвета",
+                          0,
+                          1,
+                          0,
+                          "96x25 2 цвета",
+                          0,
+                          2,
+                          0,
+                          "96x25 4 цвета",
+                          0,
+                          3,
+                          0,
+                          0};
 
 uint16_t menu_drive[] = {
-    "Выберите дисковод",
-    "Реальный A", 0, 0, 0,
-    "Реальный B", 0, 1, 0,
-    "USB флешка / SD карта", 0, 2, 0,
-    0
-};
+    "Выберите дисковод", "Реальный A", 0, 0, 0, "Реальный B", 0, 1, 0, "USB флешка / SD карта", 0, 2, 0, 0};
 
 uint16_t menu_code_page[] = {
-    "Выберите кодировку",
-    "866", 0, 0, 0,
-    "1251", 0, 1, 0,
-    "КОИ-7", 0, 2, 0,
-    "КОИ-8", 0, 3, 0,
-    0
-};
+    "Выберите кодировку", "866", 0, 0, 0, "1251", 0, 1, 0, "КОИ-7", 0, 2, 0, "КОИ-8", 0, 3, 0, 0};
 
 uint16_t menu_uart_baud_rate[] = {
-    "Выберите скорость UART",
-    "1200 бод", 0, 0, 0,
-    "2400 бод", 0, 1, 0,
-    "4800 бод", 0, 2, 0,
-    "9600 бод", 0, 3, 0,
-    0
-};
+    "Выберите скорость UART", "1200 бод", 0, 0, 0, "2400 бод", 0, 1, 0, "4800 бод", 0, 2, 0, "9600 бод", 0, 3, 0, 0};
 
 uint16_t menu_uart_data_bits[] = {
-    "Выберите кол-во бит данных UART",
-    "5", 0, 0, 0,
-    "6", 0, 1, 0,
-    "7", 0, 2, 0,
-    "8", 0, 3, 0,
-    0
-};
+    "Выберите кол-во бит данных UART", "5", 0, 0, 0, "6", 0, 1, 0, "7", 0, 2, 0, "8", 0, 3, 0, 0};
 
-uint16_t menu_uart_stop_bits[] = {
-    "Выберите кол-во стоповых бит UART",
-    "1", 0, 0, 0,
-    "1.5", 0, 1, 0,
-    "2", 0, 2, 0,
-    0
-};
+uint16_t menu_uart_stop_bits[] = {"Выберите кол-во стоповых бит UART", "1", 0, 0, 0, "1.5", 0, 1, 0, "2", 0, 2, 0, 0};
 
 uint16_t menu_uart_parity[] = {
-    "Выберите контроль чётности UART",
-    "Нет", 0, 0, 0,
-    "Чётный", 0, 1, 0,
-    "Не чётный", 0, 2, 0,
-    0
-};
+    "Выберите контроль чётности UART", "Нет", 0, 0, 0, "Чётный", 0, 1, 0, "Не чётный", 0, 2, 0, 0};
 
-uint16_t menu_uart_flow[] = {
-    "Выберите контроль потоком UART",
-    "Нет", 0, 0, 0,
-    "CTS/RTS", 0, 1, 0,
-    0
-};
+uint16_t menu_uart_flow[] = {"Выберите контроль потоком UART", "Нет", 0, 0, 0, "CTS/RTS", 0, 1, 0, 0};
 
-uint16_t menu_color[] = {
-    "Выберите цвет",
-    "Чёрный", 0, PALETTE_BLACK, 0,
-    "Тёмно-красный", 0, PALETTE_DARK_RED, 0,
-    "Тёмно-зелёный", 0, PALETTE_DARK_GREEN, 0,
-    "Тёмно-жёлтый", 0, PALETTE_DARK_YELLOW, 0,
-    "Тёмно-синий", 0, PALETTE_DARK_BLUE, 0,
-    "Тёмно-фиолетовый", 0, PALETTE_DARK_MAGENTA, 0,
-    "Темно-голубой", 0, PALETTE_DARK_CYAN, 0,
-    "Серый", 0, PALETTE_GRAY, 0,
-    "Красный", 0, PALETTE_RED, 0,
-    "Зеленый", 0, PALETTE_GREEN, 0,
-    "Жёлтый", 0, PALETTE_YELLOW, 0,
-    "Синий", 0, PALETTE_BLUE, 0,
-    "Фиолетовый", 0, PALETTE_MAGENTA, 0,
-    "Голубой", 0, PALETTE_CYAN, 0,
-    "Белый", 0, PALETTE_WHITE, 0,
-    0
-};
+uint16_t menu_color[] = {"Выберите цвет",
+                         "Чёрный",
+                         0,
+                         PALETTE_BLACK,
+                         0,
+                         "Тёмно-красный",
+                         0,
+                         PALETTE_DARK_RED,
+                         0,
+                         "Тёмно-зелёный",
+                         0,
+                         PALETTE_DARK_GREEN,
+                         0,
+                         "Тёмно-жёлтый",
+                         0,
+                         PALETTE_DARK_YELLOW,
+                         0,
+                         "Тёмно-синий",
+                         0,
+                         PALETTE_DARK_BLUE,
+                         0,
+                         "Тёмно-фиолетовый",
+                         0,
+                         PALETTE_DARK_MAGENTA,
+                         0,
+                         "Темно-голубой",
+                         0,
+                         PALETTE_DARK_CYAN,
+                         0,
+                         "Серый",
+                         0,
+                         PALETTE_GRAY,
+                         0,
+                         "Красный",
+                         0,
+                         PALETTE_RED,
+                         0,
+                         "Зеленый",
+                         0,
+                         PALETTE_GREEN,
+                         0,
+                         "Жёлтый",
+                         0,
+                         PALETTE_YELLOW,
+                         0,
+                         "Синий",
+                         0,
+                         PALETTE_BLUE,
+                         0,
+                         "Фиолетовый",
+                         0,
+                         PALETTE_MAGENTA,
+                         0,
+                         "Голубой",
+                         0,
+                         PALETTE_CYAN,
+                         0,
+                         "Белый",
+                         0,
+                         PALETTE_WHITE,
+                         0,
+                         0};
 
-uint16_t menu_root[] = {
-    "Искра 1080М",
-    "Запуск CP/M", MIT_JUMP, StartCpm, 0,
-    "Запуск T-BASIC", MIT_JUMP, StartBasic, 0,
-    "", 0, 0, 0,
-    "Кодировка", MIT_SUBMENU, menu_code_page, &cfg_codepage,
-    "Экран", MIT_SUBMENU, menu_screen, &cfg_screen_mode,
-    "Цвет 0", MIT_SUBMENU, menu_color, &cfg_color_0,
-    "Цвет 1", MIT_SUBMENU, menu_color, &cfg_color_1,
-    "Цвет 2", MIT_SUBMENU, menu_color, &cfg_color_2,
-    "Цвет 3", MIT_SUBMENU, menu_color, &cfg_color_3,
-    "", 0, 0, 0,
-    "UART скорость", MIT_SUBMENU, menu_uart_baud_rate, &cfg_uart_baud_rate,
-    "UART бит данных", MIT_SUBMENU, menu_uart_data_bits, &cfg_uart_data_bits,
-    "UART чётность", MIT_SUBMENU, menu_uart_parity, &cfg_uart_parity,
-    "UART стоп биты", MIT_SUBMENU, menu_uart_stop_bits, &cfg_uart_stop,
-    "UART контроль", MIT_SUBMENU, menu_uart_flow, &cfg_uart_flow,
-    "", 0, 0, 0,
-    "Диск A:", MIT_SUBMENU, menu_drive, &cfg_drive_0,
-    "Диск B:", MIT_SUBMENU, menu_drive, &cfg_drive_1,
-    "", 0, 0, 0,
-    "Сохранить настройки", MIT_JUMP, SaveConfig, 0,
-    0
-};
+uint16_t menu_root[] = {"Искра 1080М",
+                        "Запуск CP/M",
+                        MIT_JUMP,
+                        StartCpm,
+                        0,
+                        "Запуск T-BASIC",
+                        MIT_JUMP,
+                        StartBasic,
+                        0,
+                        "",
+                        0,
+                        0,
+                        0,
+                        "Кодировка",
+                        MIT_SUBMENU,
+                        menu_code_page,
+                        &cfg_codepage,
+                        "Экран",
+                        MIT_SUBMENU,
+                        menu_screen,
+                        &cfg_screen_mode,
+                        "Цвет 0",
+                        MIT_SUBMENU,
+                        menu_color,
+                        &cfg_color_0,
+                        "Цвет 1",
+                        MIT_SUBMENU,
+                        menu_color,
+                        &cfg_color_1,
+                        "Цвет 2",
+                        MIT_SUBMENU,
+                        menu_color,
+                        &cfg_color_2,
+                        "Цвет 3",
+                        MIT_SUBMENU,
+                        menu_color,
+                        &cfg_color_3,
+                        "",
+                        0,
+                        0,
+                        0,
+                        "UART скорость",
+                        MIT_SUBMENU,
+                        menu_uart_baud_rate,
+                        &cfg_uart_baud_rate,
+                        "UART бит данных",
+                        MIT_SUBMENU,
+                        menu_uart_data_bits,
+                        &cfg_uart_data_bits,
+                        "UART чётность",
+                        MIT_SUBMENU,
+                        menu_uart_parity,
+                        &cfg_uart_parity,
+                        "UART стоп биты",
+                        MIT_SUBMENU,
+                        menu_uart_stop_bits,
+                        &cfg_uart_stop,
+                        "UART контроль",
+                        MIT_SUBMENU,
+                        menu_uart_flow,
+                        &cfg_uart_flow,
+                        "",
+                        0,
+                        0,
+                        0,
+                        "Диск A:",
+                        MIT_SUBMENU,
+                        menu_drive,
+                        &cfg_drive_0,
+                        "Диск B:",
+                        MIT_SUBMENU,
+                        menu_drive,
+                        &cfg_drive_1,
+                        "",
+                        0,
+                        0,
+                        0,
+                        "Сохранить настройки",
+                        MIT_JUMP,
+                        SaveConfig,
+                        0,
+                        0};
 
 void main() {
     /* Настройка стека */
@@ -183,7 +272,7 @@ void main() {
         do {
             a ^= *hl;
             hl++;
-        } while(flag_nz(c--));
+        } while (flag_nz(c--));
         /* Если контрольная сумма ОК, то применяем настройки */
         if (a == 0)
             MEMCPY8(&cfg_begin, SCREEN_0_ADDRESS, &cfg_check_sum - cfg_begin);
@@ -201,8 +290,7 @@ void main() {
     out(PORT_PALETTE(3), a = PALETTE_CYAN);
 
     /* Меню */
-    for(;;)
-        Menu(e = 0, hl = &menu_root);
+    for (;;) Menu(e = 0, hl = &menu_root);
 }
 
 void StartBasic4000() {

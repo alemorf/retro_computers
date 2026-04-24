@@ -1,3 +1,20 @@
+/*
+ * Iskra 1080 Extension card firmware
+ * Copyright (c) 2026 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #pragma once
 
 #ifndef I1080_H
@@ -68,7 +85,7 @@ static const int PORT_A0 = 0xA0;
 static const int PORT_ROM_0000 = 0xA8;
 static const int PORT_ROM_0000__ROM = 0;
 static const int PORT_ROM_0000__RAM = 0x80;
-#define PORT_PALETTE(N) (0x90 + ((N) & 3))
+#define PORT_PALETTE(N) (0x90 + ((N)&3))
 static const int PORT_VIDEO_MODE_1_LOW = 0xB9;
 static const int PORT_VIDEO_MODE_1_HIGH = 0xF9;
 static const int PORT_VIDEO_MODE_0_LOW = 0xB8;
@@ -95,8 +112,8 @@ static const int PORT_SET_CU4 = 0xFF;
 static const int PORT_TAPE_OUT = 0xB0;
 
 /* Страницы памяти */
-#define PAGE_RAM(N) ((N) * 2)
-#define PAGE_ROM(N) (3 + (N) * 4)
+#define PAGE_RAM(N) ((N)*2)
+#define PAGE_ROM(N) (3 + (N)*4)
 #define PAGE_STD 1
 
 /* Команды SD контроллера */

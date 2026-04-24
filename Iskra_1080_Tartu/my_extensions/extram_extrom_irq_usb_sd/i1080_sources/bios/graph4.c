@@ -1,3 +1,20 @@
+/*
+ * Iskra 1080 Extension card firmware
+ * Copyright (c) 2026 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "graph.h"
 #include "opcodes.h"
 #include "macro.h"
@@ -51,7 +68,7 @@ void DrawChar4(...) {
 
     /* Select function */
     if (flag_nz((a = c) &= 1))
-         return DrawChar40();
+        return DrawChar40();
     return DrawChar44();
 }
 
@@ -68,14 +85,14 @@ void DrawChar44() {
         a &= 0xF0;
         b = a;
         a = *de;
-DrawChar4a_And1:
+    DrawChar4a_And1:
         a &= 0x0F; /* Замена: a |= 0xFF ^ 0x0F; */
-DrawChar4a_Xor1:
+    DrawChar4a_Xor1:
         a ^= b; /* Замена: nop(); */
         *de = a;
         e--;
         h++;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 
     /* Следующая плоскость */
 DrawChar4a:
@@ -91,12 +108,12 @@ DrawChar4a:
         a &= 0xF0;
         b = a;
         a = *de;
-DrawChar4a_And2:
+    DrawChar4a_And2:
         a &= 0x0F; /* Замена: a |= 0xFF ^ 0x0F; */
-DrawChar4a_Xor2:
+    DrawChar4a_Xor2:
         a ^= b; /* Замена: nop(); */
         *de = a;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 }
 
 /* Draw char ....XXXX
@@ -112,14 +129,14 @@ void DrawChar40() {
         a &= 0x0F;
         b = a;
         a = *de;
-DrawChar4b_And1:
+    DrawChar4b_And1:
         a &= 0xF0; /* Замена: a |= 0xFF ^ 0xF0; */
-DrawChar4b_Xor1:
+    DrawChar4b_Xor1:
         a ^= b; /* Замена: nop(); */
         *de = a;
         e--;
         h++;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 
     /* Следующая плоскость */
 DrawChar4b:
@@ -135,12 +152,12 @@ DrawChar4b:
         a &= 0x0F;
         b = a;
         a = *de;
-DrawChar4b_And2:
+    DrawChar4b_And2:
         a &= 0xF0; /* Замена: a |= 0xFF ^ 0xF0; */
-DrawChar4b_Xor2:
+    DrawChar4b_Xor2:
         a ^= b; /* Замена: nop(); */
         *de = a;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 }
 
 void SetColor4(...) {
@@ -218,7 +235,7 @@ void DrawCursor4() {
     do {
         *de = ((a = *de) ^= b);
         e--;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 }
 
 void SetScreenBw4() {

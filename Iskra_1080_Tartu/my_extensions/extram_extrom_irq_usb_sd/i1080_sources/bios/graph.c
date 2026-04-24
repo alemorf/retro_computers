@@ -1,3 +1,20 @@
+/*
+ * Iskra 1080 Extension card firmware
+ * Copyright (c) 2026 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "graph.h"
 #include "macro.h"
 #include "opcodes.h"
@@ -23,11 +40,11 @@ extern uint8_t DrawChar_2;
 extern uint8_t DrawChar_3;
 extern uint8_t DrawChar_4;
 extern uint8_t ClearScreen_1;
-extern uint16_t ClearScreen_2 __address(ClearScreen_1 + 1);
-extern uint16_t ClearScreen_3 __address(ClearScreen_1 + 2);
-extern uint8_t ClearScreen_4 __address(ClearScreenPoly3 + 1);
+extern uint16_t ClearScreen_2 __address("clearscreen_1 + 1");
+extern uint16_t ClearScreen_3 __address("clearscreen_1 + 2");
+extern uint8_t ClearScreen_4 __address("clearscreenpoly3 + 1");
 extern uint16_t ClearScreenSetSp;
-extern uint16_t ClearScreenSp __address(ClearScreenSetSp + 1);
+extern uint16_t ClearScreenSp __address("clearscreensetsp + 1");
 extern uint16_t DrawChar_And1;
 extern uint16_t DrawChar_And2;
 extern uint16_t DrawChar_And3;
@@ -52,14 +69,14 @@ extern uint16_t DrawChar_Xor9;
 extern uint16_t DrawChar_Xor10;
 extern uint16_t DrawChar_Xor11;
 extern uint16_t DrawChar_Xor12;
-extern uint16_t ScrollUpAddr __address(ScrollUp + 1);
-extern uint16_t ScrollUpSp __address(ScrollUpSpInstr + 1);
-extern uint16_t ScrollUpSp2 __address(ScrollUpSpInstr2 + 1);
-extern uint16_t ScrollUpBwSp __address(ScrollUpBwSpInstr + 1);
-extern uint16_t ScrollUp_1 __address(ScrollUpSub + 1);
-extern uint8_t ScrollUp_2 __address(ScrollUp_2);
-extern uint8_t ScrollUp_3 __address(ScrollUp_2 + 1);
-extern uint8_t ScrollUpSpInstr2 __address(ScrollUpSpInstr2);
+extern uint16_t ScrollUpAddr __address("scrollup + 1");
+extern uint16_t ScrollUpSp __address("scrollupspinstr + 1");
+extern uint16_t ScrollUpSp2 __address("scrollupspinstr2 + 1");
+// extern uint16_t ScrollUpBwSp __address("scrollupbwspinstr + 1");
+extern uint16_t ScrollUp_1 __address("scrollupsub + 1");
+extern uint8_t ScrollUp_2;
+extern uint8_t ScrollUp_3 __address("scrollup_2 + 1");
+extern uint8_t ScrollUpSpInstr2;
 
 void DrawChar(...) {
     return DrawChar6();
@@ -74,43 +91,46 @@ void DrawCursor(...) {
 }
 
 void SetColorSave(...) {
-    push_pop(bc, de, hl)
+    push_pop(bc, de, hl) {
         SetColor(a);
+    }
 }
 
 void ClearScreen() {
     ClearScreenSp = ((hl = 0) += sp);
-    de = 0; // TODO: Залить текущим цветом фона
+    de = 0;  // TODO: Залить текущим цветом фона
     c = 48;
     hl = 0;
     do {
         b = 16;
-        DisableInterrupts();
+        disable_interrupts();
         sp = hl;
         do {
             push(de, de, de, de, de, de, de, de);
-        } while(flag_nz(b--));
+        } while (flag_nz(b--));
         a = h;
-ClearScreen_1:
+    ClearScreen_1:
         a -= 0x40; /* Заменяется: goto ClearScreenSetSp; */
         h = a;
         b = 16;
         sp = hl;
         do {
             push(de, de, de, de, de, de, de, de);
-        } while(flag_nz(b--));
-ClearScreenSetSp:
+        } while (flag_nz(b--));
+    ClearScreenSetSp:
         sp = 0;
-        EnableInterrupts();
-ClearScreenPoly3:
+        enable_interrupts();
+    ClearScreenPoly3:
         a += 0x3F; /* Заменяется: a += 0xFF; */
         h = a;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 }
 
 const int SCROLL_COLUMN_UP = 0x100;
 const int BITPLANE_OFFSET = 0x4000;
 const int SCREEN_SIZE = 0x3000;
+
+void ScrollUpSpInstr(void);
 
 void ScrollUpSubBw() {
     /* Копирование одной строки символов */
@@ -118,15 +138,34 @@ void ScrollUpSubBw() {
         /* Копирование одного знакоместа */
         sp = hl;
         hl += de;
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl;      push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        push(bc);
         hl = FONT_HEIGHT + 0x100;
         hl += sp;
     } while (flag_nz(a--));
-    goto ScrollUpSpInstr;
+    return ScrollUpSpInstr();
 }
 
 void ScrollUpSubColor() {
@@ -135,26 +174,64 @@ void ScrollUpSubColor() {
         /* Копирование одного знакоместа в первой плоскости */
         sp = hl;
         hl += de;
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl;      push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        push(bc);
         hl = FONT_HEIGHT - BITPLANE_OFFSET;
         hl += sp;
 
         /* Копирование одного знакоместа во второй плоскости */
         sp = hl;
         hl += de;
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl; l--; push(bc);
-        b = *hl; l--; c = *hl;      push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        l--;
+        push(bc);
+        b = *hl;
+        l--;
+        c = *hl;
+        push(bc);
         hl = FONT_HEIGHT + BITPLANE_OFFSET + 0x100;
         hl += sp;
     } while (flag_nz(a--));
-    goto ScrollUpSpInstr;
+    return ScrollUpSpInstr();
 }
 
 void ScrollUp() {
@@ -170,14 +247,14 @@ void ScrollUp() {
     hl = 0xD100; /* Первая запись будет в 0xD0FF */
     do {
         /* Копирование одной строки символов */
-        DisableInterrupts();
+        disable_interrupts();
         a = 0x30;
-ScrollUpSub:
+    ScrollUpSub:
         return ScrollUpSubBw();
         /* Включение прерываний */
-ScrollUpSpInstr:
+    ScrollUpSpInstr:
         sp = 0;
-        EnableInterrupts();
+        enable_interrupts();
 
         /* Следующая строка */
         a = l;
@@ -188,8 +265,8 @@ ScrollUpSpInstr:
 
     /* Очистка нижней строки */
     a = 48;
-    de = 0; // TODO: Background
-    DisableInterrupts();
+    de = 0;  // TODO: Background
+    disable_interrupts();
     sp = (SCREEN_0_ADDRESS + SCREEN_SIZE) - ((TEXT_SCREEN_HEIGHT - 1) * FONT_HEIGHT);
     do {
         push(de, de, de, de, de);
@@ -199,9 +276,9 @@ ScrollUpSpInstr:
     } while (flag_nz(a--));
 
     // Вторая плоскость
-ScrollUp_2: /* Заменяется: jp ScrollUpSpInstr2 */
+scrollup_2: /* Заменяется: jp ScrollUpSpInstr2 */
     a = 48;
-    de = 0; // TODO: Background
+    de = 0;  // TODO: Background
     sp = (SCREEN_1_ADDRESS + SCREEN_SIZE) - ((TEXT_SCREEN_HEIGHT - 1) * FONT_HEIGHT);
     do {
         push(de, de, de, de, de);
@@ -211,9 +288,9 @@ ScrollUp_2: /* Заменяется: jp ScrollUpSpInstr2 */
     } while (flag_nz(a--));
 
     /* Включение прерываний */
-ScrollUpSpInstr2:
+scrollupspinstr2:
     sp = 0;
-    EnableInterrupts();
+    enable_interrupts();
 }
 
 /* Draw text
@@ -261,15 +338,15 @@ void DrawChar6(...) {
     a += a;
     a += h;
     c = a;
-    CarryRotateRight(a);
-    CarryRotateRight(a);
+    carry_rotate_right(a);
+    carry_rotate_right(a);
     a &= 0x3F;
     invert(a);
     d = a;
 
     /* Calc chargen address */
     a = b;
-    SET_HL_A_PLUS_CONST(&font);
+    SET_HL_A_PLUS_CONST(font);
 
     /* Select function */
     a = c;
@@ -295,14 +372,14 @@ void DrawChar66() {
     c = FONT_HEIGHT;
     do {
         a = *hl;
-        CyclicRotateRight(a, 4);
+        cyclic_rotate_right(a, 4);
         push_pop(a) {
             a &= 0x03;
             b = a;
             a = *de;
-DrawChar_And3:
+        DrawChar_And3:
             a &= 0xFC; /* Замена: a |= 0xFF ^ 0xFC; */
-DrawChar_Xor3:
+        DrawChar_Xor3:
             a ^= b; /* Замена: nop(); */
             *de = a;
         }
@@ -310,15 +387,15 @@ DrawChar_Xor3:
         a &= 0xF0;
         b = a;
         a = *de;
-DrawChar_And5:
+    DrawChar_And5:
         a &= 0x0F; /* Замена: a |= 0xFF ^ 0x0F; */
-DrawChar_Xor4:
+    DrawChar_Xor4:
         a ^= b; /* Замена: nop(); */
         *de = a;
         d++;
         h++;
         e--;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 
     /* Следующая плоскость */
 DrawChar_2:
@@ -331,14 +408,14 @@ DrawChar_2:
         e++;
         h--;
         a = *hl;
-        CyclicRotateRight(a, 4);
+        cyclic_rotate_right(a, 4);
         push_pop(a) {
             a &= 0x03;
             b = a;
             a = *de;
-DrawChar_And4:
+        DrawChar_And4:
             a &= 0xFC; /* Замена: a |= 0xFF ^ 0xFC; */
-DrawChar_Xor5:
+        DrawChar_Xor5:
             a ^= b; /* Замена: nop(); */
             *de = a;
         }
@@ -346,13 +423,13 @@ DrawChar_Xor5:
         a &= 0xF0;
         b = a;
         a = *de;
-DrawChar_And6:
+    DrawChar_And6:
         a &= 0x0F; /* Замена: a |= 0xFF ^ 0x0F; */
-DrawChar_Xor6:
+    DrawChar_Xor6:
         a ^= b; /* Замена: nop(); */
         *de = a;
         d++;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 }
 
 /* Draw char XXXXXX.. ........
@@ -367,14 +444,14 @@ void DrawChar60() {
         a = *hl;
         b = (a += a += a);
         a = *de;
-DrawChar_And1:
+    DrawChar_And1:
         a &= 0x03; /* Замена: a |= 0xFF ^ 0x03; */
-DrawChar_Xor1:
+    DrawChar_Xor1:
         a ^= b; /* Замена: nop(); */
         *de = a;
         e--;
         h++;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 
     /* Следующая плоскость */
 DrawChar_1:
@@ -389,12 +466,12 @@ DrawChar_1:
         a = *hl;
         b = (a += a += a);
         a = *de;
-DrawChar_And2:
+    DrawChar_And2:
         a &= 0x03; /* Замена: a |= 0xFF ^ 0x03; */
-DrawChar_Xor2:
+    DrawChar_Xor2:
         a ^= b; /* Замена: nop(); */
         *de = a;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 }
 
 /* Draw char ..XXXXXX
@@ -408,14 +485,14 @@ void DrawChar62() {
     do {
         b = *hl;
         a = *de;
-DrawChar_And11:
+    DrawChar_And11:
         a &= 0xC0; /* Замена: a |= 0xFF ^ 0xC0; */
-DrawChar_Xor11:
+    DrawChar_Xor11:
         a ^= b; /* Замена: nop(); */
         *de = a;
         e--;
         h++;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 
     /* Следующая плоскость */
 DrawChar_3:
@@ -430,12 +507,12 @@ DrawChar_3:
         e++;
         b = *hl;
         a = *de;
-DrawChar_And12:
+    DrawChar_And12:
         a &= 0xC0; /* Замена: a |= 0xFF ^ 0xC0; */
-DrawChar_Xor12:
+    DrawChar_Xor12:
         a ^= b; /* Замена: nop(); */
         *de = a;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 }
 
 /* Draw char ....XXXX XX......
@@ -448,30 +525,30 @@ void DrawChar64() {
     c = FONT_HEIGHT;
     do {
         a = *hl;
-        CyclicRotateRight(a, 2);
+        cyclic_rotate_right(a, 2);
         a &= 0x0F;
         b = a;
         a = *de;
-DrawChar_And7:
+    DrawChar_And7:
         a &= 0xF0; /* Замена: a |= 0xFF ^ 0xF0; */
-DrawChar_Xor7:
+    DrawChar_Xor7:
         a ^= b; /* Замена: nop(); */
         *de = a;
         d--;
         a = *hl;
-        CyclicRotateRight(a, 2);
+        cyclic_rotate_right(a, 2);
         a &= 0xC0;
         b = a;
         a = *de;
-DrawChar_And9:
+    DrawChar_And9:
         a &= 0x3F; /* Замена: a |= 0xFF ^ 0x3F; */
-DrawChar_Xor8:
+    DrawChar_Xor8:
         a ^= b; /* Замена: nop(); */
         *de = a;
         d++;
         e--;
         h++;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 
     /* Следующая плоскость */
 DrawChar_4:
@@ -484,34 +561,34 @@ DrawChar_4:
         h--;
         e++;
         a = *hl;
-        CyclicRotateRight(a, 2);
+        cyclic_rotate_right(a, 2);
         a &= 0x0F;
         b = a;
         a = *de;
-DrawChar_And8:
+    DrawChar_And8:
         a &= 0xF0; /* Замена: a |= 0xFF ^ 0xF0; */
-DrawChar_Xor9:
+    DrawChar_Xor9:
         a ^= b; /* Замена: nop(); */
         *de = a;
         d--;
         a = *hl;
-        CyclicRotateRight(a, 2);
+        cyclic_rotate_right(a, 2);
         a &= 0xC0;
         b = a;
         a = *de;
-DrawChar_And10:
+    DrawChar_And10:
         a &= 0x3F; /* Замена: a |= 0xFF ^ 0x3F; */
-DrawChar_Xor10:
+    DrawChar_Xor10:
         a ^= b; /* Замена: nop(); */
         *de = a;
         d++;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 }
 
 void SetColor6(...) {
     /* TODO: Заменить на ^= 0x10, ^= 0xFF, ^= 0xA8 */
     c = a;
-    if (flag_z(a &= 8)) {
+    if (flag_z(a &= 4)) {
         hl = OPCODE_AND_CONST | (0x03 << 8);
         DrawChar_And1 = hl;
         DrawChar_And2 = hl;
@@ -543,7 +620,7 @@ void SetColor6(...) {
     b = a;
     a = c;
     a *= 4;
-    a &= 8;
+    a &= 4;
     a ^= b;
     a = OPCODE_XOR_B;
     if (flag_z)
@@ -556,7 +633,7 @@ void SetColor6(...) {
     DrawChar_Xor11 = a;
 
     a = c;
-    if (flag_z(a &= 4)) {
+    if (flag_z(a &= 8)) {
         hl = OPCODE_AND_CONST | (0x03 << 8);
         DrawChar_And2 = hl;
         h = 0xFC;
@@ -586,7 +663,7 @@ void SetColor6(...) {
     b = a;
     a = c;
     a *= 4;
-    a &= 4;
+    a &= 8;
     a ^= b;
     a = OPCODE_XOR_B;
     if (flag_z)
@@ -617,14 +694,14 @@ void DrawCursor6() {
     a *= 4;
     a += l;
     a *= 2;
-    Invert(a);
+    invert(a);
     l = a;
     a = h;
     a += a;
     a += h;
-    CyclicRotateRight(a, 2);
+    cyclic_rotate_right(a, 2);
     a &= 0x3F;
-    Invert(a);
+    invert(a);
     h = a;
 
     /* Рисуем */
@@ -635,7 +712,7 @@ void DrawCursor6() {
         *hl = ((a = *hl) ^= d);
         h++;
         l--;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
 }
 
 void SetScreenBw6() {

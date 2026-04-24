@@ -1,3 +1,20 @@
+/*
+ * Iskra 1080 Extension card firmware
+ * Copyright (c) 2026 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "bios.h"
 #include "storage.h"
 #include "mulu16.h"
@@ -11,7 +28,7 @@ void WaitSd() {
     do {
         a = in(PORT_SD_RESULT);
         // TODO: Timeout
-    } while(a == SD_RESULT_BUSY);
+    } while (a == SD_RESULT_BUSY);
 }
 
 void CpmSelDsk() {
@@ -47,7 +64,7 @@ void CpmSelDsk() {
     do {
         *hl = a = in(PORT_SD_DATA);
         hl++;
-    } while(flag_nz(b--));
+    } while (flag_nz(b--));
     /* Без ошибок */
     d = 0;
 }
@@ -103,7 +120,7 @@ void CpmRead() {
     do {
         *hl = a = in(PORT_SD_DATA);
         l++;
-    } while(flag_nz);
+    } while (flag_nz);
     d = 0; /* Error code - No error */
 }
 
@@ -113,7 +130,7 @@ void CpmWrite() {
     do {
         out(PORT_SD_DATA, a = *hl);
         l++;
-    } while(flag_nz);
+    } while (flag_nz);
     WaitSd();
     d = a; /* Error code */
 }
@@ -154,10 +171,10 @@ void ReadConfig(...) {
     do {
         *hl = a = in(PORT_SD_DATA);
         hl++;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
     do {
         a = in(PORT_SD_DATA);
-    } while(flag_nz(b--));
+    } while (flag_nz(b--));
     a ^= a; /* Error code - No error, flag Z */
 }
 
@@ -177,11 +194,11 @@ void WriteConfig(...) {
     do {
         out(PORT_SD_DATA, a = *hl);
         hl++;
-    } while(flag_nz(c--));
+    } while (flag_nz(c--));
     a ^= a;
     do {
         out(PORT_SD_DATA, a);
-    } while(flag_nz(b--));
+    } while (flag_nz(b--));
     WaitSd();
     a |= a; /* Для флага Z */
     /* a - error code */

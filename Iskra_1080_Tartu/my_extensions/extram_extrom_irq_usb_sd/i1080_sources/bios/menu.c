@@ -1,3 +1,20 @@
+/*
+ * Iskra 1080 Extension card firmware
+ * Copyright (c) 2026 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "../i1080.h"
 #include "menu.h"
 #include "macro.h"
@@ -28,20 +45,24 @@ void MenuMoveCursor(...) {
             (a = e) += b;
             /* Выходим, если это самый верхний элемент */
             if (a == 0xFF)
-                break;;
+                break;
+
             /* Выходим, если это самый нижний элемент */
             a *= 8; /* Размер опичания элемента меню */
             a += 2; /* Заголовок элемента меню */
             ADD_HL_A
-            a = *hl; hl++; h = *hl; l = a; /* Адрес текста элемента в HL */
-            if (((a = h) |= l) == 0) { /* Елси адрес нулевой */
+            a = *hl; /* Адрес текста элемента в HL */
+            hl++;
+            h = *hl;
+            l = a;
+            if (((a = h) |= l) == 0) { /* Если адрес нулевой */
                 pop(hl);
                 return;
             }
             /* Изменяем положение курсора */
             e = ((a = e) += b);
             /* Если это не разделитель, то выходим */
-        } while((a = *hl) == 0);
+        } while ((a = *hl) == 0);
     }
 }
 
@@ -57,18 +78,26 @@ void MenuMoveCursor(...) {
 
 void MenuFindItem(...) {
     e = 0;
-    hl++; hl++; /* Пропускаем заголовок меню */
+    hl++;
+    hl++; /* Пропускаем заголовок меню */
     for (;;) {
         /* Выходим с фпагом NZ, если это последний элемент */
-        a = *hl; hl++; a |= *hl; hl++;
+        a = *hl;
+        hl++;
+        a |= *hl;
+        hl++;
         if (flag_z) {
             a++;
             return;
         }
-        hl++; hl++; /* Адрес значения в HL */
+        hl++;
+        hl++;               /* Адрес значения в HL */
         if ((a = b) == *hl) /* Если это наше значение */
             return;
-        hl++; hl++; hl++; hl++; /* Cледующий элемент в HL*/
+        hl++;
+        hl++;
+        hl++;
+        hl++; /* Cледующий элемент в HL*/
         e++;
     }
 }
@@ -91,7 +120,10 @@ void Menu(...) {
         }
         push_pop(hl) {
             /* Рисование заголовка */
-            e = *hl; hl++; d = *hl; hl++;
+            e = *hl;
+            hl++;
+            d = *hl;
+            hl++;
             push_pop(hl) {
                 swap(hl, de);
                 DrawText(c = 0, de = 0x301, hl);
@@ -100,7 +132,10 @@ void Menu(...) {
             /* Рисование элементов меню */
             b = MENU_FIRST_ITEM_Y; /* Позиция на экране */
             for (;;) {
-                e = *hl; hl++; d = *hl; hl++; /* Адрес адреса текста элемента в DE */
+                e = *hl;
+                hl++;
+                d = *hl;
+                hl++;             /* Адрес адреса текста элемента в DE */
                 if ((a = d) == 0) /* Это последний элемент */
                     break;
                 /* Рисуем текст элемента */
@@ -111,35 +146,60 @@ void Menu(...) {
                     DrawText(c = 0, de, hl);
                 }
                 /* Ищем текст значения элемента по коду текущего значения и рисуем */
-                hl++; hl++; hl++; hl++; /* Адрес текущего значения в HL */
+                hl++;
+                hl++;
+                hl++;
+                hl++; /* Адрес текущего значения в HL */
                 push_pop(hl, bc) {
                     e = b;
-                    c = *hl; hl++; b = *hl; /* Адрес текущего значения в BC  */
+                    c = *hl;
+                    hl++;
+                    b = *hl;                   /* Адрес текущего значения в BC  */
                     if (((a = b) |= c) != 0) { /* Если адрес не нулевой */
-                        b = a = *bc; /* Значение в B */
-                        hl--; hl--; c = *hl; hl--; l = *hl; h = c; /* Адрес подменю в HL */
-                        hl++; hl++; /* Пропускаем заголовок меню */
+                        b = a = *bc;           /* Значение в B */
+                        hl--;
+                        hl--;
+                        c = *hl;
+                        hl--;
+                        l = *hl;
+                        h = c; /* Адрес подменю в HL */
+                        hl++;
+                        hl++; /* Пропускаем заголовок меню */
                         for (;;) {
                             /* Выходим, если это последний элемент */
-                            a = *hl; hl++; a |= *hl; hl++;
+                            a = *hl;
+                            hl++;
+                            a |= *hl;
+                            hl++;
                             if (flag_z)
                                 break;
-                            hl++; hl++; /* Адрес значения в HL */
+                            hl++;
+                            hl++;                 /* Адрес значения в HL */
                             if ((a = b) == *hl) { /* Если это наше значение */
-                                hl--; hl--; hl--; hl--; /* Адрес адреса текста в HL*/
-                                c = *hl; hl++; h = *hl; l = c; /* Адрес текста в HL */
+                                hl--;
+                                hl--;
+                                hl--;
+                                hl--; /* Адрес адреса текста в HL*/
+                                c = *hl;
+                                hl++;
+                                h = *hl;
+                                l = c; /* Адрес текста в HL */
                                 SetColorSave(a = MENU_COLOR_VALUE);
                                 d = MENU_VALUES_X;
                                 DrawText(c = 0, de, hl);
                                 SetColorSave(a = MENU_COLOR_ITEM);
                                 break;
                             }
-                            hl++; hl++; hl++; hl++; /* Переменная -> Следующий элемент в HL*/
+                            hl++; /* Переменная -> Следующий элемент в HL*/
+                            hl++;
+                            hl++;
+                            hl++;
                         }
                     }
                 }
-                hl++; hl++; /* Адрес текущего значения -> Следующий элемент в HL */
-                b++; /* Позиция на экране */
+                hl++;
+                hl++; /* Адрес текущего значения -> Следующий элемент в HL */
+                b++;  /* Позиция на экране */
             }
         }
     }
@@ -156,7 +216,7 @@ void Menu(...) {
     SetColorSave(a = MENU_COLOR_CURSOR);
     b--;
     d = e;
-    for(;;) {
+    for (;;) {
         /* Рисование курсора */
         push_pop(hl) {
             if ((a = d) != e) {
@@ -178,34 +238,52 @@ void Menu(...) {
                 push_pop(de, hl) {
                     ReadKeyboard();
                 }
-            } while(flag_z);
+            } while (flag_z);
 
             /* Обработка нажатых клавиш */
             if (a == KEY_ENTER) {
                 push(hl);
                 GetMenuItemAddress(hl, e);
-                hl++; hl++; /* Адрес типа элемента в HL */
+                hl++;
+                hl++;    /* Адрес типа элемента в HL */
                 a = *hl; /* Тип в A */
                 if (a == MIT_RETURN) {
-                    hl++; hl++; /* Адрес возвращаемого значения в HL */
-                    e = *hl; hl++; d = *hl; /* Значение в DE */
+                    hl++;
+                    hl++; /* Адрес возвращаемого значения в HL */
+                    e = *hl;
+                    hl++;
+                    d = *hl; /* Значение в DE */
                     pop(hl); /* Освобождаем стек */
                     return;
                 }
                 if (a == MIT_JUMP) {
-                    hl++; hl++;  /* Адрес адреса перехода в HL */
-                    d = *hl; hl++; h = *hl; l = d; /* Адрес перехода в HL */
+                    hl++;
+                    hl++; /* Адрес адреса перехода в HL */
+                    d = *hl;
+                    hl++;
+                    h = *hl;
+                    l = d;   /* Адрес перехода в HL */
                     pop(de); /* Освобождаем стек */
                     return hl();
                 }
                 if (a == MIT_SUBMENU) {
                     push_pop(de) { /* Сохраняем положение курсора */
-                        hl++; hl++; hl++; hl++; /* Адрес адреса текущего значения в HL */
-                        e = *hl; hl++; d = *hl; hl--; /* Адрес текущего значения в DE */
+                        hl++;
+                        hl++;
+                        hl++;
+                        hl++; /* Адрес адреса текущего значения в HL */
+                        e = *hl;
+                        hl++;
+                        d = *hl;
+                        hl--; /* Адрес текущего значения в DE */
                         push_pop(de) {
                             b = a = *de; /* Текущее значение в B */
-                            hl--; hl--; /* Адрес адреса подменю в HL */
-                            d = *hl; hl++; h = *hl; l = d; /* Адрес подменю в HL */
+                            hl--;
+                            hl--; /* Адрес адреса подменю в HL */
+                            d = *hl;
+                            hl++;
+                            h = *hl;
+                            l = d; /* Адрес подменю в HL */
                             push_pop(hl) {
                                 MenuFindItem(b, hl);
                                 if (flag_nz)
