@@ -28,7 +28,7 @@
 const int cpm_load_address = 0xE500;
 void CpmEntryPoint() __address(0xFB33);
 
-/* Два переменные в начале файла */
+/* Две переменные в начале файла */
 extern uint16_t cpm_start;
 extern uint16_t cpm_stop;
 
