@@ -18,7 +18,7 @@
 #include <cmm.h>
 #include "clearscreen.h"
 #include "graph.h"
-#include "../opcodes_8080.h"
+#include "../tools/opcodes_8080.h"
 
 extern uint8_t clear_screen_1;
 extern uint16_t clear_screen_2;

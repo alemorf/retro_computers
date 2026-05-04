@@ -18,7 +18,7 @@
 #include <cmm.h>
 #include "main.h"
 #include "keyboard.h"
-#include "cpm.h"
+#include "start_cpm.h"
 #include "console.h"
 #include "printer.h"
 #include "uart.h"

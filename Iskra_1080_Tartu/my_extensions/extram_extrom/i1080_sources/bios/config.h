@@ -40,3 +40,4 @@ static const uint16_t config_address = 0x8000 - sizeof(struct Config); /* End of
 extern struct Config config __address(config_address);
 
 void InitConfig(void);
+void ResetConfig(void);

@@ -17,9 +17,9 @@
 
 #pragma once
 
-#include "../../tools/opcodes_8080.h"
+#include <stdint.h>
 
-static const uint8_t DRAW_CHAR_4_BW_INIT = OPCODE_RET;
-static const uint8_t DRAW_CHAR_4_COLOR_INIT = OPCODE_LD_A_D;
+static const uint16_t CPM_LOAD_ADDRESS = 0xE600;
 
-void DrawChar4Init(/* a - DRAW_CHAR_4_BW_INIT/DRAW_CHAR_4_COLOR_INIT */);
+void StartCpm(void);
+void CpmWBoot(/* с - current storage and user */);

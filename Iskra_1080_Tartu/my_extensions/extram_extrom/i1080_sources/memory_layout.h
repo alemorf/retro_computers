@@ -17,9 +17,18 @@
 
 #pragma once
 
-#include "../../tools/opcodes_8080.h"
+#include <stdint.h>
+#include "i1080.h"
 
-static const uint8_t DRAW_CHAR_4_BW_INIT = OPCODE_RET;
-static const uint8_t DRAW_CHAR_4_COLOR_INIT = OPCODE_LD_A_D;
+static const uint8_t PAGE_BIOS_0 = PAGE_RAM(0);
+static const uint8_t PAGE_BIOS_1 = PAGE_RAM(1);
+static const uint8_t PAGE_PACKED_CPM = PAGE_ROM(3);
+static const uint8_t PAGE_CPM_0 = PAGE_RAM(4);
+static const uint8_t PAGE_CPM_1 = PAGE_RAM(5);
+static const uint8_t PAGE_CPM_2 = PAGE_RAM(6);
+static const uint8_t PAGE_CPM_3 = PAGE_RAM(7);
 
-void DrawChar4Init(/* a - DRAW_CHAR_4_BW_INIT/DRAW_CHAR_4_COLOR_INIT */);
+/* Константы в ПЗУ */
+extern uint16_t bios_offset_in_rom __address(0x800A);
+extern uint16_t cpm_offset_in_rom __address(0x800C);
+extern uint16_t storage_offset_in_rom __address(0x800E);

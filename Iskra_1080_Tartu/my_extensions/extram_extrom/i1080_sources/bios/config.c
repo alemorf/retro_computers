@@ -35,5 +35,9 @@ static struct Config default_config = {
 
 void InitConfig(void) {
     /* TODO: Checksum */
+    ResetConfig();
+}
+
+void ResetConfig(void) {
     MEMCPY8(&config, &default_config, sizeof(config));
 }

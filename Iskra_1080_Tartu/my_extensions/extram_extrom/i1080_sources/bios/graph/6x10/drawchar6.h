@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "../../opcodes_8080.h"
+#include "../../tools/opcodes_8080.h"
 
 static const uint8_t DRAW_CHAR_6_BW_INIT = OPCODE_RET;
 static const uint8_t DRAW_CHAR_6_COLOR_INIT = OPCODE_LD_A_D;
