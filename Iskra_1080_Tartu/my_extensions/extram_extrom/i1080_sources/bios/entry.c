@@ -16,8 +16,13 @@
  */
 
 #include <cmm.h>
-#include "bios.h"
+#include "main.h"
 #include "keyboard.h"
+#include "cpm.h"
+#include "console.h"
+#include "printer.h"
+#include "uart.h"
+#include "storage.h"
 
 /* Точки входа */
 
@@ -36,7 +41,7 @@ void EntryCpmWBoot() {
 }
 
 void EntryCpmConst(void) {
-    return CpmConst();
+    CpmConst();
 }
 
 void EntryCpmConin(void) {
@@ -88,6 +93,9 @@ void EntryInterrupt(void) {
 
 uint8_t key_buffer[KEY_BUFFER_SIZE];
 
-/* Далее находится стек до 100h */
+/* Далее находится стек от 55h до 100h */
 
 asm(" org 0x100");
+
+uint8_t stack[0];
+
