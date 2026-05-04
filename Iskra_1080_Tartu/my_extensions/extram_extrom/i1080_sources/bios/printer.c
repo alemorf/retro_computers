@@ -16,7 +16,7 @@
  */
 
 #include <cmm.h>
-#include "bios.h"
+#include "printer.h"
 
 /* Write the character in C to the printer. If the printer isn't ready, wait until it is. */
 

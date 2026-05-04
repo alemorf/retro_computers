@@ -15,23 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cmm.h>
-#include "uart.h"
+#pragma once
 
-/* Write the character in C to the "paper tape punch" - or whatever the current auxiliary device is. */
-/* If the device isn't ready, wait until it is. */
-/* This function is called PUNCH in CP/M 2.x, AUXOUT in CP/M 3. */
+#include "graphinit.h"
 
-void CpmPunch(/* c - byte */) {
-    /* TODO */
-}
-
-/* Read a character from the "paper tape reader" - or whatever the current auxiliary device is. */
-/* If the device isn't ready, wait until it is. The character will be returned in D. */
-/* If this device isn't implemented, return character 26 (^Z). */
-/* This function is called READER in CP/M 2.x, AUXIN in CP/M 3. */
-
-void CpmReader(void) {
-    /* TODO */
-    d = 0;
-}
+void ScrollUpInit(/* b - GRAPH_INIT_1_BITPLANE/GRAPH_INIT_2_BITPLANES */);

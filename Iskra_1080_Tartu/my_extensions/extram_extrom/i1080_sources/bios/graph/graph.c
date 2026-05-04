@@ -16,22 +16,18 @@
  */
 
 #include <cmm.h>
-#include "uart.h"
+#include "graph.h"
 
-/* Write the character in C to the "paper tape punch" - or whatever the current auxiliary device is. */
-/* If the device isn't ready, wait until it is. */
-/* This function is called PUNCH in CP/M 2.x, AUXOUT in CP/M 3. */
+uint8_t text_screen_width;
 
-void CpmPunch(/* c - byte */) {
-    /* TODO */
+void DrawChar(/* hl - coords, a - char */) {
+    DrawChar(hl, a);
 }
 
-/* Read a character from the "paper tape reader" - or whatever the current auxiliary device is. */
-/* If the device isn't ready, wait until it is. The character will be returned in D. */
-/* If this device isn't implemented, return character 26 (^Z). */
-/* This function is called READER in CP/M 2.x, AUXIN in CP/M 3. */
+void SetColor(/* a - color */) {
+    SetColor(a);
+}
 
-void CpmReader(void) {
-    /* TODO */
-    d = 0;
+void DrawCursor(/* hl - coords */) {
+    DrawCursor(hl);
 }

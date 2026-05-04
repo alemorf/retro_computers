@@ -16,22 +16,22 @@
  */
 
 #include <cmm.h>
-#include "uart.h"
+#include "setmode.h"
+#include "../graphinit.h"
+#include "drawcursor4.h"
+#include "drawchar4.h"
 
-/* Write the character in C to the "paper tape punch" - or whatever the current auxiliary device is. */
-/* If the device isn't ready, wait until it is. */
-/* This function is called PUNCH in CP/M 2.x, AUXOUT in CP/M 3. */
+static void SetGraphMode4x10(/* a, b */);
 
-void CpmPunch(/* c - byte */) {
-    /* TODO */
+void SetGraphModeBw4x10(void) {
+    SetGraphMode4x10(a = DRAW_CHAR_4_BW_INIT, b = GRAPH_INIT_1_BITPLANE);
 }
 
-/* Read a character from the "paper tape reader" - or whatever the current auxiliary device is. */
-/* If the device isn't ready, wait until it is. The character will be returned in D. */
-/* If this device isn't implemented, return character 26 (^Z). */
-/* This function is called READER in CP/M 2.x, AUXIN in CP/M 3. */
+void SetGraphModeColor4x10(void) {
+    SetGraphMode4x10(a = DRAW_CHAR_4_COLOR_INIT, b = GRAPH_INIT_2_BITPLANES);
+}
 
-void CpmReader(void) {
-    /* TODO */
-    d = 0;
+static void SetGraphMode4x10(/* a, b */) {
+    DrawChar4Init(a);
+    GraphInit(a = 96 /* Text width */, b, hl = &DrawCursor4);
 }

@@ -15,23 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cmm.h>
-#include "uart.h"
+#pragma once
 
-/* Write the character in C to the "paper tape punch" - or whatever the current auxiliary device is. */
-/* If the device isn't ready, wait until it is. */
-/* This function is called PUNCH in CP/M 2.x, AUXOUT in CP/M 3. */
+#include "../../opcodes_8080.h"
 
-void CpmPunch(/* c - byte */) {
-    /* TODO */
-}
+static const uint8_t DRAW_CHAR_4_BW_INIT = OPCODE_RET;
+static const uint8_t DRAW_CHAR_4_COLOR_INIT = OPCODE_LD_A_D;
 
-/* Read a character from the "paper tape reader" - or whatever the current auxiliary device is. */
-/* If the device isn't ready, wait until it is. The character will be returned in D. */
-/* If this device isn't implemented, return character 26 (^Z). */
-/* This function is called READER in CP/M 2.x, AUXIN in CP/M 3. */
-
-void CpmReader(void) {
-    /* TODO */
-    d = 0;
-}
+void DrawChar4Init(/* a = DRAW_CHAR_4_BW_INIT/DRAW_CHAR_4_COLOR_INIT */);

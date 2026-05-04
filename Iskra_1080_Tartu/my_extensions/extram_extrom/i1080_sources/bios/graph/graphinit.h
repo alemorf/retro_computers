@@ -17,22 +17,15 @@
 
 #pragma once
 
+#include <cmm.h>
 #include <stdint.h>
+#include "graph.h"
 
-static const uint8_t OPCODE_NOP = 0x00;
-static const uint8_t OPCODE_LD_DE_CONST = 0x11;
-static const uint8_t OPCODE_ADD_HL_DE = 0x19;
-static const uint8_t OPCODE_ADD_HL_SP = 0x39;
-static const uint8_t OPCODE_LD_A_CONST = 0x3E;
-static const uint8_t OPCODE_LD_H_A = 0x67;
-static const uint8_t OPCODE_LD_A_D = 0x7A;
-static const uint8_t OPCODE_LD_A_H = 0x7C;
-static const uint8_t OPCODE_XOR_A = 0xAF;
-static const uint8_t OPCODE_XOR_B = 0xA8;
-static const uint8_t OPCODE_JP = 0xC3;
-static const uint8_t OPCODE_RET = 0xC9;
-static const uint8_t OPCODE_AND_CONST = 0xE6;
-static const uint8_t OPCODE_OR_CONST = 0xF6;
-static const uint8_t OPCODE_OUT = 0xD3;
-static const uint8_t OPCODE_SUB_CONST = 0xD6;
-static const uint8_t OPCODE_MOV_SP_HL = 0xF9;
+extern uint16_t DrawCharAddress __address("drawchar + 1");
+extern uint16_t SetColorAddress __address("setcolor + 1");
+extern uint16_t DrawCursorAddress __address("drawcursor + 1");
+
+static const uint8_t GRAPH_INIT_1_BITPLANE = 0;
+static const uint8_t GRAPH_INIT_2_BITPLANES = 1;
+
+void GraphInit(/* a - text screen width, b - GRAPH_INIT_?_BITPLANE, hl - DrawCursorAddress */);
