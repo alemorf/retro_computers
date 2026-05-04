@@ -98,4 +98,3 @@ uint8_t key_buffer[KEY_BUFFER_SIZE];
 asm(" org 0x100");
 
 uint8_t stack[0];
-

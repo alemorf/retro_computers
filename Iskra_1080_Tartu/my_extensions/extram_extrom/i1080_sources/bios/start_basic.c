@@ -34,6 +34,6 @@ void StartBasic(void) {
     out(PORT_WINDOW(1), a = PAGE_STD);
     out(PORT_WINDOW(2), a);
     out(PORT_WINDOW(3), a);
-    MEMCPY8(StartBasic4000, (uintptr_t)StartBasic2, (uintptr_t)StartBasic - (uintptr_t)StartBasic2);
+    MEMCPY8(StartBasic4000, StartBasic2, (uintptr_t)StartBasic - (uintptr_t)StartBasic2);
     StartBasic4000();
 }

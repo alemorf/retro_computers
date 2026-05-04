@@ -26,9 +26,9 @@ static const uint16_t BITPLANE_OFFSET = 0x4000;
 static const uint8_t SCREEN_WIDTH_BYTES = 48;
 static const uint16_t SCREEN_HEIGHT_BYTES = 256;
 
-extern uint16_t DrawCharAddress __address("drawchar + 1");
-extern uint16_t SetColorAddress __address("setcolor + 1");
-extern uint16_t DrawCursorAddress __address("drawcursor + 1");
+extern uint16_t draw_char __address("drawchar + 1");
+extern uint16_t set_color __address("setcolor + 1");
+extern uint16_t draw_cursor __address("drawcursor + 1");
 
 static const uint8_t GRAPH_INIT_1_BITPLANE = 0;
 static const uint8_t GRAPH_INIT_2_BITPLANES = 1;

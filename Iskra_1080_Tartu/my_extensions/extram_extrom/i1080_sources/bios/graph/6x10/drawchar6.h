@@ -22,4 +22,4 @@
 static const uint8_t DRAW_CHAR_6_BW_INIT = OPCODE_RET;
 static const uint8_t DRAW_CHAR_6_COLOR_INIT = OPCODE_LD_A_D;
 
-void DrawChar6Init(/* a = DRAW_CHAR_6_BW_INIT/DRAW_CHAR_6_COLOR_INIT */);
+void DrawChar6Init(/* a - DRAW_CHAR_6_BW_INIT/DRAW_CHAR_6_COLOR_INIT */);

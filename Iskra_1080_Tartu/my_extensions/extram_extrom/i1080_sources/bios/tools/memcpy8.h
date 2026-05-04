@@ -17,19 +17,8 @@
 
 #pragma once
 
-#include <stdint.h>
-#include "4x10/setmode.h"
-#include "6x10/setmode.h"
+#include <cmm.h>
 
-static const uint8_t TEXT_SCREEN_HEIGHT = 25;
-static const uint16_t FONT_HEIGHT = 10;
+#define MEMCPY8(TO, FROM, SIZEOF8) memcpy8(hl = (TO), de = (FROM), c = (SIZEOF8))
 
-extern uint8_t text_screen_width;
-
-void ClearScreen(void);
-void ScrollUp(void);
-void SetColor(/* a - color */);
-void SetColorSafe(/* a - color */);
-void DrawChar(/* hl - coords, a - char */);
-void DrawCursor(/* hl - coords */);
-void DrawText(/* de - coords, hl - text */);
+void memcpy8(/* hl, de, c */);

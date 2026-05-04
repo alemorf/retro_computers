@@ -15,21 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "memcpy8.h"
 
-#include <stdint.h>
-#include "4x10/setmode.h"
-#include "6x10/setmode.h"
-
-static const uint8_t TEXT_SCREEN_HEIGHT = 25;
-static const uint16_t FONT_HEIGHT = 10;
-
-extern uint8_t text_screen_width;
-
-void ClearScreen(void);
-void ScrollUp(void);
-void SetColor(/* a - color */);
-void SetColorSafe(/* a - color */);
-void DrawChar(/* hl - coords, a - char */);
-void DrawCursor(/* hl - coords */);
-void DrawText(/* de - coords, hl - text */);
+void memcpy8(/* hl, de, c */) {
+    do {
+        *hl = a = *de;
+        hl++;
+        de++;
+    } while (flag_nz(c--));
+}
