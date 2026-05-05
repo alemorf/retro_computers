@@ -42,8 +42,7 @@ struct DPH {
 
 #define DPB_BLM(BLOCKCOUNT, BLOCKSIZE) ((BLOCKCOUNT) < 0x100 ? (BLOCKSIZE) : -(BLOCKSIZE))
 
-/* Max (16384 / 128) * 16 = 2048 ? */
-#define DPB_FILES_COUNT(BLOCKSIZE, DIRECTORYBLOCKS) (((BLOCKSIZE) / 128) * (DIRECTORYBLOCKS))
+#define DPB_FILES_COUNT(BLOCKSIZE, DIRECTORYBLOCKS) (((BLOCKSIZE) / 32) * (DIRECTORYBLOCKS))
 
 #define CSV_SIZE(FIXED_, BLOCK_SIZE_, DIRECTORY_BLOCKS_) \
     ((FIXED_) ? 0 : ((DPB_FILES_COUNT(BLOCK_SIZE_, DIRECTORY_BLOCKS_) + 3) / 4))
@@ -85,7 +84,7 @@ struct DPH {
         : DPB_BLM(BLOCK_COUNT, BLOCK_SIZE) == -16384 ? 0x07                               \
                                                      : DPB_ERROR,                         \
         /* DSM - (no. of blocks on the disc) - 1 */                                       \
-        ((BLOCK_COUNT) >= 1 && (BLOCK_COUNT) <= 0x10000) ? (BLOCK_COUNT)                  \
+        ((BLOCK_COUNT) >= 1 && (BLOCK_COUNT) <= 0x10000) ? ((BLOCK_COUNT) - 1)            \
                                                          : DPB_ERROR,                     \
         /* DRM - (no. of directory entries) - 1 */                                        \
         ((DIRECTORY_BLOCKS) >= 1 && (DIRECTORY_BLOCKS) <= 16)                             \
@@ -95,7 +94,7 @@ struct DPH {
         (0xFFFF00 >> (DIRECTORY_BLOCKS)) & 0xFF,                                          \
         (0xFF0000 >> (DIRECTORY_BLOCKS)) & 0xFF,                                          \
         /* CKS - Checksum vector size,0 or 8000h for a fixed disc */                      \
-        (FIXED) ? 0 : ((DPB_FILES_COUNT(BLOCK_SIZE, DIRECTORY_BLOCKS) + 3) / 4),          \
+        CSV_SIZE(FIXED, BLOCK_SIZE, DIRECTORY_BLOCKS),                                    \
         /* OFF - Offset, number of reserved tracks */                                     \
         0,                                                                                \
     }
