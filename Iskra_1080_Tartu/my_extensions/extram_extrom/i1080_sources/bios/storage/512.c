@@ -1,6 +1,5 @@
 /*
- * Iskra 1080 Tartu CP/M
- * Changing a 128-byte block in a 512-byte sector on a drive
+ * Iskra 1080 Extension card firmware
  * Copyright (c) 2026 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
@@ -50,7 +49,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
     hl = common_sector_128;
 
     if ((a = common_storage) == 0)
-        return StorageMemory(hl, b);
+        return StorageMemoryReadWrite(hl, b);
 
     /* Вычисление номера реального 512 байтного сектора */
     ShiftHlRight(hl);
@@ -67,7 +66,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
             *hl = 0;
 
             push_pop(bc) {
-                FloppyWrite();
+                FloppyReadWrite(c = FLOPPY_WRITE);
             }
 
             /* Выход, если A содержит код ошибки */
@@ -85,7 +84,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
         c--;
         if (flag_z) {
             push_pop(bc) {
-                FloppyRead();
+                FloppyReadWrite(c = FLOPPY_READ);
             }
             if (a != 0) {
                 d = a;
@@ -126,6 +125,6 @@ void Storage512(/* bc = STORAGE_512_ */) {
         return;
 
     storage_buffer_changed = a; /* Тут a = 0 */
-    FloppyWrite();
+    FloppyReadWrite(c = FLOPPY_WRITE);
     d = a; /* Возвращает код ошибки в D */
 }

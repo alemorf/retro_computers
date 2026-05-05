@@ -93,7 +93,7 @@ struct DPH {
         /* AL0, AL1 - Directory allocation bitmap */                                      \
         (0xFFFF00 >> (DIRECTORY_BLOCKS)) & 0xFF,                                          \
         (0xFF0000 >> (DIRECTORY_BLOCKS)) & 0xFF,                                          \
-        /* CKS - Checksum vector size,0 or 8000h for a fixed disc */                      \
+        /* CKS - Checksum vector size, 0 or 8000h for a fixed disc */                     \
         CSV_SIZE(FIXED, BLOCK_SIZE, DIRECTORY_BLOCKS),                                    \
         /* OFF - Offset, number of reserved tracks */                                     \
         0,                                                                                \

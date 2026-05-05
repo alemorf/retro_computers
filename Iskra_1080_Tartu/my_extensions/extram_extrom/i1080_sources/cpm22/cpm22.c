@@ -31,7 +31,6 @@ static const uint8_t A_DIRECTORY_BLOCKS = 1;
 static const uint32_t A_ROM_SIZE = 0x10000;
 static const uint32_t A_RAM_SIZE = 0x8000;
 static const uint32_t A_BLOCK_COUNT = (A_ROM_SIZE / A_BLOCK_SIZE + A_RAM_SIZE / A_BLOCK_SIZE - A_DIRECTORY_BLOCKS);
-/* uint32_t для проверки переполнения */
 
 static const uint8_t B_TRACKS_COUNT = 80;
 static const uint8_t B_SIDE_COUNT = 2;
@@ -43,7 +42,6 @@ static const uint16_t B_BLOCK_SIZE = 2048;
 static const uint8_t B_DIRECTORY_BLOCKS = 2;
 static const uint32_t B_BLOCK_COUNT =
     ((B_SIDE_COUNT * B_TRACKS_COUNT * B_SECTOR_PER_TRACK * B_SECTOR_SIZE) / B_BLOCK_SIZE);
-/* uint32_t для проверки переполнения */
 
 static const uint8_t C_TRACKS_COUNT = 80;
 static const uint8_t C_SIDE_COUNT = 2;
@@ -55,7 +53,6 @@ static const uint16_t C_BLOCK_SIZE = 2048;
 static const uint8_t C_DIRECTORY_BLOCKS = 2;
 static const uint32_t C_BLOCK_COUNT =
     ((C_SIDE_COUNT * C_TRACKS_COUNT * C_SECTOR_PER_TRACK * C_SECTOR_SIZE) / C_BLOCK_SIZE);
-/* uint32_t для проверки переполнения */
 
 /*** CP/M ***/
 
@@ -384,11 +381,11 @@ static void BiosCall(/* de - entry point, bc - optional value */) {
 // TODO: static_assert
 
 asm {
-    .if $ + 0x100 < common
-    Incorrect cpm_base
+    .if $ + 0x100 <= common
+      Incorrect cpm_base
     .endif
     .if $ > common
-    Incorrect cpm_base
+      Incorrect cpm_base
     .endif
     savebin "cpm22.bin", CBASE, $ - CBASE
 }

@@ -17,7 +17,7 @@
 
 #include <cmm.h>
 #include "main.h"
-#include "menu_engine.h"
+#include "menu.h"
 #include "start_cpm.h"
 #include "start_basic.h"
 #include "config.h"
@@ -162,5 +162,5 @@ void main(void) {
 
     /* Главное меню */
     for (;;)
-        MenuEngine(e = 0, hl = menu_root);
+        Menu(e = 0, hl = menu_root);
 }
