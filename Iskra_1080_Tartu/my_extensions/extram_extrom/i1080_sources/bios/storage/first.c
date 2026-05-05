@@ -43,14 +43,14 @@ void CpmWrite(/* c - write mode */) {
     /* использовался, то взводится счетчик блокирующий чтение с дискеты */
     if (a == 2) {
         /* Получение block mask. 7 => 1k, 0Fh => 2k, 1Fh => 4k... */
-        hl = bios_dpb;
+        hl = common_dpb;
         hl++;
         hl++;
         hl++;
         storage_first_counter = a = *hl;
-        storage_first_storage = a = bios_storage;
-        storage_first_track = hl = bios_track;
-        hl = bios_sector_128;
+        storage_first_storage = a = common_storage;
+        storage_first_track = hl = common_track;
+        hl = common_sector_128;
     } else {
         /* Если счетчик равен нулю, то читаем как обычно */
         a = storage_first_counter;
@@ -63,16 +63,16 @@ void CpmWrite(/* c - write mode */) {
 
         /* Если изменился диск, дорожка или сектор, то счетчик сбрасывается */
         a = storage_first_storage;
-        hl = &bios_storage;
+        hl = &common_storage;
         if (a != *hl)
             return CpmWriteNormal();
 
-        CompareHlPde(hl = storage_first_track, de = &bios_track);
+        CompareHlPde(hl = storage_first_track, de = &common_track);
         if (flag_nz)
             return CpmWriteNormal();
 
         hl = storage_first_sector_128;
-        CompareHlPde(hl, de = &bios_sector_128);
+        CompareHlPde(hl, de = &common_sector_128);
         if (flag_nz)
             return CpmWriteNormal();
     }
@@ -82,7 +82,7 @@ void CpmWrite(/* c - write mode */) {
 
     /* Получение кол-ва дорожек на дискете в DE */
     swap(hl, de);
-    hl = bios_dpb;
+    hl = common_dpb;
     swap(hl, de);
 
     /* Переход на следующую дорожку */

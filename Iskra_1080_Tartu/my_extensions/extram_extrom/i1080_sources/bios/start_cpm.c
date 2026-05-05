@@ -24,7 +24,7 @@
 #include "../i1080.h"
 #include "../memory_layout.h"
 
-void CpmEntryPoint(/* c */) __address(CPM_LOAD_ADDRESS + 0x1633);
+void CpmEntryPoint(/* c */) __address("cpm_base + 01633h");
 
 void StartCpm(void) {
     ConSetXlat(a = config.codepage);
@@ -68,7 +68,7 @@ void CpmWBoot(/* с - current storage and user */) {
     push_pop(bc) {
         out(PORT_WINDOW(2), a = PAGE_PACKED_CPM);
         out(PORT_WINDOW(3), a = PAGE_CPM_3);
-        Unmlz(hl = cpm_offset_in_rom, bc = CPM_LOAD_ADDRESS);
+        Unmlz(hl = cpm_offset_in_rom, bc = cpm_base);
     }
     CpmEntryPoint(c);
 }

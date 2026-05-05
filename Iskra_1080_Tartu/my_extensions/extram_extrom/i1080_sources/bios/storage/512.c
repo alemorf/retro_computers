@@ -25,7 +25,7 @@
 #include "../tools/shift_hl_right.h"
 #include "../../memory_layout.h"
 
-uint16_t bios_sector_512;
+uint16_t common_sector_512;
 
 uint8_t storage_buffer_changed;
 uint8_t storage_buffer_storage = -1;
@@ -35,27 +35,27 @@ uint8_t storage_buffer[512];
 
 static void Storage512Check(/*a = buffer_storage*/) {
     a = storage_buffer_storage;
-    hl = &bios_storage;
+    hl = &common_storage;
     if (a != *hl)
         return;
 
-    CompareHlPde(hl = bios_track, de = &storage_buffer_track);
+    CompareHlPde(hl = common_track, de = &storage_buffer_track);
     if (flag_nz)
         return;
 
-    CompareHlPde(hl = bios_sector_512, de = &storage_buffer_sector_512);
+    CompareHlPde(hl = common_sector_512, de = &storage_buffer_sector_512);
 }
 
 void Storage512(/* bc = STORAGE_512_ */) {
-    hl = bios_sector_128;
+    hl = common_sector_128;
 
-    if ((a = bios_storage) == 0)
+    if ((a = common_storage) == 0)
         return StorageMemory(hl, b);
 
     /* Вычисление номера реального 512 байтного сектора */
     ShiftHlRight(hl);
     ShiftHlRight(hl);
-    bios_sector_512 = hl;
+    common_sector_512 = hl;
 
     /* Если в буфере не тот накопитель, дорожка, сектор, то сохранение буфера и загрузка нового сектора */
     Storage512Check();
@@ -77,9 +77,9 @@ void Storage512(/* bc = STORAGE_512_ */) {
 
         /* Информация о секторе в буфере */
         storage_buffer_changed = (a ^= a);
-        storage_buffer_storage = a = bios_storage;
-        storage_buffer_track = hl = bios_track;
-        storage_buffer_sector_512 = hl = bios_sector_512;
+        storage_buffer_storage = a = common_storage;
+        storage_buffer_track = hl = common_track;
+        storage_buffer_sector_512 = hl = common_sector_512;
 
         /* Если чтение разрешено, то чтение сектора с накопителя в буфер */
         c--;
@@ -96,7 +96,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
     }
 
     /* Вычисление адреса 128 байтного сектора в буфере в HL */
-    a = bios_sector_128;
+    a = common_sector_128;
     a &= 3;
     h = a;
     l = 0;
@@ -104,7 +104,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
     hl += (de = storage_buffer);
 
     /* Чтение или запись 128 байтного сектора */
-    de = bios_buffer;
+    de = common_buffer;
     a = b; /* 0 - запись, 1 - чтение */
     a--;
     if (flag_nz) {

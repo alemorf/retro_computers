@@ -19,7 +19,5 @@
 
 #include <stdint.h>
 
-static const uint16_t CPM_LOAD_ADDRESS = 0xE600;
-
 void StartCpm(void);
 void CpmWBoot(/* с - current storage and user */);

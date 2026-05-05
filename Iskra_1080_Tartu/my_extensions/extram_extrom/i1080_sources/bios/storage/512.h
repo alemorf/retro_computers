@@ -1,6 +1,6 @@
 /*
  * Iskra 1080 Tartu CP/M
- * Изменение 128 байтного блока в 512 байтном секторе на накопителе
+ * Changing a 128-byte block in a 512-byte sector on a drive
  * Copyright (c) 2026 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 
-extern uint16_t bios_sector_512;
+extern uint16_t common_sector_512;
 
 extern uint8_t storage_buffer_changed;
 extern uint8_t storage_buffer_storage;
