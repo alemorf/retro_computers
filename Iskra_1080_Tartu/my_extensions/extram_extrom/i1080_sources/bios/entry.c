@@ -22,7 +22,7 @@
 #include "console.h"
 #include "printer.h"
 #include "uart.h"
-#include "storage.h"
+#include "storage/first.h"
 
 /* Точки входа */
 

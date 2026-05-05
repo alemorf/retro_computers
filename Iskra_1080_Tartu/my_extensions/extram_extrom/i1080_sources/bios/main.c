@@ -23,7 +23,7 @@
 #include "config.h"
 #include "graph/graph.h"
 #include "console.h"
-#include "storage.h"
+#include "storage/memory.h"
 #include "../i1080.h"
 #include "../memory_layout.h"
 
@@ -127,6 +127,7 @@ static uint16_t menu_root[] = {
     MENU_VARIABLE("UART контроль",    &config.uart_flow, menu_uart_flow),
     MENU_SEPARATOR,
     MENU_EXECUTE("Сброс настроек",    ResetConfig),
+    // TODO: Format
     MENU_END,
 };
 
