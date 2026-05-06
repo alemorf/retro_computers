@@ -20,6 +20,7 @@
 #include "graph/graph.h"
 #include "keyboard.h"
 #include "macro.h"
+#include "beep.h"
 #include "../i1080.h"
 #include "../memory_layout.h"
 
@@ -47,20 +48,6 @@ uint8_t con_color_0;
 uint8_t con_color_1;
 uint8_t con_color_2;
 uint8_t con_color_3;
-
-/* Звуковой сигнал */
-void Beep(void) {
-    disable_interrupts();
-    c = 0; /* Длительность */
-    do {
-        out(PORT_TAPE_OUT, a);
-        a = 48; /* Частота */
-        do {
-        } while (flag_nz(a--));
-        c--;
-    } while (flag_nz(c--));
-    enable_interrupts();
-}
 
 void BeginConsoleChange() {
     /* Подключаем видеопамять */
