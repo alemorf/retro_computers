@@ -29,18 +29,38 @@ static const uint8_t PAGE_CPM_1 = PAGE_RAM(5);
 static const uint8_t PAGE_CPM_2 = PAGE_RAM(6);
 static const uint8_t PAGE_CPM_3 = PAGE_RAM(7);
 
-#define WINDOW_ADDDRESS(N) (0x4000 * (N))
-
 /* Константы в ПЗУ */
 extern uint16_t bios_offset_in_rom __address(0x800A);
 extern uint16_t cpm_offset_in_rom __address(0x800C);
 extern uint16_t storage_offset_in_rom __address(0x800E);
 
-static const uint8_t CPM_SECTOR_SIZE = 128;
+/* Стек для функций BIOS */
+static const uint16_t BIOS_STACK = 0x100;
+
+/* Точки входа BIOS */
+void BiosEntryInterrupt(void) __address(1 * 3);
+void BiosEntryWBoot(/* c */) __address(2 * 3);
+void BiosEntryConSt(void) __address(3 * 3);
+void BiosEntryConIn(void) __address(4 * 3);
+void BiosEntryConOut(/* c */) __address(5 * 3);
+void BiosEntryList(/* c */) __address(6 * 3);
+void BiosEntryPunch(/* c */) __address(7 * 3);
+void BiosEntryReader(void) __address(8 * 3);
+void BiosEntrySelDsk(/* c */) __address(9 * 3);
+void BiosEntryRead(void) __address(10 * 3);
+void BiosEntryWrite(/* c */) __address(11 * 3);
+void BiosEntryPrStat(void) __address(12 * 3);
 
 /* Общие переменные для CP/M и BIOS в PAGE_CPM_3 */
-extern uint16_t bios_dpb __address(0xFF79);
-extern uint8_t bios_storage __address(0xFF7B);
-extern uint16_t bios_track __address(0xFF7C);
-extern uint16_t bios_sector_128 __address(0xFF7E);
-extern uint8_t bios_buffer[128] __address(0xFF80);
+extern uint8_t common[0] __address(0xFF79);
+extern uint16_t common_dpb __address(0xFF79);
+extern uint8_t common_storage __address(0xFF7B);
+extern uint16_t common_track __address(0xFF7C);
+extern uint16_t common_sector_128 __address(0xFF7E);
+extern uint8_t common_buffer[128] __address(0xFF80);
+
+/* Адрес загрузки CP/M */
+extern uint8_t cpm_base[0] __address(0xE600);
+
+/* Размер блока CP/M */
+static const uint8_t CPM_SECTOR_SIZE = 128;

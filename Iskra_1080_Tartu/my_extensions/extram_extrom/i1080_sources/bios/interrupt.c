@@ -15,26 +15,29 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "interrupt.h"
+#include <cmm.h>
+#include "keyboard.h"
+#include "console.h"
+#include "../i1080.h"
 
-#include <stdint.h>
+uint8_t frame_counter;
 
-extern uint8_t cursor_blink_counter;
-extern uint8_t cursor_visible;
-extern uint8_t cursor_y;
-extern uint8_t cursor_x;
+void InterruptHandler(void) {
+    /* Выход, если не было кадрового прерывания */
+    a = in(PORT_FRAME_IRQ_RESET);
+    cyclic_rotate_right(a);
+    if (flag_c)
+        return;
 
-extern uint8_t con_color_0;
-extern uint8_t con_color_1;
-extern uint8_t con_color_2;
-extern uint8_t con_color_3;
+    /* Сброс триггера кадрового прерывания */
+    out(PORT_FRAME_IRQ_RESET, a);
 
-void ConSetXlat(...);
-void ConClear();
-void ConReset();
-void ConNextLine();
-void ConUpdateColor();
-void CpmConout(/*c*/);
-void CpmConst(void);
-void CpmConin(void);
-void ConsoleInterrupt(void);
+    /* Увеличение счетчика кадров */
+    hl = &frame_counter;
+    (*hl)++;
+
+    /* Периодические функции */
+    ConsoleInterrupt();
+    KeyboardInterrupt();
+}

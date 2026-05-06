@@ -1,5 +1,6 @@
 /*
  * Iskra 1080 Extension card firmware
+ * Keyboard driver
  * Copyright (c) 2026 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,22 +20,22 @@
 
 #include <stdint.h>
 
-extern uint8_t cursor_blink_counter;
-extern uint8_t cursor_visible;
-extern uint8_t cursor_y;
-extern uint8_t cursor_x;
+static const uint8_t MOD_CTR = 1;
+static const uint8_t MOD_SHIFT = 2;
+static const uint8_t MOD_CAPS = 0x10;
+static const uint8_t MOD_NUM = 0x20;
 
-extern uint8_t con_color_0;
-extern uint8_t con_color_1;
-extern uint8_t con_color_2;
-extern uint8_t con_color_3;
+static const uint8_t KEY_BUFFER_SIZE = 16;
 
-void ConSetXlat(...);
-void ConClear();
-void ConReset();
-void ConNextLine();
-void ConUpdateColor();
-void CpmConout(/*c*/);
-void CpmConst(void);
-void CpmConin(void);
-void ConsoleInterrupt(void);
+extern uint8_t key_rus;
+extern uint8_t key_buffer[KEY_BUFFER_SIZE];
+
+/* Есть ли буфере клавиатуры нажатые клавиши? */
+/* Если буфер пуст, то выход с флагом Z */
+void CheckKeyboard(void);
+
+/* Получить код нажатой клавиши из буфера клавиатуры в A */
+/* Если буфер пуст, то выход с флагом Z */
+void ReadKeyboard(void);
+
+void KeyboardInterrupt(void);

@@ -17,6 +17,7 @@
 
 #include <cmm.h>
 #include "main.h"
+#include "interrupt.h"
 #include "keyboard.h"
 #include "start_cpm.h"
 #include "console.h"

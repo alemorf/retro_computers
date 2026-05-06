@@ -23,6 +23,7 @@
 /* Адреса */
 static const uint16_t SCREEN_0_ADDRESS = 0xD000;
 static const uint16_t SCREEN_1_ADDRESS = 0x9000;
+#define WINDOW_ADDDRESS(N) (0x4000 * (N))
 
 /* Цвета */
 static const uint8_t PALETTE_WHITE = 0;

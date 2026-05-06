@@ -190,8 +190,8 @@ static void free_tb(void) {
 // returns zero if any error (cant allocate mem), otherwise 1
 ULONG add_tb(UWORD index, OFFSET position) {
     struct tb_chain *newtb = get_free_tb();
-    if (!newtb) {  // no free elements
-        if ((OFFSET)(position + wrk.prelen) > (OFFSET)wrk.maxwin) { // if there could be enough tbs to try to flush
+    if (!newtb) {                                                    // no free elements
+        if ((OFFSET)(position + wrk.prelen) > (OFFSET)wrk.maxwin) {  // if there could be enough tbs to try to flush
             // try to flush current chain
             cutoff_tb_chain(index, position);
         }
@@ -559,7 +559,7 @@ ULONG emit_file(const UBYTE *bytes, LONG length) {
     }
 
     if (length > 0) {
-        while (position + length >= EMIT_FILEBUF_SIZE) { // if we have to flush buffer
+        while (position + length >= EMIT_FILEBUF_SIZE) {  // if we have to flush buffer
             length -= (EMIT_FILEBUF_SIZE - position);
 
             while (position < EMIT_FILEBUF_SIZE)  // fill buffer to the end, if possible
@@ -580,7 +580,7 @@ ULONG emit_file(const UBYTE *bytes, LONG length) {
     }
 
     if (length == EMIT_FILE_FINISH) {
-        if (position > 0) { // do we have anything to flush?
+        if (position > 0) {  // do we have anything to flush?
             if (position != mhmt_fwrite(buffer, position)) {
                 printf("mhmt-emit.c:emit_file() can't write to file!\n");
                 return 0;
