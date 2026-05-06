@@ -4,12 +4,12 @@ loader.bin
 loader.lst
 loader.asm
 bios/graph/4x10/prepare_font/prepare_font
-bios/font4.tmp
+bios/graph/4x10/font4.tmp
 bios.asm
 bios.lst
 bios.bin
 cpm22.asm
 cpm22.bin
 cpm22.lst
-make_iskra1080_rom_
+make_rom
 iskra1080cpm.bin
