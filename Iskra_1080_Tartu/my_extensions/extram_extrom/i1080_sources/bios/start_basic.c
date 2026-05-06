@@ -24,7 +24,7 @@ extern void StartBasic0(void) __address(0);
 extern void StartBasic4000(void) __address(0x4000);
 
 static void StartBasic2(void) {
-    out(PORT_WINDOW(0), a = 1);
+    out(PORT_WINDOW(0), a = PAGE_STD);
     out(PORT_ROM_0000, a ^= a);
     StartBasic0();
 }

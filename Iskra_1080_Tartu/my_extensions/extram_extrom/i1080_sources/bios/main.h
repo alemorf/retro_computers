@@ -19,6 +19,4 @@
 
 #include <stdint.h>
 
-extern uint8_t stack[0];
-
 void main(void);

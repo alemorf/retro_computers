@@ -32,9 +32,8 @@ extern uint8_t draw_char_4_a_xor_2;
 extern uint8_t draw_char_4_b_xor_2;
 
 /* Прототипы */
-static void DrawChar4(/* hl - coords, a - char */);
-static void DrawChar44();
-static void DrawChar40();
+static void DrawChar44(/* hl - chargen, de - video */);
+static void DrawChar40(/* hl - chargen, de - video */);
 
 /* Шрифт */
 asm("font4: incbin \"bios/graph/4x10/font4.tmp\"");
@@ -72,7 +71,7 @@ static void DrawChar4(/* hl - coords, a - char */) {
     DrawChar44(hl, de);
 }
 
-static void DrawChar44(/* hl, de */) {
+static void DrawChar44(/* hl - chargen, de - video */) {
     c = FONT_HEIGHT;
     do {
         a = *hl;
@@ -110,7 +109,7 @@ draw_char_4_a:
     } while (flag_nz(c--));
 }
 
-static void DrawChar40(/* hl, de */) {
+static void DrawChar40(/* hl - chargen, de - video */) {
     c = FONT_HEIGHT;
     do {
         a = *hl;
@@ -148,10 +147,12 @@ draw_char_4_b:
     } while (flag_nz(c--));
 }
 
-static void SetColor4(/* a */) {
-    /* TODO: Заменить на ^= 0x10, ^= 0xFF, ^= 0xA8 */
+static void SetColor4(/* a - foreground and background color */) {
+    /* Как очищать основную битовую плоскость? Заливка 0 или 1. */
     c = a;
-    if (flag_z(a &= 4)) {
+    a &= 4;
+    b = a;
+    if (flag_z) {
         hl = OPCODE_AND_CONST | (0x0F << 8);
         draw_char_4_a_and_1 = hl;
         h = 0xF0;
@@ -162,7 +163,8 @@ static void SetColor4(/* a */) {
         h = 0x0F;
         draw_char_4_b_and_1 = hl;
     }
-    b = a;
+
+    /* Рисовать символ XOR-ом в нулевой плоскости или не изменять плоскость? */
     a = c;
     a *= 4;
     a &= 4;
@@ -173,8 +175,11 @@ static void SetColor4(/* a */) {
     draw_char_4_a_xor_1 = a;
     draw_char_4_b_xor_1 = a;
 
+    /* Как очищать дополнительную битовую плоскость? Заливка 0 или 1. */
     a = c;
-    if (flag_z(a &= 8)) {
+    a &= 8;
+    b = a;
+    if (flag_z) {
         hl = OPCODE_AND_CONST | (0x0F << 8);
         draw_char_4_a_and_2 = hl;
         h = 0xF0;
@@ -185,7 +190,8 @@ static void SetColor4(/* a */) {
         h = 0x0F;
         draw_char_4_b_and_2 = hl;
     }
-    b = a;
+
+    /* Рисовать символ XOR-ом в дополнительной плоскости или не изменять плоскость? */
     a = c;
     a *= 4;
     a &= 8;
@@ -198,8 +204,10 @@ static void SetColor4(/* a */) {
 }
 
 void DrawChar4Init(/* a - DRAW_CHAR_4_BW_INIT/DRAW_CHAR_4_COLOR_INIT */) {
+    /* Используется ли дополнительная битовая плоскость? */
     draw_char_4_a = a;
     draw_char_4_b = a;
+
     draw_char = hl = DrawChar4;
     set_color = hl = SetColor4;
 }

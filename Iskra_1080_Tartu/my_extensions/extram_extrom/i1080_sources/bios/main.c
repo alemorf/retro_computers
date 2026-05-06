@@ -135,7 +135,7 @@ static uint16_t menu_root[] = {
 
 void main(void) {
     /* Настройка стека */
-    sp = stack;
+    sp = BIOS_STACK;
 
     /* Настройка адресного пространства */
     out(PORT_WINDOW(0), a = PAGE_BIOS_0);

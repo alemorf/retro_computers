@@ -15,8 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../i1080.h"
 #include "menu.h"
+#include <cmm.h>
+#include "../i1080.h"
 #include "graph/graph.h"
 #include "keyboard.h"
 

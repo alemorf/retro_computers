@@ -93,8 +93,6 @@ void EntryInterrupt(void) {
 
 uint8_t key_buffer[KEY_BUFFER_SIZE];
 
-/* Далее находится стек от 55h до 100h */
+/* Далее находится стек от 55h до 100h, константа BIOS_STACK */
 
 asm(" org 0x100");
-
-uint8_t stack[0];
