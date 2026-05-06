@@ -147,7 +147,7 @@ void main(void) {
     InitConfig();
 
     /* Проверка накопителя в ОЗУ и возможно форматирование */
-    StorageMemoryInit();
+    StorageMemoryFormat();  // TODO: Только если кс config не сошелся
 
     /* Очистка экрана и запуск прерываний */
     SetGraphModeColor6x10();

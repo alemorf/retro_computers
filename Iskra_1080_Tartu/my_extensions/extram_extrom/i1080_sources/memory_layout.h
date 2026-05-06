@@ -23,7 +23,7 @@
 static const uint8_t PAGE_BIOS_0 = PAGE_RAM(0);
 static const uint8_t PAGE_BIOS_1 = PAGE_RAM(1);
 static const uint8_t PAGE_RAM_DISK = 2; /* 2, 3 */
-static const uint8_t PAGE_PACKED_CPM = PAGE_ROM(3);
+static const uint8_t PAGE_PACKED_CPM = PAGE_ROM(63);
 static const uint8_t PAGE_CPM_0 = PAGE_RAM(4);
 static const uint8_t PAGE_CPM_1 = PAGE_RAM(5);
 static const uint8_t PAGE_CPM_2 = PAGE_RAM(6);
@@ -33,6 +33,7 @@ static const uint8_t PAGE_CPM_3 = PAGE_RAM(7);
 extern uint16_t bios_offset_in_rom __address(0x800A);
 extern uint16_t cpm_offset_in_rom __address(0x800C);
 extern uint16_t storage_offset_in_rom __address(0x800E);
+extern void UnpackMegaLz8000(/* hl - from addr, bc - to addr */) __address(0x8010);
 
 /* Стек для функций BIOS */
 static const uint16_t BIOS_STACK = 0x100;

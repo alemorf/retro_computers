@@ -20,7 +20,6 @@
 #include "console.h"
 #include "config.h"
 #include "graph/graph.h"
-#include "unmlz.h"
 #include "../i1080.h"
 #include "../memory_layout.h"
 
@@ -64,11 +63,14 @@ void StartCpm(void) {
 }
 
 void CpmWBoot(/* с - current storage and user */) {
-    disable_interrupts();
     push_pop(bc) {
         out(PORT_WINDOW(2), a = PAGE_PACKED_CPM);
         out(PORT_WINDOW(3), a = PAGE_CPM_3);
-        Unmlz(hl = cpm_offset_in_rom, bc = cpm_base);
+        hl = cpm_offset_in_rom;
+        hl += (de = WINDOW_ADDDRESS(2));
+        bc = cpm_base;
+        UnpackMegaLz8000(hl, bc);
     }
+    disable_interrupts();
     CpmEntryPoint(c);
 }

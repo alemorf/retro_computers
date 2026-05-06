@@ -83,7 +83,7 @@ void StorageMemoryFormat(void) {
     hl = common_buffer;
     do {
         *hl = 0xE5;
-    } while(flag_nz(l++));
+    } while (flag_nz(l++));
 
     /* Копирование образа в каждый блок каталога */
     de = A_RAM_DIRECORY_BLOCKS * A_SECTORS_PER_BLOCK;
