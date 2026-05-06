@@ -19,7 +19,10 @@
 
 #include <stdint.h>
 
-static const uint8_t FLOPPY_READ = 0x86;  /* Код команды для К1818ВГ93 */
-static const uint8_t FLOPPY_WRITE = 0xA6; /* Код команды для К1818ВГ93 */
+/* Аргумент для функции ниже / код команды для К1818ВГ93 */
+enum {
+    FLOPPY_READ = 0x86,
+    FLOPPY_WRITE = 0xA6
+};
 
-void FloppyReadWrite(/* c - код команды ВГ93 */);
+void FloppyReadWrite(/* c - FLOPPY_READ/FLOPPY_WRITE */);

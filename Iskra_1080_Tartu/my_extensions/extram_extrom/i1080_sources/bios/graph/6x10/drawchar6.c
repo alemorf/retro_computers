@@ -17,7 +17,6 @@
 
 #include <cmm.h>
 #include "../graphinit.h"
-#include "../../macro.h"
 #include "../../tools/opcodes_8080.h"
 
 extern uint8_t font[256 * 10];

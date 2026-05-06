@@ -24,7 +24,7 @@
 #include "../tools/shift_hl_right.h"
 #include "../../memory_layout.h"
 
-uint16_t common_sector_512;
+uint16_t storage_sector_512;
 
 uint8_t storage_buffer_changed;
 uint8_t storage_buffer_storage = -1;
@@ -42,7 +42,7 @@ static void Storage512Check(/*a = buffer_storage*/) {
     if (flag_nz)
         return;
 
-    CompareHlPde(hl = common_sector_512, de = &storage_buffer_sector_512);
+    CompareHlPde(hl = storage_sector_512, de = &storage_buffer_sector_512);
 }
 
 void Storage512(/* bc = STORAGE_512_ */) {
@@ -54,7 +54,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
     /* Вычисление номера реального 512 байтного сектора */
     ShiftHlRight(hl);
     ShiftHlRight(hl);
-    common_sector_512 = hl;
+    storage_sector_512 = hl;
 
     /* Если в буфере не тот накопитель, дорожка, сектор, то сохранение буфера и загрузка нового сектора */
     Storage512Check();
@@ -70,6 +70,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
             }
 
             /* Выход, если A содержит код ошибки */
+            d = a;
             if (a != 0)
                 return;
         }
@@ -78,7 +79,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
         storage_buffer_changed = (a ^= a);
         storage_buffer_storage = a = common_storage;
         storage_buffer_track = hl = common_track;
-        storage_buffer_sector_512 = hl = common_sector_512;
+        storage_buffer_sector_512 = hl = storage_sector_512;
 
         /* Если чтение разрешено, то чтение сектора с накопителя в буфер */
         c--;

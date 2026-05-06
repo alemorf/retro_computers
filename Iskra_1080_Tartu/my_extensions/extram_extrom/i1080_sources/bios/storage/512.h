@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 
-extern uint16_t common_sector_512;
+extern uint16_t storage_sector_512;
 
 extern uint8_t storage_buffer_changed;
 extern uint8_t storage_buffer_storage;
