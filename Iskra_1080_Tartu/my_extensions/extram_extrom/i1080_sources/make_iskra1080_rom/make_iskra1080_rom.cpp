@@ -101,8 +101,8 @@ static void AddEntry(unsigned &block_number, struct Entry *entry, unsigned &entr
             throw std::runtime_error("No space in catalog (entry_number == " + std::to_string(A_ROM_DIRECTORY_COUNT) +
                                      ")");
         e.user = user;
-        e.size_128 = std::min(size_128, A_BLOCK_SIZE / 128 * unsigned(std::size(e.blocks8)));
         if (A_RAM_BLOCKS + A_ROM_BLOCKS < 0x100) {
+            e.size_128 = std::min(size_128, A_BLOCK_SIZE / 128 * unsigned(std::size(e.blocks8)));
             for (auto &i : e.blocks8) {
                 if (size_128 > 0) {
                     i = block_number++;
@@ -112,6 +112,7 @@ static void AddEntry(unsigned &block_number, struct Entry *entry, unsigned &entr
                 }
             }
         } else {
+            e.size_128 = std::min(size_128, A_BLOCK_SIZE / 128 * unsigned(std::size(e.blocks16)));
             for (auto &i : e.blocks16) {
                 if (size_128 > 0) {
                     i = block_number++;

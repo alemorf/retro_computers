@@ -21,8 +21,8 @@
 
 /* Параметры накопителя A: */
 
-static const uint16_t A_BLOCK_SIZE = 1024;
-static const uint16_t A_ROM_DIRECORY_BLOCKS = 1;
-static const uint16_t A_ROM_BLOCKS = 0x10000 / A_BLOCK_SIZE;
+static const uint16_t A_BLOCK_SIZE = 2048;
+static const uint16_t A_ROM_DIRECORY_BLOCKS = 2;
+static const uint16_t A_ROM_BLOCKS = (uint32_t)1024 * 1024 / A_BLOCK_SIZE;
 static const uint16_t A_RAM_DIRECORY_BLOCKS = 1;
-static const uint16_t A_RAM_BLOCKS = 0x8000 / A_BLOCK_SIZE;
+static const uint16_t A_RAM_BLOCKS = (uint32_t)32 * 1024 / A_BLOCK_SIZE;
