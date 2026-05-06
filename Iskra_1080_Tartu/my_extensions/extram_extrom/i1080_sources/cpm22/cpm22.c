@@ -18,6 +18,7 @@
 #include <cmm.h>
 #include "../bios/tools/opcodes_8080.h"
 #include "../memory_layout.h"
+#include "../storage.h"
 #include "dpb.h"
 
 /*** Настройка накопителей ***/
@@ -26,11 +27,8 @@
 
 static const uint8_t A_FIXED = 1;
 static const uint16_t A_128_PER_TRACK = 0xFFFF; /* Max */
-static const uint16_t A_BLOCK_SIZE = 1024;
-static const uint8_t A_DIRECTORY_BLOCKS = 1;
-static const uint32_t A_ROM_SIZE = 0x10000;
-static const uint32_t A_RAM_SIZE = 0x8000;
-static const uint32_t A_BLOCK_COUNT = (A_ROM_SIZE / A_BLOCK_SIZE + A_RAM_SIZE / A_BLOCK_SIZE - A_DIRECTORY_BLOCKS);
+static const uint8_t A_DIRECTORY_BLOCKS = A_RAM_DIRECORY_BLOCKS + A_ROM_DIRECORY_BLOCKS;
+static const uint32_t A_BLOCK_COUNT = A_RAM_BLOCKS + A_ROM_BLOCKS;
 
 static const uint8_t B_TRACKS_COUNT = 80;
 static const uint8_t B_SIDE_COUNT = 2;
