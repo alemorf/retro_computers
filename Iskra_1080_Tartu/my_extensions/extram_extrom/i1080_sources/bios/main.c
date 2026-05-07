@@ -25,7 +25,7 @@
 #include "console.h"
 #include "storage/memory.h"
 #include "../i1080.h"
-#include "../memory_layout.h"
+#include "../common.h"
 
 /* clang-format off */
 

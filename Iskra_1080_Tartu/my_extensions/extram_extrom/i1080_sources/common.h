@@ -20,14 +20,15 @@
 #include <stdint.h>
 #include "i1080.h"
 
-static const uint8_t PAGE_BIOS_0 = PAGE_RAM(0);
-static const uint8_t PAGE_BIOS_1 = PAGE_RAM(1);
-static const uint8_t PAGE_RAM_DISK = 2; /* 2, 3 */
+/* Использование страниц памяти */
+static const uint8_t PAGE_CPM_0 = PAGE_RAM(0);
+static const uint8_t PAGE_CPM_1 = PAGE_RAM(1);
+static const uint8_t PAGE_CPM_2 = PAGE_RAM(2);
+static const uint8_t PAGE_CPM_3 = PAGE_RAM(3);
+static const uint8_t PAGE_BIOS_0 = PAGE_RAM(4);
+static const uint8_t PAGE_BIOS_1 = PAGE_RAM(5);
+static const uint8_t PAGE_RAM_DISK = 6; /* 7... */
 static const uint8_t PAGE_PACKED_CPM = PAGE_ROM(63);
-static const uint8_t PAGE_CPM_0 = PAGE_RAM(4);
-static const uint8_t PAGE_CPM_1 = PAGE_RAM(5);
-static const uint8_t PAGE_CPM_2 = PAGE_RAM(6);
-static const uint8_t PAGE_CPM_3 = PAGE_RAM(7);
 
 /* Константы в ПЗУ */
 extern uint16_t bios_offset_in_rom __address(0x800A);

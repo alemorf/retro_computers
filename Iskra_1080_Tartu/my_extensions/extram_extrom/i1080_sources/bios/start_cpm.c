@@ -21,7 +21,7 @@
 #include "config.h"
 #include "graph/graph.h"
 #include "../i1080.h"
-#include "../memory_layout.h"
+#include "../common.h"
 
 void CpmEntryPoint(/* c */) __address("cpm_base + 01633h");
 
@@ -42,18 +42,30 @@ void StartCpm(void) {
 
     ClearScreen();
 
-    a = config.color_0;
+    hl = config.color_0;
+    a = l;
     out(PORT_PALETTE(0), a);
-    con_color_0 = ((a ^= 7) &= 7);
-    a = config.color_1;
+    invert(a);
+    l = (a &= 7);
+    a = h;
     out(PORT_PALETTE(1), a);
-    con_color_1 = ((a ^= 7) &= 7);
-    a = config.color_2;
+    invert(a);
+    h = (a &= 7);
+    con_color_0 = hl;
+
+    hl = config.color_2;
+    a = l;
     out(PORT_PALETTE(2), a);
-    con_color_2 = ((a ^= 7) &= 7);
-    a = config.color_3;
+    invert(a);
+    l = (a &= 7);
+    a = h;
     out(PORT_PALETTE(3), a);
-    con_color_3 = ((a ^= 7) &= 7);
+    invert(a);
+    h = (a &= 7);
+    a = config.screen_mode;
+    if (flag_nz(a &= 2))
+        hl = 0xFFFF;
+    con_color_2 = hl;
 
     DrawText(de = 0, hl = "Искра 1080М");
     ConUpdateColor();

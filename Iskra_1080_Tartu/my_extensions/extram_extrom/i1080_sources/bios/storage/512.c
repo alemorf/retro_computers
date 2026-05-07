@@ -22,7 +22,7 @@
 #include "memory.h"
 #include "../tools/compare_hl_pde.h"
 #include "../tools/shift_hl_right.h"
-#include "../../memory_layout.h"
+#include "../../common.h"
 
 uint16_t storage_sector_512;
 

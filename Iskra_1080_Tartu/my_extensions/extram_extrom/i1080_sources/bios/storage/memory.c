@@ -18,7 +18,7 @@
 #include "memory.h"
 #include <cmm.h>
 #include "../../i1080.h"
-#include "../../memory_layout.h"
+#include "../../common.h"
 #include "../../storage.h"
 
 static const uint16_t A_SECTORS_PER_BLOCK = A_BLOCK_SIZE / CPM_SECTOR_SIZE;

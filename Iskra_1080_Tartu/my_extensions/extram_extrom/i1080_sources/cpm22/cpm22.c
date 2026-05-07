@@ -17,7 +17,7 @@
 
 #include <cmm.h>
 #include "../bios/tools/opcodes_8080.h"
-#include "../memory_layout.h"
+#include "../common.h"
 #include "../storage.h"
 #include "dpb.h"
 
@@ -157,11 +157,13 @@ static void RunCommand(/* c  - текущий диск  */) {
 
 /*** Обработчик прерывания ***/
 
-extern uint8_t interrupt_handler_sp[0];
+extern uint8_t interrupt_handler_sp[];
+extern uint8_t interrupt_handler_hl[];
 
 static void InterruptHandler(void) {
     /* Save CPU state, switch stack and memory page */
-    push_pop(a, hl) {
+    push_pop(a) {
+        interrupt_handler_hl[1] = hl;
         interrupt_handler_sp[1] = ((hl = 0) += sp);
         sp = BIOS_STACK;
 
@@ -175,10 +177,11 @@ static void InterruptHandler(void) {
         out(PORT_WINDOW(0), a = PAGE_CPM_0);
         out(PORT_WINDOW(1), a = PAGE_CPM_1);
 
+    interrupt_handler_hl:
+        hl = 0;
     interrupt_handler_sp:
         sp = 0;
     }
-
     enable_interrupts();
 }
 

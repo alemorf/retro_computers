@@ -22,7 +22,7 @@
 #include "macro.h"
 #include "beep.h"
 #include "../i1080.h"
-#include "../memory_layout.h"
+#include "../common.h"
 
 static const uint8_t CURSOR_BLINK_PERIOD = 35;
 
@@ -158,6 +158,7 @@ void ConFindColor() {
     b++;
     if (a == h)
         return;
+
     hl = con_color_2;
     b++;
     if (a == l)
@@ -204,8 +205,7 @@ void ConUpdateColor() {
     if ((a = b) == c) {
         if ((a = d) != e) {
             a = b;
-            a++;
-            a &= 3;
+            a ^= 1;
             b = a;
         }
     }
@@ -283,7 +283,7 @@ void CpmConoutCsi2() {
             con_background = a;
             return ConUpdateColor();
         }
-        /* [ 1 m 	Set\ “bright” attribute */
+        /* [ 1 m 	Set “bright” attribute */
         /* [ 2 m 	Set “dim” attribute */
         /* [ 4 m 	Set “underscore” (underlined text) attribute */
         /* [ 5 m 	Set “blink” attribute */

@@ -17,7 +17,7 @@
 
 #include <cmm.h>
 #include "../i1080.h"
-#include "../memory_layout.h"
+#include "../common.h"
 
 void BiosEntry(void) __address(0);
 

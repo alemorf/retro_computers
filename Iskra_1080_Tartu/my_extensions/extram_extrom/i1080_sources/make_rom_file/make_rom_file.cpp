@@ -184,7 +184,8 @@ int main() {
         // Поиск файлов для добавленя и сортировка
         std::vector<std::string> files;
         for (auto &p : std::filesystem::directory_iterator("files"))
-            files.push_back(p.path().string());
+            if (p.is_regular_file())
+                files.push_back(p.path().string());
         std::sort(files.begin(), files.end());
 
         // Добавление файлов

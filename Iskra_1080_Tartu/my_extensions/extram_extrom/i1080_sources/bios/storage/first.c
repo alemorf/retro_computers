@@ -20,7 +20,7 @@
 #include <cmm.h>
 #include "512.h"
 #include "../tools/compare_hl_pde.h"
-#include "../../memory_layout.h"
+#include "../../common.h"
 
 uint8_t storage_write_mode;
 

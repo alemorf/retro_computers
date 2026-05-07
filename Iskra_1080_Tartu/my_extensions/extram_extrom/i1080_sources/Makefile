@@ -5,6 +5,7 @@ all: iskra1080cpm.bin iskra1080.files $F
 	echo $(subst $(empty) ,"\n",${CLEAN}) >.gitignore
 
 CLEAN += iskra1080.creator.user
+
 .PHONY: iskra1080.files
 iskra1080.files:
 	find . -type f | sort >iskra1080.files
