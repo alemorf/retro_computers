@@ -25,6 +25,7 @@ static const uint8_t TEXT_SCREEN_HEIGHT = 25;
 static const uint16_t FONT_HEIGHT = 10;
 
 extern uint8_t text_screen_width;
+extern uint8_t color_enabled;
 
 void ClearScreen(void);
 void ScrollUp(void);

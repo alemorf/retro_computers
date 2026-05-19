@@ -22,6 +22,7 @@
 static const uint8_t OPCODE_NOP = 0x00;
 static const uint8_t OPCODE_LD_DE_CONST = 0x11;
 static const uint8_t OPCODE_ADD_HL_DE = 0x19;
+static const uint8_t OPCODE_LHLD = 0x2A;
 static const uint8_t OPCODE_ADD_HL_SP = 0x39;
 static const uint8_t OPCODE_LD_A_CONST = 0x3E;
 static const uint8_t OPCODE_LD_H_A = 0x67;

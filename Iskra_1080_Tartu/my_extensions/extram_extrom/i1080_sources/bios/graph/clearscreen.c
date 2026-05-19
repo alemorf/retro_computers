@@ -27,12 +27,13 @@ extern uint16_t clear_screen_4 __address("clear_screen_3 + 1");
 
 void ClearScreen(void) {
     clear_screen_4 = ((hl = 0) += sp);
-    de = 0; /* TODO: Залить текущим цветом фона */
     c = SCREEN_WIDTH_BYTES;
     hl = 0;
     do {
         b = SCREEN_HEIGHT_BYTES / 16; /* 16 это кол-во байт push(de...) */
         disable_interrupts();
+    color_plane_0_16_:
+        de = 0;
         sp = hl;
         do {
             push(de, de, de, de, de, de, de, de);
@@ -43,6 +44,8 @@ void ClearScreen(void) {
         a -= BITPLANE_OFFSET >> 8;
         h = a;
         b = SCREEN_HEIGHT_BYTES / 16; /* 16 это кол-во байт push(de...) */
+    color_plane_1_16_:
+        de = 0;
         sp = hl;
         do {
             push(de, de, de, de, de, de, de, de);

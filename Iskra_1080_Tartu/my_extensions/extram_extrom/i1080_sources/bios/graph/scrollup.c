@@ -130,7 +130,8 @@ void ScrollUp(void) {
 
     /* Очистка нижней строки */
     a = SCREEN_WIDTH_BYTES;
-    de = 0; /* TODO: Background */
+    hl = color_plane_0_16; /* TODO: Background */
+    swap(hl, de);
     disable_interrupts();
     sp = (SCREEN_0_ADDRESS + SCREEN_SIZE) - ((TEXT_SCREEN_HEIGHT - 1) * FONT_HEIGHT);
     do {
@@ -143,7 +144,8 @@ void ScrollUp(void) {
     /* Вторая плоскость */
 scroll_up_8: /* Заменяется: jp ScrollUpSpInstr2 */
     a = SCREEN_WIDTH_BYTES;
-    de = 0; /* TODO: Background */
+    hl = color_plane_1_16; /* TODO: Background */
+    swap(hl, de);
     sp = (SCREEN_1_ADDRESS + SCREEN_SIZE) - ((TEXT_SCREEN_HEIGHT - 1) * FONT_HEIGHT);
     do {
         push(de, de, de, de, de);
@@ -171,5 +173,5 @@ void ScrollUpInit(/* b - GRAPH_INIT_1_BITPLANE/GRAPH_INIT_2_BITPLANES */) {
     scroll_up_3 = a = OPCODE_ADD_HL_SP;
     scroll_up_4 = hl = OPCODE_MOV_SP_HL | (OPCODE_ADD_HL_DE << 8);
     scroll_up_8 = a = OPCODE_LD_A_CONST;
-    scroll_up_9 = hl = 0x30 | (OPCODE_LD_DE_CONST << 8);
+    scroll_up_9 = hl = 0x30 | (OPCODE_LHLD << 8);
 }

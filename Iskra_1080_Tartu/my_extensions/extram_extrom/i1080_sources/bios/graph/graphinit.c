@@ -25,6 +25,7 @@
 void GraphInit(/* a - text screen width, b - GRAPH_INIT_?_BITPLANE, hl - DrawCursorAddress */) {
     text_screen_width = a;
     draw_cursor = hl;
+    color_enabled = a = b;
 
     ClearScreenInit(b);
     ScrollUpInit(b);

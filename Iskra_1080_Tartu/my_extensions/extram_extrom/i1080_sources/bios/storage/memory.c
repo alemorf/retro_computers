@@ -26,6 +26,9 @@ static const uint16_t A_SECTORS_PER_BLOCK = A_BLOCK_SIZE / CPM_SECTOR_SIZE;
 static void StorageCopy(/* hl, a, b */);
 
 static void StorageCopyRom(/* de - 128 sector */) {
+    a = in(PORT_WINDOW(2));
+    push(a);
+
     /* Смещение файловой системы в ПЗУ */
     out(PORT_WINDOW(2), a = PAGE_PACKED_CPM); /* для storage_offset_in_rom */
     hl = storage_offset_in_rom;
@@ -41,6 +44,9 @@ static void StorageCopyRom(/* de - 128 sector */) {
 }
 
 static void StorageCopyRam(/* de - 128 sector */) {
+    a = in(PORT_WINDOW(2));
+    push(a);
+
     swap(hl, de);
 
     /* Расчет значения для выбора страницы ОЗУ */
@@ -72,30 +78,33 @@ static void StorageCopy(/* hl, a, b */) {
         de++;
     } while (flag_nz(c--));
 
+    pop(a);
+    out(PORT_WINDOW(2), a);
+
     d = c; /* Тут c = 0; */
 }
 
 void StorageMemoryFormat(void) {
     /* Выбор страницы содержащей common_buffer */
-    out(PORT_WINDOW(3), a = PAGE_CPM_3);
+    a = in(PORT_WINDOW(3));
+    push_pop(a) {
+        out(PORT_WINDOW(3), a = PAGE_CPM_3);
 
-    /* Создание образца чистого блока каталога */
-    hl = common_buffer;
-    do {
-        *hl = 0xE5;
-    } while (flag_nz(l++));
+        /* Создание образца чистого блока каталога */
+        hl = common_buffer;
+        do {
+            *hl = 0xE5;
+        } while (flag_nz(l++));
 
-    /* Копирование образа в каждый блок каталога */
-    de = A_RAM_DIRECORY_BLOCKS * A_SECTORS_PER_BLOCK;
-    do {
-        de--;
-        push_pop(de) {
-            StorageCopyRam(de, b = 0);
-        }
-    } while (flag_nz((a = e) |= d));
-
-    /* Выбор страниц содержащих экран (по умолчанию) */
-    out(PORT_WINDOW(2), a = PAGE_SCREEN);
+        /* Копирование образа в каждый блок каталога */
+        de = A_RAM_DIRECORY_BLOCKS * A_SECTORS_PER_BLOCK;
+        do {
+            de--;
+            push_pop(de) {
+                StorageCopyRam(de, b = 0);
+            }
+        } while (flag_nz((a = e) |= d));
+    }
     out(PORT_WINDOW(3), a);
 }
 

@@ -17,14 +17,33 @@
 
 #include <cmm.h>
 #include "graph.h"
+#include "scrollup.h"
 
 uint8_t text_screen_width;
+uint8_t color_enabled;
 
 void DrawChar(/* hl - coords, a - char */) {
     DrawChar(hl, a);
 }
 
 void SetColor(/* a - color */) {
+    b = a;
+
+    cyclic_rotate_right(a, 3);
+    hl = 0;
+    if (flag_c)
+        hl = 0xFFFF;
+    color_plane_0_16 = hl;
+
+    cyclic_rotate_right(a, 1);
+    hl = 0;
+    if (flag_c)
+        hl = 0xFFFF;
+    color_plane_1_16 = hl;
+
+    a = b;
+
+set_text_color:
     SetColor(a);
 }
 

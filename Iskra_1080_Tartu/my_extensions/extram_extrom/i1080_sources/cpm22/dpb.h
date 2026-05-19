@@ -53,7 +53,7 @@ struct DPH {
 
 /* clang-format off */
 
-#define MAKE_DPB(SEC_128_PER_TRACK, BLOCK_SIZE, BLOCK_COUNT, DIRECTORY_BLOCKS, FIXED)     \
+#define MAKE_DPB(SEC_128_PER_TRACK, BLOCK_SIZE, BLOCK_COUNT, DIRECTORY_BLOCKS, FIXED, OFF)\
     {                                                                                     \
         /* SPT - Number of 128-byte records per track */                                  \
         ((SEC_128_PER_TRACK) >= 1 && (SEC_128_PER_TRACK) <= 0xFFFF) ? (SEC_128_PER_TRACK) \
@@ -96,6 +96,6 @@ struct DPH {
         /* CKS - Checksum vector size, 0 or 8000h for a fixed disc */                     \
         CSV_SIZE(FIXED, BLOCK_SIZE, DIRECTORY_BLOCKS),                                    \
         /* OFF - Offset, number of reserved tracks */                                     \
-        0,                                                                                \
+        (OFF),                                                                            \
     }
 
