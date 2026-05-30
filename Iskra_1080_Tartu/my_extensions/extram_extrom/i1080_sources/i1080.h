@@ -65,11 +65,9 @@ static const uint8_t KEY_PG_UP = 0xFE;
 static const uint8_t KEY_PG_DN = 0xFF;
 
 /* Порты ввода вывода */
-#define PORT_WINDOW(N) (N)
-static const uint8_t PORT_FRAME_IRQ_RESET = 0x04;
-static const uint8_t PORT_ARM_SIZE = 9;
-static const uint8_t PORT_ARM_RESULT = 9;
-static const uint8_t PORT_ARM_DATA = 8;
+#define PORT_WINDOW(N) (0x3C + ((N) << 6))
+static const uint8_t PORT_FRAME_IRQ_RESET = 0x1C;
+static const uint8_t PORT_FRAME_IRQ_STATE = 0x3D;
 static const uint8_t PORT_UART_DATA = 0x80;
 static const uint8_t PORT_UART_CONFIG = 0x81;
 static const uint8_t PORT_UART_STATE = 0x81;

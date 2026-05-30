@@ -45,29 +45,30 @@ void StartCpm(void) {
     hl = config.color_0;
     a = l;
     out(PORT_PALETTE(0), a);
-    invert(a);
-    l = (a &= 7);
+    l = (a ^= 15);
     a = h;
-    out(PORT_PALETTE(1), a);
-    invert(a);
-    h = (a &= 7);
+    out(PORT_PALETTE(2), a);
+    h = (a ^= 15);
     con_color_0 = hl;
 
     hl = config.color_2;
+    a = config.screen_mode;
+    if (a != 1)
+        if (a != 3)
+            hl = config.color_0;
+
     a = l;
-    out(PORT_PALETTE(2), a);
-    invert(a);
-    l = (a &= 7);
+    out(PORT_PALETTE(1), a);
+    l = (a ^= 15);
     a = h;
     out(PORT_PALETTE(3), a);
-    invert(a);
-    h = (a &= 7);
-    a = config.screen_mode;
-    if (flag_nz(a &= 2))
-        hl = 0xFFFF;
+    h = (a ^= 15);
     con_color_2 = hl;
 
+    ConReset();
+    SetColor(a = 3);
     DrawText(de = 0, hl = "Искра 1080М");
+    con_foreground = a = 9;
     ConUpdateColor();
     cursor_visible = a = 1;
 

@@ -624,7 +624,7 @@ COMMAND:LD	SP,CCPSTACK	;setup stack area.
 ;   Entry point to get a command line from the console.
 ;
 CMMND1:	LD	SP,CCPSTACK	;set stack straight.
-    CALL	CRLF		;start a new line on the screen.
+    CALL  biosshell ;CALL	CRLF		;start a new line on the screen.
     CALL	GETDSK		;get current drive.
     ADD	'A'
     CALL	PRINT		;print current drive.
@@ -1128,7 +1128,7 @@ UNKWN3:	PUSH	HL
 ;
 UNKWN4:	POP	HL
     DEC	A		;normal end of file?
-    JP	NZ,UNKWN0
+    CALL	biossetfolder    ;    JP	NZ,UNKWN0
     CALL	RESETDR		;yes, reset previous drive.
     CALL	CONVFST		;convert the first file name that follows
     LD	HL,CHGDRV	;command name.

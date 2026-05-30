@@ -37,9 +37,10 @@ static const uint16_t B_SECTOR_SIZE = 512;
 static const uint8_t B_FIXED = 0;
 static const uint16_t B_128_PER_TRACK = (B_SECTOR_PER_TRACK * (B_SECTOR_SIZE / 128));
 static const uint16_t B_BLOCK_SIZE = 2048;
-static const uint8_t B_DIRECTORY_BLOCKS = 2;
+static const uint8_t B_DIRECTORY_BLOCKS = 1;
+static const uint8_t B_OFF = 0;
 static const uint32_t B_BLOCK_COUNT =
-    ((B_SIDE_COUNT * B_TRACKS_COUNT * B_SECTOR_PER_TRACK * B_SECTOR_SIZE) / B_BLOCK_SIZE);
+    (((uint32_t)B_SIDE_COUNT * (B_TRACKS_COUNT - B_OFF) * B_SECTOR_PER_TRACK * B_SECTOR_SIZE) / B_BLOCK_SIZE);
 
 static const uint8_t C_TRACKS_COUNT = 80;
 static const uint8_t C_SIDE_COUNT = 2;
@@ -49,8 +50,9 @@ static const uint8_t C_FIXED = 0;
 static const uint16_t C_128_PER_TRACK = (C_SECTOR_PER_TRACK * (C_SECTOR_SIZE / 128));
 static const uint16_t C_BLOCK_SIZE = 2048;
 static const uint8_t C_DIRECTORY_BLOCKS = 2;
+static const uint8_t C_OFF = 0;
 static const uint32_t C_BLOCK_COUNT =
-    ((C_SIDE_COUNT * C_TRACKS_COUNT * C_SECTOR_PER_TRACK * C_SECTOR_SIZE) / C_BLOCK_SIZE);
+    (((uint32_t)C_SIDE_COUNT * (C_TRACKS_COUNT - C_OFF) * C_SECTOR_PER_TRACK * C_SECTOR_SIZE) / C_BLOCK_SIZE);
 
 /*** CP/M ***/
 
@@ -71,18 +73,18 @@ void COMMAND() __address("COMMAND");
 
 /*** Описание накопителей для CP/M и буферы ***/
 
-static struct DPB a_dpb = MAKE_DPB(A_128_PER_TRACK, A_BLOCK_SIZE, A_BLOCK_COUNT, A_DIRECTORY_BLOCKS, A_FIXED);
+static struct DPB a_dpb = MAKE_DPB(A_128_PER_TRACK, A_BLOCK_SIZE, A_BLOCK_COUNT, A_DIRECTORY_BLOCKS, A_FIXED, 0);
 static uint8_t a_csv[CSV_SIZE(A_FIXED, A_BLOCK_SIZE, A_DIRECTORY_BLOCKS)];
 static uint8_t a_alv[ALV_SIZE(A_BLOCK_COUNT)];
 
 #if STORAGE_COUNT >= 2
-static struct DPB b_dpb = MAKE_DPB(B_128_PER_TRACK, B_BLOCK_SIZE, B_BLOCK_COUNT, B_DIRECTORY_BLOCKS, B_FIXED);
+static struct DPB b_dpb = MAKE_DPB(B_128_PER_TRACK, B_BLOCK_SIZE, B_BLOCK_COUNT, B_DIRECTORY_BLOCKS, B_FIXED, B_OFF);
 static uint8_t b_csv[CSV_SIZE(B_FIXED, B_BLOCK_SIZE, B_DIRECTORY_BLOCKS)];
 static uint8_t b_alv[ALV_SIZE(B_BLOCK_COUNT)];
 #endif
 
 #if STORAGE_COUNT >= 3
-static struct DPB c_dpb = MAKE_DPB(C_128_PER_TRACK, C_BLOCK_SIZE, C_BLOCK_COUNT, C_DIRECTORY_BLOCKS, C_FIXED);
+static struct DPB c_dpb = MAKE_DPB(C_128_PER_TRACK, C_BLOCK_SIZE, C_BLOCK_COUNT, C_DIRECTORY_BLOCKS, C_FIXED, C_OFF);
 static uint8_t c_csv[CSV_SIZE(C_FIXED, C_BLOCK_SIZE, C_DIRECTORY_BLOCKS)];
 static uint8_t c_alv[ALV_SIZE(C_BLOCK_COUNT)];
 #endif
@@ -137,6 +139,9 @@ void BiosRun(/* c - текущий диск */) {
     /* Запуск с очищенной командной строкой */
     INBUFF[1] = (a ^= a);
 
+    /* По умолчанию запускать NC */
+    common_dont_exec_nc = a;
+
     RunCommand(c);
 }
 
@@ -153,6 +158,48 @@ static void RunCommand(/* c  - текущий диск  */) {
     arg_dma = hl = TBUFF;
     IOBYTE = a = 0x81;
     COMMAND();
+}
+
+/* Автозапуск A:NC.COM */
+
+void CRLF(void) __address("CRLF");
+
+void BiosShell(void) {
+    a = common_dont_exec_nc;
+    if (a != 0)
+        return CRLF();
+
+    // Запуск NC.COM с накопителя A:
+    INBUFF[1] = hl = 4 | ('A' << 8);
+    INBUFF[3] = hl = ':' | ('N' << 8);
+    INBUFF[5] = hl = 'C';
+
+    // Сохранение текущего пользоваля/папки
+    a = USERNO;
+    a |= 0xE0;
+    common_folder = a;
+
+    // Выбор нулевого пользоваля/корневой папки
+    a = TDRIVE;
+    a &= 0x0F;
+    c = a;
+    RunCommand();
+}
+
+void UNKWN0(void) __address("UNKWN0");
+
+void BiosSetFolder(void) {
+    pop(hl);
+    if (flag_nz)
+        UNKWN0();
+    push(hl);
+    hl = &common_dont_exec_nc;
+    a = *hl;
+    a -= 0xF0;
+    if (flag_c)
+        return;
+    *hl = a;
+    USERNO = a;
 }
 
 /*** Обработчик прерывания ***/

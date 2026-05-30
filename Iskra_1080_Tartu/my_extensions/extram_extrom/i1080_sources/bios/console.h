@@ -29,6 +29,9 @@ extern uint8_t con_color_1;
 extern uint8_t con_color_2;
 extern uint8_t con_color_3;
 
+extern uint8_t con_foreground;
+extern uint8_t con_background;
+
 void ConSetXlat(...);
 void ConClear();
 void ConReset();

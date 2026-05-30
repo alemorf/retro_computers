@@ -89,7 +89,7 @@ void ConClear() {
     cursor_visible = (a ^= a);
     cursor_x = a;
     cursor_y = a;
-    return ClearScreen();
+    ClearScreen();
 }
 
 void ConNextLine() {
@@ -150,64 +150,36 @@ static void ConEraseInLine() {
     }
 }
 
-void ConFindColor() {
-    hl = con_color_0;  // TODO: Сбросить бит яркости и инвертировать
-    b = 0;
-    if (a == l)
-        return;
-    b++;
-    if (a == h)
-        return;
-
-    hl = con_color_2;
-    b++;
-    if (a == l)
-        return;
-    b++;
-    compare(a, h);
-}
-
 void ConUpdateColor() {
-    /* Вычисление цвета фона */
-    e = a = con_background;
-    if (a == 9) { /* Выбран цвет фона по умочанию */
-        c = 0;    /* По умолчанию цвет 0 */
+    /* Два основных цвета */
+    hl = con_foreground;
+    a = h; /* Это con_background */
+    if (a == 9)
+        a ^= a;
+    e = a;
+    bc = 0;
+    if (a == l) {
+        if (a != 0)
+            bc = 0x101;
+    } else if (a < l) {
+        b = 1;
     } else {
-        ConFindColor();
-        c = b;
-        if (flag_nz)
-            c = 0; /* По умолчанию цвет 0 */
+        c = 1;
     }
 
-    /* Вычисление цвета текста */
-    a = con_foreground;
-    if (a == 9) { /* Выбран цвет текста по умочанию */
-        d = 10;
-        b = 1; /* По умолчанию цвет 1 */
-        a = con_attrib;
-        if (flag_c(cyclic_rotate_right(a))) {
-            b = 2; /* Цвет 2 для теста, если установлен атрибут bright */
-        } else if (flag_nz(a &= 0x1F)) {
-            b = 3; /* Цвет 3 для теста, если установлены атрибуты атрибуты: dim, underscore, blink */
-        }
-    } else {
-        d = a;
-        if (a == e) {
-            b = c;
-        } else {
-            ConFindColor();
-            if (flag_nz)
-                b = 1; /* По умолчанию цвет 1 */
-        }
-    }
-
-    /* Если фактические цвета получились иденичные, а исходные были разными, то меняем цвет текста */
-    if ((a = b) == c) {
-        if ((a = d) != e) {
-            a = b;
-            a ^= 1;
-            b = a;
-        }
+    /* Два дополнительных цвета */
+    if ((a = color_enabled) != 0) {
+        a = l;
+        hl = con_color_2;
+        if (a == l)
+            b = 2;
+        else if (a == h)
+            b = 3;
+        a = e;
+        if (a == l)
+            c = 2;
+        else if (a == h)
+            c = 3;
     }
 
     /* Если установлен атрибут hidden */
@@ -224,24 +196,51 @@ void ConUpdateColor() {
     a = c;
     a *= 4;
     a |= b;
-    return SetColor(a);
+    SetColor(a);
+}
+
+static void CpmConoutEscParam(/* c */) {
+    a = c;
+    if (a < '0')
+        return;
+    if (a >= '9' + 1)
+        return;
+    c = (a -= '0');
+    hl = esc_param_ptr;
+    a = *hl;
+    a += a;
+    b = a;
+    a += a += a;
+    a += b;
+    a += c;
+    *hl = a;
+    pop(hl); /* Double return */
+}
+
+static void CpmConoutQuestion(/* c */) {
+    CpmConoutEscParam();
+    entry_cpm_conout_address = hl = &CpmConout;
+    a = esc_param;
+    if (a == 25) {
+        a = c;
+        if (a == 'h') {
+            BeginConsoleChange();
+            cursor_visible_1 = a = 1; /* \x1B[?25h - Show the cursor */
+            return EndConsoleChange();
+        }
+        if (a == 'l') {
+            BeginConsoleChange();
+            cursor_visible_1 = (a ^= a); /* \x1B[?25l - Hide the cursor */
+            return EndConsoleChange();
+        }
+    }
 }
 
 void CpmConoutCsi2() {
-    a = c;
-    if (a >= '0') {
-        if (a < '9' + 1) {
-            c = (a -= '0');
-            hl = esc_param_ptr;
-            a = *hl;
-            a += a;
-            b = a;
-            a += a += a;
-            a += b;
-            a += c;
-            *hl = a;
-            return;
-        }
+    CpmConoutEscParam();
+    if (a == '?') {
+        entry_cpm_conout_address = hl = &CpmConoutQuestion;
+        return;
     }
     if (a == ';') {
         esc_param_ptr = hl = &esc_param_2;
@@ -544,7 +543,7 @@ static uint8_t con_special_keys[] = {
     '[', 'B', 0,   0, /* DOWN */
     '[', 'C', 0,   0, /* RIGHT */
     '[', 'D', 0,   0, /* LEFT */
-    '[', 'E', 0,   0, /* RIGHT 5 */
+    '[', 'E', 0,   0, /* NUM 5 */
     '[', 'F', 0,   0, /* END */
     '[', 'H', 0,   0, /* HOME */
     '[', '2', '~', 0, /* INS */

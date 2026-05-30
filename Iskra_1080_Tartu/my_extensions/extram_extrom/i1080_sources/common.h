@@ -54,7 +54,9 @@ void BiosEntryWrite(/* c */) __address(11 * 3);
 void BiosEntryPrStat(void) __address(12 * 3);
 
 /* Общие переменные для CP/M и BIOS в PAGE_CPM_3 */
-extern uint8_t common[0] __address(0xFF79);
+extern uint8_t common[0] __address(0xFF77);
+extern uint8_t common_folder __address(0xFF77);
+extern uint8_t common_dont_exec_nc __address(0xFF78);
 extern uint16_t common_dpb __address(0xFF79);
 extern uint8_t common_storage __address(0xFF7B);
 extern uint16_t common_track __address(0xFF7C);

@@ -131,7 +131,8 @@ static void AddEntry(unsigned &block_number, struct Entry *entry, unsigned &entr
     } while (size_128 > 0);
 }
 
-static void AddUnusedEntry(unsigned &block_counter, struct Entry *directory, unsigned &entry_counter, unsigned block_count) {
+static void AddUnusedEntry(unsigned &block_counter, struct Entry *directory, unsigned &entry_counter,
+                           unsigned block_count) {
     AddEntry(block_counter, directory, entry_counter, block_count * A_BLOCK_SIZE, "UNUSEDDD.ROM", 15);
 }
 

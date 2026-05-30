@@ -25,7 +25,7 @@ uint8_t frame_counter;
 
 void InterruptHandler(void) {
     /* Выход, если не было кадрового прерывания */
-    a = in(PORT_FRAME_IRQ_RESET);
+    a = in(PORT_FRAME_IRQ_STATE);
     cyclic_rotate_right(a);
     if (flag_c)
         return;
