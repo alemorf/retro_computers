@@ -473,13 +473,35 @@ BIOS_CONOUT:
     ld    (0EFC0h), a
 BIOS_CONOUT_1:
 
-    ; Кодировка ASCII -> Микро80
+    ; Кодировка КОИ-8 -> Микро80
     ld   a, c
     cp   060h
-    call nc, CODEPAGE
+    call nc, BIOS_CONOUT_CODEPAGE
     ld   c, a
     pop  af
     jp   BIOS_PRINT_CHAR
+
+;----------------------------------------------------------------------------
+
+BIOS_CONOUT_CODEPAGE:
+    cp   7Fh
+    jp   z, RET_A_8
+    jp   nc, BIOS_CONOUT_CODEPAGE_1
+    add  060h  ; Строчная латиница 60..7F -> С0..DF
+    ret
+BIOS_CONOUT_CODEPAGE_1:
+    cp   0C0h
+    ret  c
+    add  020h  ; Строчная кирилица C0..DF -> E0..FF
+    ret  nc
+    sub  0A0h  ; Заглавная кирилица E0..FF -> 60..7F
+    ret
+
+;----------------------------------------------------------------------------
+
+RET_A_8:
+    ld   a, 8
+    ret
 
 ;----------------------------------------------------------------------------
 
@@ -644,27 +666,23 @@ BIOS_CONIN:
     cp   1Ah
     jp   z, BIOS_CONIN_DOWN
 
-    ; Замена кодировки ASCII на Микро80
+    ; Замена кодировки Микро80 на КОИ-8
     cp   060h
     ret  c
-
-;----------------------------------------------------------------------------
-
-CODEPAGE:
     cp   7Fh
-    jp   z, CODEPAGE_2
-    jp   nc, CODEPAGE_1
-    add  060h
+    jp   z, RET_A_8
+    jp   nc, BIOS_CONIN_CODEPAGE_1
+    add  080h  ; Заглавная кирилица 60..7F -> E0..FF
     ret
-CODEPAGE_1:
+BIOS_CONIN_CODEPAGE_1:
     cp   0C0h
     ret  c
     cp   0E0h
-    ret  nc
-    sub  060h
+    jp   nc, BIOS_CONIN_CODEPAGE_2
+    sub  60h  ; Строчная латиница С0..DF -> 60..7F
     ret
-CODEPAGE_2:
-    ld   a, 8
+BIOS_CONIN_CODEPAGE_2:
+    sub  020h  ; Строчная кирилица E0..FF -> C0..DF
     ret
 
 ;----------------------------------------------------------------------------
