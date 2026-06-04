@@ -20,11 +20,11 @@
 #include "../i1080.h"
 
 static struct Config default_config = {
-    0,                 /* screen_mode */
-    PALETTE_DARK_BLUE, /* color_0 */
-    PALETTE_CYAN,      /* color_1 */
-    PALETTE_WHITE,     /* color_2 */
-    PALETTE_YELLOW,    /* color_3 */
+    1,                 /* screen_mode */
+    PALETTE_BLACK,     /* color_0 */
+    PALETTE_WHITE,     /* color_1 */
+    PALETTE_DARK_BLUE, /* color_2 */
+    PALETTE_DARK_CYAN, /* color_3 */
     0,                 /* codepage */
     3,                 /* uart_baud_rate */
     3,                 /* uart_data_bits */

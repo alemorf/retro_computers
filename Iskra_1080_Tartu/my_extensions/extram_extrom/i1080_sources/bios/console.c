@@ -403,7 +403,13 @@ static void CpmConoutEsc() {
         cursor_y_l_x_h = hl = 0;
         EndConsoleChange();
         hl = &CpmConout;
+    } else if (a >= 0xFE) {
+        /* \x1B\xFE - Disable A:NC autostart */
+        /* \x1B\xFF - Enable A:NC autostart */
+        a += 2;
+        common_dont_exec_nc = a;
     }
+
     entry_cpm_conout_address = hl;
 }
 
@@ -482,25 +488,28 @@ void ConSetXlat(...) {
 
 void CpmConout(/*c*/) {
     a = c;
-    if (a == KEY_ESC) { /* ESC последовательности */
+    if (a >= 0x1C) { /* Для ускорения */
+        push_pop(a) {
+            BeginConsoleChange();
+        }
+        ConPrintChar(a);
+        return EndConsoleChange();
+    }
+
+    if (a == 0x07) /* Звук */
+        return Beep();
+
+    if (a == 0x1B) { /* ESC последовательности */
         entry_cpm_conout_address = hl = &CpmConoutEsc;
         return;
     }
-    if (a == 7) /* Звук */
-        return Beep();
-    if (a == 10)
-        return;
 
     /* Подключаем видеопамять и стираем курсор */
     push_pop(a) {
         BeginConsoleChange();
     }
 
-    if (a >= 28) { /* Для ускорения */
-        ConPrintChar(a);
-        return EndConsoleChange();
-    }
-    if (a == 8) {
+    if (a == 0x08) {
         a = cursor_x;
         a--;
         if (flag_p) {
@@ -517,18 +526,22 @@ void CpmConout(/*c*/) {
         cursor_x = a;
         return EndConsoleChange();
     }
-    if (a == 12) {
+    if (a == 0x0A) {
+        cursor_x = (a ^= a);
+        return EndConsoleChange();
+    }
+    if (a == 0x0C) {
         ClearScreen();
         cursor_y_l_x_h = hl = 0;
         return EndConsoleChange();
     }
-    if (a == 26) {
-        ClearScreen();
-        cursor_y_l_x_h = hl = 0;
-        return EndConsoleChange();
-    }
-    if (a == 13) {
+    if (a == 0x0D) {
         ConNextLine();
+        return EndConsoleChange();
+    }
+    if (a == 0x1A) {
+        ClearScreen();
+        cursor_y_l_x_h = hl = 0;
         return EndConsoleChange();
     }
     ConPrintChar(a);

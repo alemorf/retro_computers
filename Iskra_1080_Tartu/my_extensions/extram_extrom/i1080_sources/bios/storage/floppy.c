@@ -50,12 +50,12 @@ static void FloppyWaitReady(void) {
 
 void FloppyReadWrite(/* c - FLOPPY_READ/FLOPPY_WRITE */) {
     /* Вычисление номера дисковода и адреса переменной содержащий дорожку дисковода */
-    d = PORT_FLOPPY__SEL_A;
+    d = PORT_FLOPPY__SEL_A | PORT_FLOPPY__NEG_TST;
     hl = floppy_current_tracks;
     a = storage_buffer_storage;
     a--;
-    if (flag_nz) {
-        d = PORT_FLOPPY__SEL_B;
+    if (flag_nz) { /* Накопитель C: */
+        d = PORT_FLOPPY__SEL_B | PORT_FLOPPY__NEG_TST;
         hl++;
     }
 
@@ -73,8 +73,11 @@ void FloppyReadWrite(/* c - FLOPPY_READ/FLOPPY_WRITE */) {
     a = d;
     out(PORT_FLOPPY, a);
 
+    /* Остановка прерываний */
+    disable_interrupts();
+
     /* Запуск двигателя */
-    a |= PORT_FLOPPY__HALT;
+    a |= PORT_FLOPPY__NEG_HALT;
     out(PORT_FLOPPY, a);
 
     /* Ожидаение готовности дисковода */
@@ -84,24 +87,24 @@ void FloppyReadWrite(/* c - FLOPPY_READ/FLOPPY_WRITE */) {
     if (flag_nz)
         return;
 
+    /* Если нужно выбрать нулевую дорожку, то всегда выполяем команду 0 - Восстановление */
+    a = b;
+    if (a == 0)
+        goto FloppyReadWrite1;
+
     /* Если нужная дорожка выбрана, то пропускам команду перемещения головки */
     a = *hl;
     out(PORT_VG93_TRACK, a);
     if (a != b) {
-        /* Если нужно выбрать нулевую дорожку, то выполяем команду 0 - Восстановление */
-        if ((a = b) != 0) {
-            /* Выполяем команду 10 - Поиск, максимальная скорость */
-            out(PORT_VG93_DATA, a);
-            a = 0x10;
-        }
-
-        /* Если произойдет ошибка позиционирования, то искать заново */
-        *hl = -1;
-
-        /* Выполнение команды выбора дорожки */
+        /* Выполяем команду 10 - Поиск, максимальная скорость */
+        a = b;
+        out(PORT_VG93_DATA, a);
+        a = 0x10;
+FloppyReadWrite1:
         out(PORT_VG93_COMMAND, a);
+        *hl = -1; /* Если произойдет ошибка позиционирования, то искать заново */
         push_pop(hl) {
-            FloppyWaitReady();
+            FloppyWaitReady(); /* Не изменяет BC */
         }
         if (flag_nz)
             return;
@@ -120,7 +123,6 @@ void FloppyReadWrite(/* c - FLOPPY_READ/FLOPPY_WRITE */) {
 
     /* Выполнение команды чтения или записи */
     hl = storage_buffer; /* Адрес буфера */
-
     a = c;
     c = 0; /* Счетчик цикла */
     out(PORT_VG93_COMMAND, a);
@@ -128,29 +130,39 @@ void FloppyReadWrite(/* c - FLOPPY_READ/FLOPPY_WRITE */) {
     if (flag_z) {
         /* Цикл получения данных от К1818ВГ93 */
         do {
-            a = in(PORT_FLOPPY);
+            a = in(PORT_FLOPPY_WAIT);
             *hl = a = in(PORT_VG93_DATA);
             hl++;
             c--;
-            a = in(PORT_FLOPPY);
+            a = in(PORT_FLOPPY_WAIT);
             *hl = a = in(PORT_VG93_DATA);
             hl++;
         } while (flag_nz);
     } else {
         /* Цикл отправки данных в К1818ВГ93 */
         do {
-            a = in(PORT_FLOPPY);
+            a = in(PORT_FLOPPY_WAIT);
             out(PORT_VG93_DATA, a = *hl);
             hl++;
             c--;
-            a = in(PORT_FLOPPY);
+            a = in(PORT_FLOPPY_WAIT);
             out(PORT_VG93_DATA, a = *hl);
             hl++;
         } while (flag_nz);
     }
 
+    /* Включение прерываний */
+    enable_interrupts();
+
     /* Получение кода ошибки от К1818ВГ93 и выход */
     FloppyWaitReady();
+
+    /* Выключение светодиода на дисководе */
+    push_pop(a) {
+        out(PORT_FLOPPY, a = PORT_FLOPPY__NEG_TST);
+    }
+
+    /* Таймаут */
     if (flag_nz)
         return;
     a &= 2 + 4 + 8 + 0x10 + 0x40; /* Запрос данных, потеря данных, CRC, сектор не найден, защищено от записи */
