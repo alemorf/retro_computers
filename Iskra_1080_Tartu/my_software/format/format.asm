@@ -131,7 +131,7 @@ l05:
         jnz   Track0Done
           lxi  d, aSeekError
           call PrintStringEol
-          jp   Exit
+          jmp  Exit
 Track0Done:
 
         ; Цикл дорожек
@@ -177,7 +177,7 @@ HeadLoop:
         jnz  NotCtrlC
           lxi  d, aBreak
           call PrintString
-          jp   Exit
+          jmp  Exit
 NotCtrlC:
 
         ; Форматирование дорожки. Если произошла ошибка, то возвращается код ошибки
