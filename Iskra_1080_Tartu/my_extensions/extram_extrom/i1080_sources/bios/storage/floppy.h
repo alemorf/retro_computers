@@ -23,4 +23,5 @@
 /* Аргумент для функции ниже / код команды для К1818ВГ93 */
 enum { FLOPPY_READ = 0x86, FLOPPY_WRITE = 0xA6 };
 
+/* ВНИМАНИЕ! Вызывающая функция должна выполнить enable_interrupts(). */
 void FloppyReadWrite(/* c - FLOPPY_READ/FLOPPY_WRITE */);

@@ -67,6 +67,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
 
             push_pop(bc) {
                 FloppyReadWrite(c = FLOPPY_WRITE);
+                enable_interrupts();
             }
 
             /* Выход, если A содержит код ошибки */
@@ -86,6 +87,7 @@ void Storage512(/* bc = STORAGE_512_ */) {
         if (flag_z) {
             push_pop(bc) {
                 FloppyReadWrite(c = FLOPPY_READ);
+                enable_interrupts();
             }
             if (a != 0) {
                 d = a;
@@ -127,5 +129,6 @@ void Storage512(/* bc = STORAGE_512_ */) {
 
     storage_buffer_changed = a; /* Тут a = 0 */
     FloppyReadWrite(c = FLOPPY_WRITE);
+    enable_interrupts();
     d = a; /* Возвращает код ошибки в D */
 }

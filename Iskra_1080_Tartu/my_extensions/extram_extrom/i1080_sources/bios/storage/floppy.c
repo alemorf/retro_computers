@@ -48,6 +48,8 @@ static void FloppyWaitReady(void) {
     a--; /* Выход с флагом NZ и A = 0FFh, если таймаут */
 }
 
+/* ВНИМАНИЕ! Вызывающая функция должна выполнить enable_interrupts(). */
+
 void FloppyReadWrite(/* c - FLOPPY_READ/FLOPPY_WRITE */) {
     /* Вычисление номера дисковода и адреса переменной содержащий дорожку дисковода */
     d = PORT_FLOPPY__SEL_A | PORT_FLOPPY__NEG_TST;
@@ -151,19 +153,15 @@ FloppyReadWrite1:
         } while (flag_nz);
     }
 
-    /* Включение прерываний */
-    enable_interrupts();
-
-    /* Получение кода ошибки от К1818ВГ93 и выход */
+    /* Ожидание завершения команды К1818ВГ93 и получение кода ошибки в L и флаге Z */
     FloppyWaitReady();
 
-    /* Выключение светодиода на дисководе */
-    push_pop(a) {
-        out(PORT_FLOPPY, a = PORT_FLOPPY__NEG_TST);
-    }
+    /* Выключение светодиода на дисководе (снятие PORT_FLOPPY__SEL_A или _B)*/
+    out(PORT_FLOPPY, a = PORT_FLOPPY__NEG_TST);
 
-    /* Таймаут */
-    if (flag_nz)
-        return;
+    /* Анализ ошибки */
+    a = l;
+    if (flag_nz) /* Таймаут */
+        return; /* Тут a = 0xFF */
     a &= 2 + 4 + 8 + 0x10 + 0x40; /* Запрос данных, потеря данных, CRC, сектор не найден, защищено от записи */
 }
