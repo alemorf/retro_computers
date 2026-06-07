@@ -138,6 +138,7 @@ void main(void) {
     sp = BIOS_STACK;
 
     /* Настройка адресного пространства */
+    out(PORT_ROM_0000, a = PORT_ROM_0000__RAM);
     out(PORT_WINDOW(0), a = PAGE_BIOS_0);
     out(PORT_WINDOW(1), a = PAGE_BIOS_1);
     out(PORT_WINDOW(2), a = PAGE_SCREEN);

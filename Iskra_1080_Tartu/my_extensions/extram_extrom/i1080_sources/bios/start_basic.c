@@ -19,6 +19,7 @@
 #include "start_basic.h"
 #include "tools/memcpy8.h"
 #include "../i1080.h"
+#include "graph/graph.h"
 
 extern void StartBasic0(void) __address(0);
 extern void StartBasic4000(void) __address(0x4000);
@@ -30,6 +31,7 @@ static void StartBasic2(void) {
 }
 
 void StartBasic(void) {
+    ClearScreen();
     disable_interrupts();
     out(PORT_WINDOW(1), a = PAGE_STD);
     out(PORT_WINDOW(2), a);
