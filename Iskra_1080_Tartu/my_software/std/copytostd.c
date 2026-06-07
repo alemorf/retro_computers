@@ -29,7 +29,7 @@ __a_3_copytostdlow=0
         ld   c, l
         di
         in   a, (03Ch)
-        ld   (copytostdlow4 + COPY_TO_STD_LOW_REL + 1), a
+        ld   (copytostdlow4 + COPY_TO_STD_LOW_REL), a
 __a_2_copytostdlow=$ + 1 + COPY_TO_STD_LOW_REL
         ld   de, 0
 __a_1_copytostdlow=$ + 1 + COPY_TO_STD_LOW_REL
@@ -37,12 +37,12 @@ __a_1_copytostdlow=$ + 1 + COPY_TO_STD_LOW_REL
 copytostdlow2:
         ld   a, (de)
         inc  de
-        ld   (copytostdlow3 + COPY_TO_STD_LOW_REL + 1), a
+        ld   (copytostdlow3 + COPY_TO_STD_LOW_REL), a
         ld   a, 1
         out  (03Ch), a
-copytostdlow3:
+copytostdlow3 = $ + 1
         ld   (hl), 0
-copytostdlow4:
+copytostdlow4 = $ +1
         ld   a, 0
         out  (03Ch), a
         inc  hl
@@ -77,6 +77,7 @@ unsigned CopyToStd(unsigned dest, const void *src, size_t size) {
         if (size0 > size)
             size0 = size;
         dest = CopyToStdLow(dest, src, size0);
+        src += size0;
         size -= size0;
         if (size == 0)
             return dest;
