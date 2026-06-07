@@ -1,0 +1,9 @@
+Makefile
+callstd.c
+callstd.h
+copytostd.c
+copytostd.h
+std.c
+std.creator
+std.files
+std.lst
