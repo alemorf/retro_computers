@@ -24,15 +24,15 @@ static unsigned CopyToStdLow(unsigned dest, const void *src, size_t size) __addr
 static void CopyToStdLowInt(void) {
     asm {
 COPY_TO_STD_LOW_REL = copytostdlow - copytostdlowint
-__a_3_copytostdlow=0
+__a_3_copytostdlow = 0
         ld   b, h
         ld   c, l
         di
         in   a, (03Ch)
         ld   (copytostdlow4 + COPY_TO_STD_LOW_REL), a
-__a_2_copytostdlow=$ + 1 + COPY_TO_STD_LOW_REL
+__a_2_copytostdlow = $ + 1 + COPY_TO_STD_LOW_REL
         ld   de, 0
-__a_1_copytostdlow=$ + 1 + COPY_TO_STD_LOW_REL
+__a_1_copytostdlow = $ + 1 + COPY_TO_STD_LOW_REL
         ld   hl, 0
 copytostdlow2:
         ld   a, (de)
@@ -42,7 +42,7 @@ copytostdlow2:
         out  (03Ch), a
 copytostdlow3 = $ + 1
         ld   (hl), 0
-copytostdlow4 = $ +1
+copytostdlow4 = $ + 1
         ld   a, 0
         out  (03Ch), a
         inc  hl
@@ -52,7 +52,7 @@ copytostdlow4 = $ +1
         jp   nz, copytostdlow2 + COPY_TO_STD_LOW_REL
         ei
         ; Функция возвращает dest + size, который сейчас в hl
-copytostdlowend = $+1 ; +1 для return
+copytostdlowend = $ + 1 ; +1 для return
     }
 }
 
@@ -100,9 +100,9 @@ unsigned CopyToStd(unsigned dest, const void *src, size_t size) {
         ; Копирование данных
         ld   hl, (__a_3_copytostd) ; size
         ex   hl, de
-__a_1_copytostd = $+1
+__a_1_copytostd = $ + 1
         ld   hl, 0 ; dest
-__a_2_copytostd = $+1
+__a_2_copytostd = $ + 1
         ld   bc, 0 ; src
 copytostd1:
         ld   a, (bc)
@@ -115,14 +115,14 @@ copytostd1:
         jp   nz, copytostd1
 
         ; Восстановление окон 1, 2, 3
-copytostd_w0 = $+1
-        ld   a, 1
+copytostd_w0 = $ + 1
+        ld   a, 0
         out  (07Ch), a
-copytostd_w1 = $+1
-        ld   a, 1
+copytostd_w1 = $ + 1
+        ld   a, 0
         out  (0BCh), a
-copytostd_w2 = $+1
-        ld   a, 1
+copytostd_w2 = $ + 1
+        ld   a, 0
         out  (0FCh), a
         ei
 

@@ -23,7 +23,8 @@
 
 void CallStd(uint8_t type) {
     asm {
-        ld (stdcall3 + 1), a ; type
+__a_1_callstd = 0
+        ld (stdcall3), a ; type
 
         ; Подключение встроенного ОЗУ в окна 1, 2, 3. Окно 0 остается.
         di
@@ -63,14 +64,14 @@ stdcall2:
         call 0F32Eh
 
         ; Запуск Монитора
-stdcall3:
+stdcall3 = $ + 1
         ld   a, 0
         cp   0D3h
         jp   nz, 0F429h
 
         ; Сохранение первых 2 байт бейсик программы. Они будут уничтожены при инициализации.
-        ld hl, (301h)
-        ld (stdcall4 + 1 + STD_CALL_REL), hl
+        ld   hl, (301h)
+        ld   (stdcall4  + STD_CALL_REL), hl
 
         ; Инициализация Бейсика. Код из ПЗУ по адресу 0EAC4h.
         call 0F9A0h      ; Очистка основного экрана
@@ -95,7 +96,7 @@ stdcall3:
         call 0D24Bh
 
         ; Восстановление первых 2 байт бейсик программы
-stdcall4:
+stdcall4 = $ + 1
         ld   hl, 0
         ld   (301h), hl
 

@@ -40,32 +40,31 @@ struct I1080FileHeader {
     struct I1080FileHeaderBin binary[0];
 };
 
+static int error(const char* text) {
+    puts("ERROR ");
+    puts(text);
+    return 1;
+}
+
 int main(int argc, char **) {
     if (argc != 2) {
         puts(
-            "LOAD, RUN AND SAVE A STANDARD BASIC AND BINARY PROGRAMS\n"
-            "FOR ISKRA 1080 TARTU\n"
+            "RUN BASIC AND BINARY PROGRAMS FOR ISKRA 1080 TARTU\n"
             "(C) 2026 ALEMORF ALEKSEY.F.MOROZOV@GMAIL.COM\n"
             "USAGE: STD FILENAME");
         return 1;
     }
 
-    if (CpmOpen(fcb) == 0xFF) {
-        puts("CAN'T OPEN FILE");
-        return 1;
-    }
+    if (CpmOpen(fcb) == 0xFF)
+        return error("OPEN FILE");
 
-    if (CpmRead(fcb) != 0) {
-        puts("CAN'T READ FILE");
-        return 1;
-    }
+    if (CpmRead(fcb) != 0)
+        return error("READ FILE");
 
     static struct I1080FileHeader *const h = (void *)DEFAULT_DMA;
 
-    if (0 != memcmp(h->id, I1080_FILE_MAGIC, sizeof(h->id))) {
-        puts("INCORRECT FILE");
-        return 1;
-    }
+    if (0 != memcmp(h->id, I1080_FILE_MAGIC, sizeof(h->id)))
+        return error("FILE FORMAT");
 
     CopyToStdPrepare();
     unsigned pos;
@@ -83,8 +82,7 @@ int main(int argc, char **) {
             pos = CopyToStd(h->binary->start, DEFAULT_DMA + BIN_HEADER, CPM_128_BLOCK - BIN_HEADER);
             break;
         default:
-            puts("INCORRECT FILE");
-            return 1;
+            return error("FILE FORMAT");
     }
 
     unsigned char result;
@@ -95,11 +93,8 @@ int main(int argc, char **) {
         pos = CopyToStd(pos, DEFAULT_DMA, CPM_128_BLOCK);
     }
 
-    if (result != CPM_READ_EOF) {
-        puts("CAN'T READ FILE");
-        return 1;
-    }
+    if (result != CPM_READ_EOF)
+        return error("READ FILE");
 
     CallStd(type);
-    return 0;
 }
