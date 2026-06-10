@@ -137,6 +137,11 @@ void main(void) {
     /* Настройка стека */
     sp = BIOS_STACK;
 
+    /* Переменные по умолчанию для CP/M */
+    out(PORT_WINDOW(3), a = PAGE_CPM_3);
+    common_dont_exec_nc = (a ^= a);
+    common_folder = a;
+
     /* Настройка адресного пространства */
     out(PORT_ROM_0000, a = PORT_ROM_0000__RAM);
     out(PORT_WINDOW(0), a = PAGE_BIOS_0);

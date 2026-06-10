@@ -189,7 +189,7 @@ void ConUpdateColor() {
     } else if (flag_c(a += a)) { /* Если установлен атрибут reverse */
         a = c;
         c = b;
-        b = a;
+        b = a;  // Как выглядит reverse + hidden ?
     }
 
     /* Готово */
@@ -314,15 +314,14 @@ void CpmConoutCsi2() {
             return ConUpdateColor();
         }
         */
-        // [ 3 0 m 	Set foreground to color #0 – black
-        // [ 3 1 m 	Set foreground to color #1 – red
-        // [ 3 2 m 	Set foreground to color #2 – green
-        // [ 3 3 m 	Set foreground to color #3 – yellow
-        // [ 3 4 m 	Set foreground to color #4 – blue
-        // [ 3 5 m 	Set foreground to color #5 – magenta
-        // [ 3 6 m 	Set foreground to color #6 – cyan
-        // [ 3 7 m 	Set foreground to color #7 – white
-        // [ 3 9 m 	Set default color as foreground color
+        // [ 3 0 m  Set foreground to color #0 – black
+        // [ 3 1 m  Set foreground to color #1 – red
+        // [ 3 2 m  Set foreground to color #2 – green
+        // [ 3 3 m  Set foreground to color #3 – yellow
+        // [ 3 4 m  Set foreground to color #4 – blue
+        // [ 3 5 m  Set foreground to color #5 – magenta
+        // [ 3 6 m  Set foreground to color #6 – cyan
+        // [ 3 7 m  Set foreground to color #7 – white
         if (a < 38) {
             if (a < 30)
                 return;
@@ -330,15 +329,16 @@ void CpmConoutCsi2() {
             con_foreground = a;
             return ConUpdateColor();
         }
-        // [ 4 0 m 	Set background to color #0 – black
-        // [ 4 1 m 	Set background to color #1 – red
-        // [ 4 2 m 	Set background to color #2 – green
-        // [ 4 3 m 	Set background to color #3 – yellow
-        // [ 4 4 m 	Set background to color #4 – blue
-        // [ 4 5 m 	Set background to color #5 – magenta
-        // [ 4 6 m 	Set background to color #6 – cyan
-        // [ 4 7 m 	Set background to color #7 – white
-        // [ 4 9 m 	Set default color as background color
+        // [ 3 9 m  Set default color as foreground color
+        // TODO
+        // [ 4 0 m  Set background to color #0 – black
+        // [ 4 1 m  Set background to color #1 – red
+        // [ 4 2 m  Set background to color #2 – green
+        // [ 4 3 m  Set background to color #3 – yellow
+        // [ 4 4 m  Set background to color #4 – blue
+        // [ 4 5 m  Set background to color #5 – magenta
+        // [ 4 6 m  Set background to color #6 – cyan
+        // [ 4 7 m  Set background to color #7 – white
         if (a < 49) {
             if (a < 40)
                 return;
@@ -346,6 +346,39 @@ void CpmConoutCsi2() {
             con_background = a;
             return ConUpdateColor();
         }
+        // [ 4 9 m  Set default color as background color
+        // TODO
+        // [ 9 0 m  Set foreground to color #8  – incorrect black
+        // [ 9 1 m  Set foreground to color #9  – light red
+        // [ 9 2 m  Set foreground to color #10 – light green
+        // [ 9 3 m  Set foreground to color #11 – light yellow
+        // [ 9 4 m  Set foreground to color #12 – light blue
+        // [ 9 5 m  Set foreground to color #13 – light magenta
+        // [ 9 6 m  Set foreground to color #14 – light cyan
+        // [ 9 7 m  Set foreground to color #15 – light white
+        if (a < 98) {
+            if (a < 90)
+                return;
+            a -= 90 - 8;
+            con_foreground = a;
+            return ConUpdateColor();
+        }
+        // [ 1 0 0 m  Set background to color #8  – incorrect black
+        // [ 1 0 1 m  Set background to color #9  – light red
+        // [ 1 0 2 m  Set background to color #10 – light green
+        // [ 1 0 3 m  Set background to color #11 – light yellow
+        // [ 1 0 4 m  Set background to color #12 – light blue
+        // [ 1 0 5 m  Set background to color #13 – light magenta
+        // [ 1 0 6 m  Set background to color #14 – light cyan
+        // [ 1 0 7 m  Set background to color #15 – light white
+        if (a < 108) {
+            if (a < 100)
+                return;
+            a -= 100 - 8;
+            con_background = a;
+            return ConUpdateColor();
+        }
+        // TODO: Поддержать \x1B[0;34;36m
         return;
     }
     return;  // TODO: Remove, compiler bug

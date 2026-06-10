@@ -102,7 +102,7 @@ void FloppyReadWrite(/* c - FLOPPY_READ/FLOPPY_WRITE */) {
         a = b;
         out(PORT_VG93_DATA, a);
         a = 0x10;
-FloppyReadWrite1:
+    FloppyReadWrite1:
         out(PORT_VG93_COMMAND, a);
         *hl = -1; /* Если произойдет ошибка позиционирования, то искать заново */
         push_pop(hl) {
@@ -161,7 +161,7 @@ FloppyReadWrite1:
 
     /* Анализ ошибки */
     a = l;
-    if (flag_nz) /* Таймаут */
-        return; /* Тут a = 0xFF */
+    if (flag_nz)                  /* Таймаут */
+        return;                   /* Тут a = 0xFF */
     a &= 2 + 4 + 8 + 0x10 + 0x40; /* Запрос данных, потеря данных, CRC, сектор не найден, защищено от записи */
 }

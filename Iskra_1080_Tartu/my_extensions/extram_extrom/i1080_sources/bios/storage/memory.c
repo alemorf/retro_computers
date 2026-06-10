@@ -96,7 +96,7 @@ void StorageMemoryFormat(void) {
             *hl = 0xE5;
         } while (flag_nz(l++));
 
-        /* Копирование образа в каждый блок каталога */
+        /* Копирование образца в каждый блок каталога */
         de = A_RAM_DIRECORY_BLOCKS * A_SECTORS_PER_BLOCK;
         do {
             de--;

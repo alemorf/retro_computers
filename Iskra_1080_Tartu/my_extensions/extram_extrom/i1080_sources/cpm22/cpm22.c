@@ -139,9 +139,6 @@ void BiosRun(/* c - текущий диск */) {
     /* Запуск с очищенной командной строкой */
     INBUFF[1] = (a ^= a);
 
-    /* По умолчанию запускать NC */
-    common_dont_exec_nc = a;
-
     RunCommand(c);
 }
 
@@ -193,7 +190,7 @@ void BiosSetFolder(void) {
     if (flag_nz)
         UNKWN0();
     push(hl);
-    hl = &common_dont_exec_nc;
+    hl = &common_folder;
     a = *hl;
     a -= 0xF0;
     if (flag_c)
