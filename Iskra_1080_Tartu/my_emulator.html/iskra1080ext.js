@@ -151,7 +151,7 @@ function Iskra1080SdController(floppy) {
 function Iskra1080ExtensionCard(rom, floppy) {
     let romEnabled = false;
     let mapperEnabled = false;
-    let mapper = [ 0xF, 0xF, 0xF, 0xF ];
+    let mapper = [ 0xFF, 0xFF, 0xFF, 0xFF ];
     let ram = new Uint8Array(128 * 1024);
     let interrupt = false;
     let sd = new Iskra1080SdController(floppy);
@@ -194,31 +194,23 @@ function Iskra1080ExtensionCard(rom, floppy) {
     };
 
     this.readIo = function(address) {
-        switch (address & ~3) {
-        case 0:
-            return mapper[address & 3];
-        case 4:
-            return (interrupt ? 0 : 1);
-        case 8:
-            let byte = sd.readIo(address & 3);
-            // console.log("SDRD " + address + " " + byte);
-            return byte;
+        switch (address & 0x3F) {
+        case 0x3C: // 3C,7C,BC,FC
+            return mapper[(address >> 6) & 3];
+        case 0x3D: // 3D,7D,BD,FD = !mapper_en | vsync | blank | int
+            return (interrupt ? 0 : 1) | (mapperEnabled ? 0 : 1);
         }
         return undefined;
     };
 
     this.writeIo = function(address, byte) {
-        switch (address & ~3) {
-        case 0:
-            mapper[address & 3] = byte;
+        switch (address & 0x3E) {
+        case 0x3C: // 3C-3D,7C-7D,BC-BD,FC-FD
+            mapper[(address >> 6) & 3] = byte;
             mapperEnabled = true;
             break;
-        case 4:
+        case 0x1C: // 1C-1D,5C-5D,9C-9D,DC-DD
             interrupt = false;
-            break;
-        case 8:
-            // console.log("SDWR " + address + " " + byte);
-            sd.writeIo(address & 3, byte);
             break;
         }
     };

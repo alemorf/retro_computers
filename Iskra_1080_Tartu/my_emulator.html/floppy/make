@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# /etc/cpmtools/diskdefs
+# diskdef 512_160_9_2048_128_0_0
+#   seclen 512
+#   tracks 160
+#   sectrk 9
+#   blocksize 2048
+#   maxdir 128
+#   skew 0
+#   boottrk 0
+#   os 2.2
+# end
+
+for dir in */
+do
+    file=${dir%/}
+    echo "$file"
+    fallocate -l 737280 $file.cpm
+    mkfs.cpm -f 512_160_9_2048_128_0_0 $file.cpm
+    cpmcp -f 512_160_9_2048_128_0_0 $file.cpm $file/* 0:
+
+    echo "loadFloppy([" >$file.js
+    xxd -i $file.cpm | grep , >>$file.js
+    echo "]);" >>$file.js
+done

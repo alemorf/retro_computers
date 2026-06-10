@@ -3,6 +3,7 @@
 
 function Floppy(n) {
     const sector_size = 128;
+    const sector_512_size = 512;
 
     let data = 0;
 
@@ -57,6 +58,26 @@ function Floppy(n) {
         if (o + sector_size > data.length)
             return false;
         for (let i = 0; i < sector_size; i++)
+            data[o + i] = d[i];
+        this.save();
+        return true;
+    };
+
+    this.read512 = function(offset) {
+        let o = offset * sector_512_size;
+        if (o + sector_512_size > data.length)
+            return [];
+        let result = [];
+        for (let i = 0; i < sector_512_size; i++)
+            result[i] = data[o + i];
+        return result;
+    };
+
+    this.write512 = function(offset, d) {
+        let o = offset * sector_512_size;
+        if (o + sector_512_size > data.length)
+            return false;
+        for (let i = 0; i < sector_512_size; i++)
             data[o + i] = d[i];
         this.save();
         return true;

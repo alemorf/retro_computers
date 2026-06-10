@@ -338,8 +338,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     cpu.readMemory = function(addr, flags) {
         let result = extensionCard.read(addr);
-        if (result !== undefined)
+        if (result !== undefined) {
+            memory_map = 0
             return result;
+        }
 
         if (flags & 2) {
             waitRam();
@@ -383,8 +385,10 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     cpu.writeMemory = function(addr, byte) {
-        if (extensionCard.write(addr, byte))
+        if (extensionCard.write(addr, byte)) {
+            memory_map = 0
             return;
+        }
         waitRam();
         memory[addr] = byte;
     };
@@ -395,6 +399,9 @@ document.addEventListener("DOMContentLoaded", function() {
             return result;
         if ((addr & 0xF8) == 0xC0)
             return keyboard.read(addr);
+        if ((addr & 0xF3) == 0xC2)
+            return vg93.read((addr >> 2) & 3);
+        // C3 - wait vg93
         switch (addr & 0xB8) {
         case 0x98:
             if (cpmMode)
@@ -409,6 +416,10 @@ document.addEventListener("DOMContentLoaded", function() {
     cpu.writeIo = function(addr, byte) {
         if (extensionCard.writeIo(addr, byte))
             return;
+        if ((addr & 0xF3) == 0xC2)
+            return vg93.write((addr >> 2) & 3, byte);
+        if ((addr & 0xF3) == 0xC3)
+            return vg93.setConfig(byte);
         if ((addr & 0xF8) == 0xC0) {
             setLeds(byte >> 4);
             return keyboard.write(addr, byte);
@@ -450,6 +461,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let lastTime = new Date().getTime();
     let needTickCount = 0;
+
+    let vg93 = new Vg93(floppy);
 
     function cpuTick() {
         if (debugerEnabled && debuger.paused())
