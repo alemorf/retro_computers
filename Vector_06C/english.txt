@@ -1,11 +1,61 @@
 Vector 06C
 
-Year	1987
-RAM	64-320 kB
-ROM	0.5 kB
-CPU	i8080 3 MHz
-Graph	512x256x4, 256x256x16, 256 colors palette
-Sound	i8253 x3
-Group	Vector 06C
+Year: 1987  
+RAM: 64-320 KB  
+ROM: 0.5 KB  
+Processor: K580VM80A, 3 MHz  
+Graphics: 512x256x4, 256x256x16, 256-color palette  
+Sound: K580VI53 x3  
+Group: Vector 06C  
 
-TODO
+The Vector 06C is a Soviet home computer with the most beautiful graphics. Its
+considered the most beautiful because, at a resolution of 256x256, it can
+display 16 true colors from a 256-color palette. Few computers of that era could
+render pink for skin tones or brown for a tree trunk.
+
+Upon powering on, the screen displays colored bars, making the Vector easily
+recognizable among other computers. These bars show the computer's memory status
+and indicate readiness to load a program from a cassette tape. As the program
+loads, the bars fill in. Until the program is fully loaded, the computer cannot
+perform other tasks. The 512-byte ROM contains only the cassette tape
+bootloader. However, even after successfully loading a program, a secret key
+combination is needed to start it.
+
+The Vector's cassette recording method is more advanced than that of most other
+8-bit computers. Programs are recorded in 256-byte blocks, each protected by a
+checksum. If an error occurs during loading, only the faulty block needs to be
+reloaded.
+
+The computer can be upgraded to load from other storage devices by installing a
+2 KB ROM containing bootloaders for cassette tapes, floppy disks, quasi-disks,
+or external ROM. External ROM connects to the computers parallel port and can
+store a favorite game, BASIC, or other programs.
+
+The Vector has 64 KB of RAM. The ROM is disconnected from the address space and
+does not interfere. Of the 64 KB, 8/16/24/32 KB are used for video memory in
+256x256 modes with 2/4/8/16 colors, leaving 32 to 56 KB for programs. Each 8 KB
+of memory represents a separate bit plane, enabling fast overlay of images on
+backgrounds. Additional graphics modes include 512x256 with 2/4 colors and
+hardware vertical screen scrolling. Hardware scrolling significantly speeds up
+text-based programs and can be used in some games.
+
+For sound output, three channels of the KR580VI53 timer chip are used, allowing
+three-voice polyphony without heavily taxing the CPU, or digital sound (PWM
+modulation) at 100% CPU load.
+
+The KR580VM80A processor runs at an overclocked 3 MHz, though its documented
+maximum is 2.5 MHz. However, the Vectors performance is not greater than the
+Orion 128 with a 2.5 MHz processor because the Vectors processor is slowed by
+the video controller. Instruction execution time is rounded up to four cycles.
+
+The Vector uses a capacitive or reed switch keyboard, considered more convenient
+and reliable, though the Vectors keyboard is slightly above average in
+reliability and usability.
+
+Expansions for the Vector included increasing RAM to 320 KB, adding a floppy
+disk controller, integrating an AY-3-8910 sound synthesizer, and even replacing
+the processor with a Z80.
+
+The Vector was developed around 1987 in Chiinu by engineers Donat Temirazov and 
+Alexander Sokolov. It was initially produced at the Chiinu  plant. 
+In 1989, the computer cost 750 rubles.
