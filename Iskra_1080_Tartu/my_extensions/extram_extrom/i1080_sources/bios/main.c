@@ -96,7 +96,7 @@ static uint16_t menu_color[] = {
     MENU_RETURN("Тёмно-жёлтый",     PALETTE_DARK_YELLOW),
     MENU_RETURN("Тёмно-синий",      PALETTE_DARK_BLUE),
     MENU_RETURN("Тёмно-фиолетовый", PALETTE_DARK_MAGENTA),
-    MENU_RETURN("Темно-голубой",    PALETTE_DARK_CYAN),
+    MENU_RETURN("Тёмно-голубой",    PALETTE_DARK_CYAN),
     MENU_RETURN("Серый",            PALETTE_GRAY),
     MENU_RETURN("Красный",          PALETTE_RED),
     MENU_RETURN("Зеленый",          PALETTE_GREEN),
