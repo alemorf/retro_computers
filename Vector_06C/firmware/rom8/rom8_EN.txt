@@ -1,0 +1,55 @@
+Bootloader "Vector-06C" "ROM-8" (Gepard)
+----------------------------------------
+This ROM replaces the factory Initial Bootloader (chip D9) and provides
+significantly more functionality for working with the computer. Replacing the
+ROM is quite simple and within anyone’s capability. 
+
+There are two ROM variants:
+K573RF5 with 2 KB (ROM-2) and K573RF4 with 8 KB (ROM-8). 
+
+Both variants support:
+a) Loading programs from cassette tape in both "Vector" and "Krista" formats 
+(the "Krista" format is much more convenient and faster than the "Vector" 
+format). Loading can be done with or without autostart, with or without 
+clearing RAM, and with programming the initial palette in the standard of 
+either computer.  
+b) Loading from external ROM.  
+c) Loading from a floppy disk or quasi-disk.  
+d) Saving the entire RAM to a quasi-disk at any moment.
+
+The ROM-8 additionally provides:  
+e) Loading an excellent monitor without corrupting RAM, which greatly aids in 
+writing and debugging programs.  
+f) Saving the screen image at any point during operation.  
+g) Copying programs without loading a copier.
+
+To install an 8 KB ROM (D2764) in the "Vector" PC, a hardware modification is
+required to allow the use of the full 8 KB simultaneously. The second 4 KB is
+accessed at addresses 8000H–8FFFH.
+
+Currently, the clock is supported by the DOS201 operating system and the monitor
+embedded in ROM-8.
+
+Information from InVector № 23:  
+"If you press ENTER+BLK simultaneously with F1+US+SS+RUS, the ROM-8 will display
+text information about the author’s version on the screen. In ROM-8, the F2 key
+is also used for priority loading from a ROM disk or floppy disk before the
+monitor."
+
+Control keys when pressing ENTER+BLK:  
+- F4 — Built-in monitor, press BLK+SBR to start.  
+- AR2 — "Krista-2" bootloader.  
+- STR — "Vector" bootloader.  
+- F3 — Loading from a floppy disk.  
+- F2 — Loading from a ROM disk, press BLK+SBR to start.
+
+In ROM-8 (but not ROM-2), autostart can be disabled by holding RUS/LAT, causing
+the bootloader to restart, allowing another program to be loaded.
+
+The bootloader is supported by the "Virtual Vector" emulator. The bootloader
+file must be named PZU8.BIN. If the screen shows "garbage" upon startup, the RAM
+disk needs to be formatted/cleared.
+
+Note:  
+For proper bootloader operation, a hardware modification to the PC is required
+to allow disabling the ROM with the "IN 0Fh" command.
